@@ -1,0 +1,57 @@
+﻿<Window x:Class="XMPPLibrary.LoginWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:s="http://schemas.microsoft.com/surface/2008"
+                 WindowStartupLocation="CenterScreen"
+    Title="Enter Credentials" Width="310" Height="499"
+                 Loaded="SurfaceWindow_Loaded" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" d:DesignHeight="243" d:DesignWidth="277">
+  
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">User Name</Label>
+            <s:SurfaceTextBox Width="150" x:Name="TextBoxUserName" Text="{Binding User}"></s:SurfaceTextBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">Password</Label>
+            <s:SurfacePasswordBox Width="150" x:Name="TextBoxPassword"></s:SurfacePasswordBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">Domain</Label>
+            <s:SurfaceTextBox Width="150" x:Name="TextBoxDomain" Text="{Binding Domain}"></s:SurfaceTextBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">Server</Label>
+            <s:SurfaceTextBox Width="150" x:Name="TextBoxServer" Text="{Binding Server}"></s:SurfaceTextBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">Port</Label>
+            <s:SurfaceTextBox Width="150" x:Name="TextBoxPort" Text="{Binding Port}"></s:SurfaceTextBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">Resource</Label>
+            <s:SurfaceTextBox Width="150" x:Name="TextBoxResource" Text="{Binding Resource}"></s:SurfaceTextBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <CheckBox Width="100" Margin="10,5" Background="White" Foreground="Black" IsChecked="{Binding UseTLSMethod}">Use TLS</CheckBox>
+            <CheckBox Width="100" Margin="10,5" Background="White" Foreground="Black" IsChecked="{Binding UseOldSSLMethod}">Use Old TLS Method</CheckBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <CheckBox Margin="10,5" Background="White" Foreground="Black" IsChecked="{Binding UseSOCKSProxy}">Use Proxy Server</CheckBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">Proxy Host</Label>
+            <s:SurfaceTextBox Width="150" Text="{Binding ProxyName}"></s:SurfaceTextBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">Proxy Port</Label>
+            <s:SurfaceTextBox Width="150" Text="{Binding ProxyPort}"></s:SurfaceTextBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Width="100">SOCKS Version</Label>
+            <s:SurfaceTextBox Width="150" Text="{Binding SOCKSVersion}"></s:SurfaceTextBox>
+        </StackPanel>
+
+        <s:SurfaceButton HorizontalAlignment="Right" IsDefault="True" Click="SurfaceButton_Click">Login</s:SurfaceButton>
+    </StackPanel>
+    
+</Window>

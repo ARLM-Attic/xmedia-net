@@ -1,0 +1,264 @@
+﻿using System;
+
+namespace SocketServer.TLS
+{
+    public class ByteHelper
+    {
+        public static void WriteUInt32BigEndian(byte[] bArrayWriteTo, int nIndex, uint value)
+        {
+            WriteUInt32BigEndian(bArrayWriteTo, nIndex, value, 4);
+        }
+
+        public static void WriteUInt32BigEndian(byte[] bArrayWriteTo, int nIndex, uint value, int nLength)
+        {
+            if (nLength == 4)
+            {
+                bArrayWriteTo[nIndex + 0] = (byte)((value & 0xFF000000) >> 24);
+                bArrayWriteTo[nIndex + 1] = (byte)((value & 0xFF0000) >> 16);
+                bArrayWriteTo[nIndex + 2] = (byte)((value & 0x00FF00) >> 8);
+                bArrayWriteTo[nIndex + 3] = (byte)((value & 0x0000FF));
+            }
+            else if (nLength == 3)
+            {
+                bArrayWriteTo[nIndex + 0] = (byte)((value & 0xFF0000) >> 16);
+                bArrayWriteTo[nIndex + 1] = (byte)((value & 0x00FF00) >> 8);
+                bArrayWriteTo[nIndex + 2] = (byte)((value & 0x0000FF));
+            }
+            else if (nLength == 2)
+            {
+                bArrayWriteTo[nIndex + 0] = (byte)((value & 0x00FF00) >> 8);
+                bArrayWriteTo[nIndex + 1] = (byte)((value & 0x0000FF));
+            }
+            else if (nLength == 1)
+            {
+                bArrayWriteTo[nIndex + 0] = (byte)((value & 0x0000FF));
+            }
+        }
+
+        public static void WriteUShortBigEndian(byte[] bArrayWriteTo, int nIndex, ushort value)
+        {
+            bArrayWriteTo[nIndex + 0] = (byte)((value & 0x00FF00) >> 8);
+            bArrayWriteTo[nIndex + 1] = (byte)((value & 0x0000FF));
+        }
+
+
+        public static void WriteByte(byte[] bArrayWriteTo, int nIndex, byte value)
+        {
+            bArrayWriteTo[nIndex + 0] = value;
+        }
+
+        public static void WriteByteArray(byte[] bArrayWriteTo, int nIndex, byte [] bValue)
+        {
+            Array.Copy(bValue, 0, bArrayWriteTo, nIndex, (int)bValue.Length);
+        }
+
+        public static uint ReadUintBigEndian(byte[] bRet, int nIndex)
+        {
+            return ReadUintBigEndian(bRet, nIndex, 4);
+        }
+
+        public static uint ReadUintBigEndian(byte[] bData, int nIndex, int nBytes)
+        {
+            if (nBytes == 4)
+                return (uint)((bData[nIndex + 0] << 24) | (bData[nIndex + 1] << 16) | (bData[nIndex + 2] << 8) | (bData[nIndex + 3]));
+            else if (nBytes == 3)
+                return (uint)((bData[nIndex + 0] << 16) | (bData[nIndex + 1] << 8) | (bData[nIndex + 2]));
+            else if (nBytes == 2)
+                return (uint)((bData[nIndex + 0] << 8) | (bData[nIndex + 1]));
+            else if (nBytes == 1)
+                return (uint)((bData[nIndex + 0]));
+
+            return 0;
+        }
+
+        public static ushort ReadUshortBigEndian(byte[] bRet, int nIndex)
+        {
+            return (ushort) ReadUintBigEndian(bRet, nIndex, 2);
+        }
+
+
+        public static byte ReadByte(byte[] bRet, int nIndex)
+        {
+            return (byte)bRet[nIndex];
+        }
+
+        public static byte [] ReadByteArray(byte[] bSource, int nIndex, int nLength)
+        {
+            byte[] bRet = new byte[nLength];
+            Array.Copy(bSource, nIndex, bRet, 0, nLength);
+            return bRet;
+        }
+
+        public static string HexStringFromByte(byte[] aBytes, bool Spaces, int LineBreakAt)
+        {
+            if (aBytes == null)
+                return "null";
+            System.Text.StringBuilder builder = new System.Text.StringBuilder(aBytes.Length * 3 + 10);
+            int nByte = 1;
+            foreach (byte b in aBytes)
+            {
+                string strHex = Convert.ToString(b, 16);
+                if (strHex.Length == 1)
+                    strHex = "0" + strHex;
+                if (Spaces)
+                    strHex += " ";
+                builder.Append(strHex);
+
+                if (nByte == LineBreakAt)
+                {
+                    nByte = 0;
+                    builder.Append("\r\n");
+                }
+                //builder.AppendFormat("{X}", b);
+
+                nByte++;
+            }
+
+            string strRet = builder.ToString();
+            strRet = strRet.TrimEnd();
+            strRet = strRet.ToUpper();
+            return strRet;
+        }
+
+        public static bool CompareArrays(byte[] bA, byte[] bB)
+        {
+            if ((bA == null) && (bB == null))
+                return true;
+            if ((bA == null) || (bB == null))
+                return false;
+            if (bA.Length != bB.Length)
+                return false;
+
+            for (int i = 0; i < bA.Length; i++)
+            {
+                if (bA[i] != bB[i])
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// converts a hex character to decimal equivalent
+        /// </summary>
+        /// <param name="HexChar"></param>
+        /// <returns></returns>
+        public static int ToDecimal(char HexChar)
+        {
+            switch (HexChar)
+            {
+                case '0':
+                    return 0;
+                case '1':
+                    return 1;
+                case '2':
+                    return 2;
+                case '3':
+                    return 3;
+                case '4':
+                    return 4;
+                case '5':
+                    return 5;
+                case '6':
+                    return 6;
+                case '7':
+                    return 7;
+                case '8':
+                    return 8;
+                case '9':
+                    return 9;
+                case 'A':
+                    return 10;
+                case 'a':
+                    return 10;
+                case 'B':
+                    return 11;
+                case 'b':
+                    return 11;
+                case 'C':
+                    return 12;
+                case 'c':
+                    return 12;
+                case 'D':
+                    return 13;
+                case 'd':
+                    return 13;
+                case 'E':
+                    return 14;
+                case 'e':
+                    return 14;
+                case 'F':
+                    return 15;
+                case 'f':
+                    return 15;
+                default:
+                    return Convert.ToInt32(HexChar);
+            }
+        }
+
+        public static char ToHex(int nDecimal)
+        {
+            switch (nDecimal)
+            {
+                case 0:
+                    return '0';
+                case 1:
+                    return '1';
+                case 2:
+                    return '2';
+                case 3:
+                    return '3';
+                case 4:
+                    return '4';
+                case 5:
+                    return '5';
+                case 6:
+                    return '6';
+                case 7:
+                    return '7';
+                case 8:
+                    return '8';
+                case 9:
+                    return '9';
+                case 10:
+                    return 'A';
+                case 11:
+                    return 'B';
+                case 12:
+                    return 'C';
+                case 13:
+                    return 'D';
+                case 14:
+                    return 'E';
+                case 15:
+                    return 'F';
+                default:
+                    return Convert.ToChar(nDecimal);
+            }
+        }
+
+        /// <summary>
+        ///  converts a hex string with spaces to a byte array
+        /// </summary>
+        /// <param name="strHexString"></param>
+        /// <returns></returns>
+        public static byte[] ByteFromHexString(string strHexString)
+        {
+            /// see if the hex string has spaces, if so, split it, if not split differently
+            strHexString = strHexString.Replace(" ", "");  /// Remove all spaces
+
+            if (strHexString.Length == 0)
+                return new byte[] { };
+            if (strHexString.Length % 2 != 0)
+                strHexString = strHexString + "0";
+
+
+            byte[] bRet = new byte[strHexString.Length / 2];
+            for (int i = 0; i < strHexString.Length / 2; i++)
+            {
+                bRet[i] = (byte)(ToDecimal(strHexString[i * 2]) * 16 + ToDecimal(strHexString[i * 2 + 1]));
+            }
+
+            return bRet;
+        }
+    }
+}
