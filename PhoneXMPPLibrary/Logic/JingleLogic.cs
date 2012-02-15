@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     // An audio/video payload 
     public class Payload

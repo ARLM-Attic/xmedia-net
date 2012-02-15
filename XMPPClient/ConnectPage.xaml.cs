@@ -13,7 +13,7 @@ using Microsoft.Phone.Controls;
 
 using System.Runtime.Serialization;
 using System.IO.IsolatedStorage;
-using PhoneXMPPLibrary;
+using System.Net.XMPP;
 
 namespace XMPPClient
 {
@@ -111,7 +111,7 @@ namespace XMPPClient
         {
             App.XMPPClient.XMPPAccount = this.AccountPicker.SelectedItem as XMPPAccount;
 
-            if (App.XMPPClient.XMPPState == PhoneXMPPLibrary.XMPPState.Connected)
+            if (App.XMPPClient.XMPPState == System.Net.XMPP.XMPPState.Connected)
                 App.XMPPClient.Disconnect();
 
 

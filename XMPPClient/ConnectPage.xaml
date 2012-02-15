@@ -23,7 +23,7 @@
 
 
         <!--TitlePanel contains the name of the application and page title-->
-        <toolkit:ListPicker SelectionChanged="AccountPicker_SelectionChanged" x:Name="AccountPicker" 
+        <toolkit:ListPicker Background="#FFDEFFFF" SelectionChanged="AccountPicker_SelectionChanged" x:Name="AccountPicker" 
                             Header="Pick Account" ItemsSource="Account">
             <toolkit:ListPicker.FullModeItemTemplate>
                 <DataTemplate>
@@ -52,8 +52,17 @@
                 <TextBlock>Resource</TextBlock>
                 <TextBox x:Name="TextBoxResource" Text="{Binding JID.Resource,Mode=TwoWay}" />
                 <TextBlock>Port</TextBlock>
-                <TextBox x:Name="TextBoxPort" Text="{Binding Port,Mode=TwoWay}" />
+                <TextBox InputScope="number" x:Name="TextBoxPort" Text="{Binding Port,Mode=TwoWay}" />
                 <CheckBox x:Name="CheckBoxUseOldSSLMethod" IsChecked="{Binding UseOldSSLMethod,Mode=TwoWay}">Use Old SSL Method (5223)</CheckBox>
+
+                <CheckBox x:Name="CheckBoxUseSOCKS" IsChecked="{Binding UseSOCKSProxy,Mode=TwoWay}">Use SOCKS</CheckBox>
+                <TextBlock>Proxy Server</TextBlock>
+                <TextBox x:Name="TextBoxProxyServer" Text="{Binding ProxyName,Mode=TwoWay}" />
+                <TextBlock>Proxy Port</TextBlock>
+                <TextBox x:Name="TextBoxProxyPort" Text="{Binding ProxyPort,Mode=TwoWay}" />
+                <TextBlock>SOCKS Version</TextBlock>
+                <TextBox x:Name="TextBoxSocksVersion" Text="{Binding SOCKSVersion,Mode=TwoWay}" />
+
             </StackPanel>
         </ScrollViewer>
 
@@ -66,8 +75,8 @@
     <!--Sample code showing usage of ApplicationBar-->
     <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton x:Name="ButtonConnect" Click="ButtonConnect_Click" IconUri="Images/usb.png" Text="Connect to this Account"/>
-            <shell:ApplicationBarIconButton x:Name="ButtonNewAccount" Click="ButtonNewAccount_Click" IconUri="Images/add.png" Text="New Account"/>
+            <shell:ApplicationBarIconButton x:Name="ButtonConnect" Click="ButtonConnect_Click" IconUri="Images/connect.png" Text="Connect"/>
+            <shell:ApplicationBarIconButton x:Name="ButtonNewAccount" Click="ButtonNewAccount_Click" IconUri="Images/add.png" Text="Add Account"/>
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>
 

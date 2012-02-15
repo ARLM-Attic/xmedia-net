@@ -11,7 +11,7 @@ using System.Windows.Shapes;
 
 using System.Xml;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     // An XML message right under the <stream> node
     // Derived classes include message, iq and presence

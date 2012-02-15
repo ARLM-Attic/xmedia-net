@@ -58,6 +58,9 @@
     <Compile Include="..\PhoneXMPPLibrary\Conversation.cs">
       <Link>Conversation.cs</Link>
     </Compile>
+    <Compile Include="..\PhoneXMPPLibrary\FileTransfer.cs">
+      <Link>FileTransfer.cs</Link>
+    </Compile>
     <Compile Include="..\PhoneXMPPLibrary\Forms\DataForm.cs">
       <Link>Forms\DataForm.cs</Link>
     </Compile>
@@ -103,11 +106,17 @@
     <Compile Include="..\PhoneXMPPLibrary\Logic\PubSubClasses.cs">
       <Link>Logic\PubSubClasses.cs</Link>
     </Compile>
+    <Compile Include="..\PhoneXMPPLibrary\Logic\PubSubNodeManager.cs">
+      <Link>Logic\PubSubNodeManager.cs</Link>
+    </Compile>
     <Compile Include="..\PhoneXMPPLibrary\Logic\RosterLogic.cs">
       <Link>Logic\RosterLogic.cs</Link>
     </Compile>
     <Compile Include="..\PhoneXMPPLibrary\Logic\ServiceDiscoveryLogic.cs">
       <Link>Logic\ServiceDiscoveryLogic.cs</Link>
+    </Compile>
+    <Compile Include="..\PhoneXMPPLibrary\Logic\SOCKS5Listener.cs">
+      <Link>Logic\SOCKS5Listener.cs</Link>
     </Compile>
     <Compile Include="..\PhoneXMPPLibrary\Logic\StreamInitiationAndTransferLogic.cs">
       <Link>Logic\StreamInitiationAndTransferLogic.cs</Link>

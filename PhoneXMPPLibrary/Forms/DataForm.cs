@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 using System.Reflection;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     /// <summary>
     /// jabber:x:data form XEP-0004

@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using System.Xml.Linq;
 using System.Collections.Generic;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class PubSubItem
     {
@@ -44,7 +44,7 @@ namespace PhoneXMPPLibrary
                 item.Add(new XAttribute("id", Id));
 
             elemItem.Add(item);
-            if (InnerItemXML != null)
+            if ( (InnerItemXML != null) && ( InnerItemXML.Length > 0) )
             {
                 XElement innerelem = XElement.Parse(InnerItemXML);
                 item.Add(innerelem);
@@ -198,6 +198,13 @@ namespace PhoneXMPPLibrary
             set { m_objItem = value; }
         }
 
+        private string m_strSubId = null;
+
+        public string SubId
+        {
+            get { return m_strSubId; }
+            set { m_strSubId = value; }
+        }
 
         public override void AddInnerXML(System.Xml.Linq.XElement elemMessage)
         {
@@ -206,7 +213,11 @@ namespace PhoneXMPPLibrary
 
             XElement publish = new XElement("{http://jabber.org/protocol/pubsub}items");
             publish.Add(new XAttribute("node", Node));
+            if (SubId != null)
+               publish.Add(new XAttribute("subid", SubId));
+
             pubsub.Add(publish);
+
 
             if (Item != null)
                 Item.AddXML(publish);
@@ -225,6 +236,8 @@ namespace PhoneXMPPLibrary
                 {
                     if (publish.Attribute("node") != null)
                         Node = publish.Attribute("node").Value;
+                    if (publish.Attribute("subid") != null)
+                        Node = publish.Attribute("subid").Value;
 
                     if (Item != null)
                     {
@@ -239,6 +252,69 @@ namespace PhoneXMPPLibrary
         }
     }
 
+    public class PubSubResultIQ : IQ
+    {
+        public PubSubResultIQ()
+            : base()
+        {
+            this.Type = IQType.result.ToString();
+        }
+        public PubSubResultIQ(string strXML)
+            : base(strXML)
+        {
+            this.Type = IQType.result.ToString();
+        }
+
+        public List<PubSubItem> Items = new List<PubSubItem>();
+        public string Node = "";
+
+
+        public override void AddInnerXML(System.Xml.Linq.XElement elemMessage)
+        {
+            XElement itemsnode = new XElement("{http://jabber.org/protocol/pubsub}items");
+            itemsnode.Add(new XAttribute("node", Node));
+            elemMessage.Add(itemsnode);
+
+            foreach (PubSubItem item in Items)
+            {
+                item.AddXML(itemsnode);
+            }
+
+            base.AddInnerXML(elemMessage);
+        }
+
+        public override void ParseInnerXML(System.Xml.Linq.XElement elemMessage)
+        {
+            /// Extract pubsub element, publish element, then item element
+            /// 
+
+            Items.Clear();
+
+            foreach (XElement pubsub in elemMessage.Descendants("{http://jabber.org/protocol/pubsub}pubsub"))
+            {
+                XElement publish = pubsub.FirstNode as XElement;
+                if ((publish != null) && (publish.Name == "{http://jabber.org/protocol/pubsub}items"))
+                {
+                    if (publish.Attribute("node") != null)
+                        Node = publish.Attribute("node").Value;
+
+                    foreach (XElement elemitem in publish.Descendants("{http://jabber.org/protocol/pubsub}item"))
+                    {
+                        PubSubItem newitem = new PubSubItem();
+                        if (elemitem.Attributes("id") != null)
+                            newitem.Id = elemitem.Attribute("id").Value;
+
+                        newitem.ParseXML(elemitem);
+                        Items.Add(newitem);
+                    }
+                }
+                break;
+            }
+
+
+            base.ParseInnerXML(elemMessage);
+        }
+    }
 
     public class PubSubEventMessage : Message
     {
@@ -252,6 +328,7 @@ namespace PhoneXMPPLibrary
         }
 
         public List<PubSubItem> Items = new List<PubSubItem>();
+        public List<string> RetractIds = new List<string>();
         public string Node = "";
 
 
@@ -277,6 +354,12 @@ namespace PhoneXMPPLibrary
             /// Extract pubsub element, publish element, then item element
             /// 
 
+            //<event xmlns="http://jabber.org/protocol/pubsub#event">
+            //  <items node="GroceryList">
+            //    <retract id="c62a3de9-4d88-493f-bbcb-3338dd18b7f4" />
+            //  </items>
+            //</event>
+
             Items.Clear();
 
             foreach (XElement pubsub in elemMessage.Descendants("{http://jabber.org/protocol/pubsub#event}event"))
@@ -295,6 +378,13 @@ namespace PhoneXMPPLibrary
 
                         newitem.ParseXML(publish);
                         Items.Add(newitem);
+                    }
+                    foreach (XElement elemitem in publish.Descendants("{http://jabber.org/protocol/pubsub#event}retract"))
+                    {
+                        if (elemitem.Attributes("id") != null)
+                        {
+                            RetractIds.Add(elemitem.Attribute("id").Value);
+                        }
                     }
                 }
                 break;

@@ -13,7 +13,7 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Security.Cryptography;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class AvatarStorage
     {
@@ -90,7 +90,7 @@ namespace PhoneXMPPLibrary
 #endif
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             finally
@@ -144,7 +144,7 @@ namespace PhoneXMPPLibrary
                 location = new IsolatedStorageFileStream(strFileName, System.IO.FileMode.Create, storage);
                 location.Write(bImageData, 0, bImageData.Length);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             finally

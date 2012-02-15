@@ -6,7 +6,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
 
     public class FormOption

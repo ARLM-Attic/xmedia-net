@@ -15,7 +15,7 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using System.IO;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class Utility
     {
@@ -78,7 +78,7 @@ namespace PhoneXMPPLibrary
             {
                 objRet = ser.Deserialize(stream);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             finally

@@ -14,7 +14,7 @@ using System.Xml;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class XMPPStream : Stream
     {
@@ -271,7 +271,7 @@ namespace PhoneXMPPLibrary
 
               }
            }
-           catch (Exception ex)
+           catch (Exception)
            {
 
            }

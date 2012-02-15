@@ -2,7 +2,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:s="http://schemas.microsoft.com/surface/2008"
-    xmlns:phone="clr-namespace:PhoneXMPPLibrary;assembly=xmpp"
+    xmlns:phone="clr-namespace:System.Net.XMPP;assembly=xmpp"
     AllowsTransparency="True" WindowStyle="None"
     MouseDown="Window_MouseDown" ResizeMode="CanResizeWithGrip"
     Width="369" Height="481" Title="XMPP Chat Client" Loaded="SurfaceWindow_Loaded">
@@ -22,8 +22,8 @@
                         <RowDefinition Height="20" />
                     </Grid.RowDefinitions>
 
-                    <Rectangle Fill="{Binding Presence.PresenceBrush}"  Width="40" Height="40" Grid.Column="0" Grid.Row="0" />
-                    <Image Grid.Column="0" Grid.Row="0" Width="38" Height="38" Source="{Binding Avatar}" />
+                    <Rectangle Stroke="Black" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="40" Height="40" Grid.Column="0" Grid.Row="0" />
+                    <Image Grid.Column="0" Grid.Row="0" Width="36" Height="36" Source="{Binding Avatar}" />
 
 
                     <Button Background="#AAEEFFEE" BorderBrush="{x:Null}" Margin="10,0" Grid.Column="1" Grid.Row="0" 
@@ -84,6 +84,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="84" />
                     <ColumnDefinition Width="107*" />
+                    <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
@@ -152,12 +153,15 @@
             <Rectangle x:Name="RectangleConnect" Fill="{Binding ConnectedStateBrush}" Width="30" Height="30" Grid.Column="2" Margin="5,6" Grid.RowSpan="2" />
             
             <s:SurfaceButton ToolTip="Connect to Server" Grid.Column="2" x:Name="HyperlinkConnect" Click="HyperlinkConnect_Click" Padding="0" HorizontalAlignment="Center"  VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
-                    <Image Source="Images/usb.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Image Source="Images/connect.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </s:SurfaceButton>
-                <s:SurfaceButton ToolTip="Add a Buddy" Grid.Column="3" x:Name="ButtonAddBuddy" IsEnabled="False" Click="ButtonAddBuddy_Click" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+            <s:SurfaceButton ToolTip="Add a Buddy" Grid.Column="3" x:Name="ButtonAddBuddy" IsEnabled="False" Click="ButtonAddBuddy_Click" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/add.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </s:SurfaceButton>
-            <s:SurfaceButton ToolTip="Close" Grid.Column="4" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+            <s:SurfaceButton ToolTip="View Downloads" Grid.Column="4" x:Name="ButtonTransfers" IsEnabled="True" Click="ButtonTransfers_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+                <Image Source="Images/file.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </s:SurfaceButton>
+            <s:SurfaceButton ToolTip="Close" Grid.Column="5" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                     <Image Source="Images/calculator - multiply.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </s:SurfaceButton>
 

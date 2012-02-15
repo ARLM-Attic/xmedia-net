@@ -100,7 +100,7 @@ namespace XMPPLibrary
             //TODO: disable audio, animations here
         }
 
-        public PhoneXMPPLibrary.XMPPClient XMPPClient = null;
+        public System.Net.XMPP.XMPPClient XMPPClient = null;
         private bool m_bPerformLogin = false;
 
         public bool PerformLogin

@@ -20,7 +20,7 @@ using System.Xml.Serialization;
 using System.Text.RegularExpressions;
 
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     /// <summary>
     /// Responsible for querying what services the server supports

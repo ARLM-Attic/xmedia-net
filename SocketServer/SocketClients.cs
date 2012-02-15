@@ -448,7 +448,7 @@ namespace SocketServer
 
             OnConnected(bSuccess, strErrors);
             if (OnAsyncConnectFinished != null)
-                OnAsyncConnectFinished(this, true, "");
+                OnAsyncConnectFinished(this, bSuccess, "");
 
             if ((m_bStartReadOnConnect) && (this.Connected == true))
                 DoAsyncRead();
@@ -585,6 +585,7 @@ namespace SocketServer
             return nRet;
         }
 
+     
         public virtual void OnDisconnect(string strReason)
         {
             lock (SyncRoot)
@@ -702,9 +703,17 @@ namespace SocketServer
                             bData = new byte[4096];
 
                         if (SslStream != null)
-                            SslStream.BeginRead(bData, 0, bData.Length - 1, new AsyncCallback(OnRecvDataAll), bData);
+                        {
+                            IAsyncResult result = SslStream.BeginRead(bData, 0, bData.Length - 1, new AsyncCallback(OnRecvDataAll), bData);
+                            if (result.CompletedSynchronously == true)
+                                System.Threading.Thread.Sleep(0);
+                        }
                         else
-                            NetworkStream.BeginRead(bData, 0, bData.Length - 1, new AsyncCallback(OnRecvDataAll), bData);
+                        {
+                            IAsyncResult result = NetworkStream.BeginRead(bData, 0, bData.Length - 1, new AsyncCallback(OnRecvDataAll), bData);
+                            if (result.CompletedSynchronously == true)
+                                System.Threading.Thread.Sleep(0);
+                        }
                         //System.Net.Sockets.NetworkStream networkStream = GetStream();
                         //networkStream.BeginRead(m_bData, 0, m_bData.Length -1, m_AsyncRecv, networkStream);
                     }
@@ -733,6 +742,12 @@ namespace SocketServer
                         if (m_Logger != null)
                             m_Logger.LogError(ToString(), MessageImportance.Highest, e3.ToString());
                         OnDisconnect(e3.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        if (m_Logger != null)
+                            m_Logger.LogError(ToString(), MessageImportance.Highest, ex.ToString());
+                        OnDisconnect(ex.ToString());
                     }
                 }
             }
@@ -820,6 +835,12 @@ namespace SocketServer
 
                 return;
             }
+            HandleReceiveData(bData, nLen);
+        }
+
+        void HandleReceiveData(byte [] bData, int nLen)
+        {
+          
 
             if (nLen == 0)
             {

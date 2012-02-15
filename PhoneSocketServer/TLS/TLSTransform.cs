@@ -387,18 +387,16 @@ namespace SocketServer.TLS
                 buf.AppendData(state.SecurityParameters.ClientRandom);
                 byte [] bSCRandom = buf.GetAllSamples();
 
-                state.SecurityParameters.MasterSecret = this.PRF(bPreMasterSecret, "master secret", bCSRandom, 48);
+                state.SecurityParameters.MasterSecret = state.PRF(bPreMasterSecret, "master secret", bCSRandom, 48);
 
                 if (SocketClient.ShowDebug == true)
                    System.Diagnostics.Debug.WriteLine("MasterSecret: +++++++++++\r\n{0}\r\n++++++++++++", ByteHelper.HexStringFromByte(state.SecurityParameters.MasterSecret, true, 16));
 
                 /// Verified that we are computing all our keys correctly by using the same input into the Mentalis library
                 /// If we coded ours independently and get the same answers, it has to be correct, or we made the same mistakes :)
-                ComputeKeys(state.SecurityParameters.MasterSecret, bSCRandom);
+                state.ComputeKeys(state.SecurityParameters.MasterSecret, bSCRandom);
 
-                state.Initialize(); /// Initialize our cryptographic grind thingies on that thingy
-
-
+                
 
                 /// Now send out a change cipher-spec, followed by a client finished message that is encrypted
                 /// 
@@ -437,7 +435,7 @@ namespace SocketServer.TLS
 
                 TLSHandShakeMessage msgFinished = new TLSHandShakeMessage();
                 msgFinished.HandShakeMessageType = HandShakeMessageType.Finished;
-                msgFinished.HandShakeFinished.verify_data = PRF(state.SecurityParameters.MasterSecret, "client finished", bCombinedHashes, 12);
+                msgFinished.HandShakeFinished.verify_data = state.PRF(state.SecurityParameters.MasterSecret, "client finished", bCombinedHashes, 12);
 
                 TLSRecord recordFinished = new TLSRecord();
                 recordFinished.MajorVersion = 3;
@@ -473,7 +471,7 @@ namespace SocketServer.TLS
                 /// verify_data
                 ///     PRF(master_secret, finished_label, MD5(handshake_messages) + SHA-1(handshake_messages)) [0..11];
 
-                byte [] bComputedVerify = PRF(state.SecurityParameters.MasterSecret, "server finished", bCombinedHashes, 12);
+                byte [] bComputedVerify = state.PRF(state.SecurityParameters.MasterSecret, "server finished", bCombinedHashes, 12);
                 bool bMatch = ByteHelper.CompareArrays(msg.HandShakeFinished.verify_data, bComputedVerify);
                 if (bMatch == false)
                 {
@@ -496,10 +494,6 @@ namespace SocketServer.TLS
                     state.SecurityParameters.Cipher = Cipher.FindCipher(msg.HandShakeServerHello.CipherSuite);
                     state.SecurityParameters.CompressionMethod = CompressionMethod.null0;
                     state.SecurityParameters.ConnectionEnd = ConnectionEnd.client;
-                    //SecurityParameters.HashSize = ?;
-                    //SecurityParameters.KeyMaterialLength = ?;
-                    //SecurityParameters.MACAlgorithm = MACAlgorithm.sha;
-                    //SecurityParameters.MasterSecret = ?;
                     state.SecurityParameters.ServerRandom = msg.HandShakeServerHello.RandomStruct.Bytes;
                 }
                 else if (msg.HandShakeMessageType == HandShakeMessageType.Certificate)
@@ -535,204 +529,7 @@ namespace SocketServer.TLS
 
         }
 
-        public void ComputeKeys(byte [] MasterSecret, byte [] ServerPlusClientRandomKeys)
-        {
-            // Create keyblock
-           ByteBuffer keyBlock = new ByteBuffer();
-           byte[] bKEPRF = this.PRF(MasterSecret, "key expansion", ServerPlusClientRandomKeys, this.state.SecurityParameters.Cipher.KeyBlockSize);
-           keyBlock.AppendData(bKEPRF);
-                
-            this.state.ClientWriteMACSecret = keyBlock.GetNSamples(this.state.SecurityParameters.Cipher.HashSize);
-            this.state.ServerWriteMACSecret = keyBlock.GetNSamples(this.state.SecurityParameters.Cipher.HashSize);
-            this.state.ClientWriteKey = keyBlock.GetNSamples(this.state.SecurityParameters.Cipher.KeyMaterialLength);
-            this.state.ServerWriteKey = keyBlock.GetNSamples(this.state.SecurityParameters.Cipher.KeyMaterialLength);
-
-            if (SocketClient.ShowDebug == true)
-            {
-                System.Diagnostics.Debug.WriteLine("ClientWriteMACSecret: +++++++++++\r\n{0}\r\n++++++++++++", ByteHelper.HexStringFromByte(this.state.ClientWriteMACSecret, true, 16));
-                System.Diagnostics.Debug.WriteLine("ServerWriteMACSecret: +++++++++++\r\n{0}\r\n++++++++++++", ByteHelper.HexStringFromByte(this.state.ServerWriteMACSecret, true, 16));
-                System.Diagnostics.Debug.WriteLine("ClientWriteKey: +++++++++++\r\n{0}\r\n++++++++++++", ByteHelper.HexStringFromByte(this.state.ClientWriteKey, true, 16));
-                System.Diagnostics.Debug.WriteLine("ServerWriteKey: +++++++++++\r\n{0}\r\n++++++++++++", ByteHelper.HexStringFromByte(this.state.ServerWriteKey, true, 16));
-            }
-
-            //if (!this.IsExportable)
-            //{
-                if (this.state.SecurityParameters.Cipher.IVSize != 0)
-                {
-                    this.state.ClientWriteIV = keyBlock.GetNSamples(this.state.SecurityParameters.Cipher.IVSize);
-                    this.state.ServerWriteIV = keyBlock.GetNSamples(this.state.SecurityParameters.Cipher.IVSize);
-                }
-                else
-                {
-                    this.state.ClientWriteIV = new byte[] {};
-                    this.state.ServerWriteIV = new byte[] { };
-                }
-            //}
-                if (SocketClient.ShowDebug == true)
-                {
-                    System.Diagnostics.Debug.WriteLine("ClientWriteIV: +++++++++++\r\n{0}\r\n++++++++++++", ByteHelper.HexStringFromByte(this.state.ClientWriteIV, true, 16));
-                    System.Diagnostics.Debug.WriteLine("ServerWriteIV: +++++++++++\r\n{0}\r\n++++++++++++", ByteHelper.HexStringFromByte(this.state.ServerWriteIV, true, 16));
-                }
-
-            //else
-            //{
-            //    // Generate final write keys
-            //    byte[] finalClientWriteKey = PRF(this.Context.ClientWriteKey, "client write key", this.Context.RandomCS, this.ExpandedKeyMaterialSize);
-            //    byte[] finalServerWriteKey = PRF(this.Context.ServerWriteKey, "server write key", this.Context.RandomCS, this.ExpandedKeyMaterialSize);
-
-            //    this.Context.ClientWriteKey = finalClientWriteKey;
-            //    this.Context.ServerWriteKey = finalServerWriteKey;
-
-            //    if (this.IvSize > 0)
-            //    {
-            //        // Generate IV block
-            //        byte[] ivBlock = PRF(CipherSuite.EmptyArray, "IV block", this.Context.RandomCS, this.IvSize * 2);
-
-            //        // Generate IV keys
-            //        this.Context.ClientWriteIV = new byte[this.IvSize];
-            //        Buffer.BlockCopy(ivBlock, 0, this.Context.ClientWriteIV, 0, this.Context.ClientWriteIV.Length);
-
-            //        this.Context.ServerWriteIV = new byte[this.IvSize];
-            //        Buffer.BlockCopy(ivBlock, this.IvSize, this.Context.ServerWriteIV, 0, this.Context.ServerWriteIV.Length);
-            //    }
-            //    else
-            //    {
-            //        this.Context.ClientWriteIV = CipherSuite.EmptyArray;
-            //        this.Context.ServerWriteIV = CipherSuite.EmptyArray;
-            //    }
-            //}
-        }
-
-
-
-        public byte[] PRF(byte[] secret, string label, byte[] data, int length)
-        {
-            /* Secret Length calc exmplain from the RFC2246. Section 5
-             * 
-             * S1 and S2 are the two halves of the secret and each is the same
-             * length. S1 is taken from the first half of the secret, S2 from the
-             * second half. Their length is created by rounding up the length of the
-             * overall secret divided by two; thus, if the original secret is an odd
-             * number of bytes long, the last byte of S1 will be the same as the
-             * first byte of S2.
-             */
-
-            // split secret in 2
-            int secretLen = secret.Length >> 1;
-            // rounding up
-            if ((secret.Length & 0x1) == 0x1)
-                secretLen++;
-
-            // Seed
-            ByteBuffer buffer = new ByteBuffer();
-            buffer.AppendData(Encoding.UTF8.GetBytes(label));
-            buffer.AppendData(data);
-            byte[] seed = buffer.GetAllSamples();
-
-            // Secret 1
-            byte[] secret1 = new byte[secretLen];
-            System.Buffer.BlockCopy(secret, 0, secret1, 0, secretLen);
-
-            // Secret2
-            byte[] secret2 = new byte[secretLen];
-            System.Buffer.BlockCopy(secret, (secret.Length - secretLen), secret2, 0, secretLen);
-
-            // Secret 1 processing
-            byte[] p_md5 = ExpandMD5(secret1, seed, length);
-
-            // Secret 2 processing
-            byte[] p_sha = ExpandSHA1(secret2, seed, length);
-
-            // Perfor XOR of both results
-            byte[] masterSecret = new byte[length];
-            for (int i = 0; i < masterSecret.Length; i++)
-            {
-                masterSecret[i] = (byte)(p_md5[i] ^ p_sha[i]);
-            }
-
-            return masterSecret;
-        }
-
-
-        public byte[] ExpandSHA1(byte[] secret, byte[] seed, int length)
-        {
-            int hashLength = 20;
-            int iterations = (int)(length / hashLength);
-            if ((length % hashLength) > 0)
-            {
-                iterations++;
-            }
-
-            
-            ByteBuffer resMacs = new ByteBuffer();
-            byte [] bAofi = seed;
-
-            for (int i = 1; i <= iterations; i++)
-            {
-                ByteBuffer hcseed = new ByteBuffer();
-                HMACSHA1 sha = new HMACSHA1(secret);
-
-                byte[] bNextAofi = sha.ComputeHash(bAofi); /// A(1) = HMAC_hash(secret, A(0)),
-                                                         /// A(2) = HMAC_hash(secret, A(1)),
-                                                         /// etc
-
-
-                HMACSHA1 sha2 = new HMACSHA1(secret);
-                byte [] bComputeNextHashOver = new byte[20+seed.Length];
-                Array.Copy(bNextAofi, 0, bComputeNextHashOver, 0, 20);
-                Array.Copy(seed, 0, bComputeNextHashOver, 20, seed.Length);
-                byte[] bTotalHashThisIteration = sha2.ComputeHash(bComputeNextHashOver);
-                resMacs.AppendData(bTotalHashThisIteration); /// Append it to our total buffer
-
-                bAofi = bNextAofi; /// use next loop
-
-            }
-     
-
-            byte[] res  = resMacs.GetNSamples(length);
-
-            return res;
-        }
-
-        public byte[] ExpandMD5(byte[] secret, byte[] seed, int length)
-        {
-            int hashLength = 16;
-            int iterations = (int)(length / hashLength);
-            if ((length % hashLength) > 0)
-            {
-                iterations++;
-            }
-
-
-            ByteBuffer resMacs = new ByteBuffer();
-            byte[] bAofi = seed;
-
-            for (int i = 1; i <= iterations; i++)
-            {
-                ByteBuffer hcseed = new ByteBuffer();
-                HMACMD5 md51 = new HMACMD5(secret);
-
-                byte[] bNextAofi = md51.ComputeHash(bAofi); /// A(1) = HMAC_hash(secret, A(0)),
-                /// A(2) = HMAC_hash(secret, A(1)),
-                /// etc
-
-
-                HMACMD5 md52 = new HMACMD5(secret);
-                byte[] bComputeNextHashOver = new byte[16 + seed.Length];
-                Array.Copy(bNextAofi, 0, bComputeNextHashOver, 0, 16);
-                Array.Copy(seed, 0, bComputeNextHashOver, 16, seed.Length);
-                byte[] bTotalHashThisIteration = md52.ComputeHash(bComputeNextHashOver);
-                resMacs.AppendData(bTotalHashThisIteration); /// Append it to our total buffer
-
-                bAofi = bNextAofi; /// use next loop
-
-            }
-
-
-            byte[] res = resMacs.GetNSamples(length);
-
-            return res;
-        }
+      
 
     }
 

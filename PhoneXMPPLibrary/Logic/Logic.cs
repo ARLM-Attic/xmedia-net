@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     /// <summary>
     /// Handles different types of xml fragments on our streams, such as negotiation, IQ's, etc

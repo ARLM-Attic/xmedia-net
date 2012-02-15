@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class PubSubOperation
     {
@@ -36,7 +36,10 @@ namespace PhoneXMPPLibrary
             IQRequest.InnerXML = strXML;
             IQ IQResponse = connection.SendRecieveIQ(IQRequest, 10000);
 
-            if (IQResponse.Type != IQType.error.ToString()) // && (IQResponse.Error.Code >= 0))
+
+            if (IQResponse == null)
+                return false;
+            if (IQResponse.Type == IQType.error.ToString()) // && (IQResponse.Error.Code >= 0))
             {
                 return false;
             }
@@ -172,7 +175,7 @@ namespace PhoneXMPPLibrary
             return true;
         }
 
-        static string RetractNodeXML =
+        public static string RetractNodeXML =
 @"<pubsub xmlns='http://jabber.org/protocol/pubsub'>
       <retract node='#NODE#'>
           <item id='#ITEM#' />
@@ -207,6 +210,133 @@ namespace PhoneXMPPLibrary
 
             return true;
         }
+
+        public static string PurgeNodeXML =
+@"<pubsub xmlns='http://jabber.org/protocol/pubsub'>
+      <purge node='#NODE#' />
+ </pubsub>";
+
+
+        /// <summary>
+        /// Purges the items in a node
+        /// </summary>
+        /// <param name="strNode"></param>
+        /// <returns></returns>
+        public static bool PurgeNode(XMPPClient connection, string strNode, bool bWaitForResponse)
+        {
+            IQ pubsub = new IQ();
+            pubsub.Type = IQType.set.ToString();
+            pubsub.From = connection.JID;
+            pubsub.To = new JID(string.Format("pubsub.{0}", connection.Domain));
+
+            pubsub.InnerXML = PurgeNodeXML.Replace("#NODE#", strNode);
+
+            if (bWaitForResponse == false)
+            {
+                connection.SendXMPP(pubsub);
+                return true;
+            }
+
+            IQ IQResponse = connection.SendRecieveIQ(pubsub, 10000);
+
+            if (IQResponse.Type == IQType.error.ToString())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+
+        public static string SubscribeNodeXML =
+@"<pubsub xmlns='http://jabber.org/protocol/pubsub'>
+      <subscribe node='#NODE#' jid='#JID#' />
+ </pubsub>";
+
+
+        /// <summary>
+        /// Purges the items in a node
+        /// </summary>
+        /// <param name="strNode"></param>
+        /// <returns></returns>
+        public static string SubscribeNode(XMPPClient connection, string strNode, string strJID, bool bWaitForResponse)
+        {
+            IQ pubsub = new IQ();
+            pubsub.Type = IQType.set.ToString();
+            pubsub.From = connection.JID;
+            pubsub.To = new JID(string.Format("pubsub.{0}", connection.Domain));
+
+            pubsub.InnerXML = SubscribeNodeXML.Replace("#NODE#", strNode).Replace("#JID#", strJID);
+
+            if (bWaitForResponse == false)
+            {
+                connection.SendXMPP(pubsub);
+                return null;
+            }
+
+            IQ IQResponse = connection.SendRecieveIQ(pubsub, 10000);
+
+            if (IQResponse.Type == IQType.error.ToString())
+            {
+                return null;
+            }
+            
+            ///<iq type="result" id="9933bb36-7685-460f-8d7f-e9e5ad80f780" from="pubsub.ninethumbs.com" to="test@ninethumbs.com/9047e898-aed2-4f58-b3e2-a5f671758544">
+            ///     <pubsub xmlns="http://jabber.org/protocol/pubsub">
+            ///         <subscription node="GroceryList" jid="test@ninethumbs.com/9047e898-aed2-4f58-b3e2-a5f671758544" subid="tU98QlKDYuEhTiKO443Vs2AWi2Y07i4Pf2l1wc8W" subscription="subscribed">
+            ///         <subscribe-options/></subscription>
+            ///     </pubsub>
+            /// </iq>
+            /// 
+            XElement firstelem = IQResponse.InitalXMLElement.FirstNode as XElement;
+            if ((firstelem != null) && (firstelem.Name == "{http://jabber.org/protocol/pubsub}pubsub"))
+            {
+                foreach (XElement subelem in firstelem.Descendants("{http://jabber.org/protocol/pubsub}subscription"))
+                {
+                    return subelem.Attribute("subid").Value;
+                }
+            }
+
+
+            return null;
+        }
+
+        public static string UnsubscribeNodeXML =
+@"<pubsub xmlns='http://jabber.org/protocol/pubsub'>
+      <unsubscribe node='#NODE#' jid='#JID#' sid='#SID#' />
+ </pubsub>";
+
+
+        /// <summary>
+        /// Purges the items in a node
+        /// </summary>
+        /// <param name="strNode"></param>
+        /// <returns></returns>
+        public static bool UnsubscribeNode(XMPPClient connection, string strNode, string strJID, string strSID, bool bWaitForResponse)
+        {
+            IQ pubsub = new IQ();
+            pubsub.Type = IQType.set.ToString();
+            pubsub.From = connection.JID;
+            pubsub.To = new JID(string.Format("pubsub.{0}", connection.Domain));
+
+            pubsub.InnerXML = UnsubscribeNodeXML.Replace("#NODE#", strNode).Replace("#JID#", strJID).Replace("#SID#", strSID);
+
+            if (bWaitForResponse == false)
+            {
+                connection.SendXMPP(pubsub);
+                return true;
+            }
+
+            IQ IQResponse = connection.SendRecieveIQ(pubsub, 10000);
+
+            if (IQResponse.Type == IQType.error.ToString())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
 
         static string PublishItemXML =
 @"<pubsub xmlns='http://jabber.org/protocol/pubsub'>
@@ -293,8 +423,9 @@ namespace PhoneXMPPLibrary
             strXML = strXML.Replace("#x#", strForm);
             pubsub.InnerXML = strXML;
 
-            IQ IQResponse = connection.SendRecieveIQ(pubsub, 15000);
-
+            IQ IQResponse = connection.SendRecieveIQ(pubsub, 10000);
+            if (IQResponse == null)
+                return;
             if (IQResponse.Type == IQType.error.ToString())
             {
                 return;

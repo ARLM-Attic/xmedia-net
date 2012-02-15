@@ -5,7 +5,7 @@ using System.Text;
 
 using System.ComponentModel;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class PubSubConfigForm : DataForm
     {
@@ -305,7 +305,7 @@ namespace PhoneXMPPLibrary
 
         private string m_strTitle = null;
         [TextSingleFormField("pubsub#title", "A friendly name for the node", false)]
-        public string Title
+        public new string Title
         {
           get { return m_strTitle; }
           set { m_strTitle = value; }
@@ -313,7 +313,7 @@ namespace PhoneXMPPLibrary
 
         private string m_strType = null;
         [TextSingleFormField("pubsub#type", "The type of node data, usually specified by the namespace of the payload (if any)", false)]
-        public string Type
+        public new string Type
         {
             get { return m_strType; }
             set { m_strType = value; }

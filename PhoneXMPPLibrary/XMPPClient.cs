@@ -21,7 +21,7 @@ using System.Xml.Serialization;
 using System.Runtime.Serialization;
 using System.Collections.ObjectModel;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public enum XMPPState
     {
@@ -90,6 +90,7 @@ namespace PhoneXMPPLibrary
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("http://jabber.org/protocol/si"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("http://jabber.org/protocol/si/profile/file-transfer"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("http://jabber.org/protocol/ibb"));
+            this.OurServiceDiscoveryFeatureList.AddFeature(new feature("http://jabber.org/protocol/bytestreams"));
 
 
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("http://jabber.org/protocol/geoloc"));
@@ -99,6 +100,8 @@ namespace PhoneXMPPLibrary
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:avatar:data"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:avatar:metadata"));
             //this.OurServiceDiscoveryFeatureList.AddFeature(new feature(""));
+
+            FileTransferManager = new FileTransferManager(this);
 
         }
 
@@ -110,15 +113,13 @@ namespace PhoneXMPPLibrary
         private GenericMessageLogic GenericMessageLogic = null;
         private ServiceDiscoveryLogic ServiceDiscoveryLogic = null;
         private JingleLogic JingleLogic = null;
-        private StreamInitiationAndTransferLogic StreamInitiationAndTransferLogic = null;
+        internal StreamInitiationAndTransferLogic StreamInitiationAndTransferLogic = null;
         private PersonalEventingLogic PersonalEventingLogic = null;
-
-        private string m_strServer = "talk.google.com";
 
         public ServiceDiscoveryFeatureList OurServiceDiscoveryFeatureList = new ServiceDiscoveryFeatureList();
         
      
-        public EventHandler OnStateChanged = null;
+        public event EventHandler OnStateChanged = null;
         private XMPPState m_eXMPPState = XMPPState.Unknown;
 
         private XMPPAccount m_objXMPPAccount = new XMPPAccount();
@@ -138,7 +139,6 @@ namespace PhoneXMPPLibrary
 
         private System.Threading.Timer m_objReconnectTimer = null;
         private int m_nAutoReconnectAttempts = 0;
-        private bool m_bInHaveSuccessfullyConnectedAndAuthenticated = false;
         private bool m_bAutoReconnect = false;
         /// <summary>
         /// Set to true if you want this client to attempt to auto-reconnect to the last good server if disconnected
@@ -200,14 +200,19 @@ namespace PhoneXMPPLibrary
             set { m_objXMPPAccount.UseTLSMethod = value; }
         }
 
-        private bool m_bUseOldStyleTLS = false;
-
         public bool UseOldStyleTLS
         {
             get { return m_objXMPPAccount.UseOldSSLMethod; }
             set { m_objXMPPAccount.UseOldSSLMethod = value; }
         }
 
+        private bool m_bRetrieveRoster = true;
+
+        public bool RetrieveRoster
+        {
+            get { return m_bRetrieveRoster; }
+            set { m_bRetrieveRoster = value; }
+        }
 
         protected virtual void StateChanged()
         {
@@ -215,19 +220,20 @@ namespace PhoneXMPPLibrary
             if (OnStateChanged != null)
                 OnStateChanged(this, new EventArgs());
 
-            if (XMPPState == PhoneXMPPLibrary.XMPPState.CanBind)
+            if (XMPPState == System.Net.XMPP.XMPPState.CanBind)
             {
                 // We can now bind to our resource
                 GenericIQLogic.Start();
             }
-            else if (XMPPState == PhoneXMPPLibrary.XMPPState.Bound)
+            else if (XMPPState == System.Net.XMPP.XMPPState.Bound)
             {
-                RosterLogic.Start();
+                if (RetrieveRoster == true)
+                   RosterLogic.Start();
 
                 //ServiceDiscoveryLogic.Start();
-                XMPPState = PhoneXMPPLibrary.XMPPState.Ready;
+                XMPPState = System.Net.XMPP.XMPPState.Ready;
             }
-            else if (XMPPState == PhoneXMPPLibrary.XMPPState.Unknown)  // We be logged out
+            else if (XMPPState == System.Net.XMPP.XMPPState.Unknown)  // We be logged out
             {
                 
                 this.StreamNegotiationLogic.Reset();
@@ -240,7 +246,7 @@ namespace PhoneXMPPLibrary
                     item.Presence.PresenceShow = PresenceShow.xa;
                 }
             }
-            else if (XMPPState == PhoneXMPPLibrary.XMPPState.Ready)
+            else if (XMPPState == System.Net.XMPP.XMPPState.Ready)
             {
                 XMPPAccount.HaveSuccessfullyConnectedAndAuthenticated = true;
                 ConnectHandle.Set();
@@ -248,7 +254,7 @@ namespace PhoneXMPPLibrary
                     PresenceLogic.RequestOurVCARD();
             }
 
-            if (XMPPState == PhoneXMPPLibrary.XMPPState.Ready)
+            if (XMPPState == System.Net.XMPP.XMPPState.Ready)
                 ConnectHandle.Set();
             else
                 ConnectHandle.Reset();
@@ -361,8 +367,6 @@ namespace PhoneXMPPLibrary
             }
         }
 
-        private int m_nPort = 5222;
-        
         public int Port
         {
             get { return m_objXMPPAccount.Port; }
@@ -383,8 +387,6 @@ namespace PhoneXMPPLibrary
                 }
             }
         }
-        
-        private string m_strPassword = "";
         
         public string Password
         {
@@ -506,7 +508,7 @@ namespace PhoneXMPPLibrary
 
             this.RosterItems.Clear();
             XMPPConnection = new XMPPConnection(this);
-            XMPPConnection.OnStanzaReceived += new PhoneXMPPLibrary.XMPPConnection.DelegateStanza(XMPPConnection_OnStanzaReceived);
+            XMPPConnection.OnStanzaReceived += new System.Net.XMPP.XMPPConnection.DelegateStanza(XMPPConnection_OnStanzaReceived);
             XMPPConnection.Connect();
         }
 
@@ -547,6 +549,11 @@ namespace PhoneXMPPLibrary
         public void SendXMPP(XMPPMessageBase iq)
         {
             XMPPConnection.Send(iq.MessageXML);
+        }
+
+        public void SendObject(object objXMLSerializable)
+        {
+            XMPPConnection.Send(Utility.GetXMLStringFromObject(objXMLSerializable));
         }
 
         /// <summary>
@@ -612,28 +619,19 @@ namespace PhoneXMPPLibrary
             GenericMessageLogic.SendChatMessage(txtmsg);
         }
 
-        public string SendFile(string strFullFileName, JID jidto)
-        {
-            return StreamInitiationAndTransferLogic.StartFileTransfer(strFullFileName, "application/octet-stream", jidto);
-        }
-
-        public string SendFile(string strFileName, byte [] bData, JID jidto)
-        {
-            return StreamInitiationAndTransferLogic.StartFileTransfer(strFileName, bData, jidto);
-        }
-
         internal void SendChatMessage(TextMessage msg)
         {
             GenericMessageLogic.SendChatMessage(msg);
         }
 
-        public ServiceDiscoveryIQ QueryServiceDiscovery(JID jidto, ServiceDiscoveryType type, string strNode)
+        public ServiceDiscoveryIQ QueryServiceDiscovery(JID jidto, string strNode)
         {
-            ServiceDiscoveryIQ iqrequest = new ServiceDiscoveryIQ(type);
+            ServiceDiscoveryIQ iqrequest = new ServiceDiscoveryIQ();
             iqrequest.From = this.JID;
             iqrequest.To = jidto;
             iqrequest.Type = IQType.get.ToString();
-            iqrequest.Node = strNode;
+            iqrequest.ServiceDiscoveryItemQuery = new ServiceDiscoveryItemQuery();
+            iqrequest.ServiceDiscoveryItemQuery.Node = strNode;
 
             IQ iqresponse = SendRecieveIQ(iqrequest, 10000);
             if (iqresponse is ServiceDiscoveryIQ)
@@ -743,8 +741,9 @@ namespace PhoneXMPPLibrary
                    
                }
             }
-            catch(Exception ex)
+            catch(Exception  ex)
             {
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
             }
 
             if (bHandled == true)
@@ -798,107 +797,7 @@ namespace PhoneXMPPLibrary
                 OnXMLReceived(this, strXML);
         }
 
-        public delegate void DelegateIncomingFile(string strRequestId, string strFileName, int nFileSize, RosterItem itemfrom);
-        public event DelegateIncomingFile OnNewIncomingFileTransferRequest = null;
-
-        public delegate void DelegateProgress(string strRequestId, RosterItem itemfrom, int nBytes, int nTotal);
-        public event DelegateProgress OnDownloadProgress = null;
-
-        public delegate void DelegateDownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom);
-        public event DelegateDownloadFinished OnDownloadFinished = null;
-        public event DelegateDownloadFinished OnSendFinished = null;
-
-
-        /// <summary>
-        /// Ask the user if they want to accept this file request.  We have to do it this way instead of a delegate
-        /// that returns a boolean because invokes on windows phone don't allow return values
-        /// </summary>
-        /// <param name="strRequestId"></param>
-        /// <param name="strFileName"></param>
-        /// <param name="jidfrom"></param>
-        internal void AskUserIfTheyWantToReceiveFile(string strRequestId, string strFileName, int nFileSize, JID jidfrom)
-        {
-            System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoAskUserIfTheyWantToReceiveFile), 
-                new AskObject() { RequestId = strRequestId, FileName = strFileName, FileSize = nFileSize, from = jidfrom} );
-         }
-
-        void DoAskUserIfTheyWantToReceiveFile(object objAskInfo)
-        {
-            AskObject ask = objAskInfo as AskObject;
-            try
-            {
-                RosterItem item = FindRosterItem(ask.from);
-
-                if (OnNewIncomingFileTransferRequest == null)
-                    StreamInitiationAndTransferLogic.DeclineIncomingFileRequest(ask.RequestId);
-                else
-                    OnNewIncomingFileTransferRequest(ask.RequestId, ask.FileName, ask.FileSize, item);
-            }
-            catch (Exception ex)
-            { }
-        }
-
-        internal void ReportFileProgress(string strRequestId, int nBytes, int nTotal, JID jidfrom)
-        {
-            System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoReportFileProgress),
-                new ProgressObject() { RequestId = strRequestId, Bytes = nBytes, Total = nTotal, from = jidfrom });
-        }
-
-        void DoReportFileProgress(object ProgressObject)
-        {
-            ProgressObject pro = ProgressObject as ProgressObject;
-            try
-            {
-                if (OnDownloadProgress != null)
-                {
-                    RosterItem item = FindRosterItem(pro.from);
-                    OnDownloadProgress(pro.RequestId, item, pro.Bytes, pro.Total);
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-
-        internal void ReportDownloadFinished(string strRequestId, string strLocalFileName, JID jidfrom)
-        {
-            try
-            {
-                if (OnDownloadFinished != null)
-                {
-                    RosterItem item = FindRosterItem(jidfrom);
-                    OnDownloadFinished(strRequestId, strLocalFileName, item);
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-
-        internal void ReportSendFinished(string strRequestId, string strLocalFileName, JID jidfrom)
-        {
-            try
-            {
-                if (OnSendFinished != null)
-                {
-                    RosterItem item = FindRosterItem(jidfrom);
-                    OnSendFinished(strRequestId, strLocalFileName, item);
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-        public void AcceptFileDownload(string strRequestId, string strLocalFileName)
-        {
-            StreamInitiationAndTransferLogic.AcceptIncomingFileRequest(strRequestId, strLocalFileName);
-        }
-
-        public void DeclineFileDownload(string strRequestId)
-        {
-            StreamInitiationAndTransferLogic.DeclineIncomingFileRequest(strRequestId);
-        }
-
+        public FileTransferManager FileTransferManager = null;
 
         public void SetGeoLocation(double fLat, double fLon)
         {

@@ -16,7 +16,7 @@ using Microsoft.Surface.Presentation;
 using Microsoft.Surface.Presentation.Controls;
 using Microsoft.Surface.Presentation.Input;
 
-using PhoneXMPPLibrary;
+using System.Net.XMPP;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.IsolatedStorage;
@@ -64,7 +64,7 @@ namespace WPFXMPPClient
                 XMPPClient.Server = Properties.Settings.Default.Server;
                 XMPPClient.Domain = Properties.Settings.Default.Domain;
                 XMPPClient.PresenceStatus.Priority = 10;
-                XMPPClient.Resource = System.Environment.MachineName;
+                XMPPClient.Resource = System.Environment.MachineName.ToLower();
                 XMPPClient.Port = Properties.Settings.Default.Port;
                 XMPPClient.UseOldStyleTLS = Properties.Settings.Default.UseOldTLS;
                 XMPPClient.AutoReconnect = true;
@@ -116,54 +116,16 @@ namespace WPFXMPPClient
             XMPPClient.OnRetrievedRoster += new EventHandler(RetrievedRoster);
             XMPPClient.OnRosterItemsChanged += new EventHandler(RosterChanged);
             XMPPClient.OnStateChanged += new EventHandler(XMPPStateChanged);
-            XMPPClient.OnNewConversationItem += new PhoneXMPPLibrary.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
-            XMPPClient.OnUserSubscriptionRequest += new PhoneXMPPLibrary.XMPPClient.DelegateShouldSubscribeUser(XMPPClient_OnUserSubscriptionRequest);
+            XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            XMPPClient.OnUserSubscriptionRequest += new System.Net.XMPP.XMPPClient.DelegateShouldSubscribeUser(XMPPClient_OnUserSubscriptionRequest);
 
-            XMPPClient.OnDownloadFinished += new PhoneXMPPLibrary.XMPPClient.DelegateDownloadFinished(XMPPClient_OnDownloadFinished);
-            XMPPClient.OnDownloadProgress += new PhoneXMPPLibrary.XMPPClient.DelegateProgress(XMPPClient_OnDownloadProgress);
-            XMPPClient.OnNewIncomingFileTransferRequest += new PhoneXMPPLibrary.XMPPClient.DelegateIncomingFile(XMPPClient_IncomingFile);
+            XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
+            XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
 
             SendRawXMLWindow.SetXMPPClient(XMPPClient);
         }
 
-
-        void XMPPClient_OnDownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom)
-        {
-            this.Dispatcher.Invoke(new PhoneXMPPLibrary.XMPPClient.DelegateDownloadFinished(SafeDownloadFinished), strRequestId, strLocalFileName, itemfrom);
-        }
-        void SafeDownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom)
-        {
-            ChatWindow window = FindOrCreateChatWIndow(itemfrom);
-            window.DownloadFinished(strRequestId, strLocalFileName, itemfrom);
-        }
-
-        void XMPPClient_OnDownloadProgress(string strRequestId, RosterItem itemfrom, int nBytes, int nTotal)
-        {
-            this.Dispatcher.Invoke(new PhoneXMPPLibrary.XMPPClient.DelegateProgress(SafeDownloadProgress), strRequestId, itemfrom, nBytes, nTotal);
-
-        }
-        void SafeDownloadProgress(string strRequestId, RosterItem itemfrom, int nBytes, int nTotal)
-        {
-            ChatWindow window = FindOrCreateChatWIndow(itemfrom);
-            window.DownloadProgres(strRequestId, nBytes, nTotal);
-        }
-
-        void XMPPClient_IncomingFile(string strRequestId, string strFileName, int nFileSize, RosterItem itemfrom)
-        {
-            if (itemfrom == null)
-                XMPPClient.DeclineFileDownload(strRequestId);
-
-            this.Dispatcher.Invoke(new PhoneXMPPLibrary.XMPPClient.DelegateIncomingFile(SafeIncomingFile), strRequestId, strFileName, nFileSize, itemfrom);
-        }
-
-        void SafeIncomingFile(string strRequestId, string strFileName, int nFileSize, RosterItem itemfrom)
-        {
-                
-            /// New incoming file request... accept or reject it... pass this off to the appropriate window
-            /// 
-            ChatWindow window = FindOrCreateChatWIndow(itemfrom);
-            window.IncomingFileRequest(strRequestId, strFileName, nFileSize);
-        }
+       
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
@@ -183,7 +145,7 @@ namespace WPFXMPPClient
 
         void XMPPClient_OnUserSubscriptionRequest(PresenceMessage pres)
         {
-            Dispatcher.Invoke(new PhoneXMPPLibrary.XMPPClient.DelegateShouldSubscribeUser(DoOnUserSubscriptionRequest), pres);
+            Dispatcher.Invoke(new System.Net.XMPP.XMPPClient.DelegateShouldSubscribeUser(DoOnUserSubscriptionRequest), pres);
             
         }
 
@@ -265,11 +227,11 @@ namespace WPFXMPPClient
                         try
                         {
                             location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
-                            DataContractSerializer ser = new DataContractSerializer(typeof(PhoneXMPPLibrary.Conversation));
+                            DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
-                            item.Conversation = ser.ReadObject(location) as PhoneXMPPLibrary.Conversation;
+                            item.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                         }
                         finally
@@ -461,6 +423,44 @@ namespace WPFXMPPClient
         private void ButtonStartAudioCall_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        FileTransferWindow FileTransferWindow  = new FileTransferWindow();
+        private void ButtonTransfers_Click(object sender, RoutedEventArgs e)
+        {
+            FileTransferWindow.XMPPClient = this.XMPPClient;
+
+            if (FileTransferWindow.IsLoaded == false)
+            {
+                FileTransferWindow.Show();
+            }
+            else
+            {
+                FileTransferWindow.Activate();
+            }
+        }
+
+        void FileTransferManager_OnTransferFinished(FileTransfer trans)
+        {
+        }
+
+        void FileTransferManager_OnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
+        {
+            this.Dispatcher.Invoke(new System.Net.XMPP.FileTransferManager.DelegateIncomingFile(SafeIncomingFile), trans, itemfrom);
+
+        }
+        void SafeIncomingFile(FileTransfer trans, RosterItem itemfrom)
+        {
+
+            ButtonTransfers_Click(this, new RoutedEventArgs());
+            ///// New incoming file request... accept or reject it... pass this off to the appropriate window
+            ///// 
+            //ChatWindow window = FindOrCreateChatWIndow(itemfrom);
+            //window.IncomingFileRequest(strRequestId, strFileName, nFileSize);
+        }
+
+        void XMPPClient_OnDownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom)
+        {
         }
 
 

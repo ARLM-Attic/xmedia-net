@@ -20,7 +20,7 @@ using System.Xml.Serialization;
 using System.Text.RegularExpressions;
 
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
 
 
@@ -38,12 +38,12 @@ namespace PhoneXMPPLibrary
 
         public override void  Start()
         {
-            ServiceDiscoveryIQ iqrequest = new ServiceDiscoveryIQ(ServiceDiscoveryType.info);
+            ServiceDiscoveryIQ iqrequest = new ServiceDiscoveryIQ();
+            iqrequest.ServiceDiscoveryInfoQuery = new ServiceDiscoveryInfoQuery();
             iqrequest.From = XMPPClient.JID;
             iqrequest.To = XMPPClient.Server;
             iqrequest.Type = IQType.get.ToString();
-            iqrequest.Node = null;
-            XMPPClient.SendXMPP(iqrequest);
+            XMPPClient.SendObject(iqrequest);
 
             //ServiceDiscoveryIQ iqresponse = XMPPClient.QueryServiceDiscovery("ninethumbs.com", ServiceDiscoveryType.info, null);
             //if (iqresponse != null)
@@ -66,10 +66,12 @@ namespace PhoneXMPPLibrary
                 ServiceDiscoveryIQ response = new ServiceDiscoveryIQ();
                 response.To = iq.From;
                 response.From = XMPPClient.JID;
+                response.ID = iq.ID;
                 response.Type = IQType.result.ToString();
-                response.Features = XMPPClient.OurServiceDiscoveryFeatureList.ToArray();
+                response.ServiceDiscoveryInfoQuery = new ServiceDiscoveryInfoQuery();
+                response.ServiceDiscoveryInfoQuery.Features = XMPPClient.OurServiceDiscoveryFeatureList.ToArray();
                 
-                XMPPClient.SendXMPP(response);
+                XMPPClient.SendObject(response);
                 return true;
             }
 

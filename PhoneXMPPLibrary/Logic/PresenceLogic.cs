@@ -19,12 +19,8 @@ using System.Xml.Serialization;
 
 using System.Text.RegularExpressions;
 
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 
-
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
 
     ///<presence from="bonnbria@gmail.com/androidf19d21eac29c" to="brianbonnett@ninethumbs.com">
@@ -437,7 +433,8 @@ namespace PhoneXMPPLibrary
         // Look for subscribe message to subscribe to presence
         public override bool NewIQ(IQ iq)
         {
-            if (iq.ID == iqGetOurVCARD.ID)
+
+            if ( (iqGetOurVCARD != null) && (iq.ID == iqGetOurVCARD.ID))
             {
                 foreach (XElement vcard in iq.InitalXMLElement.Descendants("{vcard-temp}vCard"))
                 {

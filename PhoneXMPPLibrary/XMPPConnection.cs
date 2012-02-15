@@ -11,7 +11,7 @@ using System.Windows.Shapes;
 
 using System.Collections.Generic;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class XMPPConnection : SocketServer.SocketClient
     {
@@ -30,7 +30,7 @@ namespace PhoneXMPPLibrary
             ConnectAsync(XMPPClient.Server, XMPPClient.Port);
         }
 
-        public bool Connected
+        public new bool Connected
         {
             get
             {
@@ -46,8 +46,6 @@ namespace PhoneXMPPLibrary
             if (Client.Connected == true)
             {
                 Send("</stream>");
-                //bool bRet = base.Disconnect();
-
             }
         }
 
@@ -79,7 +77,6 @@ namespace PhoneXMPPLibrary
             if (Client.Connected == false)
                 throw new Exception("XMPP Client is not connected");
 
-            XMPPClient.FireXMLSent(strLine);
             return base.Send(strLine);
         }
 

@@ -11,7 +11,7 @@ using System.Windows.Shapes;
 
 using System.Xml.Linq;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     /// <summary>
     /// Creates a Message object or derived message object depending on the incoming xml
@@ -40,15 +40,22 @@ namespace PhoneXMPPLibrary
         {
             /// Check out our first node
             /// 
+
+            string strType = "";
+            if (elem.Attribute("type") != null)
+                strType = elem.Attribute("type").Value;
+
             if ( (elem.FirstNode != null) && (elem.FirstNode is XElement) )
             {
                if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/disco#info}query")
                {
-                   return new ServiceDiscoveryIQ(strXML, ServiceDiscoveryType.info);
+                   ServiceDiscoveryIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(ServiceDiscoveryIQ)) as ServiceDiscoveryIQ;
+                   return query;
                }
                else if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/disco#items}query")
                {
-                   return new ServiceDiscoveryIQ(strXML, ServiceDiscoveryType.items);
+                   ServiceDiscoveryIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(ServiceDiscoveryIQ)) as ServiceDiscoveryIQ;
+                   return query;
                }
                else if (((XElement)elem.FirstNode).Name == "{jabber:iq:roster}query")
                {
@@ -62,11 +69,23 @@ namespace PhoneXMPPLibrary
                {
                    return new StreamInitIQ(strXML);
                }
-               else if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub")
+               else if ( (strType == "set") && (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub") )
                {
                    return new PubSubPublishIQ(strXML);
                }
-
+               else if ((strType == "get") && (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub"))
+               {
+                   return new PubSubGetIQ(strXML);
+               }
+               else if ((strType == "result") && (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub"))
+               {
+                   return new PubSubResultIQ(strXML);
+               }
+               else if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/bytestreams}query")
+               {
+                   ByteStreamQueryIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(ByteStreamQueryIQ)) as ByteStreamQueryIQ;
+                   return query;
+               }
                 
             }
 

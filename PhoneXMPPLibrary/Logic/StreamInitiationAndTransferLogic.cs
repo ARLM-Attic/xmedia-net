@@ -7,8 +7,11 @@ using System.Xml.Linq;
 using System.IO;
 
 using SocketServer;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 
-namespace PhoneXMPPLibrary
+
+namespace System.Net.XMPP
 {
 
 
@@ -57,13 +60,14 @@ namespace PhoneXMPPLibrary
         {
         }
 
-        public static StreamInitIQ BuildDefaultStreamInitOffer(string strFileName, int nFileSize, string strMimeType)
+        public static StreamInitIQ BuildDefaultStreamInitOffer(FileTransfer trans)
         {
             StreamInitIQ q = new StreamInitIQ(StreamInitIQType.Offer);
-            q.mimetype = strMimeType;
-            q.filename = strFileName;
-            q.sid = GetNextId();
-            q.filesize = nFileSize;
+            q.mimetype = trans.MimeType;
+            q.filename = trans.FileName;
+            q.sid = trans.sid;
+            q.filesize = trans.BytesTotal;
+            q.FileTransferObject = trans;
             q.StreamOptions = StreamOptions.bytestreams | StreamOptions.ibb;
             return q;
         }
@@ -93,17 +97,15 @@ namespace PhoneXMPPLibrary
         public string profile = "http://jabber.org/protocol/si/profile/file-transfer";
         public string sid = null;
 
+        public FileTransfer FileTransferObject = null;
         public string filename = null; // if present, we'll add the <file.. element
-        internal string FullFileName = null; //internal use only
         public int filesize = 0;
         public string filehash = null;
         public string filedate = null;
         public string filedesc = "sending file";
         public StreamOptions StreamOptions = StreamOptions.bytestreams | StreamOptions.ibb;
         public StreamInitIQType StreamInitIQType = StreamInitIQType.Offer;
-
-        public byte[] TemporaryFileBytes = null;
-
+                
         public override void AddInnerXML(System.Xml.Linq.XElement elemMessage)
         {
             XElement elemSI = new XElement("{http://jabber.org/protocol/si}si");
@@ -251,23 +253,21 @@ namespace PhoneXMPPLibrary
 
                     if (initalrequest != null)
                     {
-                        if (siiq.StreamOptions != StreamOptions.ibb)
-                        {
-                            /// Tell the host we failed to send the file because we only support ibb
-                            return true;
-                        }
+                        //if (siiq.StreamOptions != StreamOptions.ibb)
+                        //{
+                        //    /// Tell the host we failed to send the file because we only support ibb
+                        //    return true;
+                        //}
                         
                         /// Looks like they agree, start an ibb file transfer logic to perform the transfer
                         /// 
 
-                        InbandByteStreamLogic logic = null;
-                        if (initalrequest.TemporaryFileBytes != null)
-                            logic = new InbandByteStreamLogic(initalrequest.FullFileName, initalrequest.TemporaryFileBytes, initalrequest.sid, iq.From, XMPPClient);
-                        else
-                            logic = new InbandByteStreamLogic(initalrequest.FullFileName, initalrequest.sid, iq.From, XMPPClient);
-                        XMPPClient.AddLogic(logic);
-                        logic.Start();
+                        if ((siiq.StreamOptions & StreamOptions.bytestreams) == StreamOptions.bytestreams)
+                            initalrequest.FileTransferObject.FileTransferType = FileTransferType.ByteStreams;
+                        else if ((siiq.StreamOptions & StreamOptions.ibb) == StreamOptions.ibb)
+                            initalrequest.FileTransferObject.FileTransferType = FileTransferType.IBB;
 
+                        XMPPClient.FileTransferManager.StartNewReceiveStream(initalrequest.FileTransferObject);
                     }
 
                 }
@@ -285,7 +285,7 @@ namespace PhoneXMPPLibrary
                         iqresponse.Type = IQType.error.ToString();
                         iqresponse.To = iq.From;
                         iqresponse.From = XMPPClient.JID;
-                        iqresponse.error = "Invalid stream id";
+                        iqresponse.Error = new Error(ErrorType.invalidid);
                         XMPPClient.SendXMPP(iqresponse);
                         return true;
                     }
@@ -296,25 +296,37 @@ namespace PhoneXMPPLibrary
                         iqresponse.Type = IQType.error.ToString();
                         iqresponse.To = iq.From;
                         iqresponse.From = XMPPClient.JID;
-                        iqresponse.error = "Invalid filename";
+                        iqresponse.Error = new Error(ErrorType.notacceptable);
                         XMPPClient.SendXMPP(iqresponse);
                         return true;
                     }
-                    if ( (siiq.StreamOptions&StreamOptions.ibb) != StreamOptions.ibb)
+
+                    /// Can only do bytes streams or inband byte streams
+                    if ( ((siiq.StreamOptions & StreamOptions.ibb) != StreamOptions.ibb) &&
+                         ((siiq.StreamOptions & StreamOptions.bytestreams) != StreamOptions.bytestreams))
                     {
                         IQ iqresponse = new StreamInitIQ(StreamInitIQType.Result);
                         iqresponse.ID = siiq.ID;
                         iqresponse.Type = IQType.error.ToString();
                         iqresponse.To = iq.From;
                         iqresponse.From = XMPPClient.JID;
-                        iqresponse.error = "No valid transfer method";
+                        iqresponse.Error = new Error(ErrorType.notacceptable);
                         XMPPClient.SendXMPP(iqresponse);
                         return true;
                     }
 
-                    FileDownloads.Add(siiq.sid, siiq);
+                    FileTransfer newreq = new FileTransfer(siiq.filename, siiq.filesize, siiq.From);
+                    if ((siiq.StreamOptions & StreamOptions.bytestreams) == StreamOptions.bytestreams)
+                        newreq.FileTransferType = FileTransferType.ByteStreams;
+                    else if ((siiq.StreamOptions & StreamOptions.ibb) == StreamOptions.ibb)
+                        newreq.FileTransferType = FileTransferType.IBB;
 
-                    XMPPClient.AskUserIfTheyWantToReceiveFile(siiq.sid, siiq.filename, siiq.filesize, siiq.From);
+                    newreq.sid = siiq.sid;
+
+
+                    FileDownloadRequests.Add(siiq.sid, siiq);
+
+                    XMPPClient.FileTransferManager.NewIncomingFileRequest(newreq);
                 }
 
                 return true;
@@ -325,127 +337,217 @@ namespace PhoneXMPPLibrary
 
         Dictionary<string, StreamInitIQ> FileSendRequests = new Dictionary<string, StreamInitIQ>();
 
-        Dictionary<string, StreamInitIQ> FileDownloads = new Dictionary<string, StreamInitIQ>();
+        Dictionary<string, StreamInitIQ> FileDownloadRequests = new Dictionary<string, StreamInitIQ>();
 
         /// <summary>
-        /// Starts a file transfer from this client to another.
-        /// Right now, we only support ibb, so make sure to set that
-        /// Returns a unique id that identifies this operation so the client can
-        /// be notified if the operation finishes or times out
+        /// Remove this send request from our list.  
+        /// TODO.. send a graceful cancel instead of just ignoring the acceptance
         /// </summary>
-        /// <param name="strFileName"></param>
-        internal string StartFileTransfer(string strFullFileName, string strMimeType, JID jidto)
+        /// <param name="trans"></param>
+        internal void RevokeSendRequest(FileTransfer trans)
         {
-            string strFileName = Path.GetFileName(strFullFileName);
-            FileInfo info = new FileInfo(strFullFileName);
-
-            StreamInitIQ iq = StreamInitIQ.BuildDefaultStreamInitOffer(strFileName, (int) info.Length, strMimeType);
-            iq.StreamOptions = StreamOptions.ibb; //|StreamOptions.bytestreams;
-            iq.From = XMPPClient.JID;
-            iq.To = jidto;
-            iq.Type = IQType.set.ToString();
-            iq.FullFileName = strFullFileName;
-
-            string ext = "*.jpg";
-            //\Applications\Data\66F652B2-CD0B-48F6-869F-D3B765EFC530\Data\PlatformData\PhotoChooser-907d2cc8-10a0-4745-9d08-ce328088e76e.jpg
-#if WINDOWS_PHONE
-            //\Applications\Data\66F652B2-CD0B-48F6-869F-D3B765EFC530\Data\PlatformData\PhotoChooser-907d2cc8-10a0-4745-9d08-ce328088e76e.jpg
-            int nIndex = strFileName.LastIndexOf("\\");
-            if (nIndex > 0)
-                strFileName = strFileName.Substring(nIndex + 1);
-
-            ext = Path.GetExtension(strFileName);
-#else
-            ext = Path.GetExtension(strFileName);
-#endif
-            if (ext == ".png")
-                iq.mimetype = "image/png";
-            else if (ext == ".jpg")
-                iq.mimetype = "image/jpeg";
-            else if (ext == ".bmp")
-                iq.mimetype = "image/bmp";
-            else
-                iq.mimetype = null;
-            FileSendRequests.Add(iq.ID, iq);
-            XMPPClient.SendXMPP(iq);
-            return iq.ID;
-        }
-
-      
-        internal string StartFileTransfer(string strFileName, byte [] bData, JID jidto)
-        {
-#if WINDOWS_PHONE
-            //\Applications\Data\66F652B2-CD0B-48F6-869F-D3B765EFC530\Data\PlatformData\PhotoChooser-907d2cc8-10a0-4745-9d08-ce328088e76e.jpg
-            int nIndex = strFileName.LastIndexOf("\\");
-            if (nIndex > 0)
-                strFileName = strFileName.Substring(nIndex + 1);
-#endif
-            string ext = Path.GetExtension(strFileName);
-            string strMimeType = "image/png";
-            if (ext == ".png")
-                strMimeType = "image/png";
-            else if (ext == ".jpg")
-                strMimeType = "image/jpeg";
-            else if (ext == ".bmp")
-                strMimeType = "image/bmp";
-            else
-                strMimeType = null;
-
-            StreamInitIQ iq = StreamInitIQ.BuildDefaultStreamInitOffer(strFileName, (int)bData.Length, strMimeType);
-            iq.StreamOptions = StreamOptions.ibb; //|StreamOptions.bytestreams;
-            iq.From = XMPPClient.JID;
-            iq.To = jidto;
-            iq.Type = IQType.set.ToString();
-            iq.FullFileName = strFileName;
-            iq.mimetype = strMimeType;
-            iq.TemporaryFileBytes = bData;
-            FileSendRequests.Add(iq.ID, iq);
-            XMPPClient.SendXMPP(iq);
-            return iq.ID;
-        }
-
-        internal void AcceptIncomingFileRequest(string strRequestId, string strLocalFileName)
-        {
-            if (FileDownloads.ContainsKey(strRequestId) == true)
+            string strIdRemove = null;
+            foreach (string strId in FileSendRequests.Keys)
             {
-                StreamInitIQ siiq = FileDownloads[strRequestId];
-                FileDownloads.Remove(strRequestId);
+                StreamInitIQ iq = FileSendRequests[strId];
+                if (iq.sid == trans.sid)
+                {
+                    strIdRemove = strId;
+                    break;
+                }
+            }
+            if (strIdRemove != null)
+                FileSendRequests.Remove(strIdRemove);
+        }
+        
 
-                // Start our IBB logic
-                InbandByteStreamLogic logic = new InbandByteStreamLogic(siiq.sid, siiq.From, siiq.filesize, XMPPClient, strLocalFileName);
-                XMPPClient.AddLogic(logic);
-                logic.Start();
+       /// <summary>
+       /// Send out a stream initiation request
+       /// </summary>
+       /// <param name="trans"></param>
+        internal void RequestStartFileTransfer(FileTransfer trans)
+        {
+            if (trans.FileTransferDirection != FileTransferDirection.Send)
+                return;
+            StreamInitIQ iq = StreamInitIQ.BuildDefaultStreamInitOffer(trans);
+            iq.StreamOptions = StreamOptions.ibb|StreamOptions.bytestreams;
+            iq.From = XMPPClient.JID;
+            iq.To = trans.RemoteJID;
+            iq.Type = IQType.set.ToString();
+            iq.mimetype = trans.MimeType;
+            FileSendRequests.Add(iq.ID, iq);
+            XMPPClient.SendXMPP(iq);
+        }
 
-                
+        /// <summary>
+        /// Tell the remote end we accept their stream request
+        /// </summary>
+        /// <param name="trans"></param>
+        internal void AcceptIncomingFileRequest(FileTransfer trans)
+        {
+            if (FileDownloadRequests.ContainsKey(trans.sid) == true)
+            {
+                StreamInitIQ siiq = FileDownloadRequests[trans.sid];
+                FileDownloadRequests.Remove(trans.sid);
 
-                StreamInitIQ iqaccept = StreamInitIQ.BuildDefaultStreamInitResult(StreamOptions.ibb);
+                StreamOptions options = StreamOptions.bytestreams;
+                if ( (siiq.StreamOptions&StreamOptions.bytestreams) == StreamOptions.bytestreams)
+                    options = StreamOptions.bytestreams;
+                else if ((siiq.StreamOptions & StreamOptions.ibb) == StreamOptions.ibb)
+                    options = StreamOptions.ibb;
+
+                StreamInitIQ iqaccept = StreamInitIQ.BuildDefaultStreamInitResult(options);
                 iqaccept.ID = siiq.ID;
                 iqaccept.From = XMPPClient.JID;
                 iqaccept.To = siiq.From;
                 iqaccept.Type = IQType.result.ToString();
                 XMPPClient.SendXMPP(iqaccept);
-
             }
 
         }
 
-        internal void DeclineIncomingFileRequest(string strRequestId)
+        /// <summary>
+        /// Tell the remote end we decline their stream request
+        /// </summary>
+        /// <param name="trans"></param>
+        internal void DeclineIncomingFileRequest(FileTransfer trans)
         {
-            if (FileDownloads.ContainsKey(strRequestId) == true)
+            if (FileDownloadRequests.ContainsKey(trans.sid) == true)
             {
-                StreamInitIQ siiq = FileDownloads[strRequestId];
-                FileDownloads.Remove(strRequestId);
+                StreamInitIQ siiq = FileDownloadRequests[trans.sid];
+                FileDownloadRequests.Remove(trans.sid);
 
                 StreamInitIQ iqdecline = StreamInitIQ.BuildDefaultStreamInitResult(StreamOptions.ibb);
                 iqdecline.ID = siiq.ID; 
                 iqdecline.Type = IQType.error.ToString();
                 iqdecline.To = siiq.From;
                 iqdecline.From = XMPPClient.JID;
-                iqdecline.error = "Declined";
+                iqdecline.Error = new Error(ErrorType.notacceptable);
                 XMPPClient.SendXMPP(iqdecline);
             }
         }
     }
+
+    [DataContract]
+    [XmlRoot(ElementName = "streamhost")]
+    public class StreamHost
+    {
+        public StreamHost()
+        {
+        }
+
+        private string m_strHost = null;
+        [XmlAttribute(AttributeName = "host")]
+        [DataMember]
+        public string Host
+        {
+            get { return m_strHost; }
+            set { m_strHost = value; }
+        }
+
+        private string m_strJid = null;
+        [XmlAttribute(AttributeName = "jid")]
+        [DataMember]
+        public string Jid
+        {
+            get { return m_strJid; }
+            set { m_strJid = value; }
+        }
+
+        private string m_strPort = null;
+        [XmlAttribute(AttributeName = "port")]
+        [DataMember]
+        public string Port
+        {
+            get { return m_strPort; }
+            set { m_strPort = value; }
+        }
+    }
+
+
+    public enum StreamMode
+    {
+        tcp,
+        udp,
+    }
+
+    [DataContract]
+    [XmlRoot(ElementName = "query", Namespace = "http://jabber.org/protocol/bytestreams")]
+    public class ByteStreamQuery
+    {
+        public ByteStreamQuery()
+        {
+        }
+
+        private StreamMode m_eMode = StreamMode.tcp;
+        [XmlAttribute(AttributeName = "mode")]
+        [DataMember]
+        public StreamMode Mode
+        {
+            get { return m_eMode; }
+            set { m_eMode = value; }
+        }
+
+        private string m_strSID = null;
+        [XmlAttribute(AttributeName = "sid")]
+        [DataMember]
+        public string SID
+        {
+            get { return m_strSID; }
+            set { m_strSID = value; }
+        }
+
+        private StreamHost[] m_aHosts = null;
+        [XmlElement(ElementName = "streamhost")]
+        [DataMember]
+        public StreamHost[] Hosts
+        {
+            get { return m_aHosts; }
+            set { m_aHosts = value; }
+        }
+
+        [XmlElement(ElementName = "streamhost-used")]
+        [DataMember]
+        public StreamHost StreamHostUsed = null;
+
+        [XmlElement(ElementName = "activate")]
+        [DataMember]
+        public string Activate = null;
+
+    }
+    
+
+    // Build this straight from xml
+    [XmlRoot(ElementName = "iq", Namespace = null)]
+    public class ByteStreamQueryIQ : IQ
+    {
+
+        public ByteStreamQueryIQ()
+            : base()
+        {
+        }
+
+        public ByteStreamQueryIQ(string strXML)
+            : base(strXML)
+        {
+        }
+
+        [XmlAttribute(AttributeName="sid")]
+        [DataMember]
+        public string SID = null;
+
+        private ByteStreamQuery m_aByteStreamQuery = null;
+        [XmlElement(ElementName = "query", Namespace="http://jabber.org/protocol/bytestreams")]
+        [DataMember]
+        public ByteStreamQuery ByteStreamQuery
+        {
+            get { return m_aByteStreamQuery; }
+            set { m_aByteStreamQuery = value; }
+        }
+
+       
+    }
+
 
     public enum IBBMode
     {
@@ -453,52 +555,41 @@ namespace PhoneXMPPLibrary
         Receive,
     }
 
+    public class ByteStreamStreamLogic : Logic
+    {
+        public ByteStreamStreamLogic(XMPPClient client, FileTransfer trans)
+            : base(client)
+        {
+            FileTransfer = trans;
+        }
+
+        private FileTransfer m_objFileTransfer = null;
+
+        public FileTransfer FileTransfer
+        {
+            get { return m_objFileTransfer; }
+            set { m_objFileTransfer = value; }
+        }
+
+        public virtual void Cancel()
+        {
+            this.IsCompleted = true;
+        }
+
+    }
+
     /// <summary>
     /// Sends or receives a file using XEP-0047, then notifies the XMPPClient it is finished and to 
     /// be removed from the logic stack
     /// </summary>
-    public class InbandByteStreamLogic : Logic
+    public class InbandByteStreamLogic : ByteStreamStreamLogic
     {
-        public InbandByteStreamLogic(string strFileName, string strSID, JID jidto, XMPPClient client)
-            : base(client)
+        public InbandByteStreamLogic(XMPPClient client, FileTransfer trans)
+            : base(client, trans)
         {
-            IBBMode = IBBMode.Send;
-            filename = strFileName;
-            sid = strSID;
-            To = jidto;
         }
 
-         public InbandByteStreamLogic(string strFileName, byte [] bData, string strSID, JID jidto, XMPPClient client)
-            : base(client)
-        {
-            IBBMode = IBBMode.Send;
-            FileBytes = bData;
-            filename = strFileName;
-            sid = strSID;
-            To = jidto;
-        }
 
-        public InbandByteStreamLogic(string strSID, JID jidto, int nFileSize, XMPPClient client, string strLocalFileNameSaveTo)
-            : base(client)
-        {
-            IBBMode = IBBMode.Receive;
-            filename = strLocalFileNameSaveTo;
-            sid = strSID;
-            To = jidto;
-            nTotal = nFileSize;
-            nRemaining = nFileSize;
-        }
-
-        
-
-        public IBBMode IBBMode = IBBMode.Send;
-        public string filename = null;
-        public byte[] FileBytes = null;
-        public JID To = "";
-        public string sid = null;
-
-        int nTotal = 0;
-        int nRemaining = 0;
         int nActions = 0;
         IQ InitialIQ = null;
         IQ LastFileDataIQSent = null;
@@ -506,18 +597,16 @@ namespace PhoneXMPPLibrary
         const int nBlockSize = 4096*4;
         int nSequence = 0;
 
-        System.IO.FileStream outputstream = null;
-
         public override void Start()
         {
-            if (IBBMode == PhoneXMPPLibrary.IBBMode.Send)
+            if (FileTransfer.FileTransferDirection == FileTransferDirection.Send)
             {
                 InitialIQ = new IQ();
                 InitialIQ.From = XMPPClient.JID;
-                InitialIQ.To = To;
+                InitialIQ.To = FileTransfer.RemoteJID;
                 InitialIQ.Type = IQType.set.ToString();
 
-                InitialIQ.InnerXML = string.Format("<open xmlns='http://jabber.org/protocol/ibb' block-size='{1}' sid='{0}' stanza='iq' />", sid, nBlockSize);
+                InitialIQ.InnerXML = string.Format("<open xmlns='http://jabber.org/protocol/ibb' block-size='{1}' sid='{0}' stanza='iq' />", FileTransfer.sid, nBlockSize);
                 XMPPClient.SendXMPP(InitialIQ);
             }
             else
@@ -527,65 +616,62 @@ namespace PhoneXMPPLibrary
             base.Start();
         }
 
+        public override void Cancel()
+        {
+            this.IsCompleted = true;
+        }
+
         void SendNextFileIQ()
         {
+            /// For debugging, so we can see our progress
+            //System.Threading.Thread.Sleep(10);
             if (LastFileDataIQSent == null)
             {
-                if (FileBytes != null)
-                {
-                    nTotal = FileBytes.Length;
-                    nRemaining = FileBytes.Length;
-                }
-                else
-                {
-                    System.IO.FileStream stream = new FileStream(filename, FileMode.Open, FileAccess.Read);
-                    FileBytes = new byte[stream.Length];
-                    nTotal = FileBytes.Length;
-                    nRemaining = FileBytes.Length;
-                    stream.Read(FileBytes, 0, FileBytes.Length);
-                    stream.Close();
-                }
-                FileBuffer.AppendData(FileBytes);
+                FileTransfer.BytesRemaining = FileTransfer.BytesTotal;
+                FileBuffer.AppendData(FileTransfer.Bytes);
                 nSequence = 0;
             }
 
             if (FileBuffer.Size <= 0)
             {
-                XMPPClient.ReportSendFinished(sid, filename, To);
+                FileTransfer.FileTransferState = FileTransferState.Done;
+                XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                 this.IsCompleted = true;
                 return;
             }
 
             int nChunkSize = (FileBuffer.Size > nBlockSize) ? nBlockSize : FileBuffer.Size;
-            nRemaining -= nChunkSize;
+            FileTransfer.BytesRemaining -= nChunkSize;
             byte[] bNext = FileBuffer.GetNSamples(nChunkSize);
 
             LastFileDataIQSent = new IQ();
             LastFileDataIQSent.From = XMPPClient.JID;
-            LastFileDataIQSent.To = To;
+            LastFileDataIQSent.To = FileTransfer.RemoteJID;
             LastFileDataIQSent.Type = IQType.set.ToString();
 
             string strBase64 = Convert.ToBase64String(bNext);
             LastFileDataIQSent.InnerXML = string.Format("<data xmlns='http://jabber.org/protocol/ibb' seq='{0}' sid='{1}' >{2}</data>",
-                                                        nSequence++, sid, strBase64);
+                                                        nSequence++, FileTransfer.sid, strBase64);
             XMPPClient.SendXMPP(LastFileDataIQSent);
             nActions++;
 
-            if ((nActions%10) == 0)
-               XMPPClient.ReportFileProgress(sid, (nTotal - nRemaining), nTotal, To);
         }
 
 
         public override bool NewIQ(IQ iq)
         {
-            if (IBBMode == IBBMode.Send)
+            if (this.IsCompleted == true)  // We've been cancelled
+                return false;
+
+            if (FileTransfer.FileTransferDirection == FileTransferDirection.Send)
             {
                 if (iq.ID == InitialIQ.ID)
                 {
                     if (iq.Type == IQType.error.ToString())
                     {
+                        FileTransfer.FileTransferState = FileTransferState.Error;
                         IsCompleted = true; /// Remove this guy
-                        XMPPClient.ReportSendFinished(sid, filename, To);
+                        XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                         return true;
                     }
                     else if (iq.Type == IQType.result.ToString())
@@ -602,7 +688,8 @@ namespace PhoneXMPPLibrary
                     {
                         /// TODO.. notify the user there was a failure transferring blocks
                         /// 
-                        XMPPClient.ReportSendFinished(sid, filename, To);
+                        FileTransfer.FileTransferState = FileTransferState.Error;
+                        XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                         IsCompleted = true;
                         return true;
                     }
@@ -623,18 +710,17 @@ namespace PhoneXMPPLibrary
                         string strStreamId = null;
                         if (elem.Attribute("sid") != null)
                             strStreamId = elem.Attribute("sid").Value;
-                        if ((strStreamId == null) || (strStreamId != this.sid))
+                        if ((strStreamId == null) || (strStreamId != this.FileTransfer.sid))
                             return false;
 
-                        /// If we're receiving, don't do anything but look for IQ's with the right id and respond
-                        outputstream = new FileStream(filename, FileMode.Create, FileAccess.Write);
+                        FileBuffer.GetAllSamples();
 
                         /// SEnd ack to open
                         /// 
                         IQ iqresponse = new IQ();
                         iqresponse.ID = iq.ID;
                         iqresponse.From = XMPPClient.JID;
-                        iqresponse.To = To;
+                        iqresponse.To = FileTransfer.RemoteJID;
                         iqresponse.Type = IQType.result.ToString();
                         XMPPClient.SendXMPP(iqresponse);
 
@@ -645,36 +731,35 @@ namespace PhoneXMPPLibrary
                         string strStreamId = null;
                         if (elem.Attribute("sid") != null)
                             strStreamId = elem.Attribute("sid").Value;
-                        if ((strStreamId == null) || (strStreamId != this.sid))
+                        if ((strStreamId == null) || (strStreamId != FileTransfer.sid))
                             return false;
 
 
                         byte[] bData = Convert.FromBase64String(elem.Value);
 
-                        nRemaining -= bData.Length;
-                        if (outputstream != null)
-                           outputstream.Write(bData, 0, bData.Length);
+                        FileTransfer.BytesRemaining -= bData.Length;
+
+                        FileBuffer.AppendData(bData);
 
                         /// SEnd ack
                         /// 
                         IQ iqresponse = new IQ();
                         iqresponse.ID = iq.ID;
                         iqresponse.From = XMPPClient.JID;
-                        iqresponse.To = To;
+                        iqresponse.To = FileTransfer.RemoteJID;
                         iqresponse.Type = IQType.result.ToString();
                         XMPPClient.SendXMPP(iqresponse);
 
 
                         nActions++;
 
-                        if ((nActions % 10) == 0)
-                            XMPPClient.ReportFileProgress(sid, (nTotal - nRemaining), nTotal, To);
-
-                        if (nRemaining <= 0)
+                        if (FileTransfer.BytesRemaining <= 0)
                         {
-                            outputstream.Close();
+                            FileTransfer.Bytes = FileBuffer.GetAllSamples();
+                            FileTransfer.FileTransferState = FileTransferState.Done;
+                            
                             IsCompleted = true;
-                            XMPPClient.ReportDownloadFinished(sid, filename, To);
+                            XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                         }
 
                         return true;
@@ -688,6 +773,354 @@ namespace PhoneXMPPLibrary
         public override bool NewMessage(Message iq)
         {
             return base.NewMessage(iq);
+        }
+
+    }
+
+
+
+
+
+
+    /// <summary>
+    /// Sends or receives a file using XEP-0065, then notifies the XMPPClient it is finished and to 
+    /// be removed from the logic stack
+    /// </summary>
+    public class SOCKS5ByteStreamLogic : ByteStreamStreamLogic
+    {
+        public SOCKS5ByteStreamLogic(XMPPClient client, FileTransfer trans)
+            : base(client, trans)
+        {
+        }
+
+
+        ByteStreamQueryIQ IQStart = null;
+        ByteStreamQueryIQ IQActivate = null;
+
+        public override void Start()
+        {
+            if (FileTransfer.FileTransferDirection == FileTransferDirection.Send)
+            {
+                /// Tell the other end we want to send a file..  give them a list of SOCKS5 servers they can connect to (hopefully our open fire server supports it)
+                /// 
+
+                IQStart = new ByteStreamQueryIQ();
+                //IQStart.SID = this.FileTransfer.sid;
+                IQStart.ByteStreamQuery = new ByteStreamQuery();
+                IQStart.ByteStreamQuery.SID = this.FileTransfer.sid;
+                IQStart.From = XMPPClient.JID;
+                IQStart.To = FileTransfer.RemoteJID;
+                IQStart.Type = IQType.set.ToString();
+
+                /// Build our stream objects
+                /// 
+                /// For windows we can start a local listener and a proxy listener
+                /// For windows phone we can only use the proxy (if our jabber server supports it) because we can't listen for connections
+                /// 
+                //StreamHost host = new StreamHost() { Host = XMPPClient.Server, Port = "7777", Jid = string.Format("proxy.{0}", XMPPClient.Domain) };
+                StreamHost host = new StreamHost() { Host = "192.168.1.124", Port = "7777", Jid = string.Format("proxy.{0}", XMPPClient.Domain) };
+                IQStart.ByteStreamQuery.Hosts = new StreamHost[] { host };
+
+
+                XMPPClient.SendObject(IQStart);
+                
+            }
+            else
+            {
+            }
+
+            base.Start();
+        }
+
+        public override void Cancel()
+        {
+            ConnectSuccesful = false;
+            this.IsCompleted = true;
+            EventConnected.Set();
+
+            EventGotAllData.Set();
+            SendCompletedEvent.Set();
+        }
+
+    
+
+
+        public override bool NewIQ(IQ iq)
+        {
+            if (this.IsCompleted == true)  // We've been cancelled
+                return false;
+
+            
+
+            if (FileTransfer.FileTransferDirection == FileTransferDirection.Send)
+            {
+                if  ( (IQStart != null) && (iq.ID == IQStart.ID) )
+                {
+                    if (iq.Type == IQType.error.ToString())
+                    {
+                        IsCompleted = true;
+                        FileTransfer.FileTransferState = FileTransferState.Error;
+                        XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
+                    }
+                    else if (iq is ByteStreamQueryIQ)
+                    {
+                        ByteStreamQueryIQ bsiq = iq as ByteStreamQueryIQ;
+                        if (bsiq.Type == IQType.result.ToString())
+                        {
+                            System.Threading.ThreadPool.QueueUserWorkItem(new Threading.WaitCallback(SendFileThread), bsiq);
+                        }
+                        else if (bsiq.Type == IQType.error.ToString())
+                        {
+                            IsCompleted = true;
+                            FileTransfer.FileTransferState = FileTransferState.Error;
+
+                        }
+                    }
+
+                    return true;
+                }
+                if ((IQActivate != null)  && (iq.ID == IQActivate.ID))
+                {
+                    EventActivate.Set();
+                    return true;
+                }
+                
+                
+            }
+            else
+            {
+                if (iq is ByteStreamQueryIQ)
+                {
+                    ByteStreamQueryIQ bsiq = iq as ByteStreamQueryIQ;
+ 
+                    if ( (bsiq.ByteStreamQuery != null) && (bsiq.ByteStreamQuery.Hosts != null) && (bsiq.ByteStreamQuery.Hosts.Length > 0) )
+                    {
+                        System.Threading.ThreadPool.QueueUserWorkItem(new Threading.WaitCallback(DownloadThread), bsiq);
+                    }
+                    else
+                    {
+                        ByteStreamQueryIQ response = new ByteStreamQueryIQ();
+                        response.ByteStreamQuery = bsiq.ByteStreamQuery;
+                        response.From = XMPPClient.JID;
+                        response.To = bsiq.From;
+                        response.ID = bsiq.ID;
+                        response.Type = IQType.error.ToString();
+                        response.Error = new Error(ErrorType.notacceptable);
+                        XMPPClient.SendXMPP(response);
+                    }
+                    /// See qh
+                    /// 
+                    return true;
+                }
+
+            }
+
+            return false;
+        }
+
+
+
+          public void SendFileThread(object obj)
+        {
+            ByteStreamQueryIQ bsiq = obj as ByteStreamQueryIQ;
+
+            /// Attempt to open our hosts
+            /// 
+            StreamHost host = bsiq.ByteStreamQuery.StreamHostUsed;
+
+            SocketServer.SocketClient client = new SocketClient();
+
+            client.SetSOCKSProxy(5, XMPPClient.Server, 7777, "xmppclient");
+            client.OnAsyncConnectFinished += new DelegateConnectFinish(client_OnAsyncConnectFinished);
+            EventConnected.Reset();
+            ConnectSuccesful = false;
+
+            string strHost = string.Format("{0}{1}{2}", this.FileTransfer.sid, XMPPClient.JID, bsiq.From);
+            System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
+            byte [] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHost));
+            strHost = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
+
+            /// Connect parametrs are the sha1 hash and 0, the socks proxy will connect us to the correct place
+            client.ConnectAsync(strHost, 0);
+
+            EventConnected.WaitOne();
+            if (ConnectSuccesful == true)
+            {
+
+                /// Now we must activate the proxy so we can send
+                /// 
+                EventActivate.Reset();
+                IQActivate = new ByteStreamQueryIQ();
+                IQActivate.ByteStreamQuery = new ByteStreamQuery();
+                IQActivate.ByteStreamQuery.SID = this.FileTransfer.sid;
+                IQActivate.From = XMPPClient.JID;
+                IQActivate.To = host.Jid;
+                IQActivate.Type = IQType.set.ToString();
+                IQActivate.ByteStreamQuery.Activate = FileTransfer.RemoteJID;
+                XMPPClient.SendObject(IQActivate);
+                EventActivate.WaitOne();
+
+                if (IsCompleted == true)
+                {
+                    /// Error, exit this thread
+                    FileTransfer.FileTransferState = FileTransferState.Error;
+                    XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
+                    return;
+                }
+
+
+                FileTransfer.BytesRemaining = FileTransfer.Bytes.Length;
+                FileTransfer.FileTransferState = FileTransferState.Transferring;
+
+                /// Now send all our data
+                /// 
+                ByteBuffer buffer = new ByteBuffer();
+                buffer.AppendData(FileTransfer.Bytes);
+
+
+                while (buffer.Size > 0)
+                {
+                    int nSize = (buffer.Size > 4096)?4096:buffer.Size;
+                    Sockets.SocketAsyncEventArgs asyncsend = new Sockets.SocketAsyncEventArgs();
+                    asyncsend.SetBuffer(buffer.GetNSamples(nSize), 0, nSize);
+                    asyncsend.Completed += new EventHandler<Sockets.SocketAsyncEventArgs>(asyncsend_Completed);
+                    
+                    
+                    SendCompletedEvent.Reset();
+                    bSendSuccess = false;
+                    bool bSent = client.socket.SendAsync(asyncsend);
+                    SendCompletedEvent.WaitOne();
+                    if (IsCompleted == true)
+                        break;
+
+                    if ((bSendSuccess == false) && (bSent == false) ) /// was sent async because bSent is false, so we can examine bSendSuccess to make sure we sent the right number of bytes
+                    {
+                        break;
+                    }
+                    FileTransfer.BytesRemaining -= nSize;
+                }
+                
+
+                client.Disconnect();
+
+                FileTransfer.FileTransferState = FileTransferState.Done;
+                IsCompleted = true;
+                XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
+                return;
+            }
+
+              FileTransfer.FileTransferState = FileTransferState.Error;
+              IsCompleted = true;
+        }
+
+        System.Threading.ManualResetEvent SendCompletedEvent = new Threading.ManualResetEvent(false);
+        System.Threading.ManualResetEvent EventActivate = new Threading.ManualResetEvent(false);
+        bool bSendSuccess = false;
+        void  asyncsend_Completed(object sender, Sockets.SocketAsyncEventArgs e)
+        {
+            int nTransferred = e.BytesTransferred;
+            if (nTransferred == e.Buffer.Length)
+                bSendSuccess = true;
+            else
+                bSendSuccess = false;
+ 	        SendCompletedEvent.Set();
+        }
+
+
+        public void DownloadThread(object obj)
+        {
+            ByteStreamQueryIQ bsiq = obj as ByteStreamQueryIQ;
+
+            /// Attempt to open our hosts
+            /// 
+            foreach (StreamHost host in bsiq.ByteStreamQuery.Hosts)
+            {
+                if (IsCompleted == true)
+                    break;
+
+                SocketServer.SocketClient client = new SocketClient();
+
+                client.SetSOCKSProxy(5, host.Host, Convert.ToInt32(host.Port), "xmppclient");
+                client.OnAsyncConnectFinished += new DelegateConnectFinish(client_OnAsyncConnectFinished);
+                EventConnected.Reset();
+                ConnectSuccesful = false;
+
+                string strHost = string.Format("{0}{1}{2}", this.FileTransfer.sid, bsiq.From, bsiq.To);
+                System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
+                byte [] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHost));
+                strHost = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
+
+                /// Connect parametrs are the sha1 hash and 0, the socks proxy will connect us to the correct place
+                client.StartReadOnConnect = true;
+                client.ConnectAsync(strHost, 0);
+
+                EventConnected.WaitOne();
+                
+                if (ConnectSuccesful == true)
+                {
+                    FileTransfer.FileTransferState = FileTransferState.Transferring;
+                    client.OnReceiveMessage += new SocketClient.SocketReceiveHandler(client_OnReceiveMessage);
+                    DownloadFileBuffer.GetAllSamples();
+
+                    /// connected and negotiated socks5, tell the far end to start sending data
+                    /// 
+                    ByteStreamQueryIQ iqresponse = new ByteStreamQueryIQ();
+                    iqresponse.SID = this.FileTransfer.sid;
+                    iqresponse.ByteStreamQuery = new ByteStreamQuery();
+                    iqresponse.ByteStreamQuery.StreamHostUsed = new StreamHost();
+                    iqresponse.ByteStreamQuery.StreamHostUsed.Jid = host.Jid;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.ID = bsiq.ID;
+                    iqresponse.To = bsiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+                    XMPPClient.SendObject(iqresponse);
+
+                    /// Now read data until we get our desired amount
+                    /// 
+                    EventGotAllData.WaitOne();
+
+                    client.Disconnect();
+                    return;
+                }
+            }
+
+            /// Couldn't transfer file, send error
+            /// 
+            ByteStreamQueryIQ response = new ByteStreamQueryIQ();
+            response.ByteStreamQuery = bsiq.ByteStreamQuery;
+            response.From = XMPPClient.JID;
+            response.To = bsiq.From;
+            response.ID = bsiq.ID;
+            response.Type = IQType.error.ToString();
+            response.Error = new Error(ErrorType.remoteservertimeout);
+            XMPPClient.SendXMPP(response);
+        }
+
+        ByteBuffer DownloadFileBuffer = new ByteBuffer();
+        System.Threading.ManualResetEvent EventGotAllData = new Threading.ManualResetEvent(false);
+        int BytesReceived = 0;
+        void client_OnReceiveMessage(SocketClient client, byte[] bData, int nLength)
+        {
+            FileTransfer.BytesRemaining -= nLength;
+            DownloadFileBuffer.AppendData(bData);
+
+            if (DownloadFileBuffer.Size >= FileTransfer.BytesTotal)
+            {
+                FileTransfer.Bytes = DownloadFileBuffer.GetAllSamples();
+                EventGotAllData.Set();
+                FileTransfer.FileTransferState = FileTransferState.Done;
+                IsCompleted = true;
+                XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
+            }
+        }
+
+        System.Threading.ManualResetEvent EventConnected = new Threading.ManualResetEvent(false);
+        bool ConnectSuccesful = false;
+        void client_OnAsyncConnectFinished(SocketClient client, bool bSuccess, string strErrors)
+        {
+            ConnectSuccesful = bSuccess;
+            EventConnected.Set();
+            
         }
 
     }

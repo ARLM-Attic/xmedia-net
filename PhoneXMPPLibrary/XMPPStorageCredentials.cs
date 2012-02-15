@@ -10,7 +10,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
 using System.Runtime.Serialization;
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     [DataContract]
     public class XMPPAccount : System.ComponentModel.INotifyPropertyChanged

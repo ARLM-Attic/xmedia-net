@@ -15,7 +15,7 @@ using System.Runtime.Serialization;
 using System.Windows.Threading;
 using System.Collections.Generic;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     [DataContract]
     public class TextMessage : System.ComponentModel.INotifyPropertyChanged

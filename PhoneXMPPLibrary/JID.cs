@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using System.Runtime.Serialization;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     [DataContract]
     public class JID

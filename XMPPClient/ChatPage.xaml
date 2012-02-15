@@ -73,15 +73,15 @@
         </ListBox>
         
 
-        <TextBox Grid.Row="2" x:Name="TextBoxChatToSend" KeyDown="TextBoxChatToSend_KeyDown" Grid.ColumnSpan="2"></TextBox>
+        <TextBox Grid.Row="2" x:Name="TextBoxChatToSend" InputScope="Chat"  KeyDown="TextBoxChatToSend_KeyDown" Grid.ColumnSpan="2"></TextBox>
         
     </Grid>
 
     <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/chat.png" Text="Send" x:Name="ButtonSendMessage" Click="ButtonSendMessage_Click"/>
+            <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/chat.png" Text="Send Text" x:Name="ButtonSendMessage" Click="ButtonSendMessage_Click"/>
             <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/trash.png" Text="Clear" x:Name="ButtonClearMessages" Click="ButtonClearMessages_Click"/>
-            <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/photo.png" Text="Clear" x:Name="ButtonSendPhoto" Click="ButtonSendPhoto_Click"/>
+            <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/camera.png" Text="Send Photo" x:Name="ButtonSendPhoto" Click="ButtonSendPhoto_Click"/>
         </shell:ApplicationBar>
     </phone:PhoneApplicationPage.ApplicationBar>
 

@@ -11,6 +11,10 @@ using System.Windows.Shapes;
 
 using System.Security.Cryptography;
 
+/// Classes used to test our TLS algorithms by using known public/private keys and wireshark captures
+/// 
+#if DEBUG
+
 namespace SocketServer.TLS
 {
     public class TestVectorClass
@@ -46,7 +50,7 @@ namespace SocketServer.TLS
             byte[] bClientRandom = ByteHelper.ByteFromHexString(strClientRandom);
             byte[] bServerRandom = ByteHelper.ByteFromHexString(strServerRandom);
 
-            SocketServer.TLS.TLSClientTransform trans = new SocketServer.TLS.TLSClientTransform(null);
+            SocketServer.TLS.ConnectionState trans = new SocketServer.TLS.ConnectionState();
 
             ByteBuffer buf = new ByteBuffer();
             buf.AppendData(bClientRandom);
@@ -63,10 +67,9 @@ namespace SocketServer.TLS
             System.Diagnostics.Debug.WriteLine("Master Secret found is:\r\n{0}", ByteHelper.HexStringFromByte(MasterSecret, true, 16));
 /// check... our master secret calulation matches what we see in wireshark, so all is well up to this point
 
-            trans.state.SecurityParameters.Cipher = Cipher.FindCipher(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
+            trans.SecurityParameters.Cipher = Cipher.FindCipher(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
             trans.ComputeKeys(MasterSecret, bSCRandom);
 
-            trans.state.Initialize();
 
             string strClientHello = "0100003103014f1ba0342bf8adbaf4974c390fe1e1dd4aa9b1af39f2e425ad27b0cea143c449000004002f00ff0100000400230000";
             string strServerHello = "0200003103014f1ba06b88c11a5796dd8379aaab4f990cc8e231749aaf16a146c7da88d627b500002f000009ff0100010000230000";
@@ -112,8 +115,8 @@ namespace SocketServer.TLS
             recordFinished.ContentType = TLSContentType.Handshake;
             recordFinished.Messages.Add(msgFinished);
 
-            trans.state.WriteSequenceNumber = 0;
-            byte[] bEncryptedGenericBlockCipher = trans.state.CompressEncryptOutgoingData(recordFinished);
+            trans.WriteSequenceNumber = 0;
+            byte[] bEncryptedGenericBlockCipher = trans.CompressEncryptOutgoingData(recordFinished);
             
             /// Check.  The value here is the same as strEncryptedHS above
             System.Diagnostics.Debug.WriteLine("Encrypted Client Done is:\r\n{0}", ByteHelper.HexStringFromByte(bEncryptedGenericBlockCipher, true, 16));
@@ -129,7 +132,7 @@ namespace SocketServer.TLS
             byte[] bClientRandom = ByteHelper.ByteFromHexString(strClientRandom);
             byte[] bServerRandom = ByteHelper.ByteFromHexString(strServerRandom);
 
-            SocketServer.TLS.TLSClientTransform trans = new SocketServer.TLS.TLSClientTransform(null);
+            SocketServer.TLS.ConnectionState trans = new SocketServer.TLS.ConnectionState();
 
             ByteBuffer buf = new ByteBuffer();
             buf.AppendData(bClientRandom);
@@ -146,10 +149,9 @@ namespace SocketServer.TLS
             System.Diagnostics.Debug.WriteLine("Master Secret found is:\r\n{0}", ByteHelper.HexStringFromByte(MasterSecret, true, 16));
             /// check... our master secret calulation matches what we see in wireshark, so all is well up to this point
 
-            trans.state.SecurityParameters.Cipher = Cipher.FindCipher(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
+            trans.SecurityParameters.Cipher = Cipher.FindCipher(CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA);
             trans.ComputeKeys(MasterSecret, bSCRandom);
 
-            trans.state.Initialize();
 
             string strClientHello = "0100002903014f1c89f895eb17b8419927796ce5b6f20401a6e96262031f0b37a7872665f9ab000002002f0100";
             string strServerHello = "0200004603014f1c89cd4170867e7a5a2d6daa4e8d01237096c70bf891d7ff650554433b7ba520880100006ddf3cb09c0eb6e40d0167000f03ca81ac58eec4c3c760a70143524d002f00";
@@ -195,8 +197,8 @@ namespace SocketServer.TLS
             recordFinished.ContentType = TLSContentType.Handshake;
             recordFinished.Messages.Add(msgFinished);
 
-            trans.state.WriteSequenceNumber = 0;
-            byte[] bEncryptedGenericBlockCipher = trans.state.CompressEncryptOutgoingData(recordFinished);
+            trans.WriteSequenceNumber = 0;
+            byte[] bEncryptedGenericBlockCipher = trans.CompressEncryptOutgoingData(recordFinished);
 
             /// Check.  The value here is the same as strEncryptedHS above
             System.Diagnostics.Debug.WriteLine("Encrypted Client Done is:\r\n{0}", ByteHelper.HexStringFromByte(bEncryptedGenericBlockCipher, true, 16));
@@ -207,7 +209,7 @@ namespace SocketServer.TLS
         /// </summary>
         public static void TestPRF()
         {
-            SocketServer.TLS.TLSClientTransform trans = new SocketServer.TLS.TLSClientTransform(null);
+            SocketServer.TLS.ConnectionState trans = new SocketServer.TLS.ConnectionState();
             byte[] bSecret = new byte[48];
             int i = 0;
             for (i = 0; i < bSecret.Length; i++) bSecret[i] = 0xab;
@@ -304,3 +306,4 @@ namespace SocketServer.TLS
 
     }
 }
+#endif

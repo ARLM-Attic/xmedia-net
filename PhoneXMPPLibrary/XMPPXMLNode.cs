@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using System.Xml;
 using System.Text.RegularExpressions;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     /// Simple XML parser to pull data off the incoming stream
     /// XMLReader classes expect to have complete XML, or they block on the stream, which is unacceptable

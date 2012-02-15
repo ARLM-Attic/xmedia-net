@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
 
     [XmlRoot(ElementName = "N")]

@@ -15,11 +15,12 @@ using System.Xml.Linq;
 using System.Linq;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using System.Runtime.Serialization;
 
 using System.Text.RegularExpressions;
 
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     // We have iq's, responses, and messages, each with their own xml
     public enum IQType
@@ -77,7 +78,7 @@ namespace PhoneXMPPLibrary
         }
 
         [XmlAttribute(AttributeName = "to")]
-        public string ToString
+        public string TOString
         {
             get
             {
@@ -241,8 +242,200 @@ namespace PhoneXMPPLibrary
         }
     }
 
-    //<iq type="get" id="791-126" from="ninethumbs.com" to="ninethumbs.com/411f8597"><ping xmlns="urn:xmpp:ping"/></iq>
+    public enum ErrorType
+    {
+        [XmlEnum(null)]
+        none,
+        [XmlEnum("bad-request")]
+        badrequest,
+        [XmlEnum("feature-not-implemented")]
+        featurenotimplemented,
+        [XmlEnum("forbidden")]
+        forbidden,
+        [XmlEnum("gone")]
+        gone,
+        [XmlEnum("internal-server-error")]
+        internalservererror,
+        [XmlEnum("item-not-found")]
+        itemnotfound,
+        [XmlEnum("jid-malformed")]
+        jidmalformed,
+        [XmlEnum("not-acceptable")]
+        notacceptable,
+        [XmlEnum("not-authorized")]
+        notauthorized,
+        [XmlEnum("not-allowed")]
+        notallowed,
+        [XmlEnum("policy-violation")]
+        policyviolation,
+        [XmlEnum("recipient-unavailable")]
+        recipientunavailable,
+        [XmlEnum("redirect")]
+        redirect,
+        [XmlEnum("registration-required")]
+        registrationrequired,
+        [XmlEnum("remote-server-not-found")]
+        remoteservernotfound,
+        [XmlEnum("remove-server-timeout")]
+        remoteservertimeout, 
+        [XmlEnum("resource-constraint")]
+        resourceconstraint,
+        [XmlEnum("service-unavailable")]
+        serviceunavailable,
+        [XmlEnum("subscription-required")]
+        subscriptionrequired, 
+        [XmlEnum("undefined-condition")]
+        undefinedcondition,
+        [XmlEnum("unexpected-request")]
+        unexpectedrequest,
 
+        [XmlEnum("bad-format")]
+        badformat,
+        [XmlEnum("bad-namespace-prefix")]
+        badnamespaceprefix,
+        [XmlEnum("conflict")]
+        conflict,
+        [XmlEnum("connection-timeout")]
+        connectiontimeout,
+        [XmlEnum("hostgone")]
+        hostgone,
+        [XmlEnum("host-unknown")]
+        hostunknown,
+        [XmlEnum("improper-addressing")]
+        improperaddressing,
+        [XmlEnum("invalid-from")]
+        invalidfrom,
+        [XmlEnum("invalid-id")]
+        invalidid,
+        [XmlEnum("invalid-namespace")]
+        invalidnamespace,
+        [XmlEnum("invalid-xml")]
+        invalidxml,
+        [XmlEnum("not-well-formed")]
+        notwellformed,
+        [XmlEnum("remote-connection-failed")]
+        remoteconnectionfailed,
+        [XmlEnum("reset")]
+        reset,
+        [XmlEnum("restricted-xml")]
+        restrictedxml,
+        [XmlEnum("see-other-host")]
+        seeotherhost,
+        [XmlEnum("system-shutdown")]
+        systemshutdown,
+        [XmlEnum("unsupported-encoding")]
+        unsupportedencoding,
+        [XmlEnum("unsupported-stanza-type")]
+        unsupportedstanzatype,
+        [XmlEnum("unsupported-version")]
+        unsupportedversion
+    }
+
+    public class ErrorDescription : IXmlSerializable
+    {
+        public ErrorDescription(string strDesc)
+        {
+            Description = strDesc;
+        }
+    
+        public ErrorDescription()
+        {
+        }
+    
+        public string Description = null;
+
+        public override string ToString()
+        {
+            return Description;
+        }
+
+        #region IXmlSerializable Members
+
+        public XmlSchema  GetSchema()
+        {
+ 	        return null;
+        }
+
+
+        public void  ReadXml(XmlReader reader)
+        {
+
+            Description = reader.ReadElementContentAsString();
+        }
+
+        public void  WriteXml(XmlWriter writer)
+        {
+            if (Description != null)
+ 	           writer.WriteElementString(Description, "");
+        }
+
+        public static implicit operator ErrorDescription(string strDesc)
+        {
+            return new ErrorDescription(strDesc);
+        }
+
+        public static implicit operator string(ErrorDescription objError)
+        {
+            if (objError == null)
+                return null;
+            return objError.Description;
+        }
+
+
+        #endregion
+    }
+
+      // Build this straight from xml
+    [XmlRoot(ElementName = "error")]
+    public class Error
+    {
+        public Error()
+        {
+        }
+
+        public Error(ErrorType type)
+        {
+            this.ErrorDescription = type.ToString();
+        }
+
+        public Error(string strError)
+        {
+            this.ErrorDescription = strError;
+        }
+
+
+        private string m_strType = null;
+        [XmlAttribute(AttributeName = "type")]
+        [DataMember]
+        public string Type
+        {
+            get { return m_strType; }
+            set { m_strType = value; }
+        }
+
+        private string m_strCode = null;
+        [XmlAttribute(AttributeName = "code")]
+        [DataMember]
+        public string Code
+        {
+            get { return m_strCode; }
+            set { m_strCode = value; }
+        }
+
+        [XmlText()]
+        public string ErrorDescription = null;
+
+//#if WINDOWS_PHONE
+//#else
+//        public ErrorDescription ErrorDescription  = null;
+//#endif      
+
+    }
+
+    //<iq type="get" id="791-126" from="ninethumbs.com" to="ninethumbs.com/411f8597"><ping xmlns="urn:xmpp:ping"/></iq>
+#if !WINDOWS_PHONE
+    [XmlRoot(ElementName = "iq", Namespace=null)]
+#endif
     public class IQ : XMPPMessageBase
     {
         public IQ(string strXML) : base(strXML, "iq")
@@ -254,21 +447,46 @@ namespace PhoneXMPPLibrary
             this.Type = IQType.get.ToString();
         }
 
-        public string error = null;
+        private Error m_objError = null;
+        [XmlElement(ElementName = "error")]
+        public Error Error
+        {
+            get { return m_objError; }
+            set { m_objError = value; }
+        }
 
+        /// <summary>
+        ///  This is the old way of building... Until we fully serialize everything we're stuck with leaving this in
+        /// </summary>
+        /// <param name="elemMessage"></param>
         public override void AddInnerXML(XElement elemMessage)
         {
-            if (error != null)
-                elemMessage.Add(new XElement("error", error));
+            if (Error != null)
+            {
+                XElement elemError = new XElement("error", Error);
+                if (Error.Type != null)
+                    elemError.Add(new XAttribute("type", Error.Type));
+                if (Error.ErrorDescription != null) 
+                {
+                    string strType = Error.ErrorDescription;
+                    elemError.Add(new XElement(strType));
+                }
+                elemMessage.Add(elemError);
+            }
             base.AddInnerXML(elemMessage);
 
         }
 
+        /// <summary>
+        ///  This is the old way of parsing... Until we fully serialize everything we're stuck with leaving this in
+        /// </summary>
         public override void ParseInnerXML(XElement elem)
         {
             foreach (XElement elemerror in elem.Descendants("error"))
             {
-                error = elemerror.Value;
+                this.Error = new Error();
+                if (elemerror.FirstNode != null)
+                    this.Error.ErrorDescription = ((XElement)elemerror.FirstNode).Value;
                 break;
             }
             base.ParseInnerXML(elem);
@@ -277,6 +495,7 @@ namespace PhoneXMPPLibrary
 
 
 
+    [XmlRoot(ElementName = "message")]
     public class Message : XMPPMessageBase
     {
         public Message()
@@ -330,6 +549,7 @@ namespace PhoneXMPPLibrary
 
     }
 
+    [XmlRoot(ElementName = "message")]
     public class ChatMessage : Message
     {
 

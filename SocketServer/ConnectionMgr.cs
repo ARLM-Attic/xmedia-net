@@ -316,6 +316,8 @@ namespace SocketServer
 
         public static bool IsIPAddress(string ipaddr)
         {
+            if (ipaddr == null)
+                return false;
             System.Text.RegularExpressions.Match MatchMan = null;
             MatchMan = RegExIPV4.Match(ipaddr);
             if (MatchMan.Success == false)

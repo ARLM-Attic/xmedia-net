@@ -11,7 +11,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
 
-using PhoneXMPPLibrary;
+using System.Net.XMPP;
 using System.Runtime.Serialization;
 using System.IO.IsolatedStorage;
 
@@ -38,7 +38,22 @@ namespace XMPPClient
             //this.TextBoxChatToSend.Focus();
         }
 
-      
+
+        bool m_bInFileTransferMode = false;
+        public bool InFileTransferMode
+        {
+            get { return m_bInFileTransferMode; }
+            set { m_bInFileTransferMode = value; }
+        }
+
+        string m_strFileTransferSID = "";
+
+        public string FileTransferSID
+        {
+            get { return m_strFileTransferSID; }
+            set { m_strFileTransferSID = value; }
+        }
+
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
@@ -46,8 +61,15 @@ namespace XMPPClient
 
             OurRosterItem = App.XMPPClient.FindRosterItem(new JID(strJID));
 
+            if (this.InFileTransferMode == true)
+            {
+                this.NavigationService.Navigate(new Uri("/FileTransferPage.xaml", UriKind.Relative));
+                this.InFileTransferMode = false;
+            }
+
             if ((OurRosterItem == null) || (App.XMPPClient.XMPPState != XMPPState.Ready) )
             {
+
                 NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative));
                 return;
             }
@@ -65,9 +87,9 @@ namespace XMPPClient
                     try
                     {
                         location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
-                        DataContractSerializer ser = new DataContractSerializer(typeof(PhoneXMPPLibrary.Conversation));
+                        DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
-                        OurRosterItem.Conversation = ser.ReadObject(location) as PhoneXMPPLibrary.Conversation;
+                        OurRosterItem.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
                     }
                     catch (Exception ex)
                     {
@@ -90,7 +112,7 @@ namespace XMPPClient
             this.ListBoxConversation.ItemsSource = OurRosterItem.Conversation.Messages;
             this.TextBlockConversationTitle.Text = OurRosterItem.Name;
 
-            App.XMPPClient.OnNewConversationItem += new PhoneXMPPLibrary.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
 
          
 
@@ -101,7 +123,7 @@ namespace XMPPClient
         protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
-            App.XMPPClient.OnNewConversationItem -= new PhoneXMPPLibrary.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            App.XMPPClient.OnNewConversationItem -= new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
             if (OurRosterItem != null)
                SaveConversation(OurRosterItem);
         }
@@ -118,7 +140,7 @@ namespace XMPPClient
             {
                 // Load from storage
                 IsolatedStorageFileStream location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Create, storage);
-                DataContractSerializer ser = new DataContractSerializer(typeof(PhoneXMPPLibrary.Conversation));
+                DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
                 try
                 {
@@ -134,7 +156,7 @@ namespace XMPPClient
 
         void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
-            Dispatcher.BeginInvoke(new PhoneXMPPLibrary.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
+            Dispatcher.BeginInvoke(new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
         }
 
         void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
@@ -164,7 +186,11 @@ namespace XMPPClient
 
         private void ButtonClearMessages_Click(object sender, EventArgs e)
         {
-            OurRosterItem.Conversation.Clear();
+            if (MessageBox.Show("Are you sure you want to clear these items?", "Confirm Clear", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+            {
+                OurRosterItem.Conversation.Clear();
+                this.Focus();
+            }
         }
 
         public string LastFullJIDBeforeMSDecidedToScrewUs = null;
@@ -201,7 +227,8 @@ namespace XMPPClient
                 byte[] bStream = new byte[e.ChosenPhoto.Length];
                 e.ChosenPhoto.Read(bStream, 0, bStream.Length);
 
-                App.XMPPClient.SendFile(e.OriginalFileName, bStream, LastFullJIDBeforeMSDecidedToScrewUs);
+                this.InFileTransferMode = true;
+                this.FileTransferSID = App.XMPPClient.FileTransferManager.SendFile(e.OriginalFileName, bStream, LastFullJIDBeforeMSDecidedToScrewUs);
 
                 //Code to display the photo on the page in an image control named myImage.
                 //System.Windows.Media.Imaging.BitmapImage bmp = new System.Windows.Media.Imaging.BitmapImage();

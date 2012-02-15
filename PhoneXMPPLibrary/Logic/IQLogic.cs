@@ -16,14 +16,9 @@ using System.Xml.Linq;
 using System.Linq;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.IO;
-using System.Xml.Linq;
-using System.Linq;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class GenericIQLogic : Logic
     {
@@ -102,7 +97,7 @@ namespace PhoneXMPPLibrary
 
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             return false;
@@ -177,7 +172,7 @@ namespace PhoneXMPPLibrary
                     return true;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             return false;

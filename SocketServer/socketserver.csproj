@@ -76,6 +76,7 @@
     <Compile Include="MediaTimer.cs" />
     <Compile Include="SocketClients.cs" />
     <Compile Include="SocketCreators.cs" />
+    <Compile Include="SocketListener.cs" />
     <Compile Include="SocketServer.cs" />
     <Compile Include="UDPSocketClient.cs" />
   </ItemGroup>

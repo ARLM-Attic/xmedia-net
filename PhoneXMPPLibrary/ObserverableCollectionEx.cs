@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using System.Runtime.Serialization;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
 #if WINDOWS_PHONE
 #else

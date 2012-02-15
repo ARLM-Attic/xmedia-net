@@ -13,7 +13,9 @@ using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 
-using PhoneXMPPLibrary;
+using System.Net.XMPP;
+using System.Runtime.Serialization;
+using System.IO.IsolatedStorage;
 
 namespace XMPPClient
 {
@@ -39,7 +41,15 @@ namespace XMPPClient
             // Phone-specific initialization
             InitializePhoneApplication();
 
-            PhoneApplicationService.Current.ApplicationIdleDetectionMode = IdleDetectionMode.Disabled; 
+            /// Load our options
+            /// 
+            LoadOptions();
+            if (Options.RunWithScreenLocked == true)
+               PhoneApplicationService.Current.ApplicationIdleDetectionMode = IdleDetectionMode.Disabled;
+
+             XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
+             XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
+
 
             // Show graphics profiling information while debugging.
             if (System.Diagnostics.Debugger.IsAttached)
@@ -59,13 +69,78 @@ namespace XMPPClient
                 // Caution:- Use this under debug mode only. Application that disables user idle detection will continue to run
                 // and consume battery power when the user is not using the phone.
                 PhoneApplicationService.Current.UserIdleDetectionMode = IdleDetectionMode.Disabled;
-
             }
 
         }
 
-        public static PhoneXMPPLibrary.XMPPClient XMPPClient = new PhoneXMPPLibrary.XMPPClient();
+        public static System.Text.StringBuilder XMPPLogBuilder = new System.Text.StringBuilder();
+        void XMPPClient_OnXMLSent(System.Net.XMPP.XMPPClient client, string strXML)
+        {
+            if (Options.LogXML == true)
+               XMPPLogBuilder.AppendFormat("--> {0}\r\n", strXML);
+        }
 
+        void XMPPClient_OnXMLReceived(System.Net.XMPP.XMPPClient client, string strXML)
+        {
+            if (Options.LogXML == true)
+                XMPPLogBuilder.AppendFormat("<-- {0}\r\n", strXML);
+        }
+
+
+        public static void LoadOptions()
+        {
+            string strFilename = "options.xml";
+            using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
+            {
+                // Load from storage
+                IsolatedStorageFileStream location = null;
+                try
+                {
+                    location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
+                    DataContractSerializer ser = new DataContractSerializer(typeof(Options));
+
+                    Options = ser.ReadObject(location) as Options;
+                }
+                catch (Exception ex)
+                {
+                    Options = new Options();
+                }
+                finally
+                {
+                    if (location != null)
+                        location.Close();
+                }
+
+            }
+        }
+
+        public static void SaveOptions()
+        {
+            string strFilename = "options.xml";
+            using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
+            {
+                // Load from storage
+                IsolatedStorageFileStream location = null;
+                try
+                {
+                    location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Create, storage);
+                    DataContractSerializer ser = new DataContractSerializer(typeof(Options));
+                    ser.WriteObject(location, Options);
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    if (location != null)
+                        location.Close();
+                }
+
+            }
+        }
+
+        public static System.Net.XMPP.XMPPClient XMPPClient = new System.Net.XMPP.XMPPClient();
+        public static Options Options = new Options();
 
         // Code to execute when the application is launching (eg, from Start)
         // This code will not execute when the application is reactivated
@@ -130,6 +205,18 @@ namespace XMPPClient
             if (e.ExceptionObject is QuitException)
                 return;
 
+            if (MessageBox.Show("An exception has occurred in this application, would you like to forward the details to the developers?", "Application Exception", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+            {
+                Microsoft.Phone.Tasks.EmailComposeTask task = new Microsoft.Phone.Tasks.EmailComposeTask();
+                task.Body = e.ExceptionObject.ToString();
+                if (XMPPLogBuilder.Length > 0)
+                    task.Body += "\r\n\r\n" + XMPPLogBuilder.ToString();
+
+                task.Subject = "[XMPPClient] Crash Notification Details";
+                task.To = "bonnbria@gmail.com";
+                task.Show();
+            }
+                
 
             if (System.Diagnostics.Debugger.IsAttached)
             {

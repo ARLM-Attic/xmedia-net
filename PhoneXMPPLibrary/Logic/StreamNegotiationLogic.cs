@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 
 using System.Text.RegularExpressions;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public class Mechanism
     {

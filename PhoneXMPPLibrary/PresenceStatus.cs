@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public enum PresenceType
     {
@@ -74,13 +74,13 @@ namespace PhoneXMPPLibrary
         {
             get
             {
-                if (m_ePresenceShow == PhoneXMPPLibrary.PresenceShow.unknown)
+                if (m_ePresenceShow == System.Net.XMPP.PresenceShow.unknown)
                     return Color.FromArgb(0, 0, 0, 0);
-                if (m_ePresenceShow == PhoneXMPPLibrary.PresenceShow.dnd)
+                if (m_ePresenceShow == System.Net.XMPP.PresenceShow.dnd)
                     return Colors.Red;
-                else if (m_ePresenceShow == PhoneXMPPLibrary.PresenceShow.away)
+                else if (m_ePresenceShow == System.Net.XMPP.PresenceShow.away)
                     return Colors.Orange;
-                else if (m_ePresenceShow == PhoneXMPPLibrary.PresenceShow.xa)
+                else if (m_ePresenceShow == System.Net.XMPP.PresenceShow.xa)
                 {
 #if WINDOWS_PHONE
                     if (string.Compare(Status, "online", StringComparison.CurrentCultureIgnoreCase) == 0)
@@ -98,7 +98,7 @@ namespace PhoneXMPPLibrary
 
                     return Colors.Purple;
                 }
-                else if (m_ePresenceShow == PhoneXMPPLibrary.PresenceShow.chat)
+                else if (m_ePresenceShow == System.Net.XMPP.PresenceShow.chat)
                     return Color.FromArgb(255, 128, 255, 128);
                 else
                     return Colors.Purple;

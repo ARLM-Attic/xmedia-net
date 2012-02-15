@@ -6,9 +6,8 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 
-#if !WINDOWS_PHONE
 
-namespace SOCKS5ServiceLibrary
+namespace SocketServer
 {
 	public class SocketListener
 	{
@@ -204,4 +203,3 @@ namespace SOCKS5ServiceLibrary
 	}
 }
 
-#endif

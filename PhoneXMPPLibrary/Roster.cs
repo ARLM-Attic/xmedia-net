@@ -13,7 +13,7 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     /// <summary>
     /// An instance of this class is made for every presence full jid.  We need this

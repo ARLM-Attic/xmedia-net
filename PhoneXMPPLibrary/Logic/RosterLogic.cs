@@ -21,7 +21,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
     public enum subscription
     {

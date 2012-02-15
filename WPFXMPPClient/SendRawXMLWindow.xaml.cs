@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-using PhoneXMPPLibrary;
+using System.Net.XMPP;
 
 namespace WPFXMPPClient
 {
@@ -30,8 +30,8 @@ namespace WPFXMPPClient
         {
             this.DataContext = this;
             XMPPClient = client;
-            XMPPClient.OnXMLReceived += new PhoneXMPPLibrary.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
-            XMPPClient.OnXMLSent += new PhoneXMPPLibrary.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
+            XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
+            XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
         }
 
         private string m_strLogText = "";

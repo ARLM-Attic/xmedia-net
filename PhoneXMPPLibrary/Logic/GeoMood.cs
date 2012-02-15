@@ -19,7 +19,7 @@ using System.Runtime.Serialization;
 ///<feature var='http://jabber.org/protocol/tune'/>    
 ///<feature var='http://jabber.org/protocol/tune+notify'/>
 
-namespace PhoneXMPPLibrary
+namespace System.Net.XMPP
 {
 
     

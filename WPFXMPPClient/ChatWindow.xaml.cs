@@ -11,7 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-using PhoneXMPPLibrary;
+using System.Net.XMPP;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
@@ -51,11 +51,11 @@ namespace WPFXMPPClient
                     try
                     {
                         location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
-                        DataContractSerializer ser = new DataContractSerializer(typeof(PhoneXMPPLibrary.Conversation));
+                        DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
-                        OurRosterItem.Conversation = ser.ReadObject(location) as PhoneXMPPLibrary.Conversation;
+                        OurRosterItem.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
                     finally
@@ -76,7 +76,7 @@ namespace WPFXMPPClient
             this.ListBoxConversation.ItemsSource = OurRosterItem.Conversation.Messages;
             //this.ListBoxInstances.ItemsSource = OurRosterItem.ClientInstances;
 
-            XMPPClient.OnNewConversationItem += new PhoneXMPPLibrary.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
 
         }
 
@@ -93,13 +93,13 @@ namespace WPFXMPPClient
             {
                 // Load from storage
                 IsolatedStorageFileStream location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Create, storage);
-                DataContractSerializer ser = new DataContractSerializer(typeof(PhoneXMPPLibrary.Conversation));
+                DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
                 try
                 {
                     ser.WriteObject(location, item.Conversation);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
                 location.Close();
@@ -110,7 +110,7 @@ namespace WPFXMPPClient
 
         void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
-            Dispatcher.Invoke(new PhoneXMPPLibrary.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
+            Dispatcher.Invoke(new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
         }
 
         [DllImport("user32.dll")]
@@ -169,7 +169,7 @@ namespace WPFXMPPClient
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            XMPPClient.OnNewConversationItem -= new PhoneXMPPLibrary.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            XMPPClient.OnNewConversationItem -= new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
             SaveConversation(OurRosterItem);
             base.OnClosing(e);
         }
@@ -261,7 +261,7 @@ namespace WPFXMPPClient
                     foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
                     {
                         /// Just send it to 1 recepient for now, must have a full jid
-                        string strSendID = XMPPClient.SendFile(strFileName, instance.FullJID);
+                        string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, instance.FullJID);
 
                         FileInfo info = new FileInfo(strFileName);
                         ProgressBarDownload.Minimum = 0;
@@ -275,25 +275,6 @@ namespace WPFXMPPClient
             }
         }
 
-
-        public void IncomingFileRequest(string strRequestId, string strFileName, int nFileSize)
-        {
-            /// New incoming file request... accept or reject it... 
-            /// 
-
-            if (MessageBox.Show(string.Format("{0} wants to send you file {1} of size {2}, Do you accept", OurRosterItem.Name, strFileName, nFileSize),
-                                            "Accept File Download?", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-            {
-                string strLocalFileName = string.Format("{0}\\{1}", System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), strFileName);
-                XMPPClient.AcceptFileDownload(strRequestId, strLocalFileName);
-                ProgressBarDownload.Minimum = 0;
-                ProgressBarDownload.Maximum = nFileSize;
-            }
-            else
-            {
-                XMPPClient.DeclineFileDownload(strRequestId);
-            }
-        }
 
         public void DownloadProgres(string strRequestId, int nBytes, int nTotal)
         {
