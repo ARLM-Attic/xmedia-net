@@ -85,6 +85,16 @@ namespace System.Net.XMPP
         }
     }
 
+    public enum ItemType
+    {
+        NotQueried,
+        Unknown,
+        SOCKS5ByteStream,
+        Directory,
+        Conference,
+        PubSub,
+    }
+
     [XmlRoot(ElementName = "item")]
     public class item
     {
@@ -121,12 +131,35 @@ namespace System.Net.XMPP
             get { return m_strNode; }
             set { m_strNode = value; }
         }
+
+
+        /// <summary>
+        /// Internal use so we can keep track if we've queried this item or not for what type it is
+        /// </summary>
+        [XmlIgnore()]
+        public ItemType ItemType = ItemType.NotQueried;
     }
 
     public class ServiceDiscoveryFeatureList
     {
         public ServiceDiscoveryFeatureList()
         {
+        }
+
+        public bool HasFeature(string strFeature)
+        {
+            /// Make sure this feature doesn't exists
+            /// 
+            lock (m_LockFeatures)
+            {
+                foreach (feature fea in Features)
+                {
+                    if (fea.Var == strFeature)
+                        return true;
+                }
+
+            }
+            return false;
         }
 
         public void AddFeature(feature feature)
@@ -180,6 +213,37 @@ namespace System.Net.XMPP
         {
             get { return m_listFeatures; }
             set { m_listFeatures = value; }
+        }
+
+
+
+        public item GetItem(string strItem)
+        {
+            foreach (item nextitem in Items)
+            {
+                if (nextitem.Name == strItem)
+                    return nextitem;
+            }
+
+            return null;
+        }
+
+         public item GetItemByType(ItemType type)
+        {
+            foreach (item nextitem in Items)
+            {
+                if (nextitem.ItemType == type)
+                    return nextitem;
+            }
+
+            return null;
+        }
+
+        List<item> m_listItems = new List<item>();
+        public List<item> Items
+        {
+            get { return m_listItems; }
+            set { m_listItems = value; }
         }
     }
 

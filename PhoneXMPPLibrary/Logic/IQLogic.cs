@@ -105,6 +105,21 @@ namespace System.Net.XMPP
 
     }
 
+    /// <summary>
+    /// The method that is used to get xml from the object
+    /// </summary>
+    public enum SerializationMethod
+    {
+        /// <summary>
+        /// Use the XMLSerializer to get xml from the object
+        /// </summary>
+        XMLSerializeObject,
+
+        /// <summary>
+        /// Use the virtual MessageXML property to xml from the object
+        /// </summary>
+        MessageXMLProperty,
+    }
 
     public class SendRecvIQLogic : Logic
     {
@@ -130,10 +145,22 @@ namespace System.Net.XMPP
             set { m_nTimeoutMs = value; }
         }
 
+        private SerializationMethod m_eSerializationMethod = SerializationMethod.MessageXMLProperty;
+
+        public SerializationMethod SerializationMethod
+        {
+            get { return m_eSerializationMethod; }
+            set { m_eSerializationMethod = value; }
+        }
+ 
+
         public bool SendReceive(int nTimeoutMs)
         {
             TimeoutMs = nTimeoutMs;
-            XMPPClient.SendXMPP(SendIQ);
+            if (SerializationMethod == XMPP.SerializationMethod.MessageXMLProperty)
+                XMPPClient.SendXMPP(SendIQ);
+            else
+                XMPPClient.SendObject(SendIQ);
 
             Success = GotIQEvent.WaitOne(TimeoutMs);
             return Success;

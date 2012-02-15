@@ -228,7 +228,8 @@ namespace SocketServer
         protected void Init(Socket s, ConnectMgr parentnotify)
         {
             this.Client = s;
-            NetworkStream = new NetworkStream(this.Client);
+            if ((this.Client != null) && (this.Client.Connected == true) )
+               NetworkStream = new NetworkStream(this.Client);
         }
 
         public bool IsIPVersion6 = false;

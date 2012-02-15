@@ -36,9 +36,9 @@ namespace System.Net.XMPP
     [Flags]
     public enum StreamOptions
     {
-        none,
-        bytestreams,
-        ibb,
+        none = 0,
+        bytestreams = 1,
+        ibb = 2,
     }
 
     public enum StreamInitIQType
@@ -60,7 +60,7 @@ namespace System.Net.XMPP
         {
         }
 
-        public static StreamInitIQ BuildDefaultStreamInitOffer(FileTransfer trans)
+        public static StreamInitIQ BuildDefaultStreamInitOffer(XMPPClient client, FileTransfer trans)
         {
             StreamInitIQ q = new StreamInitIQ(StreamInitIQType.Offer);
             q.mimetype = trans.MimeType;
@@ -68,7 +68,16 @@ namespace System.Net.XMPP
             q.sid = trans.sid;
             q.filesize = trans.BytesTotal;
             q.FileTransferObject = trans;
-            q.StreamOptions = StreamOptions.bytestreams | StreamOptions.ibb;
+
+            q.StreamOptions = XMPP.StreamOptions.ibb;
+
+            /// Don't offer byte streams if the server doesn't support a SOCKS 5 proxy, since windows phone can't listen for connections
+            item filetransfer = client.ServerServiceDiscoveryFeatureList.GetItemByType(ItemType.SOCKS5ByteStream);
+            if (filetransfer != null)
+            {
+                q.StreamOptions |= StreamOptions.bytestreams;
+            }
+
             return q;
         }
 
@@ -369,8 +378,7 @@ namespace System.Net.XMPP
         {
             if (trans.FileTransferDirection != FileTransferDirection.Send)
                 return;
-            StreamInitIQ iq = StreamInitIQ.BuildDefaultStreamInitOffer(trans);
-            iq.StreamOptions = StreamOptions.ibb|StreamOptions.bytestreams;
+            StreamInitIQ iq = StreamInitIQ.BuildDefaultStreamInitOffer(this.XMPPClient, trans);
             iq.From = XMPPClient.JID;
             iq.To = trans.RemoteJID;
             iq.Type = IQType.set.ToString();
@@ -479,13 +487,13 @@ namespace System.Net.XMPP
         {
         }
 
-        private StreamMode m_eMode = StreamMode.tcp;
+        private string m_strMode = null;
         [XmlAttribute(AttributeName = "mode")]
         [DataMember]
-        public StreamMode Mode
+        public string Mode
         {
-            get { return m_eMode; }
-            set { m_eMode = value; }
+            get { return m_strMode; }
+            set { m_strMode = value; }
         }
 
         private string m_strSID = null;
@@ -574,6 +582,16 @@ namespace System.Net.XMPP
         public virtual void Cancel()
         {
             this.IsCompleted = true;
+        }
+
+        public virtual void StartAsync()
+        {
+            System.Threading.ThreadPool.QueueUserWorkItem(new Threading.WaitCallback(DoStart));
+        }
+
+        void DoStart(object obj)
+        {
+            Start();
         }
 
     }
@@ -797,6 +815,18 @@ namespace System.Net.XMPP
         ByteStreamQueryIQ IQStart = null;
         ByteStreamQueryIQ IQActivate = null;
 
+       
+        item FindProxyItem()
+        {
+            foreach (item nextitem in XMPPClient.ServerServiceDiscoveryFeatureList.Items)
+            {
+                if (nextitem.ItemType == ItemType.SOCKS5ByteStream)
+                    return nextitem;
+            }
+
+            return null;
+        }
+
         public override void Start()
         {
             if (FileTransfer.FileTransferDirection == FileTransferDirection.Send)
@@ -808,6 +838,7 @@ namespace System.Net.XMPP
                 //IQStart.SID = this.FileTransfer.sid;
                 IQStart.ByteStreamQuery = new ByteStreamQuery();
                 IQStart.ByteStreamQuery.SID = this.FileTransfer.sid;
+                IQStart.ByteStreamQuery.Mode = StreamMode.tcp.ToString();
                 IQStart.From = XMPPClient.JID;
                 IQStart.To = FileTransfer.RemoteJID;
                 IQStart.Type = IQType.set.ToString();
@@ -817,9 +848,40 @@ namespace System.Net.XMPP
                 /// For windows we can start a local listener and a proxy listener
                 /// For windows phone we can only use the proxy (if our jabber server supports it) because we can't listen for connections
                 /// 
-                //StreamHost host = new StreamHost() { Host = XMPPClient.Server, Port = "7777", Jid = string.Format("proxy.{0}", XMPPClient.Domain) };
-                StreamHost host = new StreamHost() { Host = "192.168.1.124", Port = "7777", Jid = string.Format("proxy.{0}", XMPPClient.Domain) };
+
+                string strJID = string.Format("proxy.{0}", XMPPClient.Domain);
+                string strHost = XMPPClient.Server;
+                string strPort = "7777";
+                item filetransfer = FindProxyItem();
+                if (filetransfer != null)
+                {
+                    strJID = filetransfer.JID;
+                    /// Query the server for the actual stream host of thi sitem
+
+                    ByteStreamQueryIQ iqqueryproxy = new ByteStreamQueryIQ();
+                    iqqueryproxy.From = XMPPClient.JID;
+                    iqqueryproxy.To = strJID;
+                    iqqueryproxy.Type = IQType.get.ToString();
+                    iqqueryproxy.ByteStreamQuery = new ByteStreamQuery();
+
+                    IQ iqret = XMPPClient.SendRecieveIQ(iqqueryproxy, 15000, SerializationMethod.XMLSerializeObject);
+                    if ( (iqret != null) && (iqret is ByteStreamQueryIQ))
+                    {
+                        ByteStreamQueryIQ response = iqret as ByteStreamQueryIQ;
+                        if ((response.ByteStreamQuery != null) && (response.ByteStreamQuery.Hosts != null) && (response.ByteStreamQuery.Hosts.Length > 0))
+                        {
+                            strHost = response.ByteStreamQuery.Hosts[0].Host;
+                            strPort = response.ByteStreamQuery.Hosts[0].Port;
+                            strJID = response.ByteStreamQuery.Hosts[0].Jid;
+                        }
+                    }
+
+                }
+
+                StreamHost host = new StreamHost() { Host = strHost, Port = strPort, Jid = strJID };
+                //StreamHost host = new StreamHost() { Host = "192.168.1.124", Port = "7777", Jid = string.Format("proxy.{0}", XMPPClient.Domain) };
                 IQStart.ByteStreamQuery.Hosts = new StreamHost[] { host };
+                IQStart.ByteStreamQuery.Mode = StreamMode.tcp.ToString();
 
 
                 XMPPClient.SendObject(IQStart);
@@ -1094,6 +1156,8 @@ namespace System.Net.XMPP
             response.Type = IQType.error.ToString();
             response.Error = new Error(ErrorType.remoteservertimeout);
             XMPPClient.SendXMPP(response);
+            FileTransfer.FileTransferState = FileTransferState.Error;
+            XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
         }
 
         ByteBuffer DownloadFileBuffer = new ByteBuffer();

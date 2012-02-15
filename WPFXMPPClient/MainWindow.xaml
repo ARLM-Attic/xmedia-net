@@ -11,18 +11,18 @@
         <DataTemplate x:Key="ChatMessageTemplate">
                 <Grid Background="{x:Null}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition Width="44" />
                         <ColumnDefinition Width="300*" />
                         <ColumnDefinition Width="33" />
                         <ColumnDefinition Width="33" />
                     </Grid.ColumnDefinitions>
                     
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="40" />
+                        <RowDefinition Height="44" />
                         <RowDefinition Height="20" />
                     </Grid.RowDefinitions>
 
-                    <Rectangle Stroke="Black" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="40" Height="40" Grid.Column="0" Grid.Row="0" />
+                    <Rectangle Stroke="Black" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="44" Height="44" Grid.Column="0" Grid.Row="0" />
                     <Image Grid.Column="0" Grid.Row="0" Width="36" Height="36" Source="{Binding Avatar}" />
 
 

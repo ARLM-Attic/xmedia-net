@@ -27,6 +27,7 @@ namespace System.Net.XMPP
         {
         }
 
+
         /// <summary>
         /// A new XML fragment has been received
         /// </summary>

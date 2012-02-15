@@ -27,9 +27,23 @@ namespace XMPPClient
         {
             base.OnNavigatedTo(e);
 
+            App.XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
+
             this.DataContext = App.XMPPClient;
             this.ListBoxFileTransfers.ItemsSource = App.XMPPClient.FileTransferManager.FileTransfers;
         }
+
+        void FileTransferManager_OnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
+        {
+            Dispatcher.BeginInvoke(new FileTransferManager.DelegateIncomingFile(SafeOnNewIncomingFileTransferRequest), trans, itemfrom);
+        }
+
+        void SafeOnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
+        {
+            this.ListBoxFileTransfers.ItemsSource = null;
+            this.ListBoxFileTransfers.ItemsSource = App.XMPPClient.FileTransferManager.FileTransfers;
+        }
+
 
         private void ButtonCancelSend_Click(object sender, RoutedEventArgs e)
         {

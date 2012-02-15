@@ -334,7 +334,7 @@ namespace System.Net.XMPP
                 trans.ByteStreamLogic = new SOCKS5ByteStreamLogic(XMPPClient, trans);
             
             XMPPClient.AddLogic(trans.ByteStreamLogic);
-            trans.ByteStreamLogic.Start();
+            trans.ByteStreamLogic.StartAsync();
         }
 
         public string SendFile(string strFullFileName, JID jidto)

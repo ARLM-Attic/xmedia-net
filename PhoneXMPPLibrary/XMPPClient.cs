@@ -117,7 +117,7 @@ namespace System.Net.XMPP
         private PersonalEventingLogic PersonalEventingLogic = null;
 
         public ServiceDiscoveryFeatureList OurServiceDiscoveryFeatureList = new ServiceDiscoveryFeatureList();
-        
+        public ServiceDiscoveryFeatureList ServerServiceDiscoveryFeatureList = new ServiceDiscoveryFeatureList();
      
         public event EventHandler OnStateChanged = null;
         private XMPPState m_eXMPPState = XMPPState.Unknown;
@@ -136,6 +136,16 @@ namespace System.Net.XMPP
             }
         }
 
+
+        private bool m_bAutoQueryServerFeatures = true;
+        /// <summary>
+        /// Automatically ask the server for the services it supports (service discovery)
+        /// </summary>
+        public bool AutoQueryServerFeatures
+        {
+            get { return m_bAutoQueryServerFeatures; }
+            set { m_bAutoQueryServerFeatures = value; }
+        }
 
         private System.Threading.Timer m_objReconnectTimer = null;
         private int m_nAutoReconnectAttempts = 0;
@@ -194,6 +204,7 @@ namespace System.Net.XMPP
             }
         }
 
+
         public bool UseTLS
         {
             get { return m_objXMPPAccount.UseTLSMethod; }
@@ -230,13 +241,19 @@ namespace System.Net.XMPP
                 if (RetrieveRoster == true)
                    RosterLogic.Start();
 
-                //ServiceDiscoveryLogic.Start();
+                if (AutoQueryServerFeatures == true)
+                {
+                    ServiceDiscoveryLogic.QueryServiceInfo();
+                    ServiceDiscoveryLogic.QueryServiceItems();
+                }
+
                 XMPPState = System.Net.XMPP.XMPPState.Ready;
             }
             else if (XMPPState == System.Net.XMPP.XMPPState.Unknown)  // We be logged out
             {
                 
                 this.StreamNegotiationLogic.Reset();
+                this.ServerServiceDiscoveryFeatureList.Features.Clear();
                 this.PresenceStatus.PresenceType = PresenceType.unavailable;
                 this.PresenceStatus.PresenceShow = PresenceShow.xa;
 
@@ -587,15 +604,20 @@ namespace System.Net.XMPP
             return bRet;
         }
 
+        public IQ SendRecieveIQ(IQ iq, int nTimeoutMS)
+        {
+            return SendRecieveIQ(iq, nTimeoutMS, SerializationMethod.MessageXMLProperty);
+        }
         /// <summary>
         /// Sends an IQ and returns the response.  This is called from separate thread since it waits
         /// </summary>
         /// <param name="iq">The IQ to send</param>
         /// <param name="nTimeoutMS">The timeout in ms to wait for a areponse</param>
         /// <returns>The IQ that was received, or null if one was not received within the timeout period</returns>
-        public IQ SendRecieveIQ(IQ iq, int nTimeoutMS)
+        public IQ SendRecieveIQ(IQ iq, int nTimeoutMS, SerializationMethod method)
         {
             SendRecvIQLogic iqlog = new SendRecvIQLogic(this, iq);
+            iqlog.SerializationMethod = method;
             AddLogic(iqlog);
 
             iqlog.SendReceive(nTimeoutMS);

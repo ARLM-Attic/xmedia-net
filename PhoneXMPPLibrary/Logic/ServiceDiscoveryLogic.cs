@@ -36,19 +36,27 @@ namespace System.Net.XMPP
 
 
 
-        public override void  Start()
-        {
-            ServiceDiscoveryIQ iqrequest = new ServiceDiscoveryIQ();
-            iqrequest.ServiceDiscoveryInfoQuery = new ServiceDiscoveryInfoQuery();
-            iqrequest.From = XMPPClient.JID;
-            iqrequest.To = XMPPClient.Server;
-            iqrequest.Type = IQType.get.ToString();
-            XMPPClient.SendObject(iqrequest);
+        ServiceDiscoveryIQ IQInfoRequest = null;
 
-            //ServiceDiscoveryIQ iqresponse = XMPPClient.QueryServiceDiscovery("ninethumbs.com", ServiceDiscoveryType.info, null);
-            //if (iqresponse != null)
-            //{
-            //}
+        public void QueryServiceInfo()
+        {
+            IQInfoRequest = new ServiceDiscoveryIQ();
+            IQInfoRequest.ServiceDiscoveryInfoQuery = new ServiceDiscoveryInfoQuery();
+            IQInfoRequest.From = XMPPClient.JID;
+            IQInfoRequest.To = XMPPClient.Domain;
+            IQInfoRequest.Type = IQType.get.ToString();
+            XMPPClient.SendObject(IQInfoRequest);
+        }
+
+        ServiceDiscoveryIQ IQItemRequest = null;
+        public void QueryServiceItems()
+        {
+            IQItemRequest = new ServiceDiscoveryIQ();
+            IQItemRequest.ServiceDiscoveryItemQuery = new ServiceDiscoveryItemQuery();
+            IQItemRequest.From = XMPPClient.JID;
+            IQItemRequest.To = XMPPClient.Domain;
+            IQItemRequest.Type = IQType.get.ToString();
+            XMPPClient.SendObject(IQItemRequest);
         }
      
 
@@ -74,11 +82,94 @@ namespace System.Net.XMPP
                 XMPPClient.SendObject(response);
                 return true;
             }
+            else if ( (IQInfoRequest != null) && (IQInfoRequest.ID == iq.ID))
+            {
+                if (iq is ServiceDiscoveryIQ)
+                {
+                    ServiceDiscoveryIQ response = iq as ServiceDiscoveryIQ;
 
+                    if ((response.ServiceDiscoveryInfoQuery != null) && (response.ServiceDiscoveryInfoQuery.Features != null) && (response.ServiceDiscoveryInfoQuery.Features.Length > 0))
+                    {
+                        XMPPClient.ServerServiceDiscoveryFeatureList.Features.Clear();
+                        XMPPClient.ServerServiceDiscoveryFeatureList.Features.AddRange(response.ServiceDiscoveryInfoQuery.Features);
+                    }
+                    if ((response.ServiceDiscoveryInfoQuery != null) && (response.ServiceDiscoveryInfoQuery.Identities != null) && (response.ServiceDiscoveryInfoQuery.Identities.Length > 0))
+                    {
+                    }
+                }
+                return true;
+            }
+            else if ((IQItemRequest != null) && (IQItemRequest.ID == iq.ID))
+            {
+                if (iq is ServiceDiscoveryIQ)
+                {
+                    ServiceDiscoveryIQ response = iq as ServiceDiscoveryIQ;
+
+                    if ((response.ServiceDiscoveryItemQuery != null) && (response.ServiceDiscoveryItemQuery.Items != null) && (response.ServiceDiscoveryItemQuery.Items.Length > 0))
+                    {
+                        XMPPClient.ServerServiceDiscoveryFeatureList.Items.AddRange(response.ServiceDiscoveryItemQuery.Items);
+                        System.Threading.ThreadPool.QueueUserWorkItem(QueryItemsForProxy);
+                    }
+                }
+                return true;
+            }
 
             return base.NewIQ(iq);
         }
 
+        void QueryItemsForProxy(object obj)
+        {
+            foreach (item nextitem in XMPPClient.ServerServiceDiscoveryFeatureList.Items)
+            {
+                QueryItemType(nextitem);
+            }
+        }
+
+        void QueryItemType(item item)
+        {
+            if (item.ItemType == ItemType.NotQueried)
+            {
+                ServiceDiscoveryIQ iqqueryproxy = new ServiceDiscoveryIQ();
+                iqqueryproxy.From = XMPPClient.JID;
+                iqqueryproxy.To = item.JID;
+                iqqueryproxy.ServiceDiscoveryInfoQuery = new ServiceDiscoveryInfoQuery();
+                iqqueryproxy.Type = IQType.get.ToString();
+
+
+                IQ iqret = XMPPClient.SendRecieveIQ(iqqueryproxy, 15000, SerializationMethod.XMLSerializeObject);
+                if ((iqret != null) && (iqret is ServiceDiscoveryIQ))
+                {
+                    ServiceDiscoveryIQ response = iqret as ServiceDiscoveryIQ;
+                    if ((response.ServiceDiscoveryInfoQuery != null) && (response.ServiceDiscoveryInfoQuery.Identities != null) && (response.ServiceDiscoveryInfoQuery.Identities.Length > 0))
+                    {
+                        if ((response.ServiceDiscoveryInfoQuery.Identities[0].Category == "proxy") &&
+                            (response.ServiceDiscoveryInfoQuery.Identities[0].Type == "bytestreams"))
+                        {
+                            item.ItemType = ItemType.SOCKS5ByteStream;
+                            return;
+                        }
+                        if (response.ServiceDiscoveryInfoQuery.Identities[0].Category == "pubsub")
+                        {
+                            item.ItemType = ItemType.PubSub;
+                            return;
+                        }
+                        if (response.ServiceDiscoveryInfoQuery.Identities[0].Category == "directory")
+                        {
+                            item.ItemType = ItemType.Directory;
+                            return;
+                        }
+                        if (response.ServiceDiscoveryInfoQuery.Identities[0].Category == "conference")
+                        {
+                            item.ItemType = ItemType.Conference;
+                            return;
+                        }
+                    }
+                }
+
+
+                item.ItemType = ItemType.Unknown;
+            }
+        }
 
     }
 }
