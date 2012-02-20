@@ -87,14 +87,14 @@ namespace XMPPClient
 
         void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
-            /// Save the conversation first
-            ChatPage.SaveConversation(item);
-
             Dispatcher.BeginInvoke(new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
         }
 
         void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
+            /// Save the conversation first
+            ChatPage.SaveConversation(item);
+
             //Microsoft.Phone.PictureDecoder.DecodeJpeg(
 
             if (bReceived == true)

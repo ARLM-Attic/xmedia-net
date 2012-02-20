@@ -41,7 +41,6 @@
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
-                    <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="23" />
@@ -102,21 +101,18 @@
                     <Image Source="Images/mail - copy.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
 
-                <s:SurfaceButton ToolTip="Copy Selected Items" Grid.Column="3" x:Name="ButtonCopy" Click="ButtonCopy_Click" Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
-                    <Image Source="Images/document - copy.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" ImageFailed="Image_ImageFailed" />
-                </s:SurfaceButton>
-
-                <s:SurfaceButton ToolTip="Clear" Grid.Column="4" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                <s:SurfaceButton ToolTip="Clear" Grid.Column="3" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/trash.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" ImageFailed="Image_ImageFailed" />
                 </s:SurfaceButton>
 
-                <s:SurfaceButton ToolTip="Close" Grid.Column="5" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                <s:SurfaceButton ToolTip="Close" Grid.Column="4" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
-                <ProgressBar x:Name="ProgressBarDownload" Grid.Column="2" Grid.ColumnSpan="4" Grid.Row="2" Height="10" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0" />
             </Grid>
 
-            <s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+            <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"  Margin="5" x:Name="TextBlockChat" Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            </RichTextBox>
+            <!--<s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                  DataContext="{Binding Conversation}" Background="Beige" x:Name="ListBoxConversation">
                 <s:SurfaceListBox.ItemTemplate>
                     <DataTemplate>
@@ -139,7 +135,7 @@
                     </DataTemplate>
                 </s:SurfaceListBox.ItemTemplate>
 
-            </s:SurfaceListBox>
+            </s:SurfaceListBox>-->
 
 
             <Grid Grid.Row="2">

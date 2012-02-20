@@ -63,7 +63,8 @@ namespace System.Net.XMPP
                }
                else if (((XElement)elem.FirstNode).Name == "{urn:xmpp:jingle:1}jingle")
                {
-                   return new JingleMessage(strXML);
+                   Jingle.JingleIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(Jingle.JingleIQ)) as Jingle.JingleIQ;
+                   return query;
                }
                else if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/si}si")
                {

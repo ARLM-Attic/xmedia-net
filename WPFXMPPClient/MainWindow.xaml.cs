@@ -55,41 +55,49 @@ namespace WPFXMPPClient
 
         public XMPPClient XMPPClient = new XMPPClient();
 
+        List<System.Net.XMPP.XMPPAccount> AllAccounts = null;
 
         private void HyperlinkConnect_Click(object sender, RoutedEventArgs e)
         {
             if (XMPPClient.XMPPState == XMPPState.Unknown)
             {
-                XMPPClient.UserName = Properties.Settings.Default.UserName;
-                XMPPClient.Server = Properties.Settings.Default.Server;
-                XMPPClient.Domain = Properties.Settings.Default.Domain;
-                XMPPClient.PresenceStatus.Priority = 10;
-                XMPPClient.Resource = System.Environment.MachineName.ToLower();
-                XMPPClient.Port = Properties.Settings.Default.Port;
-                XMPPClient.UseOldStyleTLS = Properties.Settings.Default.UseOldTLS;
                 XMPPClient.AutoReconnect = true;
 
-                XMPPLibrary.LoginWindow loginwin = new XMPPLibrary.LoginWindow();
-                loginwin.XMPPClient = XMPPClient;
+                LoginWindow loginwin = new LoginWindow();
+                loginwin.ActiveAccount = XMPPClient.XMPPAccount;
+                loginwin.AllAccounts = AllAccounts;
                 if (loginwin.ShowDialog() == false)
-                    Application.Current.Shutdown();
-
-
+                    return;
+                XMPPClient.XMPPAccount = loginwin.ActiveAccount;
+                AllAccounts = loginwin.AllAccounts;
                 XMPPClient.Connect();
 
-                Properties.Settings.Default.UserName = XMPPClient.UserName;
-                Properties.Settings.Default.Server = XMPPClient.Server;
-                Properties.Settings.Default.Domain = XMPPClient.Domain;
-                Properties.Settings.Default.Status = XMPPClient.PresenceStatus.Status;
-                Properties.Settings.Default.Port = XMPPClient.Port;
-                Properties.Settings.Default.UseOldTLS = XMPPClient.UseOldStyleTLS;
-                Properties.Settings.Default.Save();
             }
             else if (XMPPClient.XMPPState > XMPPState.Connected)
             {
                 XMPPClient.Disconnect();
             }
 
+        }
+
+        void SaveAccounts()
+        {
+
+            using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
+            {
+                // Load from storage
+                IsolatedStorageFileStream location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Create, storage);
+                DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
+
+                try
+                {
+                    ser.WriteObject(location, AllAccounts);
+                }
+                catch (Exception ex)
+                {
+                }
+                location.Close();
+            }
         }
 
         public Brush ConnectedStateBrush
@@ -106,13 +114,15 @@ namespace WPFXMPPClient
             }
         }
 
+
+        
+
         private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
 
             this.RectangleConnect.DataContext = this;
             this.DataContext = XMPPClient;
             this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
-            XMPPClient.PresenceStatus.Status = Properties.Settings.Default.Status;
             XMPPClient.OnRetrievedRoster += new EventHandler(RetrievedRoster);
             XMPPClient.OnRosterItemsChanged += new EventHandler(RosterChanged);
             XMPPClient.OnStateChanged += new EventHandler(XMPPStateChanged);
@@ -123,6 +133,8 @@ namespace WPFXMPPClient
             XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
 
             SendRawXMLWindow.SetXMPPClient(XMPPClient);
+
+
         }
 
        
@@ -168,14 +180,35 @@ namespace WPFXMPPClient
         void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
             // Load any old messages if we haven't yet
-         
+            Dispatcher.Invoke(new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(DoNewConversationItem), item, bReceived, msg);
+        }
+
+        void DoNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
+        {
 
             ChatWindow.SaveConversation(item);
 
             if (bReceived == false)
                 return;
 
-            FindOrCreateChatWIndow(item);
+            ChatWindow windowfound = null;
+            if (ChatWindows.ContainsKey(item.JID.BareJID) == true)
+            {
+                windowfound = ChatWindows[item.JID.BareJID];
+                
+            }
+            
+            if ( (windowfound == null) || (windowfound.Visibility != System.Windows.Visibility.Visible))
+            {
+                /// Make a sound and notify this window
+                /// 
+                System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/ding.wav");
+                player.Play();
+
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                FlashWindow(windowHandle, true);
+
+            }
         }
 
         ChatWindow FindOrCreateChatWIndow(RosterItem item)
@@ -222,22 +255,25 @@ namespace WPFXMPPClient
                     string strFilename = string.Format("{0}_conversation.item", item.JID.BareJID);
                     using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
                     {
-                        // Load from storage
-                        IsolatedStorageFileStream location = null;
-                        try
+                        if (storage.FileExists(strFilename) == true)
                         {
-                            location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
-                            DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
+                            // Load from storage
+                            IsolatedStorageFileStream location = null;
+                            try
+                            {
+                                location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
+                                DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
-                            item.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
-                        }
-                        catch (Exception)
-                        {
-                        }
-                        finally
-                        {
-                            if (location != null)
-                                location.Close();
+                                item.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
+                            }
+                            catch (Exception)
+                            {
+                            }
+                            finally
+                            {
+                                if (location != null)
+                                    location.Close();
+                            }
                         }
 
                     }
@@ -275,6 +311,7 @@ namespace WPFXMPPClient
                 this.FirePropertyChanged("ConnectedStateBrush");
                 ComboBoxPresence.IsEnabled = false;
                 ButtonAddBuddy.IsEnabled = false;
+                SaveAccounts();
             }
             else if (XMPPClient.XMPPState == XMPPState.Ready)
             {
@@ -365,8 +402,7 @@ namespace WPFXMPPClient
             {
                 XMPPClient.UpdatePresence();
             }
-            Properties.Settings.Default.Status = XMPPClient.PresenceStatus.Status;
-            Properties.Settings.Default.Save();
+            /// Should save our accounts here
         }
 
       
@@ -432,6 +468,8 @@ namespace WPFXMPPClient
 
             if (FileTransferWindow.IsLoaded == false)
             {
+                FileTransferWindow = new FileTransferWindow();
+                FileTransferWindow.XMPPClient = this.XMPPClient;
                 FileTransferWindow.Show();
             }
             else

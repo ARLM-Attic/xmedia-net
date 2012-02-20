@@ -9,6 +9,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
+using System.Runtime.Serialization;
+
 namespace System.Net.XMPP
 {
     public enum PresenceType
@@ -32,6 +34,7 @@ namespace System.Net.XMPP
         xa
     }
 
+    [DataContract]
     public class PresenceStatus : System.ComponentModel.INotifyPropertyChanged
     {
         public PresenceStatus()
@@ -52,7 +55,7 @@ namespace System.Net.XMPP
         }
 
         private PresenceType m_ePresence = PresenceType.unavailable;
-
+        [DataMember]
         public PresenceType PresenceType
         {
             get { return m_ePresence; }
@@ -120,7 +123,7 @@ namespace System.Net.XMPP
         }
 
         private PresenceShow m_ePresenceShow = PresenceShow.unknown;
-
+        [DataMember]
         public PresenceShow PresenceShow
         {
             get { return m_ePresenceShow; }
@@ -139,7 +142,7 @@ namespace System.Net.XMPP
         }
 
         private string m_strStatus = "unknown";
-
+        [DataMember]
         public string Status
         {
             get { return m_strStatus; }
@@ -157,7 +160,7 @@ namespace System.Net.XMPP
         }
 
         private sbyte m_nPriority = 0;
-
+        [DataMember]
         public sbyte Priority
         {
             get { return m_nPriority; }

@@ -18,6 +18,7 @@ using System.Runtime.Serialization;
 
 using System.Runtime.InteropServices;
 
+using System.Text.RegularExpressions;
 
 namespace WPFXMPPClient
 {
@@ -70,14 +71,106 @@ namespace WPFXMPPClient
 
 
             OurRosterItem.HasNewMessages = false; /// We just viewed new messages
-            /// 
-
             this.DataContext = OurRosterItem;
-            this.ListBoxConversation.ItemsSource = OurRosterItem.Conversation.Messages;
-            //this.ListBoxInstances.ItemsSource = OurRosterItem.ClientInstances;
-
             XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            SetConversation();
+        }
 
+        Regex reghyperlink = new Regex(@"\w+\://\S+", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+
+        Paragraph MainParagraph = new Paragraph();
+
+        public void SetConversation()
+        {
+            MainParagraph.Inlines.Clear();
+            TextBlockChat.Document.Blocks.Clear();
+            TextBlockChat.Document.Blocks.Add(MainParagraph);
+            
+            foreach (TextMessage msg in OurRosterItem.Conversation.Messages)
+            {
+                AddInlinesForMessage(msg);
+            }
+
+            this.TextBlockChat.ScrollToEnd();
+        }
+
+        const double FontSizeFrom = 10.0f;
+        const double FontSizeMessage = 14.0f;
+        void AddInlinesForMessage(TextMessage msg)
+        {
+            Span msgspan = new Span();
+            string strRun = string.Format("{0} to {1} - {2}", msg.From, msg.To, msg.Received);
+            Run runfrom = new Run(strRun);
+            runfrom.Foreground = Brushes.Gray;
+            runfrom.FontSize = FontSizeFrom;
+            msgspan.Inlines.Add(runfrom);
+
+            msgspan.Inlines.Add(new LineBreak());
+
+
+            Span spanmsg = new Span();
+            spanmsg.Foreground = Brushes.Gray;
+            spanmsg.FontSize = FontSizeMessage;
+            msgspan.Inlines.Add(spanmsg);
+
+            /// Look for hyperlinks in our run
+            /// 
+            string strMessage = msg.Message;
+            int nMatchAt = 0;
+            Match matchype = reghyperlink.Match(strMessage, nMatchAt);
+            while (matchype.Success == true)
+            {
+                string strHyperlink = matchype.Value;
+                nMatchAt = matchype.Index + matchype.Length;
+
+                /// Add everything before this as a normal run
+                /// 
+                if (matchype.Index > nMatchAt)
+                {
+                    Run runtext = new Run(strMessage.Substring(nMatchAt, (matchype.Index - nMatchAt)));
+                    runtext.Foreground = msg.TextColor;
+                    msgspan.Inlines.Add(runtext);
+                }
+
+                Hyperlink link = new Hyperlink();
+                link.Inlines.Add(strMessage.Substring(matchype.Index, matchype.Length));
+                link.Foreground = Brushes.Blue;
+                link.TargetName = "_blank";
+                try
+                {
+                    link.NavigateUri = new Uri(strMessage.Substring(matchype.Index, matchype.Length));
+                }
+                catch (Exception ex)
+                {
+                }
+                link.Click += new RoutedEventHandler(link_Click);
+                msgspan.Inlines.Add(link);
+
+
+                if (nMatchAt >= (strMessage.Length - 1))
+                    break;
+
+                matchype = reghyperlink.Match(strMessage, nMatchAt);
+            }
+
+            /// see if we have any remaining text
+            /// 
+            if (nMatchAt < strMessage.Length)
+            {
+                Run runtext = new Run(strMessage.Substring(nMatchAt, (strMessage.Length - nMatchAt)));
+                runtext.Foreground = msg.TextColor;
+                msgspan.Inlines.Add(runtext);
+            }
+            msgspan.Inlines.Add(new LineBreak());
+
+            this.MainParagraph.Inlines.Add(msgspan);
+        }
+
+        void link_Click(object sender, RoutedEventArgs e)
+        {
+            /// Navigate to this link
+            /// 
+            System.Diagnostics.Process.Start(((Hyperlink)sender).NavigateUri.ToString());
         }
 
 
@@ -116,8 +209,6 @@ namespace WPFXMPPClient
         [DllImport("user32.dll")]
         static extern bool FlashWindow(IntPtr hwnd, bool bInvert);
 
-        bool m_bHasAckedMessage = false;
-
         void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
             if (bReceived == true)
@@ -134,36 +225,32 @@ namespace WPFXMPPClient
 
             if (item.JID.BareJID.Equals(OurRosterItem.JID.BareJID) == true)
             {
+                AddInlinesForMessage(msg);
 
-                
-                if (m_bHasAckedMessage == false)
+                if (bReceived == true)
                 {
                     System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/ding.wav");
                     player.Play();
 
                     IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
                     FlashWindow(windowHandle, true);
+
                 }
-                
+
                 /// Clear our new message flag for this roster user as long as this window is open
 
                 if (this.IsActive == true)
                 {
                     OurRosterItem.HasNewMessages = false;
-                    m_bHasAckedMessage = true;
                 }
 
-                this.ListBoxConversation.UpdateLayout();
-                if (this.ListBoxConversation.Items.Count > 0)
-                    this.ListBoxConversation.ScrollIntoView(this.ListBoxConversation.Items[this.ListBoxConversation.Items.Count - 1]);
-
+                this.TextBlockChat.ScrollToEnd();
             }
         }
 
         protected override void OnActivated(EventArgs e)
         {
             OurRosterItem.HasNewMessages = false;
-            m_bHasAckedMessage = true;
             base.OnActivated(e);
         }
 
@@ -177,6 +264,8 @@ namespace WPFXMPPClient
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
             OurRosterItem.Conversation.Clear();
+            SetConversation();
+            
         }
 
         private void TextBoxChatToSend_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -229,13 +318,13 @@ namespace WPFXMPPClient
             /// Copy all the selected text 
             /// 
             StringBuilder sb = new StringBuilder();
-            foreach (TextMessage msg in this.ListBoxConversation.SelectedItems)
-            {
-                if (msg.Sent == false)
-                   sb.AppendFormat("From {0} at {1}\r\n{2}", msg.From, msg.Received, msg.Message);
-                else
-                    sb.AppendFormat("To {0} at {1}\r\n{2}", msg.To, msg.Received, msg.Message);
-            }
+            //foreach (TextMessage msg in this.ListBoxConversation.SelectedItems)
+            //{
+            //    if (msg.Sent == false)
+            //       sb.AppendFormat("From {0} at {1}\r\n{2}", msg.From, msg.Received, msg.Message);
+            //    else
+            //        sb.AppendFormat("To {0} at {1}\r\n{2}", msg.To, msg.Received, msg.Message);
+            //}
             Clipboard.SetText(sb.ToString());
         }
 
@@ -263,22 +352,12 @@ namespace WPFXMPPClient
                         /// Just send it to 1 recepient for now, must have a full jid
                         string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, instance.FullJID);
 
-                        FileInfo info = new FileInfo(strFileName);
-                        ProgressBarDownload.Minimum = 0;
-                        ProgressBarDownload.Maximum = info.Length;
-
                         break;
                     }
                 }
                 
 
             }
-        }
-
-
-        public void DownloadProgres(string strRequestId, int nBytes, int nTotal)
-        {
-            ProgressBarDownload.Value = nBytes;
         }
 
         public void DownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom)

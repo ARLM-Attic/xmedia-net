@@ -29,13 +29,34 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+	    <Style x:Key="RichTextBoxStyle1" TargetType="RichTextBox">
+	    	<Setter Property="FontSize" Value="{StaticResource PhoneFontSizeNormal}"/>
+	    	<Setter Property="Foreground" Value="{StaticResource PhoneForegroundBrush}"/>
+	    	<Setter Property="Background" Value="Transparent"/>
+	    	<Setter Property="BorderBrush" Value="Transparent"/>
+	    	<Setter Property="BorderThickness" Value="0"/>
+	    	<Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+	    	<Setter Property="VerticalContentAlignment" Value="Center"/>
+	    	<Setter Property="Padding" Value="0"/>
+	    	<Setter Property="Template">
+	    		<Setter.Value>
+	    			<ControlTemplate TargetType="RichTextBox">
+	    				<Grid Background="Transparent">
+	    					<Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Margin="{TemplateBinding Margin}">
+	    						<ContentControl x:Name="ContentElement" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Padding="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+	    					</Border>
+	    				</Grid>
+	    			</ControlTemplate>
+	    		</Setter.Value>
+	    	</Setter>
+	    </Style>
 	</phone:PhoneApplicationPage.Resources>
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100" />
-            <ColumnDefinition Width="373*" />
+            <ColumnDefinition Width="340*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="100"/>
@@ -56,7 +77,13 @@
         </StackPanel>
 
 
-        <ListBox Grid.Row="1" Style="{StaticResource ListBoxStyle1}" VerticalAlignment="Stretch" 
+        <ScrollViewer Background="White"  x:Name="ScrollChat" Margin="5,0" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Visible" >
+            <RichTextBox Background="White" IsReadOnly="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Top" 
+                         VerticalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible"  AcceptsReturn="True"
+                         x:Name="TextBlockChat" ScrollViewer.HorizontalScrollBarVisibility="Visible" Foreground="Black" 
+                         Margin="5,5,5,10" Padding="0" Style="{StaticResource RichTextBoxStyle1}" />
+        </ScrollViewer>
+        <!--<ListBox Grid.Row="1" Style="{StaticResource ListBoxStyle1}" VerticalAlignment="Stretch" 
                  DataContext="{Binding Conversation}"
                  Background="Beige" x:Name="ListBoxConversation" Grid.ColumnSpan="2">
             <ListBox.ItemTemplate>
@@ -70,7 +97,7 @@
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
-        </ListBox>
+        </ListBox>-->
         
 
         <TextBox Grid.Row="2" x:Name="TextBoxChatToSend" InputScope="Chat"  KeyDown="TextBoxChatToSend_KeyDown" Grid.ColumnSpan="2"></TextBox>

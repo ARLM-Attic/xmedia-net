@@ -42,11 +42,14 @@ namespace WPFXMPPClient
             set { m_strLogText = value; }
         }
 
+        public const int MaxLogSize = 4096 * 8;
+        public const int ReduceLogBy = 4096;
+
         void XMPPClient_OnXMLSent(XMPPClient client, string strXML)
         {
             m_strLogText += "\r\n -->" + strXML;
-            if (m_strLogText.Length > 8000)
-                m_strLogText = m_strLogText.Substring(m_strLogText.Length - 7000);
+            if (m_strLogText.Length > MaxLogSize)
+                m_strLogText = m_strLogText.Substring(m_strLogText.Length - ReduceLogBy);
 
             AsyncScrollToEnd();
             FirePropertyChanged("LogText");
@@ -73,8 +76,8 @@ namespace WPFXMPPClient
         void XMPPClient_OnXMLReceived(XMPPClient client, string strXML)
         {
             m_strLogText += "\r\n <--" + strXML;
-            if (m_strLogText.Length > 8000)
-                m_strLogText = m_strLogText.Substring(m_strLogText.Length - 7000);
+            if (m_strLogText.Length > MaxLogSize)
+                m_strLogText = m_strLogText.Substring(m_strLogText.Length - ReduceLogBy);
 
             AsyncScrollToEnd(); 
             FirePropertyChanged("LogText");

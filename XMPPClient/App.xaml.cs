@@ -41,6 +41,7 @@ namespace XMPPClient
             // Phone-specific initialization
             InitializePhoneApplication();
 
+
             /// Load our options
             /// 
             LoadOptions();
@@ -92,25 +93,27 @@ namespace XMPPClient
             string strFilename = "options.xml";
             using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
             {
-                // Load from storage
-                IsolatedStorageFileStream location = null;
-                try
+                if (storage.FileExists("options.xml") == true)
                 {
-                    location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
-                    DataContractSerializer ser = new DataContractSerializer(typeof(Options));
+                    // Load from storage
+                    IsolatedStorageFileStream location = null;
+                    try
+                    {
+                        location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
+                        DataContractSerializer ser = new DataContractSerializer(typeof(Options));
 
-                    Options = ser.ReadObject(location) as Options;
+                        Options = ser.ReadObject(location) as Options;
+                    }
+                    catch (Exception ex)
+                    {
+                        Options = new Options();
+                    }
+                    finally
+                    {
+                        if (location != null)
+                            location.Close();
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Options = new Options();
-                }
-                finally
-                {
-                    if (location != null)
-                        location.Close();
-                }
-
             }
         }
 
@@ -136,6 +139,78 @@ namespace XMPPClient
                         location.Close();
                 }
 
+            }
+        }
+
+        public static void SaveException(string strException)
+        {
+            string strFilename = "Exception.txt";
+            using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
+            {
+                // Load from storage
+                IsolatedStorageFileStream location = null;
+                try
+                {
+                    location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Create, storage);
+                    byte [] bException = System.Text.UTF8Encoding.UTF8.GetBytes(strException);
+                    location.Write(bException, 0, bException.Length);
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    if (location != null)
+                        location.Close();
+                }
+
+            }
+        }
+
+        public static void CheckForExceptionsLastTime()
+        {
+            string strFilename = "Exception.txt";
+            string strExceptionText = null;
+
+            using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
+            {
+
+                if (storage.FileExists(strFilename) == true)
+                {
+
+                    // Load from storage
+                    IsolatedStorageFileStream location = null;
+                    try
+                    {
+                        location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
+                        byte[] bException = new byte[location.Length];
+                        location.Read(bException, 0, bException.Length);
+
+                        strExceptionText = System.Text.UTF8Encoding.UTF8.GetString(bException, 0, bException.Length);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                    finally
+                    {
+                        if (location != null)
+                            location.Close();
+                    }
+
+                    storage.DeleteFile(strFilename);
+                }
+            }
+
+            if ((strExceptionText != null) && (strExceptionText.Length > 0))
+            {
+                if (MessageBox.Show("An exception occurred the last time this application was run, would you like to forward the details to the developers?", "Application Exception", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                    Microsoft.Phone.Tasks.EmailComposeTask task = new Microsoft.Phone.Tasks.EmailComposeTask();
+                    task.Body = strExceptionText;
+                    task.Subject = "[XMPPClient] Crash Notification Details";
+                    task.To = "bonnbria@gmail.com";
+                    task.Show();
+                }
             }
         }
 
@@ -204,18 +279,8 @@ namespace XMPPClient
         {
             if (e.ExceptionObject is QuitException)
                 return;
-
-            if (MessageBox.Show("An exception has occurred in this application, would you like to forward the details to the developers?", "Application Exception", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
-            {
-                Microsoft.Phone.Tasks.EmailComposeTask task = new Microsoft.Phone.Tasks.EmailComposeTask();
-                task.Body = e.ExceptionObject.ToString();
-                if (XMPPLogBuilder.Length > 0)
-                    task.Body += "\r\n\r\n" + XMPPLogBuilder.ToString();
-
-                task.Subject = "[XMPPClient] Crash Notification Details";
-                task.To = "bonnbria@gmail.com";
-                task.Show();
-            }
+                
+            App.SaveException(e.ExceptionObject.ToString() + "\r\n\r\n" + XMPPLogBuilder.ToString());
                 
 
             if (System.Diagnostics.Debugger.IsAttached)

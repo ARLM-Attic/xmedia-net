@@ -32,6 +32,7 @@ namespace GroceryList
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            /// TODO, user your own server and accounts, not mine :)
             XMPPClient.XMPPAccount.User = "test";
             XMPPClient.XMPPAccount.Password = "test";
             XMPPClient.XMPPAccount.Server = "ninethumbs.com";

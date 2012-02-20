@@ -11,64 +11,456 @@ using System.Windows.Shapes;
 
 using System.Collections.Generic;
 using System.Xml.Linq;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 
-namespace System.Net.XMPP
+namespace System.Net.XMPP.Jingle
 {
-    // An audio/video payload 
-    public class Payload
+    [XmlRoot(ElementName = "parameter")]
+    public class PayloadParameter
     {
-        public Payload()
+        public PayloadParameter()
         {
         }
-        private int m_nPayloadId = 0;
 
-        public int PayloadId
-        {
-            get { return m_nPayloadId; }
-            set { m_nPayloadId = value; }
-        }
-        private string m_strName = "speex";
-
+        private string m_strName = null;
+        [XmlAttribute(AttributeName = "name")]
         public string Name
         {
             get { return m_strName; }
             set { m_strName = value; }
         }
-        private int m_nChannels = 1;
 
-        public int Channels
+        private string m_strValue = null;
+        [XmlAttribute(AttributeName = "value")]
+        public string Value
         {
-            get { return m_nChannels; }
-            set { m_nChannels = value; }
+            get { return m_strValue; }
+            set { m_strValue = value; }
         }
-        private uint m_nClockRate = 16000;
-
-        public uint ClockRate
-        {
-            get { return m_nClockRate; }
-            set { m_nClockRate = value; }
-        }
-        public uint m_nPtime = 0;
-        public uint m_nMaxptime = 0;
     }
 
+
+
+    // An audio/video payload 
+    [XmlRoot(ElementName = "payload-type")]
+    public class Payload
+    {
+        public Payload()
+        {
+        }
+
+        private int m_nPayloadId = 0;
+        [XmlAttribute(AttributeName = "id")]
+        public int PayloadId
+        {
+            get { return m_nPayloadId; }
+            set { m_nPayloadId = value; }
+        }
+        
+        private string m_strName = "speex";
+        [XmlAttribute(AttributeName = "name")]
+        public string Name
+        {
+            get { return m_strName; }
+            set { m_strName = value; }
+        }
+        
+        private string m_strChannels = null;
+        [XmlAttribute(AttributeName = "channels")]
+        public string Channels
+        {
+            get { return m_strChannels; }
+            set { m_strChannels = value; }
+        }
+
+        private string m_strClockRate = "16000";
+        [XmlAttribute(AttributeName = "clockrate")]
+        public string ClockRate
+        {
+            get { return m_strClockRate; }
+            set { m_strClockRate = value; }
+        }
+
+        
+        public string m_strPtime = null;
+        [XmlAttribute(AttributeName = "ptime")]
+        public string Ptime
+        {
+            get { return m_strPtime; }
+            set { m_strPtime = value; }
+        }
+
+        
+        public string m_strMaxptime = null;
+        [XmlAttribute(AttributeName = "maxptime")]
+        public string Maxptime
+        {
+            get { return m_strMaxptime; }
+            set { m_strMaxptime = value; }
+        }
+
+        [XmlElement(ElementName="parameter")]
+        public List<PayloadParameter> Parameters = new List<PayloadParameter>();
+    }
+
+    [XmlRoot(ElementName = "candidate")]
     public class Candidate
     {
         public Candidate()
         {
         }
+        [XmlAttribute(AttributeName="component")]
         public int component = 1;
-        public int foundation = 1;
+
+        [XmlAttribute(AttributeName = "foundation")]
+        public int foundation = 0;
+        
+        [XmlAttribute(AttributeName = "generation")]
         public int generation = 0;
+
+        [XmlAttribute(AttributeName = "id")]
         public string id = "";
+
+        [XmlAttribute(AttributeName = "ip")]
         public string ipaddress = "";
+
+        [XmlAttribute(AttributeName = "network")]
         public int network = 1;
+
+        [XmlAttribute(AttributeName = "port")]
         public int port = 8080;
+
+        [XmlAttribute(AttributeName = "priority")]
         public int priority = 1231245;
+
+        [XmlAttribute(AttributeName = "protocol")]
         public string protocol = "udp";
+
+        [XmlAttribute(AttributeName = "host")]
         public string type = "host";
-        public string reladdr = "";
-        public int relport = 0;
+
+        [XmlAttribute(AttributeName = "reladdr")]
+        public string reladdr = null;
+
+        [XmlAttribute(AttributeName = "relport")]
+        public string relport = null;
+
+    }
+
+    [XmlRoot(ElementName = "transport")]
+    public class Transport
+    {
+        public Transport()
+        {
+        }
+
+        [XmlAttribute(AttributeName = "pwd")]
+        public string pwd = null;
+
+        [XmlAttribute(AttributeName = "ufrag")]
+        public string ufrag = null;
+
+        [XmlElement(ElementName="candidate")]
+        public List<Candidate> Candidates = new List<Candidate>();
+    }
+
+    [XmlRoot(ElementName = "description")]
+    public class Description
+    {
+        public Description()
+        {
+        }
+
+        [XmlAttribute(AttributeName="media")]
+        public string media = null;
+
+        [XmlElement(ElementName = "payload-type")]
+        public List<Payload> Payloads = new List<Payload>();
+    }
+
+    [XmlRoot(ElementName = "content")]
+    public class Content
+    {
+        public Content()
+        {
+        }
+
+        [XmlAttribute(AttributeName="creator")]
+        public string Creator = null;
+        [XmlAttribute(AttributeName = "name")]
+        public string Name = null;
+
+        [XmlElement(ElementName = "description", Namespace = "urn:xmpp:jingle:apps:rtp:1")]
+        public Description Description = new Description();
+
+        [XmlElement(ElementName = "transport", Namespace = "urn:xmpp:jingle:transports:ice-udp:1")]
+        public Transport ICETransport = null;
+
+        [XmlElement(ElementName = "transport", Namespace = "urn:xmpp:jingle:transports:raw-udp:1")]
+        public Transport RawUDPTransport = null;
+
+    }
+
+    [XmlRoot(ElementName = "mute")]
+    public class Mute
+    {
+        public Mute()
+        {
+        }
+
+        [XmlAttribute(AttributeName = "creator")]
+        public string Creator = "responder";
+        [XmlAttribute(AttributeName = "name")]
+        public string Name = "voice";
+    }
+
+    public enum JingleStateChange
+    {
+        None,
+        Active,
+        Hold,
+        Ringing,
+        Mute,
+        Unmute
+    }
+
+    public enum TerminateReason
+    {
+        Decline,
+        Busy,
+        Success,
+        UnsupportedTransports,
+        FailedTransports,
+
+        AlternativeSession,
+        Cancel,
+        ConnectivityError,
+        Expired,
+        FailedApplication,
+        FailedTransport,
+        GeneralError,
+        Gone,
+        IncompatibleParameters,
+        MediaError,
+        SecurityError,
+        Timeout,
+        UnsupportedApplication,
+        Unknown,
+    }
+
+    public class Reason
+    {
+        public Reason()
+        {
+        }
+        
+        public Reason(TerminateReason reason)
+        {
+            TerminateReason = reason;
+        }
+
+        /// <summary>
+        /// The reason the session was terminated.   Have to do this the long way because of lack of choice support on windows phone
+        /// </summary>
+        /// 
+        [XmlIgnore()]
+        public TerminateReason TerminateReason
+        {
+            get 
+            {
+                if (Success != null) return TerminateReason.Success;
+                else if (Busy != null) return TerminateReason.Busy;
+                else if (Decline != null) return TerminateReason.Decline;
+                else if (UnsupportedTransports != null) return TerminateReason.UnsupportedTransports;
+                else if (FailedTransport != null) return TerminateReason.FailedTransports;
+                else if (AlternativeSession != null) return TerminateReason.AlternativeSession;
+                else if (Cancel != null) return TerminateReason.Cancel;
+                else if (ConnectivityError != null) return TerminateReason.ConnectivityError;
+                else if (Expired != null) return TerminateReason.Expired;
+                else if (FailedApplication != null) return TerminateReason.FailedApplication;
+                else if (GeneralError != null) return TerminateReason.GeneralError;
+                else if (Gone != null) return TerminateReason.Gone;
+                else if (IncompatibleParameters != null) return TerminateReason.IncompatibleParameters;
+                else if (MediaError != null) return TerminateReason.MediaError;
+                else if (SecurityError != null) return TerminateReason.SecurityError;
+                else if (Timeout != null) return TerminateReason.Timeout;
+                else if (UnsupportedApplication != null) return TerminateReason.UnsupportedApplication;
+
+                else return TerminateReason.Unknown;
+            }
+            set 
+            {
+                Busy = null;
+                Decline = null;
+                Success = null;
+                Unknown = null;
+                UnsupportedTransports = null;
+                FailedTransport = null;
+                AlternativeSession = null;
+                Cancel = null;
+                ConnectivityError = null;
+                Expired = null;
+                FailedApplication = null;
+                GeneralError = null;
+                Gone = null;
+                IncompatibleParameters = null;
+                MediaError = null;
+                SecurityError = null;
+                Timeout = null;
+                UnsupportedApplication = null;
+
+                if (value == TerminateReason.Success) Success = "";
+                else if (value == TerminateReason.Busy) Busy = "";
+                else if (value == TerminateReason.Decline) Decline = "";
+                else if (value == TerminateReason.UnsupportedTransports) Decline = "";
+                else if (value == TerminateReason.FailedTransports) FailedTransport = "";
+                else if (value == TerminateReason.AlternativeSession) AlternativeSession = "";
+                else if (value == TerminateReason.Cancel) Cancel = "";
+                else if (value == TerminateReason.ConnectivityError) ConnectivityError = "";
+                else if (value == TerminateReason.Expired) Expired = "";
+                else if (value == TerminateReason.FailedApplication) FailedApplication = "";
+                else if (value == TerminateReason.GeneralError) GeneralError = "";
+                else if (value == TerminateReason.Gone) Gone = "";
+                else if (value == TerminateReason.IncompatibleParameters) IncompatibleParameters = "";
+                else if (value == TerminateReason.MediaError) MediaError = "";
+                else if (value == TerminateReason.SecurityError) SecurityError = "";
+                else if (value == TerminateReason.Timeout) Timeout = "";
+                else if (value == TerminateReason.UnsupportedApplication) UnsupportedApplication = "";
+                else Unknown = "";
+            }
+        }
+
+        [XmlElement("busy")]
+        string Busy = null;
+        [XmlElement("decline")]
+        string Decline = null;
+        [XmlElement("unknown")]
+        string Unknown = null;
+        [XmlElement("success")]
+        string Success = "";
+        [XmlElement("unsupported-transports")]
+        string UnsupportedTransports = null;
+        [XmlElement("failed-transport")]
+        string FailedTransport = null;
+
+        [XmlElement("alternative-session")]
+        string AlternativeSession = null;
+        [XmlElement("failed-cancel")]
+        string Cancel = null;
+        [XmlElement("connectivity-error")]
+        string ConnectivityError = null;
+        [XmlElement("expired")]
+        string Expired = null;
+        [XmlElement("failed-application")]
+        string FailedApplication = null;
+        [XmlElement("general-error")]
+        string GeneralError = null;
+        [XmlElement("gone")]
+        string Gone = null;
+        [XmlElement("incompatible-parameters")]
+        string IncompatibleParameters = null;
+        [XmlElement("media-error")]
+        string MediaError = null;
+        [XmlElement("security-error")]
+        string SecurityError = null;
+        [XmlElement("timeout")]
+        string Timeout = null;
+        [XmlElement("unsupported-applications")]
+        string UnsupportedApplication = null;
+
+    }
+
+
+    [XmlRoot(ElementName = "jingle", Namespace = "urn:xmpp:jingle:1")]
+    public class Jingle
+    {
+        public Jingle()
+        {
+        }
+
+        public const string SessionInitiate = "session-initiate";
+        public const string SessionAccept = "session-accept";
+        public const string SessionTerminate = "session-terminate";
+        public const string ContentAdd = "content-add";
+        public const string ContentModify = "content-modify";
+        public const string ContentReject = "content-reject";
+        public const string ContentAccept = "content-accept";
+        public const string DescriptionInfo = "description-info";
+        public const string SessionInfo = "session-info";
+
+        public const string TransportInfo = "transport-info";
+        public const string TransportAccept = "transport-accept";
+        public const string TransportReject = "transport-reject";
+        public const string TransportReplace = "transport-replace";
+
+        [XmlAttribute(AttributeName = "action")]
+        public string Action = SessionInitiate;
+
+        [XmlAttribute(AttributeName = "initiator")]
+        public string Initiator = null;
+
+        [XmlAttribute(AttributeName = "sid")]
+        public string SID = null;
+
+        [XmlElement(ElementName = "content")]
+        public Content Content = new Content();
+
+        [XmlElement(ElementName = "active", Namespace="urn:xmpp:jingle:apps:rtp:info:1")]
+        public string Active = null;
+
+        [XmlElement(ElementName = "hold", Namespace = "urn:xmpp:jingle:apps:rtp:info:1")]
+        public string Hold = null;
+
+        [XmlElement(ElementName = "ringing", Namespace = "urn:xmpp:jingle:apps:rtp:info:1")]
+        public string Ringing = null;
+
+        [XmlElement(ElementName = "mute", Namespace = "urn:xmpp:jingle:apps:rtp:info:1")]
+        public Mute Mute = null;
+
+        [XmlElement(ElementName = "unmute", Namespace = "urn:xmpp:jingle:apps:rtp:info:1")]
+        public Mute Unmute = null;
+
+        [XmlIgnore()]
+        public JingleStateChange JingleStateChange
+        {
+            get
+            {
+                if (Active != null)
+                    return JingleStateChange.Active;
+                else if (Hold != null)
+                    return JingleStateChange.Hold;
+                else if (Ringing != null)
+                    return JingleStateChange.Ringing;
+                else if (Mute != null)
+                    return JingleStateChange.Mute;
+                else if (Unmute != null)
+                    return JingleStateChange.Unmute;
+                return JingleStateChange.None;
+            }
+            set
+            {
+                Active = null;
+                Hold = null;
+                Ringing = null;
+                Mute = null;
+                Unmute = null;
+
+                if (value == XMPP.Jingle.JingleStateChange.Active)
+                    Active = "";
+                else if (value == XMPP.Jingle.JingleStateChange.Hold)
+                    Hold = "";
+                else if (value == XMPP.Jingle.JingleStateChange.Mute)
+                    Mute = new Mute();
+                else if (value == XMPP.Jingle.JingleStateChange.Ringing)
+                    Ringing = "";
+                else if (value == XMPP.Jingle.JingleStateChange.Unmute)
+                    Unmute = new Mute();
+            }
+        }
+
+        [XmlElement(ElementName="reason")]
+        public Reason Reason = null;
 
     }
 
@@ -79,201 +471,341 @@ namespace System.Net.XMPP
      /// <feature var='urn:xmpp:jingle:apps:rtp:audio'/>    
      /// <feature var='urn:xmpp:jingle:apps:rtp:video'/>
 
-    public class JingleMessage : IQ
+    [XmlRoot(ElementName = "iq")]
+    public class JingleIQ : IQ
     {
-        public JingleMessage()
+        public JingleIQ()
             : base()
         {
         }
-        public JingleMessage(string strXML)
+        public JingleIQ(string strXML)
             : base(strXML)
         {
         }
 
-        public string action = "session-initiate";
-        public JID initiator = "";
-        public string sid;
+        [XmlElement(ElementName = "jingle", Namespace = "urn:xmpp:jingle:1")]
+        public Jingle Jingle = new Jingle();
 
-        public string media = "audio";
-
-        public List<Payload> payloads = new List<Payload>();
-        public List<Candidate> candidates = new List<Candidate>();
-
-
-        public override void ParseInnerXML(System.Xml.Linq.XElement elem)
-        {
-            if (elem.Name != "{urn:xmpp:jingle:1}jingle")
-                return;
-
-            if (elem.Attribute("action") != null)
-                action = elem.Attribute("action").Value;
-            if (elem.Attribute("initiator") != null)
-                initiator = elem.Attribute("initiator").Value;
-            if (elem.Attribute("sid") != null)
-                sid = elem.Attribute("sid").Value;
-
-            foreach (XElement nextelem in elem.Descendants())
-            {
-                if (nextelem.Name == "{urn:xmpp:jingle:1}content")
-                {
-                }
-                else if (nextelem.Name == "{urn:xmpp:jingle:apps:rtp:1}description")
-                {
-                    if (nextelem.Attribute("media") != null)
-                        media = nextelem.Attribute("media").Value;
-
-                    payloads.Clear();
-                    foreach (XElement nextpayload in nextelem.Descendants("{urn:xmpp:jingle:apps:rtp:1}payload-type"))
-                    {
-                        Payload pay = new Payload();
-                        if (nextpayload.Attribute("id") != null)
-                            pay.PayloadId = Convert.ToInt32(nextpayload.Attribute("id").Value);
-                        if (nextpayload.Attribute("name") != null)
-                            pay.Name = nextpayload.Attribute("name").Value;
-                        if (nextpayload.Attribute("clockrate") != null)
-                            pay.ClockRate = Convert.ToUInt32(nextpayload.Attribute("clockrate").Value);
-                        if (nextpayload.Attribute("channels") != null)
-                            pay.Channels = Convert.ToInt32(nextpayload.Attribute("channels").Value);
-
-                        payloads.Add(pay);
-                    }
-
-                    /// Parse payloads
-                }
-                else if (nextelem.Name == "{urn:xmpp:jingle:transports:ice-udp:1}transport")
-                {
-                    /// Parse candidates
-                    /// 
-                    candidates.Clear();
-                    foreach (XElement nextcand in nextelem.Descendants("{urn:xmpp:jingle:transports:ice-udp:1}candidate"))
-                    {
-                        Candidate cand = new Candidate();
-                        if (nextcand.Attribute("component") != null)
-                            cand.component = Convert.ToInt32(nextcand.Attribute("component").Value);
-                        if (nextcand.Attribute("foundation") != null)
-                            cand.foundation = Convert.ToInt32(nextcand.Attribute("foundation").Value);
-                        if (nextcand.Attribute("generation") != null)
-                            cand.generation = Convert.ToInt32(nextcand.Attribute("generation").Value);
-                        if (nextcand.Attribute("id") != null)
-                            cand.id =nextcand.Attribute("id").Value;
-                        if (nextcand.Attribute("ip") != null)
-                            cand.ipaddress = nextcand.Attribute("ip").Value;
-                        if (nextcand.Attribute("network") != null)
-                            cand.network = Convert.ToInt32(nextcand.Attribute("network").Value);
-                        if (nextcand.Attribute("port") != null)
-                            cand.port = Convert.ToInt32(nextcand.Attribute("port").Value);
-                        if (nextcand.Attribute("priority") != null)
-                            cand.priority = Convert.ToInt32(nextcand.Attribute("priority").Value);
-                        if (nextcand.Attribute("protocol") != null)
-                            cand.protocol = nextcand.Attribute("protocol").Value;
-                        if (nextcand.Attribute("type") != null)
-                            cand.type = nextcand.Attribute("type").Value;
-                        if (nextcand.Attribute("rel-addr") != null)
-                            cand.reladdr = nextcand.Attribute("rel-addr").Value;
-                        if (nextcand.Attribute("rel-port") != null)
-                            cand.relport = Convert.ToInt32(nextcand.Attribute("rel-port").Value);
-
-                        candidates.Add(cand);
-                    }
-                }
-            }
-        }
-
-        public override void AddInnerXML(System.Xml.Linq.XElement elemMessage)
-        {
-            XElement elemJingle = new XElement("{urn:xmpp:jingle:1}jingle");
-            elemMessage.Add(elemJingle);
-            elemJingle.Add(new XAttribute("action", action), new XAttribute("initiator", initiator), new XAttribute("sid", sid));
-
-            XElement elemContent = new XElement("{urn:xmpp:jingle:1}content");
-            elemJingle.Add(elemContent);
-            
-            XElement elemDesc = new XElement("{urn:xmpp:jingle:apps:rtp:1}description");
-            elemDesc.Add(new XAttribute("media", media));
-            elemJingle.Add(elemDesc);
-            foreach (Payload pay in payloads)
-            {
-                elemDesc.Add(new XElement("{urn:xmpp:jingle:apps:rtp:1}payload-type", new XAttribute("id", pay.PayloadId),
-                                                                                      new XAttribute("name", pay.Name),
-                                                                                      new XAttribute("clockrate", pay.ClockRate),
-                                                                                      new XAttribute("channels", pay.Channels)));
-            }
-
-            XElement elemTransport = new XElement("{urn:xmpp:jingle:transports:ice-udp:1}transport");
-            //elemTransport.Add(new XAttribute("media", media));
-            elemJingle.Add(elemTransport);
-            foreach (Candidate cand in candidates)
-            {
-                elemTransport.Add(new XElement("{urn:xmpp:jingle:transports:ice-udp:1}candidate", new XAttribute("component", cand.component),
-                                                                                                  new XAttribute("foundation", cand.foundation),
-                                                                                                  new XAttribute("generation", cand.generation),
-                                                                                                  new XAttribute("id", cand.id),
-                                                                                                  new XAttribute("ip", cand.ipaddress),
-                                                                                                  new XAttribute("network", cand.network),
-                                                                                                  new XAttribute("port", cand.port),
-                                                                                                  new XAttribute("priority", cand.priority),
-                                                                                                  new XAttribute("protocol", cand.protocol),
-                                                                                                  new XAttribute("type", cand.type),
-                                                                                                  new XAttribute("rel-addr", cand.reladdr),
-                                                                                                  new XAttribute("rel-port", cand.relport)));
-            }
-        }
-
+     
     }
 
     /// <summary>
     /// Initiates a jingle session, returns and event when done 
     /// </summary>
-    public class JingleLogic : Logic
+    public class JingleSessionLogic : Logic
     {
-        public JingleLogic(XMPPClient client)
+        public JingleSessionLogic(XMPPClient client, string strSessionId, JingleSessionManager mgr)
             : base(client)
         {
+            SessionId = strSessionId;
+            JingleSessionManager = mgr;
         }
 
-        JingleMessage RequestMessage = null;
-        public void InitiateJingleSession(JID jidTo, string strLocalIP, int nLocalPort)
-        {
-            RequestMessage = new JingleMessage();
-            RequestMessage.action = "session-initiate";
-            RequestMessage.initiator = XMPPClient.JID;
-            //RequestMessage.sid = ?
-            RequestMessage.media = "audio";
+        public string SessionId = null;
+        public string RemoteJID = null;
+        JingleSessionManager JingleSessionManager = null;
 
-            RequestMessage.payloads.Add(new Payload() { PayloadId = 96, Channels = 1, ClockRate = 16000, Name = "speex" });
-            RequestMessage.payloads.Add(new Payload() { PayloadId = 97, Channels = 1, ClockRate = 8000, Name = "speex" });
-            RequestMessage.payloads.Add(new Payload() { PayloadId = 0, Channels = 1, ClockRate = 8000, Name = "PCMU" });
-
-            RequestMessage.candidates.Add(new Candidate() { ipaddress = strLocalIP, port = nLocalPort });
-
-            XMPPClient.SendXMPP(RequestMessage);
-        }
+        
 
         public override bool NewIQ(IQ iq)
         {
-            if ( (RequestMessage != null) &&  (iq.ID == RequestMessage.ID))
+            if ((OutgoingRequestMessage != null) && (iq.ID == OutgoingRequestMessage.ID))
             {
+                /// Got an ack, analyze it an tell the client what is going on
+                IQResponseAction response = new IQResponseAction();
+                if (iq.Type != IQType.result.ToString())
+                {
+                    response.AcceptIQ = false;
+                    response.Error = iq.Error;
+                }
 
+                JingleSessionManager.FireNewSessionAckReceived(SessionId, response);
                 return true;
             }
-            else if (iq is JingleMessage) //Our XMPPMessageFactory created a jingle message
+            if ((AcceptSessionMessage != null) && (iq.ID == AcceptSessionMessage.ID))
             {
-                /// See if this is a JINGLE message for our session 
-                /// 
-                JingleMessage msg = iq as JingleMessage;
-                if ((RequestMessage != null) && (msg.sid == RequestMessage.sid))
+                /// Client accept our session
+
+                IQResponseAction response = new IQResponseAction();
+                if (iq.Type != IQType.result.ToString())
                 {
-                    /// The session we initiated
+                    response.AcceptIQ = false;
+                    response.Error = iq.Error;
                 }
-                else
-                {
-                    // A new incoming sesion request
-                }
+
+                JingleSessionManager.FireSessionAcceptedAck(SessionId, response);
                 return true;
             }
+            if ((TerminateSessionRequest != null) && (iq.ID == TerminateSessionRequest.ID))
+            {
+                /// Got an ack, analyze it an tell the client what is going on
+                /// 
+                JingleSessionManager.FireSessionTerminated(SessionId);
+                IsCompleted = true;
+                return true;
+            }
+            
+
             return false;
         }
 
+        public void NewJingleIQ(JingleIQ jingleiq)
+        {
+            /// New message coming in, see if it is session accept or session terminate
+            /// 
+            if (jingleiq.Jingle.Action == Jingle.SessionAccept)
+            {
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = IncomingRequestMessage.From;
+                iqresponse.Type = IQType.result.ToString();
+                XMPPClient.SendXMPP(iqresponse);
+
+                JingleSessionManager.FireSessionAcceptedReceived(this.SessionId, jingleiq.Jingle);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.SessionTerminate)
+            {
+                /// Tell the user we've been terminated.  Ack and finish this logic
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+                JingleSessionManager.FireSessionTerminated(this.SessionId);
+
+                this.IsCompleted = true;
+            }
+            else if (jingleiq.Jingle.Action == Jingle.ContentAdd)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.ContentModify)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.ContentReject)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.ContentAccept)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.DescriptionInfo)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.SessionInfo)
+            {
+                //if (jingleiq.Jingle.JingleStateChange != JingleStateChange.None)
+
+                /// Some type of status message, just ack
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+                
+                /// TODO, notify client of state change
+                /// 
+                System.Diagnostics.Debug.WriteLine("Got a Jingle state changed event of {0}", jingleiq.Jingle.JingleStateChange);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.TransportInfo)
+            {
+                
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = IncomingRequestMessage.From;
+                iqresponse.Type = IQType.result.ToString();
+                XMPPClient.SendXMPP(iqresponse);
+
+                JingleSessionManager.FireSessionTransportInfoReceived(this.SessionId, jingleiq.Jingle);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.TransportAccept)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.TransportReject)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else if (jingleiq.Jingle.Action == Jingle.TransportReplace)
+            {
+                /// TODO, notify user of this
+                /// 
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.result.ToString();
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+            else 
+            {
+                IQ iqresponse = new IQ();
+                iqresponse.ID = jingleiq.ID;
+                iqresponse.From = XMPPClient.JID;
+                iqresponse.To = jingleiq.From;
+                iqresponse.Type = IQType.error.ToString();
+                iqresponse.Error = new Error("<Unknown action />");
+
+                XMPPClient.SendXMPP(iqresponse);
+            }
+
+
+
+        }
+
+        JingleIQ IncomingRequestMessage = null;
+        internal void NewIncomingSessionRequest(JingleIQ iq)
+        {
+            IncomingRequestMessage = iq;
+            RemoteJID = iq.From;
+
+
+            IQ iqresponse = new IQ();
+            iqresponse.ID = IncomingRequestMessage.ID;
+            iqresponse.From = XMPPClient.JID;
+            iqresponse.To = IncomingRequestMessage.From;
+
+            iqresponse.Type = IQType.result.ToString();
+            XMPPClient.SendXMPP(iqresponse);
+
+            JingleSessionManager.FireNewSession(this.SessionId, iq.Jingle);
+            
+        }
+
+        JingleIQ OutgoingRequestMessage = null;
+        internal void InitiateSession(Jingle jingleinfo, string strJIDTo)
+        {
+
+            if (OutgoingRequestMessage != null) /// we've already started a session, the user needs to create a new one
+                throw new Exception(string.Format("Cannot initiate a session that already exists, Session [{0}] has already sent out an initiate session message, client must create a new session", this.SessionId));
+
+            RemoteJID = strJIDTo;
+
+            OutgoingRequestMessage = new JingleIQ();
+            OutgoingRequestMessage.From = XMPPClient.JID;
+            OutgoingRequestMessage.To = RemoteJID;
+            OutgoingRequestMessage.Type = IQType.set.ToString();
+            OutgoingRequestMessage.Jingle = jingleinfo;
+            OutgoingRequestMessage.Jingle.Action = Jingle.SessionInitiate;
+            OutgoingRequestMessage.Jingle.Initiator = XMPPClient.JID;
+            OutgoingRequestMessage.Jingle.SID = Guid.NewGuid().ToString();
+
+            XMPPClient.SendObject(OutgoingRequestMessage);
+        }
+
+        JingleIQ AcceptSessionMessage = null;
+        internal void AcceptSession(Jingle jingleinfo)
+        {
+            if (AcceptSessionMessage != null) /// we've already started a session, the user needs to create a new one
+                throw new Exception(string.Format("Cannot accpet a session that already exists, Session [{0}] has already been accepted, client must create a new session", this.SessionId));
+
+            AcceptSessionMessage = new JingleIQ();
+            AcceptSessionMessage.From = XMPPClient.JID;
+            AcceptSessionMessage.To = RemoteJID;
+            AcceptSessionMessage.Type = IQType.set.ToString();
+            AcceptSessionMessage.Jingle = jingleinfo;
+            AcceptSessionMessage.Jingle.Action = Jingle.SessionAccept;
+            AcceptSessionMessage.Jingle.Initiator = XMPPClient.JID;
+            AcceptSessionMessage.Jingle.SID = this.SessionId;
+
+            XMPPClient.SendObject(AcceptSessionMessage);
+        }
+
+        internal void SendJingle(Jingle jingleinfo)
+        {
+            JingleIQ iq = new JingleIQ();
+            iq.From = XMPPClient.JID;
+            iq.To = RemoteJID;
+            iq.Type = IQType.set.ToString();
+            iq.Jingle = jingleinfo;
+            iq.Jingle.SID = this.SessionId;
+
+            XMPPClient.SendObject(iq);
+        }
+        
+
+        JingleIQ TerminateSessionRequest = null;
+        internal void TerminateSession(TerminateReason reason)
+        {
+            TerminateSessionRequest = new JingleIQ();
+            TerminateSessionRequest.From = XMPPClient.JID;
+            TerminateSessionRequest.To = RemoteJID;
+            TerminateSessionRequest.Type = IQType.set.ToString();
+            TerminateSessionRequest.Jingle.Action = Jingle.SessionTerminate;
+            TerminateSessionRequest.Jingle.Initiator = XMPPClient.JID;
+            TerminateSessionRequest.Jingle.SID = this.SessionId;
+            TerminateSessionRequest.Jingle.Reason = new Reason(reason);
+
+            XMPPClient.SendObject(TerminateSessionRequest);
+
+        }
 
         /// Example Negotiation Below, from XEP-0167
         /// <jingle xmlns='urn:xmpp:jingle:1' action='session-initiate' initiator='romeo@montague.lit/orchard' sid='a73sjjvkla37jfea'>    
@@ -359,5 +891,317 @@ namespace System.Net.XMPP
         ///     id='i91fs6d5'    
         ///     to='juliet@capulet.lit/balcony'    
         ///     type='result'/>
+    }
+
+    /// <summary>
+    /// Used to ack or reject incoming IQs
+    /// </summary>
+    public class IQResponseAction
+    {
+        public IQResponseAction()
+        {
+        }
+
+        private bool m_bAcceptIQ = true;
+
+        public bool AcceptIQ
+        {
+            get { return m_bAcceptIQ; }
+            set { m_bAcceptIQ = value; }
+        }
+
+        private Error m_objError = new Error() { Type = "cancel" };
+
+        public Error Error
+        {
+            get { return m_objError; }
+            set { m_objError = value; }
+        }
+    }
+
+    /// <summary>
+    /// This is the class the client interacts with when it wants to start a new jingle session or be notified when a new incoming session is encountered
+    /// (XMPPClient.JingleSessionManager)
+    /// </summary>
+    public class JingleSessionManager : Logic
+    {
+        public JingleSessionManager(XMPPClient client) : base(client)
+        {
+            
+        }
+
+        object SessionLock = new object();
+        Dictionary<string, JingleSessionLogic> Sessions = new Dictionary<string, JingleSessionLogic>();
+
+        public override bool NewIQ(IQ iq)
+        {
+            if (iq is JingleIQ) //Our XMPPMessageFactory created a jingle message
+            {
+                /// See if this is a JINGLE message for our session 
+                /// 
+                JingleIQ jingleiq = iq as JingleIQ;
+                string strSessionId = jingleiq.Jingle.SID;
+
+                JingleSessionLogic sessionlogic = null;
+                lock (SessionLock)
+                {
+                    if (Sessions.ContainsKey(strSessionId) == true)
+                        sessionlogic = Sessions[strSessionId];
+                }
+
+                if (sessionlogic != null)
+                {
+                    sessionlogic.NewJingleIQ(jingleiq);
+
+                    if (sessionlogic.IsCompleted == true)
+                        RemoveSesion(strSessionId);
+
+                    return true;
+                }
+
+                if (jingleiq.Jingle.Action == Jingle.SessionInitiate) /// A new jingle session has been requested that we didn't initiate.  Start it's own "JingleLogic"
+                {
+                    JingleSessionLogic newrequestlogic = new JingleSessionLogic(this.XMPPClient, strSessionId, this);
+                    lock (SessionLock)
+                    {
+                        Sessions.Add(jingleiq.Jingle.SID, newrequestlogic);
+                    }
+                    newrequestlogic.NewIncomingSessionRequest(jingleiq);
+
+                    if (newrequestlogic.IsCompleted == true)
+                        RemoveSesion(strSessionId);
+
+                    return true;
+                }
+            }
+            else
+            {
+                /// May be a simple response to one of our jingle objects, send the message to each one to see
+                /// 
+
+                List<JingleSessionLogic> sessions = new List<JingleSessionLogic>();
+                lock (SessionLock)
+                {
+                    foreach (string strSessionId in Sessions.Keys)
+                        sessions.Add(Sessions[strSessionId]);
+                }
+
+                foreach (JingleSessionLogic session in sessions)
+                {
+                    bool bHandled = session.NewIQ(iq);
+                    if (bHandled == true)
+                    {
+                        if (session.IsCompleted == true)
+                            RemoveSesion(session.SessionId);
+
+                        return true;
+                    }
+                }
+
+            }
+
+            return false;
+        }
+
+
+        void RemoveSesion(string strSessionId)
+        {
+            lock (SessionLock)
+            {
+                if (Sessions.ContainsKey(strSessionId) == true)
+                    Sessions.Remove(strSessionId);
+            }
+        }
+        
+
+        public string InitiateNewSession(JID jidto, Jingle jingleinfo)
+        {
+            /// Create a new session logic and send out the intial session create request
+            /// 
+
+            string strSessionId = Guid.NewGuid().ToString();
+            JingleSessionLogic session = new JingleSessionLogic(this.XMPPClient, strSessionId, this);
+            lock (SessionLock)
+            {
+                Sessions.Add(strSessionId, session);
+            }
+
+            session.InitiateSession(jingleinfo, jidto);
+
+            return strSessionId;
+        }
+
+        public void SendAcceptSession(string strSessionId, Jingle jingleinfo)
+        {
+            /// Create a new session logic and send out the intial session create request
+            /// 
+            JingleSessionLogic session = null;
+            lock (SessionLock)
+            {
+                if (Sessions.ContainsKey(strSessionId) == true)
+                {
+                    session = Sessions[strSessionId];
+                }
+            }
+            if (session != null)
+            {
+                session.AcceptSession(jingleinfo);
+            }
+        }
+
+        public void TerminateSession(string strSessionId, TerminateReason reason)
+        {
+            JingleSessionLogic session = null;
+            lock (SessionLock)
+            {
+                if (Sessions.ContainsKey(strSessionId) == true)
+                {
+                    session = Sessions[strSessionId];
+                }
+            }
+            if (session != null)
+            {
+                session.TerminateSession(reason);
+            }
+
+        }
+
+        public void SendJingle(string strSessionId, Jingle jingleinfo)
+        {
+            /// Create a new session logic and send out the intial session create request
+            /// 
+            JingleSessionLogic session = null;
+            lock (SessionLock)
+            {
+                if (Sessions.ContainsKey(strSessionId) == true)
+                {
+                    session = Sessions[strSessionId];
+                }
+            }
+            if (session != null)
+            {
+                session.SendJingle(jingleinfo);
+            }
+        }
+
+        /// <summary>
+        /// Populates a Jingle message object with the basic stuff needed to initiate an audio call with speex and mu-law support.
+        /// RTP payloads are hard coded and the transport is hard-coded to ICE.  
+        /// </summary>
+        /// <param name="strLocalIP">The local IP address that the client is listening on for audio</param>
+        /// <param name="nLocalPort">The local port that the client is listening on for audio</param>
+        /// <returns>A Jingle object that can be further modified and supplied to InitiateNewSession()</returns>
+        public static Jingle CreateBasicOutgoingAudioRequest(string strLocalIP, int nLocalPort)
+        {
+            Jingle jinglecontent = new Jingle();
+            jinglecontent.Content = new Content();
+            jinglecontent.Action = Jingle.SessionInitiate;
+            jinglecontent.Content.Description = new Description();
+            jinglecontent.Content.Description.media = "audio";
+
+
+            jinglecontent.Content.Description.Payloads.Add(new Payload() { PayloadId = 96, Channels = "1", ClockRate = "16000", Name = "speex" });
+            jinglecontent.Content.Description.Payloads.Add(new Payload() { PayloadId = 97, Channels = "1", ClockRate = "8000", Name = "speex" });
+            jinglecontent.Content.Description.Payloads.Add(new Payload() { PayloadId = 0, Channels = "1", ClockRate = "8000", Name = "PCMU" });
+
+            /// If you don't want to use ICE UDP, new a different transport object
+            jinglecontent.Content.ICETransport = new Transport();
+            jinglecontent.Content.ICETransport.Candidates.Add(new Candidate() { ipaddress = strLocalIP, port = nLocalPort });
+
+            return jinglecontent;
+        }
+
+        /// <summary>
+        /// Create a simple audio session jingle accept
+        /// </summary>
+        /// <param name="strLocalIP">The local ip address that the client is listening on for media</param>
+        /// <param name="nLocalPort">The local port the client is listening on for media</param>
+        /// <param name="payloads">A list of payloads that are acceptable, or null to use the default paylodas (speex, PCMU)</param>
+        /// <returns>A Jingle message object that can be supplied to </returns>
+        public static Jingle CreateBasicAudioSessionAccept(string strLocalIP, int nLocalPort, Payload [] payloads)
+        {
+            Jingle jinglecontent = new Jingle();
+            jinglecontent.Content = new Content();
+            jinglecontent.Action = Jingle.SessionAccept;
+            jinglecontent.Content.Description = new Description();
+            jinglecontent.Content.Description.media = "audio";
+
+
+            if (payloads != null)
+            {
+                foreach (Payload payload in payloads)
+                    jinglecontent.Content.Description.Payloads.Add(payload);
+            }
+            else
+            {
+                jinglecontent.Content.Description.Payloads.Add(new Payload() { PayloadId = 96, Channels = "1", ClockRate = "16000", Name = "speex" });
+                jinglecontent.Content.Description.Payloads.Add(new Payload() { PayloadId = 97, Channels = "1", ClockRate = "8000", Name = "speex" });
+                jinglecontent.Content.Description.Payloads.Add(new Payload() { PayloadId = 0, Channels = "1", ClockRate = "8000", Name = "PCMU" });
+            }
+
+            /// If you don't want to use ICE UDP, new a different transport object
+            jinglecontent.Content.ICETransport = new Transport();
+            jinglecontent.Content.ICETransport.Candidates.Add(new Candidate() { ipaddress = strLocalIP, port = nLocalPort });
+
+            return jinglecontent;
+        }
+
+        public delegate void DelegateJingleSessionEventWithInfo(string strSession, Jingle jingle, XMPPClient client);
+        public delegate void DelegateJingleSessionEvent(string strSession, XMPPClient client);
+        public delegate void DelegateJingleSessionEventBool(string strSession, IQResponseAction response, XMPPClient client);
+        
+        public event DelegateJingleSessionEventWithInfo OnNewSession = null;
+        public event DelegateJingleSessionEventBool OnNewSessionAckReceived = null;
+
+        public event DelegateJingleSessionEventWithInfo OnSessionAcceptedReceived = null;
+        public event DelegateJingleSessionEventBool OnSessionAcceptedAckReceived = null;
+
+        public event DelegateJingleSessionEventWithInfo OnSessionTransportInfoReceived = null;
+
+        public event DelegateJingleSessionEvent OnSessionTerminated = null;
+
+
+
+        internal void FireNewSession(string strSession, Jingle jingleinfo)
+        {
+            if (OnNewSession != null)
+                OnNewSession(strSession, jingleinfo, XMPPClient);
+        }
+
+        internal void FireNewSessionAckReceived(string strSessionId, IQResponseAction response)
+        {
+            if (OnNewSessionAckReceived != null)
+                OnNewSessionAckReceived(strSessionId, response, XMPPClient);
+        }
+
+
+
+        
+        internal void FireSessionAcceptedReceived(string strSession, Jingle jingleinfo)
+        {
+            if (OnSessionAcceptedReceived != null)
+                OnSessionAcceptedReceived(strSession, jingleinfo, XMPPClient);
+        }
+
+        internal void FireSessionAcceptedAck(string strSessionId, IQResponseAction response)
+        {
+            if (OnSessionAcceptedAckReceived != null)
+                OnSessionAcceptedAckReceived(strSessionId, response, XMPPClient);
+        }
+
+
+        internal void FireSessionTransportInfoReceived(string strSession, Jingle jingleinfo)
+        {
+            if (OnSessionTransportInfoReceived != null)
+                OnSessionTransportInfoReceived(strSession, jingleinfo, XMPPClient);
+        }
+
+
+        internal void FireSessionTerminated(string strSession)
+        {
+            if (OnSessionTerminated != null)
+                OnSessionTerminated(strSession, XMPPClient);
+        }
+
     }
 }

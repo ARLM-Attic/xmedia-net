@@ -29,6 +29,9 @@ namespace XMPPClient
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
+            /// Check for crashes last time we ran
+            App.CheckForExceptionsLastTime();
+
             XMPPAccount cred = null;
             using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
             {

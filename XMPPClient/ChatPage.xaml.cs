@@ -16,6 +16,7 @@ using System.Runtime.Serialization;
 using System.IO.IsolatedStorage;
 
 using Microsoft.Phone.Tasks;
+using System.Text.RegularExpressions;
 
 namespace XMPPClient
 {
@@ -34,8 +35,7 @@ namespace XMPPClient
             App.XMPPClient.SendChatMessage(this.TextBoxChatToSend.Text, OurRosterItem.JID);
             this.TextBoxChatToSend.Text = "";
             this.Focus();
-            this.ListBoxConversation.Focus();
-            //this.TextBoxChatToSend.Focus();
+            //this.ListBoxConversation.Focus();
         }
 
 
@@ -59,7 +59,18 @@ namespace XMPPClient
         {
             string strJID = NavigationContext.QueryString["JID"];
 
+            bool bQuery = false;
+            try
+            {
+                if (NavigationContext.QueryString["Refresh"] != null)
+                    bQuery = true;
+            }
+            catch (Exception microsoftshouldprovideacheckinsteadofthrowinganexception)
+            {
+            }
+
             OurRosterItem = App.XMPPClient.FindRosterItem(new JID(strJID));
+
 
             if (this.InFileTransferMode == true)
             {
@@ -74,6 +85,10 @@ namespace XMPPClient
                 return;
             }
 
+            if (bQuery == true)
+               NavigationService.RemoveBackEntry();
+
+
             /// See if we have this conversation in storage if there are no messages
             if (OurRosterItem.Conversation.Messages.Count <= 0)
             {
@@ -82,22 +97,28 @@ namespace XMPPClient
 
                 using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
                 {
-                    // Load from storage
-                    IsolatedStorageFileStream location = null;
-                    try
-                    {
-                        location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
-                        DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
-                        OurRosterItem.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
-                    }
-                    catch (Exception ex)
+                    if (storage.FileExists(strFilename) == true)
                     {
-                    }
-                    finally
-                    {
-                        if (location != null)
-                            location.Close();
+                        // Load from storage
+                        IsolatedStorageFileStream location = null;
+                        try
+                        {
+                            location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
+                            if (location.Length > 0)
+                            {
+                                DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
+                                OurRosterItem.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                        finally
+                        {
+                            if (location != null)
+                                location.Close();
+                        }
                     }
 
                 }
@@ -109,16 +130,143 @@ namespace XMPPClient
                                                   /// 
 
             this.DataContext = OurRosterItem;
-            this.ListBoxConversation.ItemsSource = OurRosterItem.Conversation.Messages;
             this.TextBlockConversationTitle.Text = OurRosterItem.Name;
+            this.TextBlockConversationTitle.LayoutUpdated += ScrollRichTextBoxToBottom; 
+
+            if (this.TextBlockChat.Blocks.Count <= 0)
+                TextBlockChat.Blocks.Add(MainParagraph);
+
+            SetConversation();
 
             App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
 
-         
+        }
+
+
+        Regex reghyperlink = new Regex(@"\w+\://\S+", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+
+        Paragraph MainParagraph = new Paragraph();
+
+        public void SetConversation()
+        {
+          //  TextBlockChat.Selection.Select(MainParagraph.ContentStart, MainParagraph.ContentEnd);
+            //TextBlockChat.Selection.Text = "";
+
+            foreach (Paragraph graph in TextBlockChat.Blocks)
+            {
+                graph.Inlines.Clear();
+                
+            }
+
+            TextBlockChat.InvalidateArrange();
+            //MainParagraph.Inlines.Clear();
+            //MainParagraph.SetValue
+
+
+
+            foreach (TextMessage msg in OurRosterItem.Conversation.Messages)
+            {
+                if (msg.Message == null)
+                    msg.Message = "";
+                AddInlinesForMessage(msg);
+            }
+
 
         }
 
-        
+        private void ScrollRichTextBoxToBottom(object sender, EventArgs e)
+        {
+            ScrollChat.ScrollToVerticalOffset(this.TextBlockChat.ActualHeight + 100);
+        } 
+
+
+        const double FontSizeFrom = 10.0f;
+        const double FontSizeMessage = 14.0f;
+        void AddInlinesForMessage(TextMessage msg)
+        {
+            Span msgspan = new Span();
+            string strRun = string.Format("{0} to {1} - {2}", msg.From, msg.To, msg.Received);
+            Run runfrom = new Run();
+            runfrom.Text = strRun;
+            runfrom.Foreground = new SolidColorBrush(Colors.Gray);
+            runfrom.FontSize = FontSizeFrom;
+            msgspan.Inlines.Add(runfrom);
+
+            msgspan.Inlines.Add(new LineBreak());
+
+
+            Span spanmsg = new Span();
+            runfrom.Foreground = new SolidColorBrush(Colors.Gray);
+            spanmsg.FontSize = FontSizeMessage;
+            msgspan.Inlines.Add(spanmsg);
+
+            /// Look for hyperlinks in our run
+            /// 
+            string strMessage = msg.Message;
+            int nMatchAt = 0;
+            Match matchype = reghyperlink.Match(strMessage, nMatchAt);
+            while (matchype.Success == true)
+            {
+                string strHyperlink = matchype.Value;
+                nMatchAt = matchype.Index + matchype.Length;
+
+                /// Add everything before this as a normal run
+                /// 
+                if (matchype.Index > nMatchAt)
+                {
+                    Run runtext = new Run();
+                    runtext.Text = strMessage.Substring(nMatchAt, (matchype.Index - nMatchAt));
+                    runtext.Foreground = msg.TextColor;
+                    msgspan.Inlines.Add(runtext);
+                }
+
+                Hyperlink link = new Hyperlink();
+                link.Inlines.Add(strMessage.Substring(matchype.Index, matchype.Length));
+                link.Foreground = new SolidColorBrush(Colors.Blue);
+                link.TargetName = "_blank";
+                try
+                {
+                    link.NavigateUri = new Uri(strMessage.Substring(matchype.Index, matchype.Length));
+                }
+                catch (Exception ex)
+                {
+                }
+                link.Click += new RoutedEventHandler(link_Click);
+                msgspan.Inlines.Add(link);
+
+
+                if (nMatchAt >= (strMessage.Length - 1))
+                    break;
+
+                matchype = reghyperlink.Match(strMessage, nMatchAt);
+            }
+
+            /// see if we have any remaining text
+            /// 
+            if (nMatchAt < strMessage.Length)
+            {
+                Run runtext = new Run();
+                runtext.Text = strMessage.Substring(nMatchAt, (strMessage.Length - nMatchAt));
+                runtext.Foreground = msg.TextColor;
+                msgspan.Inlines.Add(runtext);
+            }
+            msgspan.Inlines.Add(new LineBreak());
+
+            this.MainParagraph.Inlines.Add(msgspan);
+        }
+
+        void link_Click(object sender, RoutedEventArgs e)
+        {
+            /// Navigate to this link
+            if (MessageBox.Show("Are you sure you want to navigate to the link?", "Confirm Navigate", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+            {
+                WebBrowserTask task = new WebBrowserTask();
+                task.Uri = ((Hyperlink)sender).NavigateUri;
+                task.Show();
+            }
+
+        }
+
 
         protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
         {
@@ -138,6 +286,7 @@ namespace XMPPClient
 
             using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
             {
+                
                 // Load from storage
                 IsolatedStorageFileStream location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Create, storage);
                 DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
@@ -166,9 +315,20 @@ namespace XMPPClient
                 /// Clear our new message flag for this roster user as long as this window is open
                 item.HasNewMessages = false;
 
-                this.ListBoxConversation.UpdateLayout();
-                if (this.ListBoxConversation.Items.Count > 0)
-                   this.ListBoxConversation.ScrollIntoView(this.ListBoxConversation.Items[this.ListBoxConversation.Items.Count - 1]);
+                AddInlinesForMessage(msg);
+
+                this.TextBlockChat.Focus();
+                
+
+                //TextPointer myTextPointer1 = MainParagraph.ContentStart.GetPositionAtOffset(20);
+                //TextPointer myTextPointer1 = MainParagraph.ContentEnd.GetPositionAtOffset(0, LogicalDirection.Backward);
+                //TextPointer myTextPointer2 = MainParagraph.ContentEnd.GetPositionAtOffset(0, LogicalDirection.Backward);
+                this.TextBlockChat.Selection.Select(this.TextBlockChat.ContentEnd, this.TextBlockChat.ContentEnd);
+
+                ScrollChat.ScrollToVerticalOffset(this.TextBlockChat.ActualHeight+100);
+                //this.ListBoxConversation.UpdateLayout();
+                //if (this.ListBoxConversation.Items.Count > 0)
+                //   this.ListBoxConversation.ScrollIntoView(this.ListBoxConversation.Items[this.ListBoxConversation.Items.Count - 1]);
 
             }
         }
@@ -190,6 +350,11 @@ namespace XMPPClient
             {
                 OurRosterItem.Conversation.Clear();
                 this.Focus();
+
+                /// Can't seem a way to clear the window besides reloading it
+                //SetConversation();
+                NavigationService.Navigate(new Uri(string.Format("/ChatPage.xaml?JID={0}&Refresh=True&Unload={1}", this.OurRosterItem.JID, Guid.NewGuid()), UriKind.Relative));
+                
             }
         }
 
@@ -241,12 +406,55 @@ namespace XMPPClient
         {
             if (e.Key == Key.Enter)
             {
-                App.XMPPClient.SendChatMessage(this.TextBoxChatToSend.Text, OurRosterItem.JID);
+                string strText = this.TextBoxChatToSend.Text;
+
+                /// TODO.. take this out before releasing
+                if (strText == "throw")
+                    throw new Exception("Intentional testing exception");
+
+                App.XMPPClient.SendChatMessage(strText, OurRosterItem.JID);
                 this.TextBoxChatToSend.Text = "";
                 this.Focus();
-                this.ListBoxConversation.Focus();
+                //this.ListBoxConversation.Focus();
             }
         }
 
     }
+
+
+    //public static class Extensions
+    //{
+    //    public static T GetChildByType<T>(this UIElement element, Func<T, bool> condition)
+    //        where T : UIElement
+    //    {
+    //        List<T> results = new List<T>();
+    //        GetChildrenByType<T>(element, condition, results);
+    //        if (results.Count > 0)
+    //            return results[0];
+    //        else
+    //            return null;
+    //    }
+
+    //    private static void GetChildrenByType<T>(UIElement element, Func<T, bool> condition, List<T> results)
+    //        where T : UIElement
+    //    {
+    //        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+    //        {
+    //            UIElement child = VisualTreeHelper.GetChild(element, i) as UIElement;
+    //            if (child != null)
+    //            {
+    //                T t = child as T;
+    //                if (t != null)
+    //                {
+    //                    if (condition == null)
+    //                        results.Add(t);
+    //                    else if (condition(t))
+    //                        results.Add(t);
+    //                }
+    //                GetChildrenByType<T>(child, condition, results);
+    //            }
+    //        }
+    //    }
+    //} 
+
 }

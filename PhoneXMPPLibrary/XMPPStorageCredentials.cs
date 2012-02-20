@@ -32,7 +32,7 @@ namespace System.Net.XMPP
             set { m_bHaveSuccessfullyConnectedAndAuthenticated = value; }
         }
 
-        private string m_strAccountName = null;
+        private string m_strAccountName = "Unknown Account";
         [DataMember]
         public string AccountName
         {
@@ -203,6 +203,27 @@ namespace System.Net.XMPP
         {
             get { return m_nSOCKSVersion; }
             set { m_nSOCKSVersion = value; }
+        }
+
+        PresenceStatus m_eLastPrescence = new PresenceStatus() { PresenceType = PresenceType.available, PresenceShow = PresenceShow.chat, Status = "online", IsDirty = true };
+        [DataMember]
+        public PresenceStatus LastPrescence
+        {
+            get 
+            { 
+                if (m_eLastPrescence == null)
+                    m_eLastPrescence = new PresenceStatus() { PresenceType = PresenceType.available, PresenceShow = PresenceShow.chat, Status = "online", IsDirty=true };
+                return m_eLastPrescence; 
+            }
+            set 
+            { 
+                if ((value != null) && (value != m_eLastPrescence))
+                {
+                    m_eLastPrescence = value;
+                    m_eLastPrescence.IsDirty = true;
+                    FirePropertyChanged("LastPrescence");
+                }
+            }
         }
 
 

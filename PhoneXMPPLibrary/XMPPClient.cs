@@ -57,7 +57,7 @@ namespace System.Net.XMPP
             PresenceLogic = new PresenceLogic(this);
             GenericMessageLogic = new GenericMessageLogic(this);
             ServiceDiscoveryLogic = new ServiceDiscoveryLogic(this);
-            JingleLogic = new JingleLogic(this);
+            JingleSessionManager = new Jingle.JingleSessionManager(this);
             StreamInitiationAndTransferLogic = new StreamInitiationAndTransferLogic(this);
             PersonalEventingLogic = new PersonalEventingLogic(this);
 
@@ -69,7 +69,7 @@ namespace System.Net.XMPP
                 ActiveServices.Add(RosterLogic); /// Handles getting our roster
                 ActiveServices.Add(PresenceLogic);
                 ActiveServices.Add(ServiceDiscoveryLogic);
-                ActiveServices.Add(JingleLogic);
+                ActiveServices.Add(JingleSessionManager);
                 ActiveServices.Add(StreamInitiationAndTransferLogic);
                 ActiveServices.Add(PersonalEventingLogic);
             }
@@ -82,6 +82,9 @@ namespace System.Net.XMPP
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:1"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:transports:ice-udp:0")); // not sure if we want ICE, makes the simple protocol difficult
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:transports:ice-udp:1"));
+            this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:transports:raw-udp:0")); // raw udp much simpler
+            this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:transports:raw-udp:1"));
+            
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:apps:rtp:1"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:apps:rtp:audio"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:apps:rtp:video"));
@@ -112,13 +115,14 @@ namespace System.Net.XMPP
         private PresenceLogic PresenceLogic = null;
         private GenericMessageLogic GenericMessageLogic = null;
         private ServiceDiscoveryLogic ServiceDiscoveryLogic = null;
-        private JingleLogic JingleLogic = null;
+        public Jingle.JingleSessionManager JingleSessionManager = null;
         internal StreamInitiationAndTransferLogic StreamInitiationAndTransferLogic = null;
         private PersonalEventingLogic PersonalEventingLogic = null;
 
         public ServiceDiscoveryFeatureList OurServiceDiscoveryFeatureList = new ServiceDiscoveryFeatureList();
         public ServiceDiscoveryFeatureList ServerServiceDiscoveryFeatureList = new ServiceDiscoveryFeatureList();
      
+
         public event EventHandler OnStateChanged = null;
         private XMPPState m_eXMPPState = XMPPState.Unknown;
 
@@ -254,8 +258,11 @@ namespace System.Net.XMPP
                 
                 this.StreamNegotiationLogic.Reset();
                 this.ServerServiceDiscoveryFeatureList.Features.Clear();
-                this.PresenceStatus.PresenceType = PresenceType.unavailable;
-                this.PresenceStatus.PresenceShow = PresenceShow.xa;
+                if (this.XMPPAccount.LastPrescence == null)
+                    this.XMPPAccount.LastPrescence = new PresenceStatus();
+
+                this.XMPPAccount.LastPrescence.PresenceType = PresenceType.unavailable;
+                this.XMPPAccount.LastPrescence.PresenceShow = PresenceShow.xa;
 
                 foreach (RosterItem item in RosterItems)
                 {
@@ -288,18 +295,19 @@ namespace System.Net.XMPP
 
             FireListChanged(1);
 
-            this.PresenceStatus.PresenceType = PresenceType.available;
-            this.PresenceStatus.PresenceShow = PresenceShow.chat;
+            this.XMPPAccount.LastPrescence.PresenceType = PresenceType.available;
+            this.XMPPAccount.LastPrescence.PresenceShow = PresenceShow.chat;
+            this.XMPPAccount.LastPrescence.Status = "online";
             UpdatePresence();
         }
 
 
         public void UpdatePresence()
         {
-            if (this.PresenceStatus.IsDirty == true)
+            if (this.XMPPAccount.LastPrescence.IsDirty == true)
             {
-                PresenceLogic.SetPresence(this.PresenceStatus, this.AvatarImagePath);
-                this.PresenceStatus.IsDirty = false;
+                PresenceLogic.SetPresence(this.XMPPAccount.LastPrescence, this.AvatarImagePath);
+                this.XMPPAccount.LastPrescence.IsDirty = false;
             }
         }
 
@@ -441,16 +449,14 @@ namespace System.Net.XMPP
             }
         }
 
-        private PresenceStatus m_objPresenceStatus = new PresenceStatus();
-
         public PresenceStatus PresenceStatus
         {
-            get { return m_objPresenceStatus; }
+            get { return XMPPAccount.LastPrescence; }
             set 
             {
-                if (m_objPresenceStatus != value)
+                if (XMPPAccount.LastPrescence != value)
                 {
-                    m_objPresenceStatus = value;
+                    XMPPAccount.LastPrescence = value;
                     FirePropertyChanged("PresenceStatus");
                 }
             }
