@@ -132,7 +132,9 @@ namespace System.Net.XMPP
             get { return m_nAccuracy; }
             set { m_nAccuracy = value; }
         }
-    
+
+        [XmlIgnore()]
+        public bool IsDirty = true;
 
     }
 

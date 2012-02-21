@@ -63,6 +63,7 @@ namespace System.Net.XMPP
         AuthMethod AuthMethodsSupported = AuthMethod.Plain;
 
         AuthMethod AuthMethodUsed = AuthMethod.NotSpecified;
+
         /// <summary>
         ///  
         /// </summary>

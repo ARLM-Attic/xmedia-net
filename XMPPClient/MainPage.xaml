@@ -2,7 +2,9 @@
     x:Class="XMPPClient.MainPage"
     xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     SupportedOrientations="Portrait" Orientation="Portrait"
-    shell:SystemTray.IsVisible="True" mc:Ignorable="d" Loaded="PhoneApplicationPage_Loaded" d:DesignHeight="696" d:DesignWidth="480">
+    shell:SystemTray.IsVisible="True" mc:Ignorable="d" 
+    Loaded="PhoneApplicationPage_Loaded" Unloaded="PhoneApplicationPage_Unloaded"
+    d:DesignHeight="696" d:DesignWidth="480">
 
     <phone:PhoneApplicationPage.Resources>
 
@@ -106,6 +108,8 @@
 
         		<StackPanel Grid.Row="1" Grid.Column="1"  Margin="4,0" Grid.ColumnSpan="3" Orientation="Horizontal">
         			<TextBlock Text="{Binding Presence.Status}" FontSize="14" />
+                    <TextBlock Margin="10,0" Text="{Binding GeoString}" FontSize="14" />
+                    
         		</StackPanel>
         	</Grid>
 
@@ -249,8 +253,8 @@
         <toolkit:PerformanceProgressBar
             VerticalAlignment="Top" Grid.ColumnSpan="3"
             x:Name="_performanceProgressBar"/>
-        
-        <Rectangle StrokeThickness="2" Width="96" Height="96" Stroke="{Binding PresenceStatus.PresenceBrush}" Fill="{x:Null}" Grid.RowSpan="2" Margin="2" />
+
+        <Rectangle Visibility="Collapsed" x:Name="RectanglePresence" StrokeThickness="2" Width="96" Height="96" Stroke="{Binding PresenceStatus.PresenceBrush}" Fill="{x:Null}" Grid.RowSpan="2" Margin="2" />
         <Image Width="90" Height="90" Source="{Binding Avatar}" Grid.RowSpan="2" x:Name="ImageAvatar" Margin="5" >
             <toolkit:ContextMenuService.ContextMenu>
                 <toolkit:ContextMenu>
@@ -267,7 +271,7 @@
             <TextBlock Text="{Binding XMPPAccount.AccountName}" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}" Margin="12,0" VerticalAlignment="Center" />
             <TextBlock x:Name="ApplicationTitle" Text="{Binding XMPPState}" VerticalAlignment="Center" Margin="12,0" Style="{StaticResource PhoneTextNormalStyle}" />
         </StackPanel>
-        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding PresenceStatus.Status,Mode=TwoWay}" GotFocus="TextBoxStatus_GotFocus" LostFocus="TextBoxStatus_LostFocus" x:Name="TextBoxStatus" Margin="20,0" Padding="0" BorderThickness="0" FontSize="18.667" Style="{StaticResource TextBoxStyle1}" />
+        <TextBox Visibility="Collapsed" Grid.Column="1" Grid.Row="1" Text="{Binding PresenceStatus.Status,Mode=TwoWay}" GotFocus="TextBoxStatus_GotFocus" LostFocus="TextBoxStatus_LostFocus" x:Name="TextBoxStatus" Margin="20,0" Padding="0" BorderThickness="0" FontSize="18.667" Style="{StaticResource TextBoxStyle1}" />
 
         
         <Grid Grid.Row="2" Grid.ColumnSpan="2">

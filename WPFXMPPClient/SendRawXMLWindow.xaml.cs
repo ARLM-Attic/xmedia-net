@@ -34,6 +34,15 @@ namespace WPFXMPPClient
             XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
         }
 
+        Paragraph MainParagraph = new Paragraph();
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            textBoxLog.Document.Blocks.Add(MainParagraph);
+        }
+
+        
+
+
         private string m_strLogText = "";
 
         public string LogText
@@ -47,41 +56,45 @@ namespace WPFXMPPClient
 
         void XMPPClient_OnXMLSent(XMPPClient client, string strXML)
         {
-            m_strLogText += "\r\n -->" + strXML;
-            if (m_strLogText.Length > MaxLogSize)
-                m_strLogText = m_strLogText.Substring(m_strLogText.Length - ReduceLogBy);
-
-            AsyncScrollToEnd();
-            FirePropertyChanged("LogText");
-        }
-
-        void AsyncScrollToEnd()
-        {
-            System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(ScrollToEnd), 1);
-        }
-
-        delegate void DelegateObject(object obj);
-        void ScrollToEnd(object obj)
-        {
-            this.Dispatcher.Invoke(new DelegateObject(DoScrollToEnd), obj);
-        }
-
-        void DoScrollToEnd(object obj)
-        {
-            if (this.IsLoaded == true)
-                this.textBoxLog.ScrollToEnd();
-
+            AddNewStanza(strXML, true);
         }
 
         void XMPPClient_OnXMLReceived(XMPPClient client, string strXML)
         {
-            m_strLogText += "\r\n <--" + strXML;
-            if (m_strLogText.Length > MaxLogSize)
-                m_strLogText = m_strLogText.Substring(m_strLogText.Length - ReduceLogBy);
-
-            AsyncScrollToEnd(); 
-            FirePropertyChanged("LogText");
+            AddNewStanza(strXML, false);
         }
+
+        void AddNewStanza(string strText, bool bSent)
+        {
+            System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(AddStanza), new TextStanza() { XML = strText, Sent = bSent });
+        }
+
+        delegate void DelegateObject(object obj);
+        void AddStanza(object obj)
+        {
+            this.Dispatcher.Invoke(new DelegateObject(DoAddStanza), obj);
+        }
+
+        void DoAddStanza(object obj)
+        {
+            TextStanza stanza = obj as TextStanza;
+
+            Run run = new Run(stanza.XML);
+            if (stanza.Sent == true)
+                run.Foreground = Brushes.Orange;
+            else
+                run.Foreground = Brushes.Purple;
+
+            MainParagraph.Inlines.Add(run);
+            MainParagraph.Inlines.Add(new LineBreak());
+            if (this.IsLoaded == true)
+            {
+                this.textBoxLog.ScrollToEnd();
+            }
+
+        }
+
+      
 
         private void buttonSend_Click(object sender, RoutedEventArgs e)
         {
@@ -111,9 +124,15 @@ namespace WPFXMPPClient
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
-            m_strLogText = "";
-            FirePropertyChanged("LogText");
+            this.MainParagraph.Inlines.Clear();
         }
 
+
+    }
+
+    public class TextStanza
+    {
+        public string XML { get; set; }
+        public bool Sent { get; set; }
     }
 }

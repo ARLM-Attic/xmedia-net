@@ -33,7 +33,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>23</ApplicationRevision>
+    <ApplicationRevision>27</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>

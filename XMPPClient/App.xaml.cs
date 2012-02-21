@@ -16,6 +16,11 @@ using Microsoft.Phone.Shell;
 using System.Net.XMPP;
 using System.Runtime.Serialization;
 using System.IO.IsolatedStorage;
+using Microsoft.Phone.Net.NetworkInformation;
+
+using System.Device.Location;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 
 namespace XMPPClient
 {
@@ -42,9 +47,13 @@ namespace XMPPClient
             InitializePhoneApplication();
 
 
+            DeviceNetworkInformation.NetworkAvailabilityChanged += new EventHandler<NetworkNotificationEventArgs>(DeviceNetworkInformation_NetworkAvailabilityChanged);
             /// Load our options
             /// 
             LoadOptions();
+            if (Options.LogXML == true)
+                SocketServer.SocketClient.ShowDebug = true;
+
             if (Options.RunWithScreenLocked == true)
                PhoneApplicationService.Current.ApplicationIdleDetectionMode = IdleDetectionMode.Disabled;
 
@@ -70,6 +79,176 @@ namespace XMPPClient
                 // Caution:- Use this under debug mode only. Application that disables user idle detection will continue to run
                 // and consume battery power when the user is not using the phone.
                 PhoneApplicationService.Current.UserIdleDetectionMode = IdleDetectionMode.Disabled;
+            }
+
+
+            // The watcher variable was previously declared as type GeoCoordinateWatcher. 
+            if ((gpswatcher == null) && (App.Options.SendGeoCoordinates == true))
+            {
+                gpswatcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High); // using high accuracy
+                gpswatcher.MovementThreshold = 20; // use MovementThreshold to ignore noise in the signal
+
+                //gpswatcher.StatusChanged += new EventHandler<GeoPositionStatusChangedEventArgs>(gpswatcher_StatusChanged);
+                gpswatcher.PositionChanged += new EventHandler<GeoPositionChangedEventArgs<GeoCoordinate>>(gpswatcher_PositionChanged);
+                gpswatcher.Start();
+            }
+
+            GeoTimer = new System.Windows.Threading.DispatcherTimer();
+            GeoTimer.Interval = TimeSpan.FromMinutes(1);
+            GeoTimer.Tick += new EventHandler(GeoTimer_Tick);
+            GeoTimer.Start();
+
+            App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            App.XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
+            App.XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
+            App.XMPPClient.OnServerDisconnect += new EventHandler(XMPPClient_OnServerDisconnect);
+
+        }
+
+        void XMPPClient_OnServerDisconnect(object sender, EventArgs e)
+        {
+            Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(DoServerDisconnect), sender, e);
+        }
+
+        void DoServerDisconnect(object sender, EventArgs e)
+        {
+            MessageBox.Show("You have been disconnected from the server");
+        }
+
+        void FileTransferManager_OnTransferFinished(FileTransfer trans)
+        {
+        }
+
+        void FileTransferManager_OnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
+        {
+            Deployment.Current.Dispatcher.BeginInvoke(new FileTransferManager.DelegateIncomingFile(SafeOnNewIncomingFileTransferRequest), trans, itemfrom);
+        }
+
+        void SafeOnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
+        {
+            this.RootFrame.Navigate(new Uri("/FileTransferPage.xaml", UriKind.Relative));
+        }
+
+
+
+        void GeoTimer_Tick(object sender, EventArgs e)
+        {
+            if ((App.Options.SendGeoCoordinates == true) && (CurrentLocation.IsDirty == true))
+            {
+                if (App.XMPPClient.XMPPState == XMPPState.Ready)
+                {
+                    if (App.XMPPClient.Connected == false)
+                    {
+                        if (MessageBox.Show("Client was disconnected, would you like to re-connect?", "Connection Lost", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                            App.XMPPClient.Connect();
+                        return;
+                    }
+
+                    try
+                    {
+                        App.XMPPClient.SetGeoLocation(CurrentLocation.lat, CurrentLocation.lon);
+                        CurrentLocation.IsDirty = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        /// It appears we don't always get notifed when we loose our connection, we just don't find out until we send
+                        /// 
+                    }
+                }
+            }
+        }
+
+
+        void gpswatcher_PositionChanged(object sender, GeoPositionChangedEventArgs<GeoCoordinate> e)
+        {
+            // Update our xmpp client's position
+            if ((e.Position.Location.Latitude != CurrentLocation.lat) || (e.Position.Location.Longitude != CurrentLocation.lon))
+            {
+                CurrentLocation.lat = e.Position.Location.Latitude;
+                CurrentLocation.lon = e.Position.Location.Longitude;
+                CurrentLocation.IsDirty = true;
+            }
+        }
+
+
+
+        void gpswatcher_StatusChanged(object sender, GeoPositionStatusChangedEventArgs e)
+        {
+            if ((gpswatcher != null) && (App.Options.SendGeoCoordinates == true))
+            {
+            }
+        }
+
+
+        System.Windows.Threading.DispatcherTimer GeoTimer = null;
+        GeoCoordinateWatcher gpswatcher = null;
+        geoloc CurrentLocation = new geoloc();
+
+
+        //void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
+        //{
+          //  Dispatcher.BeginInvoke(new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
+        //}
+
+        //void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
+        void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
+        {
+            /// Save the conversation first
+            ChatPage.SaveConversation(item);
+
+            //Microsoft.Phone.PictureDecoder.DecodeJpeg(
+
+            if (bReceived == true)
+            {
+                if (msg.Message != null)
+                {
+                    Microsoft.Phone.Shell.ShellToast toast = new Microsoft.Phone.Shell.ShellToast();
+                    toast.Title = msg.Message;
+                    //toast.NavigationUri = new Uri(string.Format("/ChatPage.xaml?JID={0}", msg.From.BareJID));
+                    toast.Show();
+
+                    if (App.Options.PlaySoundOnNewMessage == true)
+                    {
+                        System.IO.Stream stream = TitleContainer.OpenStream("sounds/ding.wav");
+                        SoundEffect effect = SoundEffect.FromStream(stream);
+                        FrameworkDispatcher.Update();
+                        effect.Play();
+                        stream.Close();
+                    }
+                    if (App.Options.VibrateOnNewMessage == true)
+                        Microsoft.Devices.VibrateController.Default.Start(TimeSpan.FromMilliseconds(200));
+                }
+            }
+
+        }
+
+
+        void DeviceNetworkInformation_NetworkAvailabilityChanged(object sender, NetworkNotificationEventArgs e)
+        {
+            switch (e.NotificationType)
+            {
+                case NetworkNotificationType.InterfaceConnected:
+                    XMPPLogBuilder.AppendFormat("Network was Connected\r\n");
+
+                    if ((XMPPClient != null) && (XMPPClient.XMPPState == XMPPState.Unknown) && (XMPPClient.XMPPAccount != null) && (XMPPClient.XMPPAccount.HaveSuccessfullyConnectedAndAuthenticated==true))
+                    {
+                        XMPPClient.Connect();
+                    }
+                    break;
+                case NetworkNotificationType.InterfaceDisconnected:
+                    XMPPLogBuilder.AppendFormat("Network was Disconnected\r\n");
+                    if ((XMPPClient != null) && (XMPPClient.XMPPState != XMPPState.Unknown))
+                    {
+                        MessageBox.Show("Network connection lost");
+                        XMPPClient.Disconnect();
+                    }
+                    break;
+                case NetworkNotificationType.CharacteristicUpdate:
+                    
+                    break;
+                default:
+                    
+                    break;
             }
 
         }
@@ -115,6 +294,10 @@ namespace XMPPClient
                     }
                 }
             }
+
+            Options.UseOnlyIBBFileTransfer = FileTransferManager.UseIBBOnly;
+            Options.SOCKS5ByteStreamProxy = FileTransferManager.SOCKS5Proxy;
+
         }
 
         public static void SaveOptions()
@@ -140,6 +323,10 @@ namespace XMPPClient
                 }
 
             }
+
+            FileTransferManager.UseIBBOnly = Options.UseOnlyIBBFileTransfer;
+            FileTransferManager.SOCKS5Proxy = Options.SOCKS5ByteStreamProxy;
+            
         }
 
         public static void SaveException(string strException)
@@ -262,6 +449,9 @@ namespace XMPPClient
         // This code will not execute when the application is deactivated
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
+            GeoTimer.Stop();
+            if (gpswatcher != null)
+               gpswatcher.Stop();
         }
 
         // Code to execute if a navigation fails

@@ -12,60 +12,42 @@ using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
 
 using System.Net.XMPP;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Phone.Shell;
 
-using System.Device.Location;
+
 
 
 namespace XMPPClient
 {
     public partial class MainPage : PhoneApplicationPage
     {
-        GeoCoordinateWatcher gpswatcher;
-
         // Constructor
         public MainPage()
         {
             InitializeComponent();
-
             App.XMPPClient.OnRetrievedRoster += new EventHandler(RetrievedRoster);
             App.XMPPClient.OnStateChanged += new EventHandler(StateChanged);
-            App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
             App.XMPPClient.OnUserSubscriptionRequest += new System.Net.XMPP.XMPPClient.DelegateShouldSubscribeUser(XMPPClient_OnUserSubscriptionRequest);
-
-            App.XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
-            App.XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
-
-            // The watcher variable was previously declared as type GeoCoordinateWatcher. 
-            if (gpswatcher == null)
-            {
-                gpswatcher = new GeoCoordinateWatcher(GeoPositionAccuracy.High); // using high accuracy
-                gpswatcher.MovementThreshold = 20; // use MovementThreshold to ignore noise in the signal
-            }
-
-            //gpswatcher.StatusChanged += new EventHandler<GeoPositionStatusChangedEventArgs>(gpswatcher_StatusChanged);
-            gpswatcher.PositionChanged += new EventHandler<GeoPositionChangedEventArgs<GeoCoordinate>>(gpswatcher_PositionChanged);
-
-
         }
 
-        void FileTransferManager_OnTransferFinished(FileTransfer trans)
+
+        private void PhoneApplicationPage_Loaded(object sender, RoutedEventArgs e)
         {
+            this.DataContext = App.XMPPClient;
+            this.ListBoxRoster.DataContext = App.XMPPClient;
+            var selected = from c in App.XMPPClient.RosterItems group c by c.Group into n select new GroupingLayer<string, RosterItem>(n);
+            this.ListBoxRoster.ItemsSource = selected;
         }
 
-        void FileTransferManager_OnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
+
+        private void PhoneApplicationPage_Unloaded(object sender, RoutedEventArgs e)
         {
-            Dispatcher.BeginInvoke(new FileTransferManager.DelegateIncomingFile(SafeOnNewIncomingFileTransferRequest), trans, itemfrom);
-        }
-
-        void SafeOnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
-        {
-            this.NavigationService.Navigate(new Uri("/FileTransferPage.xaml", UriKind.Relative));
+            App.XMPPClient.OnStateChanged -= new EventHandler(StateChanged);
+            App.XMPPClient.OnUserSubscriptionRequest -= new System.Net.XMPP.XMPPClient.DelegateShouldSubscribeUser(XMPPClient_OnUserSubscriptionRequest);
         }
 
 
+     
         void XMPPClient_OnUserSubscriptionRequest(PresenceMessage pres)
         {
             Dispatcher.BeginInvoke(new System.Net.XMPP.XMPPClient.DelegateShouldSubscribeUser(DoOnUserSubscriptionRequest), pres);
@@ -85,71 +67,7 @@ namespace XMPPClient
             
         }
 
-        void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
-        {
-            Dispatcher.BeginInvoke(new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
-        }
-
-        void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
-        {
-            /// Save the conversation first
-            ChatPage.SaveConversation(item);
-
-            //Microsoft.Phone.PictureDecoder.DecodeJpeg(
-
-            if (bReceived == true)
-            {
-                if (msg.Message != null)
-                {
-                    Microsoft.Phone.Shell.ShellToast toast = new Microsoft.Phone.Shell.ShellToast();
-                    toast.Title = msg.Message;
-                    //toast.NavigationUri = new Uri(string.Format("/ChatPage.xaml?JID={0}", msg.From.BareJID));
-                    toast.Show();
-                    Microsoft.Devices.VibrateController.Default.Start(TimeSpan.FromMilliseconds(200));
-                }
-            }
-            if (this.Visibility == System.Windows.Visibility.Visible)
-            {
-                System.IO.Stream stream = TitleContainer.OpenStream("sounds/ding.wav");
-                SoundEffect effect = SoundEffect.FromStream(stream);
-                FrameworkDispatcher.Update();
-                effect.Play();
-                stream.Close();
-            }
-            
-        }
-
-       
-        private void PhoneApplicationPage_Loaded(object sender, RoutedEventArgs e)
-        {
-
-            this.DataContext = App.XMPPClient;
-            this.ListBoxRoster.DataContext = App.XMPPClient;
-            var selected = from c in App.XMPPClient.RosterItems group c by c.Group into n select new GroupingLayer<string, RosterItem>(n);
-            this.ListBoxRoster.ItemsSource = selected;
-
-        }
-
-        DateTime m_dtLastPositionUpdate = DateTime.MinValue;
-        void gpswatcher_PositionChanged(object sender, GeoPositionChangedEventArgs<GeoCoordinate> e)
-        {
-            // Update our xmpp client's position
-
-            if (App.XMPPClient.XMPPState == XMPPState.Ready)
-            {
-                if (m_dtLastPositionUpdate < (DateTime.Now - TimeSpan.FromMinutes(1)))
-                {
-                    App.XMPPClient.SetGeoLocation(e.Position.Location.Latitude, e.Position.Location.Longitude);
-                    m_dtLastPositionUpdate = DateTime.Now;
-                }
-            }
-        }
-
-        void gpswatcher_StatusChanged(object sender, GeoPositionStatusChangedEventArgs e)
-        {
-        }
-
-     
+   
 
         public void RetrievedRoster(object obj, EventArgs arg)
         {
@@ -160,7 +78,7 @@ namespace XMPPClient
         {
             this.ListBoxRoster.ItemsSource = null;
             this.ListBoxRoster.DataContext = App.XMPPClient;
-            //this.ListBoxRoster.ItemsSource = App.XMPPClient.RosterItems;
+            ////this.ListBoxRoster.ItemsSource = App.XMPPClient.RosterItems;
 
             var selected = from c in App.XMPPClient.RosterItems group c by c.Group into n select new GroupingLayer<string, RosterItem>(n);
             this.ListBoxRoster.ItemsSource = selected;
@@ -177,32 +95,28 @@ namespace XMPPClient
         {
             if (App.XMPPClient.XMPPState == XMPPState.Ready)
             {
-                gpswatcher.Start();
-
                 _performanceProgressBar.IsIndeterminate = false;
 
                 ((ApplicationBarIconButton)ApplicationBar.Buttons[0]).IconUri = new Uri("/Images/disconnect.png", UriKind.Relative);
-
-                //this.HyperlinkConnect.Content = "Disconnect";
+                RectanglePresence.Visibility = System.Windows.Visibility.Visible;
+                TextBoxStatus.Visibility = System.Windows.Visibility.Visible;
             }
             else if (App.XMPPClient.XMPPState == XMPPState.Unknown)
             {
-                gpswatcher.Stop();
-
                 _performanceProgressBar.IsIndeterminate = false;
 
-                ((ApplicationBarIconButton)ApplicationBar.Buttons[0]).IconUri = new Uri("/Images/connect.png", UriKind.Relative);              
-                //this.HyperlinkConnect.Content = "Connect";
+                ((ApplicationBarIconButton)ApplicationBar.Buttons[0]).IconUri = new Uri("/Images/connect.png", UriKind.Relative);
+                RectanglePresence.Visibility = System.Windows.Visibility.Collapsed;
+                TextBoxStatus.Visibility = System.Windows.Visibility.Collapsed;
             }
             else if (App.XMPPClient.XMPPState == XMPPState.AuthenticationFailed)
             {
-                gpswatcher.Stop();
                 _performanceProgressBar.IsIndeterminate = false;
+                MessageBox.Show("Please check your credentials and try again", "Authentication Failed", MessageBoxButton.OK);
                 //this.HyperlinkConnect.Content = "Connect";
             }
             else
             {
-                gpswatcher.Stop();
             }
         }
 
@@ -218,9 +132,6 @@ namespace XMPPClient
         private void ButtonExit_Click(object sender, EventArgs e)
         {
             QuitException.Quit();
-            //NavigationService.GoBack();
-            //float fzero = 0.0f;
-            //float x = 1 / fzero;
         }
 
       
@@ -234,8 +145,20 @@ namespace XMPPClient
 
         protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
         {
-            //      if (e.NavigationMode == System.Windows.Navigation.NavigationMode.Refresh)
-            //         App.EnsureConnected();
+            if (App.XMPPClient.XMPPState == XMPPState.Ready)
+            {
+                _performanceProgressBar.IsIndeterminate = false;
+                ((ApplicationBarIconButton)ApplicationBar.Buttons[0]).IconUri = new Uri("/Images/disconnect.png", UriKind.Relative);
+                RectanglePresence.Visibility = System.Windows.Visibility.Visible;
+                TextBoxStatus.Visibility = System.Windows.Visibility.Visible;
+            }
+            else if (App.XMPPClient.XMPPState == XMPPState.Unknown)
+            {
+                _performanceProgressBar.IsIndeterminate = false;
+                ((ApplicationBarIconButton)ApplicationBar.Buttons[0]).IconUri = new Uri("/Images/connect.png", UriKind.Relative);
+                RectanglePresence.Visibility = System.Windows.Visibility.Collapsed;
+                TextBoxStatus.Visibility = System.Windows.Visibility.Collapsed;
+            }
 
             base.OnNavigatedTo(e);
         }
@@ -245,10 +168,7 @@ namespace XMPPClient
 
         }
 
-        private void ImageAvatar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-
-        }
+   
 
         private void ButtonViewMessages_Click(object sender, RoutedEventArgs e)
         {

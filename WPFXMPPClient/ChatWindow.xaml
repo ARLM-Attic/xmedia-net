@@ -110,7 +110,7 @@
                 </s:SurfaceButton>
             </Grid>
 
-            <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"  Margin="5" x:Name="TextBlockChat" Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" TouchDown="TextBlockChat_TouchDown"  TouchMove="TextBlockChat_TouchMove" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"  Margin="5" x:Name="TextBlockChat" Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             </RichTextBox>
             <!--<s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                  DataContext="{Binding Conversation}" Background="Beige" x:Name="ListBoxConversation">

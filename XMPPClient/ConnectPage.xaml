@@ -53,7 +53,7 @@
                 <TextBox x:Name="TextBoxResource" Text="{Binding JID.Resource,Mode=TwoWay}" />
                 <TextBlock>Port</TextBlock>
                 <TextBox InputScope="number" x:Name="TextBoxPort" Text="{Binding Port,Mode=TwoWay}" />
-                <CheckBox x:Name="CheckBoxUseOldSSLMethod" IsChecked="{Binding UseOldSSLMethod,Mode=TwoWay}">Use Old SSL Method (5223)</CheckBox>
+                <CheckBox x:Name="CheckBoxUseOldSSLMethod" Checked="CheckBoxUseOldSSLMethod_Checked"  Unchecked="CheckBoxUseOldSSLMethod_Unchecked"  IsChecked="{Binding UseOldSSLMethod,Mode=TwoWay}">Use Old SSL Method (5223)</CheckBox>
 
                 <CheckBox x:Name="CheckBoxUseSOCKS" IsChecked="{Binding UseSOCKSProxy,Mode=TwoWay}">Use SOCKS</CheckBox>
                 <TextBlock>Proxy Server</TextBlock>
@@ -74,7 +74,7 @@
  
     <!--Sample code showing usage of ApplicationBar-->
     <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
+        <shell:ApplicationBar x:Name="OurApplicationBar" IsVisible="True" IsMenuEnabled="True">
             <shell:ApplicationBarIconButton x:Name="ButtonConnect" Click="ButtonConnect_Click" IconUri="Images/connect.png" Text="Connect"/>
             <shell:ApplicationBarIconButton x:Name="ButtonNewAccount" Click="ButtonNewAccount_Click" IconUri="Images/add.png" Text="Add Account"/>
         </shell:ApplicationBar>

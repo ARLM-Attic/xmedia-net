@@ -286,6 +286,10 @@ namespace System.Net.XMPP
             XMPPClient = client;
         }
 
+        public static string SOCKS5Proxy = null;
+        public static bool UseIBBOnly = false;
+
+
         XMPPClient XMPPClient = null;
 
         object m_objFileTransferLock = new object();
@@ -416,6 +420,7 @@ namespace System.Net.XMPP
                     FileTransfers.Remove(trans);
                 }
 
+                trans.FileTransferState = FileTransferState.Error;
                 XMPPClient.StreamInitiationAndTransferLogic.DeclineIncomingFileRequest(trans);
                 trans.Close();
             }
@@ -437,10 +442,15 @@ namespace System.Net.XMPP
         {
             if (OnNewIncomingFileTransferRequest != null)
             {
-                lock (m_objFileTransferLock)
-                {
-                    FileTransfers.Add(trans);
-                }
+
+#if WINDOWS_PHONE
+               Deployment.Current.Dispatcher.BeginInvoke(new DelegateAddTrans(DoAddTrans), trans);
+#else
+               lock (m_objFileTransferLock)
+               {
+                   FileTransfers.Add(trans);
+               }
+#endif
 
                 System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoAskUserIfTheyWantToReceiveFile), trans);
             }
@@ -449,7 +459,16 @@ namespace System.Net.XMPP
                 XMPPClient.StreamInitiationAndTransferLogic.DeclineIncomingFileRequest(trans);
             }
         }
-      
+
+        delegate void DelegateAddTrans(FileTransfer trans);
+        void DoAddTrans(FileTransfer trans)
+        {
+            lock (m_objFileTransferLock)
+            {
+                FileTransfers.Add(trans);
+            }
+        }
+
         void DoAskUserIfTheyWantToReceiveFile(object objAskInfo)
         {
             FileTransfer trans = objAskInfo as FileTransfer;

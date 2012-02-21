@@ -55,7 +55,8 @@
                     <StackPanel Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="4" Orientation="Horizontal">
                         <TextBlock Margin="5,0" Text="{Binding Path=Presence.PresenceType}" />
                         <TextBlock Margin="5,0" Text="{Binding Path=Presence.Status}" />
-                    </StackPanel>
+                        <TextBlock Margin="5,0" Text="{Binding GeoString}"  />
+                </StackPanel>
            </Grid>
 
         </DataTemplate>

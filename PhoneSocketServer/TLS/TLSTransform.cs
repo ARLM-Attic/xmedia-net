@@ -310,7 +310,7 @@ namespace SocketServer.TLS
         /// All the stuff the client wants to send, but can't because we're still handshaking.  We'll send it when we're done
         /// </summary>
         ByteBuffer ClientSendQueue = new ByteBuffer();
-
+        bool m_bSendClientCertificate = false;
         void HandleHandshakeMessage(TLSHandShakeMessage msg)
         {
             /// Append all our handshake data because we'll need it later for some stupid reason
@@ -321,6 +321,19 @@ namespace SocketServer.TLS
             }
             else if (msg.HandShakeMessageType == HandShakeMessageType.ServerHelloDone)
             {
+                if (m_bSendClientCertificate == true) /// got a certificate request from the server, but we don't have any, so send an empty one
+                {
+                    TLSHandShakeMessage msgclientcert = new TLSHandShakeMessage();
+                    msgclientcert.HandShakeMessageType = HandShakeMessageType.Certificate;
+                    TLSRecord recordclientcert = new TLSRecord();
+                    recordclientcert.MajorVersion = 3;
+                    recordclientcert.MinorVersion = 1;
+                    recordclientcert.ContentType = TLSContentType.Handshake;
+                    recordclientcert.Messages.Add(msgclientcert);
+
+                    SendTLSRecord(recordclientcert, true);
+                }
+
                 /// Server has sent the algorithm they want us to use, certificates, parameters, 
                 /// and any request for certificates from us.  Now let's respond
                 /// First generate, encrypt, and send the PreMasterSecret
@@ -483,6 +496,11 @@ namespace SocketServer.TLS
                     NegotiationFinished();
                 }
             }
+            else if (msg.HandShakeMessageType == HandShakeMessageType.CertificateRequest)
+            {
+                m_bSendClientCertificate = true;
+            }
+
 
 
             if (ClientTLSState == TLS.ClientTLSState.ReceivedServerHello)

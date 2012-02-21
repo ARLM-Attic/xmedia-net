@@ -248,6 +248,7 @@ namespace SocketServer
 
         public bool ConnectAsync(EndPoint EPhost)
         {
+            UserInitiatedDisconnect = false;
             //Creates the Socket for sending data over TCP.
             Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -373,7 +374,7 @@ namespace SocketServer
                     try
                     {
                         if (bTransform == true)
-                           bData = TransformSendData(bData);
+                            bData = TransformSendData(bData);
 
                         if ((bData == null) || (bData.Length <= 0))
                             return 0;
@@ -386,8 +387,17 @@ namespace SocketServer
                     }
                     catch (System.Net.Sockets.SocketException ex)
                     {
-                        if (m_Logger != null) 
+                        if (m_Logger != null)
                             m_Logger.LogError(ToString(), MessageImportance.Highest, ex.ToString());
+
+                        OnDisconnect("Send failed");
+                    }
+                    catch (System.Exception ex2)
+                    {
+                        if (m_Logger != null)
+                            m_Logger.LogError(ToString(), MessageImportance.Highest, ex2.ToString());
+
+                        OnDisconnect(ex2.ToString());
                     }
                 }
             }
@@ -426,8 +436,10 @@ namespace SocketServer
         }
 
         public object SyncRoot = new object();
+        bool UserInitiatedDisconnect = false;
         public virtual bool Disconnect()
         {
+            UserInitiatedDisconnect = true;
             lock (SyncRoot)  // don't want this to be called by multiple people at the same time
             {
                 if (Client == null)
@@ -530,6 +542,12 @@ namespace SocketServer
                             m_Logger.LogError(ToString(), MessageImportance.Highest, e3.ToString());
                         OnDisconnect(e3.ToString());
                     }
+                    catch (System.Exception e4)
+                    {
+                        if (m_Logger != null)
+                            m_Logger.LogError(ToString(), MessageImportance.Highest, e4.ToString());
+                        OnDisconnect(e4.ToString());
+                    }
                 }
             }
         }
@@ -559,6 +577,8 @@ namespace SocketServer
 
             if (nLen == 0)
             {
+                if (UserInitiatedDisconnect == false)
+                   OnDisconnect("Graceful Disconnect");
                 return;
             }
 

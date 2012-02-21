@@ -35,28 +35,32 @@ namespace XMPPClient
             XMPPAccount cred = null;
             using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
             {
-                // Load from storage
-                IsolatedStorageFileStream location = null;
-                try
+                if (storage.FileExists("xmppcred.item") == true)
                 {
-                    location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Open, storage);
-                    DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
+                    // Load from storage
+                    IsolatedStorageFileStream location = null;
+                    try
+                    {
+                        location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Open, storage);
+                        DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
 
-                    Accounts = ser.ReadObject(location) as List<XMPPAccount>;
-                }
-                catch (Exception ex)
-                {
-                }
-                finally
-                {
-                    if (location != null)
-                        location.Close();
+                        Accounts = ser.ReadObject(location) as List<XMPPAccount>;
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                    finally
+                    {
+                        if (location != null)
+                            location.Close();
+                    }
                 }
                 
             }
 
             if (Accounts.Count <= 0)
             {
+                this.m_bAddingAccount = true;
                 AccountNameInputControl.InputValue = "New Account";
                 AccountNameInputControl.ShowAndGetItems();
                 this.MainScrollViewer.IsEnabled = false;
@@ -96,6 +100,14 @@ namespace XMPPClient
                 IsolatedStorageFileStream location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Create, storage);
                 DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
 
+                if (App.Options.SavePasswords == false)
+                {
+                    foreach (XMPPAccount account in Accounts)
+                    {
+                        account.Password = "";
+                    }
+                }
+
                 try
                 {
                     ser.WriteObject(location, Accounts);
@@ -112,18 +124,30 @@ namespace XMPPClient
 
         private void ButtonConnect_Click(object sender, EventArgs e)
         {
+            if (m_bAddingAccount == true)
+                return;
+
             App.XMPPClient.XMPPAccount = this.AccountPicker.SelectedItem as XMPPAccount;
 
             if (App.XMPPClient.XMPPState == System.Net.XMPP.XMPPState.Connected)
                 App.XMPPClient.Disconnect();
 
-
+            /// store the password in memory before serializing in case the user doesn't want them save to disk
+            string strPassword = App.XMPPClient.XMPPAccount.Password;
 
             using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
             {
                 // Load from storage
                 IsolatedStorageFileStream location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Create, storage);
                 DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
+
+                if (App.Options.SavePasswords == false)
+                {
+                    foreach (XMPPAccount account in Accounts)
+                    {
+                        account.Password = "";
+                    }
+                }
 
                 try
                 {
@@ -136,28 +160,30 @@ namespace XMPPClient
             }
 
 
-
+            App.XMPPClient.XMPPAccount.Password = strPassword;
             App.XMPPClient.Connect();
-            //NavigationService.GoBack();
             NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative)); 
-
-
-                
         }
 
+        bool m_bAddingAccount = false;
         private void ButtonNewAccount_Click(object sender, EventArgs e)
         {
+            if (m_bAddingAccount == true)
+                return;
+
+            m_bAddingAccount = true;
             AccountNameInputControl.InputValue = "New Account";
             AccountNameInputControl.ShowAndGetItems();
             this.MainScrollViewer.IsEnabled = false;
             this.AccountPicker.IsEnabled = false;
-           
         }
 
         private void AccountNameInputControl_OnInputSaved(object sender, EventArgs e)
         {
+            m_bAddingAccount = false;
             this.MainScrollViewer.IsEnabled = true;
             this.AccountPicker.IsEnabled = true;
+
             XMPPAccount XMPPAccount = new XMPPAccount();
             XMPPAccount.JID = "user@gmail.com/phone";
             XMPPAccount.Server = "talk.google.com";
@@ -183,6 +209,24 @@ namespace XMPPClient
                 return;
             acc.Password = this.TextBoxPassword.Password;
 
+        }
+
+        private void CheckBoxUseOldSSLMethod_Checked(object sender, RoutedEventArgs e)
+        {
+            XMPPAccount acc = AccountPicker.SelectedItem as XMPPAccount;
+            if (acc == null)
+                return;
+
+            acc.Port = 5223;
+        }
+
+        private void CheckBoxUseOldSSLMethod_Unchecked(object sender, RoutedEventArgs e)
+        {
+            XMPPAccount acc = AccountPicker.SelectedItem as XMPPAccount;
+            if (acc == null)
+                return;
+
+            acc.Port = 5222;
         }
 
      

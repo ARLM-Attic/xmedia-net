@@ -29,17 +29,20 @@
 
         <!--ContentPanel - place additional content here-->
         <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
-            <StackPanel>
-                <toolkit:ToggleSwitch FontSize="24" x:Name="ToggleRunScreenLock" IsChecked="{Binding RunWithScreenLocked,Mode=TwoWay}">Run with screen locked</toolkit:ToggleSwitch>
-                <toolkit:ToggleSwitch FontSize="24" x:Name="ToggleLogXML" IsChecked="{Binding LogXML,Mode=TwoWay}">Log XML</toolkit:ToggleSwitch>
-                <toolkit:ToggleSwitch FontSize="24" x:Name="ToggleSavePasswords" IsChecked="{Binding SavePasswords,Mode=TwoWay}">Save Passwords</toolkit:ToggleSwitch>
-                <toolkit:ToggleSwitch FontSize="24" x:Name="ToggleSendGeoCoords" IsChecked="{Binding SendGeoCoordinates,Mode=TwoWay}" ToolTipService.ToolTip="Aquire lat/long from the GPS service and update them in your personal presence node">Send Geo-Coordinates</toolkit:ToggleSwitch>
-                <toolkit:ToggleSwitch FontSize="24" x:Name="ToggleUseOnlyIBB" IsChecked="{Binding UseOnlyIBBFileTransfer,Mode=TwoWay}" ToolTipService.ToolTip="Only use inband-byte streams for sending files.">Use only inband file transfer</toolkit:ToggleSwitch>
-                <TextBlock ToolTipService.ToolTip="The SOCKS5 Bytestream proxy to use if one is not provided by the XMPP Host.  Use this to prevent falling back to IBB file transfers">SOCKS5 Bytestream Proxy</TextBlock>
-                <TextBox x:Name="TextBoxAlternateProxy" FontSize="24" Text="{Binding Alternate}" />
+            <ScrollViewer>
+                <StackPanel>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleRunScreenLock" IsChecked="{Binding RunWithScreenLocked,Mode=TwoWay}">Run with screen locked</toolkit:ToggleSwitch>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleLogXML" IsChecked="{Binding LogXML,Mode=TwoWay}">Log XML</toolkit:ToggleSwitch>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleSavePasswords" IsChecked="{Binding SavePasswords,Mode=TwoWay}">Save Passwords</toolkit:ToggleSwitch>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="TogglePlaySounds" IsChecked="{Binding PlaySoundOnNewMessage,Mode=TwoWay}">Play Sound On New Message</toolkit:ToggleSwitch>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleVibrate" IsChecked="{Binding VibrateOnNewMessage,Mode=TwoWay}">Vibrate On New Message</toolkit:ToggleSwitch>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleSendGeoCoords" IsChecked="{Binding SendGeoCoordinates,Mode=TwoWay}" ToolTipService.ToolTip="Aquire lat/long from the GPS service and update them in your personal presence node">Send Geo-Coordinates</toolkit:ToggleSwitch>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleUseOnlyIBB" IsChecked="{Binding UseOnlyIBBFileTransfer,Mode=TwoWay}" ToolTipService.ToolTip="Only use inband-byte streams for sending files.">Use only inband file transfer</toolkit:ToggleSwitch>
+                    <TextBlock ToolTipService.ToolTip="The SOCKS5 Bytestream proxy to use if one is not provided by the XMPP Host.  Use this to prevent falling back to IBB file transfers">SOCKS5 Bytestream Proxy</TextBlock>
+                    <TextBox x:Name="TextBoxAlternateProxy" FontSize="22" Text="{Binding SOCKS5ByteStreamProxy,Mode=TwoWay}" />
 
-            </StackPanel>
-            
+                </StackPanel>
+            </ScrollViewer>
             
         </Grid>
     </Grid>

@@ -68,6 +68,11 @@ namespace WPFXMPPClient
                 loginwin.AllAccounts = AllAccounts;
                 if (loginwin.ShowDialog() == false)
                     return;
+                if (loginwin.ActiveAccount == null)
+                {
+                    MessageBox.Show("Login window returned null account", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 XMPPClient.XMPPAccount = loginwin.ActiveAccount;
                 AllAccounts = loginwin.AllAccounts;
                 XMPPClient.Connect();

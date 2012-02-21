@@ -121,7 +121,6 @@ namespace WPFXMPPClient
             while (matchype.Success == true)
             {
                 string strHyperlink = matchype.Value;
-                nMatchAt = matchype.Index + matchype.Length;
 
                 /// Add everything before this as a normal run
                 /// 
@@ -146,6 +145,7 @@ namespace WPFXMPPClient
                 link.Click += new RoutedEventHandler(link_Click);
                 msgspan.Inlines.Add(link);
 
+                nMatchAt = matchype.Index + matchype.Length;
 
                 if (nMatchAt >= (strMessage.Length - 1))
                     break;
@@ -363,6 +363,18 @@ namespace WPFXMPPClient
         public void DownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom)
         {
             System.Diagnostics.Process.Start(strLocalFileName);
+        }
+
+        private void TextBlockChat_TouchDown(object sender, TouchEventArgs e)
+        {
+            /// scroll our window
+            /// 
+            
+        }
+
+        private void TextBlockChat_TouchMove(object sender, TouchEventArgs e)
+        {
+
         }
 
     }

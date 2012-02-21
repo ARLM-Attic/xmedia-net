@@ -85,6 +85,8 @@ namespace System.Net.XMPP
         {
         }
 
+
+
         private XMPPClient m_objXMPPClient = null;
         public XMPPClient XMPPClient
         {
@@ -131,14 +133,29 @@ namespace System.Net.XMPP
             }
         }
 
-        private geoloc m_objGeoLoc = new geoloc();
+        private geoloc m_objGeoLoc = new geoloc() { lat = 0.0f, lon = 0.0f };
         /// <summary>
         ///  The current location of this roster item
         /// </summary>
         public geoloc GeoLoc
         {
             get { return m_objGeoLoc; }
-            set { m_objGeoLoc = value; }
+            set { m_objGeoLoc = value; FirePropertyChanged("GeoString"); }
+        }
+
+        public string GeoString
+        {
+            get
+            {
+                if ((m_objGeoLoc.lat == 0) && (m_objGeoLoc.lon == 0))
+                    return "unknown location";
+                else
+                    return string.Format("lat: {0:N2}, lon: {1:N2}", m_objGeoLoc.lat, m_objGeoLoc.lon);
+            }
+            set
+            {
+                
+            }
         }
 
         private TuneItem m_objTune = new TuneItem();

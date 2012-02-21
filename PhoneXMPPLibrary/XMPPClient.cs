@@ -263,6 +263,7 @@ namespace System.Net.XMPP
 
                 this.XMPPAccount.LastPrescence.PresenceType = PresenceType.unavailable;
                 this.XMPPAccount.LastPrescence.PresenceShow = PresenceShow.xa;
+                FirePropertyChanged("PresenceStatus");
 
                 foreach (RosterItem item in RosterItems)
                 {
@@ -514,8 +515,12 @@ namespace System.Net.XMPP
             }
         }
 
+        public event EventHandler OnServerDisconnect = null;
         internal void FireDisconnectedFromServer()
         {
+            if (OnServerDisconnect != null)
+                OnServerDisconnect(this, new EventArgs());
+
             if ((AutoReconnect == true) && (XMPPAccount.HaveSuccessfullyConnectedAndAuthenticated == true))
             {
                 StartAutoReconnectTimer();
@@ -530,6 +535,7 @@ namespace System.Net.XMPP
                 this.XMPPAccount.AccountName = strCurrentAccountName;
 
             this.RosterItems.Clear();
+
             XMPPConnection = new XMPPConnection(this);
             XMPPConnection.OnStanzaReceived += new System.Net.XMPP.XMPPConnection.DelegateStanza(XMPPConnection_OnStanzaReceived);
             XMPPConnection.Connect();
@@ -539,7 +545,6 @@ namespace System.Net.XMPP
 
         public void Disconnect()
         {
-
             if (XMPPConnection != null)
             {
                 XMPPConnection.Disconnect();

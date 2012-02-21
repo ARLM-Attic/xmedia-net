@@ -772,7 +772,7 @@ namespace SocketServer.TLS
 
                 byte[] bRet = new byte[3+CertificatesLength];
                 int nAt = 0;
-                ByteHelper.WriteUInt32BigEndian(bRet, nAt, CertificatesLength); nAt += 3;
+                ByteHelper.WriteUInt32BigEndian(bRet, nAt, CertificatesLength, 3); nAt += 3;
 
                 foreach (X509Certificate bNextCert in Certificates)
                 {
@@ -862,7 +862,7 @@ namespace SocketServer.TLS
                 foreach (byte[] bNextDistinguishedName in CertificateAuthorities)
                     DistinguishedNamesLength += (ushort) (2 + bNextDistinguishedName.Length);
 
-                int nLength = CertificateTypes.Count + 2 + DistinguishedNamesLength;
+                int nLength = 1 + CertificateTypes.Count + 2 + DistinguishedNamesLength;
                 byte[] bRet = new byte[nLength];
 
                 int nAt = 0;

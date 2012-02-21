@@ -32,7 +32,7 @@ namespace XMPPClient
         PhotoChooserTask photoChooserTask = null;
         private void ButtonSendMessage_Click(object sender, EventArgs e)
         {
-            App.XMPPClient.SendChatMessage(this.TextBoxChatToSend.Text, OurRosterItem.JID);
+            SendMessage(this.TextBoxChatToSend.Text);
             this.TextBoxChatToSend.Text = "";
             this.Focus();
             //this.ListBoxConversation.Focus();
@@ -185,7 +185,7 @@ namespace XMPPClient
         void AddInlinesForMessage(TextMessage msg)
         {
             Span msgspan = new Span();
-            string strRun = string.Format("{0} to {1} - {2}", msg.From, msg.To, msg.Received);
+            string strRun = string.Format("{0} to {1} - {2}", msg.From.User, msg.To.User, msg.Received);
             Run runfrom = new Run();
             runfrom.Text = strRun;
             runfrom.Foreground = new SolidColorBrush(Colors.Gray);
@@ -208,7 +208,6 @@ namespace XMPPClient
             while (matchype.Success == true)
             {
                 string strHyperlink = matchype.Value;
-                nMatchAt = matchype.Index + matchype.Length;
 
                 /// Add everything before this as a normal run
                 /// 
@@ -234,6 +233,7 @@ namespace XMPPClient
                 link.Click += new RoutedEventHandler(link_Click);
                 msgspan.Inlines.Add(link);
 
+                nMatchAt = matchype.Index + matchype.Length;
 
                 if (nMatchAt >= (strMessage.Length - 1))
                     break;
@@ -373,6 +373,8 @@ namespace XMPPClient
                 }
                 else
                     LastFullJIDBeforeMSDecidedToScrewUs = OurRosterItem.LastFullJIDToGetMessageFrom;
+
+                App.XMPPClient.Disconnect(); // We're going to get disconnected any way
                 photoChooserTask.ShowCamera = true;
                 photoChooserTask.Show();
             }
@@ -385,6 +387,7 @@ namespace XMPPClient
 
         void photoChooserTask_Completed(object sender, PhotoResult e)
         {
+            App.XMPPClient.Connect();
             App.WaitConnected();
 
             if (e.TaskResult == TaskResult.OK)
@@ -402,19 +405,26 @@ namespace XMPPClient
             }
         }
 
+        void SendMessage(string strMessage)
+        {
+            if (App.XMPPClient.Connected == false)
+            {
+                if (MessageBox.Show("Client was disconnected, would you like to re-connect?", "Connection Lost", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                    App.XMPPClient.Connect();
+                return;
+            }
+
+            App.XMPPClient.SendChatMessage(strMessage, OurRosterItem.JID);
+            this.TextBoxChatToSend.Text = "";
+            this.Focus();
+        }
+
         private void TextBoxChatToSend_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
                 string strText = this.TextBoxChatToSend.Text;
-
-                /// TODO.. take this out before releasing
-                if (strText == "throw")
-                    throw new Exception("Intentional testing exception");
-
-                App.XMPPClient.SendChatMessage(strText, OurRosterItem.JID);
-                this.TextBoxChatToSend.Text = "";
-                this.Focus();
+                SendMessage(strText);
                 //this.ListBoxConversation.Focus();
             }
         }

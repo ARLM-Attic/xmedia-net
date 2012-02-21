@@ -64,21 +64,11 @@ namespace System.Net.XMPP
 
         public virtual int SendStanza(XMPPStanza stanza)
         {
-            if (Client.Connected == false)
-                throw new Exception("XMPP Client is not connected");
-
             string strSend = stanza.XML;
             byte[] bStanza = System.Text.UTF8Encoding.UTF8.GetBytes(strSend);
             return this.Send(bStanza);
         }
 
-        public override int Send(string strLine)
-        {
-            if (Client.Connected == false)
-                throw new Exception("XMPP Client is not connected");
-
-            return base.Send(strLine);
-        }
 
         public delegate void DelegateStanza(XMPPStanza stanza, object objFrom);
         public event DelegateStanza OnStanzaReceived = null;
@@ -147,7 +137,11 @@ namespace System.Net.XMPP
         public override int Send(byte[] bData, int nLength, bool bTransform)
         {
             if (Client.Connected == false)
+            {
+                XMPPClient.XMPPState = XMPPState.Unknown;
                 throw new Exception("XMPP Client is not connected");
+            }
+            
 
             string strSend = System.Text.UTF8Encoding.UTF8.GetString(bData, 0, nLength);
             XMPPClient.FireXMLSent(strSend);

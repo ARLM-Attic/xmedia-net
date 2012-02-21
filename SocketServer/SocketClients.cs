@@ -251,6 +251,7 @@ namespace SocketServer
 
         public bool Connect(string ipaddr, int nport, bool bbeginread)
         {
+            UserInitiatedDisconnect = false;
             StartReadOnConnect = bbeginread;
 
             IPAddress hostadd = null;
@@ -340,6 +341,7 @@ namespace SocketServer
         /// <returns></returns>
         public bool ConnectAsync(string ipaddr, int nport)
         {
+            UserInitiatedDisconnect = false;
             IPAddress hostadd = null;
             IPEndPoint EPhost = null;
             if (ipaddr.Length <= 0)
@@ -619,8 +621,10 @@ namespace SocketServer
         }
 
         public object SyncRoot = new object();
+        bool UserInitiatedDisconnect = false;
         public virtual bool Disconnect()
         {
+            UserInitiatedDisconnect = true;
             lock (SyncRoot)  // don't want this to be called by multiple people at the same time
             {
                 if (Client == null)
@@ -841,10 +845,11 @@ namespace SocketServer
 
         void HandleReceiveData(byte [] bData, int nLen)
         {
-          
 
             if (nLen == 0)
             {
+                if (UserInitiatedDisconnect == false)
+                    OnDisconnect("Graceful Disconnect");
                 return;
             }
 

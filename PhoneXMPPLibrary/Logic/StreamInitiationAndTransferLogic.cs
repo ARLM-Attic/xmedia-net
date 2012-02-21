@@ -73,7 +73,11 @@ namespace System.Net.XMPP
 
             /// Don't offer byte streams if the server doesn't support a SOCKS 5 proxy, since windows phone can't listen for connections
             item filetransfer = client.ServerServiceDiscoveryFeatureList.GetItemByType(ItemType.SOCKS5ByteStream);
-            if (filetransfer != null)
+
+            if ((FileTransferManager.SOCKS5Proxy != null) && (FileTransferManager.SOCKS5Proxy.Length > 0))
+                filetransfer = new item(); /// User has supplied a socks5 proxy, so we don't need our xmpp server to supply one to use bytestreams
+
+            if ((filetransfer != null) && (FileTransferManager.UseIBBOnly == false))
             {
                 q.StreamOptions |= StreamOptions.bytestreams;
             }
@@ -243,6 +247,7 @@ namespace System.Net.XMPP
             : base(client)
         {
         }
+
 
         public override bool NewIQ(IQ iq)
         {
@@ -852,30 +857,44 @@ namespace System.Net.XMPP
                 string strJID = string.Format("proxy.{0}", XMPPClient.Domain);
                 string strHost = XMPPClient.Server;
                 string strPort = "7777";
-                item filetransfer = FindProxyItem();
-                if (filetransfer != null)
+
+                if ((FileTransferManager.SOCKS5Proxy != null) && (FileTransferManager.SOCKS5Proxy.Length > 0))
                 {
-                    strJID = filetransfer.JID;
-                    /// Query the server for the actual stream host of thi sitem
+                    /// User supplied socks5 proxy...TODO, add port configuration
+                    strJID = FileTransferManager.SOCKS5Proxy;
+                    strHost = FileTransferManager.SOCKS5Proxy;
+                    strPort = "7777";
+                }
+                else
+                {
+                    /// Query our xmpp server for a proxy, then for the details
+                    /// 
 
-                    ByteStreamQueryIQ iqqueryproxy = new ByteStreamQueryIQ();
-                    iqqueryproxy.From = XMPPClient.JID;
-                    iqqueryproxy.To = strJID;
-                    iqqueryproxy.Type = IQType.get.ToString();
-                    iqqueryproxy.ByteStreamQuery = new ByteStreamQuery();
-
-                    IQ iqret = XMPPClient.SendRecieveIQ(iqqueryproxy, 15000, SerializationMethod.XMLSerializeObject);
-                    if ( (iqret != null) && (iqret is ByteStreamQueryIQ))
+                    item filetransfer = FindProxyItem();
+                    if (filetransfer != null)
                     {
-                        ByteStreamQueryIQ response = iqret as ByteStreamQueryIQ;
-                        if ((response.ByteStreamQuery != null) && (response.ByteStreamQuery.Hosts != null) && (response.ByteStreamQuery.Hosts.Length > 0))
-                        {
-                            strHost = response.ByteStreamQuery.Hosts[0].Host;
-                            strPort = response.ByteStreamQuery.Hosts[0].Port;
-                            strJID = response.ByteStreamQuery.Hosts[0].Jid;
-                        }
-                    }
+                        strJID = filetransfer.JID;
+                        /// Query the server for the actual stream host of thi sitem
 
+                        ByteStreamQueryIQ iqqueryproxy = new ByteStreamQueryIQ();
+                        iqqueryproxy.From = XMPPClient.JID;
+                        iqqueryproxy.To = strJID;
+                        iqqueryproxy.Type = IQType.get.ToString();
+                        iqqueryproxy.ByteStreamQuery = new ByteStreamQuery();
+
+                        IQ iqret = XMPPClient.SendRecieveIQ(iqqueryproxy, 15000, SerializationMethod.XMLSerializeObject);
+                        if ((iqret != null) && (iqret is ByteStreamQueryIQ))
+                        {
+                            ByteStreamQueryIQ response = iqret as ByteStreamQueryIQ;
+                            if ((response.ByteStreamQuery != null) && (response.ByteStreamQuery.Hosts != null) && (response.ByteStreamQuery.Hosts.Length > 0))
+                            {
+                                strHost = response.ByteStreamQuery.Hosts[0].Host;
+                                strPort = response.ByteStreamQuery.Hosts[0].Port;
+                                strJID = response.ByteStreamQuery.Hosts[0].Jid;
+                            }
+                        }
+
+                    }
                 }
 
                 StreamHost host = new StreamHost() { Host = strHost, Port = strPort, Jid = strJID };

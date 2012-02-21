@@ -66,5 +66,21 @@ namespace XMPPClient
             get { return m_strSOCKS5ByteStreamProxy; }
             set { m_strSOCKS5ByteStreamProxy = value; }
         }
+
+        private bool m_bPlaySoundOnNewMessage = true;
+        [DataMember]
+        public bool PlaySoundOnNewMessage
+        {
+            get { return m_bPlaySoundOnNewMessage; }
+            set { m_bPlaySoundOnNewMessage = value; }
+        }
+
+        private bool m_BVibrateOnNewMessage = true;
+        [DataMember]
+        public bool VibrateOnNewMessage
+        {
+            get { return m_BVibrateOnNewMessage; }
+            set { m_BVibrateOnNewMessage = value; }
+        }
     }
 }
