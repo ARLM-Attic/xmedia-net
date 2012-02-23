@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+#if !MONO
 using System.Reflection;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
@@ -48,3 +49,4 @@ namespace System.Net.XMPP
 #endif
 
 }
+#endif

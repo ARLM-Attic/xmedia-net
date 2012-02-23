@@ -1,13 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 using System.Xml;
 using System.IO;
@@ -33,6 +25,13 @@ namespace System.Net.XMPP
 
     public class XMPPMessageBase
     {
+        /// <summary>
+        /// We need this default constructor in order to be able to serialize derived classes in Mono for android,
+        /// all other versions of mono/.net don't have this limitation
+        /// </summary>
+        public XMPPMessageBase()
+        {
+        }
         public XMPPMessageBase(string strXML, string strNodeName)
         {
             NodeName = strNodeName;
@@ -434,7 +433,7 @@ namespace System.Net.XMPP
 
     //<iq type="get" id="791-126" from="ninethumbs.com" to="ninethumbs.com/411f8597"><ping xmlns="urn:xmpp:ping"/></iq>
 #if !WINDOWS_PHONE
-    [XmlRoot(ElementName = "iq", Namespace=null)]
+    [XmlRoot(ElementName = "iq")]
 #endif
     public class IQ : XMPPMessageBase
     {

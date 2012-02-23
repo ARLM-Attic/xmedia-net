@@ -1,13 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 using System.Xml.Linq;
 using System.Collections.Generic;
@@ -56,7 +48,9 @@ namespace System.Net.XMPP
             if (PropertyChanged != null)
             {
 #if WINDOWS_PHONE
-               Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+#elif MONO
+                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif
@@ -352,6 +346,13 @@ namespace System.Net.XMPP
             get { return m_listClientInstances; }
             set { m_listClientInstances = value; }
         }
+#elif MONO
+        private ObservableCollection<RosterItemPresenceInstance> m_listClientInstances = new ObservableCollection<RosterItemPresenceInstance>();
+        public ObservableCollection<RosterItemPresenceInstance> ClientInstances
+        {
+            get { return m_listClientInstances; }
+            set { m_listClientInstances = value; }
+        }
 #else
         private ObservableCollectionEx<RosterItemPresenceInstance> m_listClientInstances = new ObservableCollectionEx<RosterItemPresenceInstance>();
         public ObservableCollectionEx<RosterItemPresenceInstance> ClientInstances
@@ -421,17 +422,19 @@ namespace System.Net.XMPP
             }
         }
 
-        public Visibility NewMessagesVisible
+#if !MONO
+        public System.Windows.Visibility NewMessagesVisible
         {
             get
             {
                 if (m_bHasNewMessages == true)
-                    return Visibility.Visible;
+                    return System.Windows.Visibility.Visible;
                 else
-                    return Visibility.Collapsed;
+                    return System.Windows.Visibility.Collapsed;
             }
             set { }
         }
+#endif
 
         private string m_strImagePath = null;
 
@@ -451,12 +454,13 @@ namespace System.Net.XMPP
             }
         }
 
+#if !MONO
         /// <summary>
         /// Must keep this bitmapimage as a class member or it won't appear.  Not sure why it's going out of scope
         /// when it should be referenced by WPF
         /// </summary>
         System.Windows.Media.Imaging.BitmapImage OurImage = null;
-        public ImageSource Avatar
+        public System.Windows.Media.ImageSource Avatar
         {
             get
             {
@@ -475,7 +479,7 @@ namespace System.Net.XMPP
                 return OurImage;
             }
         }
-
+#endif
 
         public rosteritem Node { get; set; }
 
@@ -486,7 +490,9 @@ namespace System.Net.XMPP
             if (PropertyChanged != null)
             {
 #if WINDOWS_PHONE
-               Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+#elif MONO
+                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif

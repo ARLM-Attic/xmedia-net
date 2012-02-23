@@ -93,7 +93,9 @@ namespace SocketServer
             }
             else
             {
+#if !MONO
                 System.Diagnostics.Trace.WriteLine(strMessage, strEventName);
+#endif
             }
         }
 
@@ -105,7 +107,9 @@ namespace SocketServer
             }
             else
             {
+#if !MONO
                 System.Diagnostics.Trace.WriteLine(strMessage, strEventName);
+#endif
             }
         }
 
@@ -117,7 +121,9 @@ namespace SocketServer
             }
             else
             {
+#if !MONO
                 System.Diagnostics.Trace.WriteLine(strMessage, strEventName);
+#endif
             }
         }
 

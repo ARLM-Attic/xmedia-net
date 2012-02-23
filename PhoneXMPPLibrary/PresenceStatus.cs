@@ -1,13 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 using System.Runtime.Serialization;
 
@@ -73,16 +65,17 @@ namespace System.Net.XMPP
             }
         }
 
-        public Color  PresenceColor
+#if !MONO
+        public System.Windows.Media.Color PresenceColor
         {
             get
             {
                 if (m_ePresenceShow == System.Net.XMPP.PresenceShow.unknown)
-                    return Color.FromArgb(0, 0, 0, 0);
+                    return System.Windows.Media.Color.FromArgb(0, 0, 0, 0);
                 if (m_ePresenceShow == System.Net.XMPP.PresenceShow.dnd)
-                    return Colors.Red;
+                    return System.Windows.Media.Colors.Red;
                 else if (m_ePresenceShow == System.Net.XMPP.PresenceShow.away)
-                    return Colors.Orange;
+                    return System.Windows.Media.Colors.Orange;
                 else if (m_ePresenceShow == System.Net.XMPP.PresenceShow.xa)
                 {
 #if WINDOWS_PHONE
@@ -90,37 +83,39 @@ namespace System.Net.XMPP
 #else
                     if (string.Compare(Status, "online", true) == 0)
 #endif
-                        return Color.FromArgb(255, 64, 255, 64);
+                        return System.Windows.Media.Color.FromArgb(255, 64, 255, 64);
 #if WINDOWS_PHONE
                     if (string.Compare(Status, "extended away", StringComparison.CurrentCultureIgnoreCase) == 0)
 #else
                     if (string.Compare(Status, "extended away", true) == 0)
 #endif
-                        return Colors.Orange;
+                        return System.Windows.Media.Colors.Orange;
 
 
-                    return Colors.Purple;
+                    return System.Windows.Media.Colors.Purple;
                 }
                 else if (m_ePresenceShow == System.Net.XMPP.PresenceShow.chat)
-                    return Color.FromArgb(255, 128, 255, 128);
+                    return System.Windows.Media.Color.FromArgb(255, 128, 255, 128);
                 else
-                    return Colors.Purple;
+                    return System.Windows.Media.Colors.Purple;
             }
             set
             {
             }
         }
 
-        public Brush PresenceBrush
+        public System.Windows.Media.Brush PresenceBrush
         {
             get
             {
-               return new SolidColorBrush(PresenceColor);
+                return new System.Windows.Media.SolidColorBrush(PresenceColor);
             }
             set
             {
             }
         }
+
+#endif
 
         private PresenceShow m_ePresenceShow = PresenceShow.unknown;
         [DataMember]
@@ -183,7 +178,9 @@ namespace System.Net.XMPP
             if (PropertyChanged != null)
             {
 #if WINDOWS_PHONE
-               Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+#elif MONO
+                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif

@@ -1,13 +1,5 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
+using System.Net; 
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -215,7 +207,8 @@ namespace System.Net.XMPP
             }
         }
 
-        public Visibility IsVisibleSendCancel
+#if !MONO
+        public System.Windows.Visibility IsVisibleSendCancel
         {
             get
             {
@@ -223,35 +216,36 @@ namespace System.Net.XMPP
                     (FileTransferDirection == System.Net.XMPP.FileTransferDirection.Send) && 
                     ((FileTransferState != System.Net.XMPP.FileTransferState.Done) && (FileTransferState != System.Net.XMPP.FileTransferState.Error))
                     )
-                    return Visibility.Visible;
-                return Visibility.Collapsed;
+                    return System.Windows.Visibility.Visible;
+                return System.Windows.Visibility.Collapsed;
             }
             set
             {
             }
         }
 
-        public Visibility IsAcceptCancelVisible
+        public System.Windows.Visibility IsAcceptCancelVisible
         {
             get
             {
                     if ((FileTransferDirection == System.Net.XMPP.FileTransferDirection.Receive) &&
                                        (FileTransferState == System.Net.XMPP.FileTransferState.WaitingOnUserAccept) )
-                        return Visibility.Visible;
-                return Visibility.Collapsed;
+                        return System.Windows.Visibility.Visible;
+                    return System.Windows.Visibility.Collapsed;
             }
         }
 
-        public Visibility IsSaveVisible
+        public System.Windows.Visibility IsSaveVisible
         {
             get
             {
                     if ((FileTransferDirection == System.Net.XMPP.FileTransferDirection.Receive) &&
                                        (FileTransferState == System.Net.XMPP.FileTransferState.Done) )
-                        return Visibility.Visible;
-                return Visibility.Collapsed;
+                        return System.Windows.Visibility.Visible;
+                    return System.Windows.Visibility.Collapsed;
             }
         }
+#endif
         
         private FileTransferType m_eFileTransferType = FileTransferType.IBB;
         public FileTransferType FileTransferType
@@ -267,7 +261,9 @@ namespace System.Net.XMPP
             if (PropertyChanged != null)
             {
 #if WINDOWS_PHONE
-                Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+#elif MONO
+                PropertyChanged(this, new PropertyChangedEventArgs(strName));
 #else
                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif
@@ -295,6 +291,13 @@ namespace System.Net.XMPP
         object m_objFileTransferLock = new object();
 
 #if WINDOWS_PHONE
+        private ObservableCollection<FileTransfer> m_listFileTransfers = new ObservableCollection<FileTransfer>();
+        public ObservableCollection<FileTransfer> FileTransfers
+        {
+            get { return m_listFileTransfers; }
+            set { m_listFileTransfers = value; }
+        }
+#elif MONO
         private ObservableCollection<FileTransfer> m_listFileTransfers = new ObservableCollection<FileTransfer>();
         public ObservableCollection<FileTransfer> FileTransfers
         {
@@ -444,7 +447,7 @@ namespace System.Net.XMPP
             {
 
 #if WINDOWS_PHONE
-               Deployment.Current.Dispatcher.BeginInvoke(new DelegateAddTrans(DoAddTrans), trans);
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(new DelegateAddTrans(DoAddTrans), trans);
 #else
                lock (m_objFileTransferLock)
                {

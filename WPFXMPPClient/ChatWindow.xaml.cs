@@ -98,6 +98,8 @@ namespace WPFXMPPClient
         const double FontSizeMessage = 14.0f;
         void AddInlinesForMessage(TextMessage msg)
         {
+            if (msg.Message == null)
+                return;
             Span msgspan = new Span();
             string strRun = string.Format("{0} to {1} - {2}", msg.From, msg.To, msg.Received);
             Run runfrom = new Run(strRun);

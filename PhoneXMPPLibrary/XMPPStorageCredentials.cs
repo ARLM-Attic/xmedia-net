@@ -1,13 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 using System.Runtime.Serialization;
 namespace System.Net.XMPP
@@ -234,7 +226,9 @@ namespace System.Net.XMPP
             if (PropertyChanged != null)
             {
 #if WINDOWS_PHONE
-                Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+#elif MONO
+                PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif

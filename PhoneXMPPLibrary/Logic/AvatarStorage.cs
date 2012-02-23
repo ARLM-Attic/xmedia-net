@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+#if !MONO
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -8,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+#endif
 
 using System.IO;
 using System.IO.IsolatedStorage;
@@ -51,7 +53,7 @@ namespace System.Net.XMPP
 
 
 
-
+#if !MONO
         public System.Windows.Media.Imaging.BitmapImage GetAvatarImage(string strHash)
         {
             System.Windows.Media.Imaging.BitmapImage objImage = null;
@@ -103,7 +105,7 @@ namespace System.Net.XMPP
 
             return objImage;
         }
-
+#endif
 
 
 

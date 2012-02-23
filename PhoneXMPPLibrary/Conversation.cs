@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 using System.Reflection;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
+
+#if !MONO
 using System.Windows.Threading;
+#endif
+
 using System.Collections.Generic;
+using System.Xml.Serialization;
 
 namespace System.Net.XMPP
 {
@@ -54,6 +51,7 @@ namespace System.Net.XMPP
             }
         }
 
+        [XmlIgnore]
         public string RemoteEnd
         {
             get
@@ -122,19 +120,21 @@ namespace System.Net.XMPP
             set { m_bSent = value; }
         }
 
-        public Brush TextColor
+#if !MONO
+        public System.Windows.Media.Brush TextColor
         {
             get
             {
                 if (Sent == true)
-                    return new SolidColorBrush(Colors.Purple);
+                    return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Purple);
                 else
-                    return new SolidColorBrush(Colors.Orange);
+                    return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Orange);
             }
             set
             {
             }
         }
+#endif
 
         #region INotifyPropertyChanged Members
 
@@ -143,7 +143,9 @@ namespace System.Net.XMPP
             if (PropertyChanged != null)
             {
 #if WINDOWS_PHONE
-               Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+#elif MONO
+                PropertyChanged(this, new ComponentModel.PropertyChangedEventArgs(strName));
 #else
                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif
@@ -157,10 +159,14 @@ namespace System.Net.XMPP
 
         #endregion
     }
+
     
     [DataContract]
     public class Conversation : System.ComponentModel.INotifyPropertyChanged
     {
+        public Conversation()
+        {
+        }
 
         public Conversation(JID jid)
         {
@@ -168,7 +174,7 @@ namespace System.Net.XMPP
         }
 
         private JID m_objJID = null;
-
+        [XmlIgnore]
         public JID JID
         {
             get { return m_objJID; }
@@ -179,7 +185,7 @@ namespace System.Net.XMPP
         public void Clear()
         {
 #if WINDOWS_PHONE
-            Deployment.Current.Dispatcher.BeginInvoke(new DelegateClear(DoClear));
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(new DelegateClear(DoClear));
 #else
             m_listMessages.Clear();
 #endif
@@ -195,7 +201,7 @@ namespace System.Net.XMPP
         public void AddMessage(TextMessage msg)
         {
 #if WINDOWS_PHONE
-            Deployment.Current.Dispatcher.BeginInvoke(new DelegateAddMessage(DoAddMessage), msg);
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(new DelegateAddMessage(DoAddMessage), msg);
 #else
             m_listMessages.Add(msg);
 #endif
@@ -207,7 +213,7 @@ namespace System.Net.XMPP
         }
 
         private ConversationState m_eConversationState = ConversationState.active;
-
+        [XmlIgnore]
         public ConversationState ConversationState
         {
             get { return m_eConversationState; }
@@ -224,6 +230,14 @@ namespace System.Net.XMPP
 
 
 #if WINDOWS_PHONE
+        private ObservableCollection<TextMessage> m_listMessages = new ObservableCollection<TextMessage>();
+        [DataMember]
+        public ObservableCollection<TextMessage> Messages
+        {
+            get { return m_listMessages; }
+            set { m_listMessages = value; }
+        }
+#elif MONO
         private ObservableCollection<TextMessage> m_listMessages = new ObservableCollection<TextMessage>();
         [DataMember]
         public ObservableCollection<TextMessage> Messages
@@ -248,7 +262,9 @@ namespace System.Net.XMPP
             if (PropertyChanged != null)
             {
 #if WINDOWS_PHONE
-                Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+#elif MONO
+                PropertyChanged(this, new ComponentModel.PropertyChangedEventArgs(strName));
 #else
                 System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif

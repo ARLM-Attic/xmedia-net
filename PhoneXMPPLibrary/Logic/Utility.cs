@@ -1,13 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 
 using System.Xml;
 
@@ -19,6 +11,7 @@ namespace System.Net.XMPP
 {
     public class Utility
     {
+
         /// <summary>
         /// ﻿<geoloc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://jabber.org/protocol/geoloc"><lat>32.234</lat><lon>-97.3453</lon></geoloc>
         /// </summary>
@@ -66,6 +59,7 @@ namespace System.Net.XMPP
             //strRet = strRet.Replace(@"<?xml version=""1.0""?>", "");
             return strRet;
         }
+
 
         public static object ParseObjectFromXMLString(string strXML, Type objType)
         {
