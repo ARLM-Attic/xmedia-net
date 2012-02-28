@@ -52,11 +52,16 @@ namespace System.Net.XMPP
 
         public override string ToString()
         {
+            if (this.FileTransferState == XMPP.FileTransferState.Error)
+                return string.Format("Error performing {0} operation to {1}, Error: {2}", FileTransferDirection, RemoteJID.User, Error);
+
             if (this.FileTransferDirection == System.Net.XMPP.FileTransferDirection.Send)
                 return string.Format("Sending {0} byte file to {1}, State: {2}", BytesTotal, RemoteJID.User, this.FileTransferState);
             else
                 return string.Format("Receiving {0} byte file from {1}, State: {2}", BytesTotal, RemoteJID.User, this.FileTransferState);
         }
+
+        public object Tag = null;
 
         public string StringValue
         {
@@ -67,6 +72,14 @@ namespace System.Net.XMPP
             set
             {
             }
+        }
+
+        private string m_strError = "";
+
+        public string Error
+        {
+            get { return m_strError; }
+            set { m_strError = value; }
         }
 
         private string m_strsid = Guid.NewGuid().ToString();
@@ -104,6 +117,15 @@ namespace System.Net.XMPP
             }
         }
 
+        private bool m_bIsSaved = false;
+        /// <summary>
+        /// Allows the GUI application to specify if this has been saved
+        /// </summary>
+        public bool IsSaved
+        {
+            get { return m_bIsSaved; }
+            set { m_bIsSaved = value; }
+        }
         
 
         private int m_nBytesTotal = 0;
@@ -344,6 +366,15 @@ namespace System.Net.XMPP
             trans.ByteStreamLogic.StartAsync();
         }
 
+        internal void GotStreamErrorResponse(FileTransfer trans, IQ iq)
+        {
+            if (iq.Error != null)
+            {
+                trans.Error = iq.Error.ErrorDescription;
+                trans.FileTransferState = FileTransferState.Error;
+            }
+        }
+
         public string SendFile(string strFullFileName, JID jidto)
         {
             string strFileName = FileTransfer.GetFileNameFromFullString(strFullFileName);
@@ -392,6 +423,7 @@ namespace System.Net.XMPP
                 }
             }
 
+            trans.Error = "Cancelled by User";
             trans.FileTransferState = FileTransferState.Error;
             trans.Close();
 
@@ -423,6 +455,7 @@ namespace System.Net.XMPP
                     FileTransfers.Remove(trans);
                 }
 
+                trans.Error = "Declined by User";
                 trans.FileTransferState = FileTransferState.Error;
                 XMPPClient.StreamInitiationAndTransferLogic.DeclineIncomingFileRequest(trans);
                 trans.Close();

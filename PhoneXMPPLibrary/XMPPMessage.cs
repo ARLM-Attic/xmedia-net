@@ -43,7 +43,7 @@ namespace System.Net.XMPP
         public XElement InitalXMLElement
         {
             get { return m_objInitalXMLElement; }
-            protected set { m_objInitalXMLElement = value; }
+            internal set { m_objInitalXMLElement = value; }
         }
 
         private string m_strNodeName = "unknown";
@@ -244,7 +244,7 @@ namespace System.Net.XMPP
     public enum ErrorType
     {
         [XmlEnum(null)]
-        none,
+        unknown,
         [XmlEnum("bad-request")]
         badrequest,
         [XmlEnum("feature-not-implemented")]
@@ -275,7 +275,7 @@ namespace System.Net.XMPP
         registrationrequired,
         [XmlEnum("remote-server-not-found")]
         remoteservernotfound,
-        [XmlEnum("remove-server-timeout")]
+        [XmlEnum("remote-server-timeout")]
         remoteservertimeout, 
         [XmlEnum("resource-constraint")]
         resourceconstraint,
@@ -330,22 +330,97 @@ namespace System.Net.XMPP
         unsupportedversion
     }
 
+    
     public class ErrorDescription : IXmlSerializable
     {
+        public ErrorDescription()
+        {
+        }
+
         public ErrorDescription(string strDesc)
         {
             Description = strDesc;
         }
-    
-        public ErrorDescription()
+
+        public ErrorDescription(ErrorType type)
         {
+            ErrorType = type;
         }
-    
-        public string Description = null;
+
+        public static string GetEnumDescription(ErrorType value)
+        {
+            Type type = typeof(ErrorType);
+
+            System.Reflection.FieldInfo [] fis = type.GetFields();
+            foreach(System.Reflection.FieldInfo fi in fis) 
+            {
+                if (fi.Name == value.ToString())
+                {
+                    XmlEnumAttribute[] attributes = (XmlEnumAttribute[]) fi.GetCustomAttributes(typeof(XmlEnumAttribute), false);
+                    foreach (XmlEnumAttribute attr in attributes)
+                    {
+                        return attr.Name;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static ErrorType FindEnumFromString(string strValue)
+        {
+            Type type = typeof(ErrorType);
+
+            System.Reflection.FieldInfo[] fis = type.GetFields();
+            foreach (System.Reflection.FieldInfo fi in fis)
+            {
+                XmlEnumAttribute[] attributes = (XmlEnumAttribute[])fi.GetCustomAttributes(typeof(XmlEnumAttribute), false);
+                foreach (XmlEnumAttribute attr in attributes)
+                {
+                    if (attr.Name == strValue)
+                        return (ErrorType) fi.GetRawConstantValue();
+                    break;
+                }
+            }
+            return ErrorType.unknown;
+        }
+
+        private string m_strDescription = null;
+
+        public string Description
+        {
+            get 
+            { 
+                return m_strDescription; 
+            }
+            set 
+            { 
+                m_strDescription = value; 
+            }
+        }
 
         public override string ToString()
         {
-            return Description;
+            return m_strDescription;
+        }
+
+        public ErrorType ErrorType
+        {
+            get
+            {
+                return FindEnumFromString(m_strDescription);
+            }
+            set
+            {
+                Description = GetEnumDescription(value);
+                if (Description == null)
+                    Description = value.ToString();
+            }
+        }
+
+        public void Write(XElement elemError)
+        {
+            XElement elemnode = new XElement(Description);
+            elemError.Add(elemnode);
         }
 
         #region IXmlSerializable Members
@@ -355,15 +430,23 @@ namespace System.Net.XMPP
  	        return null;
         }
 
+        private string m_strInnerErrorText = null;
+
+        public string InnerErrorText
+        {
+            get { return m_strInnerErrorText; }
+            set { m_strInnerErrorText = value; }
+        }
 
         public void  ReadXml(XmlReader reader)
         {
-
-            Description = reader.ReadElementContentAsString();
+            Description = reader.Name;
+            InnerErrorText = reader.ReadInnerXml();
         }
 
         public void  WriteXml(XmlWriter writer)
         {
+            
             if (Description != null)
  	           writer.WriteElementString(Description, "");
         }
@@ -394,12 +477,12 @@ namespace System.Net.XMPP
 
         public Error(ErrorType type)
         {
-            this.ErrorDescription = type.ToString();
+            this.ErrorDescription = new ErrorDescription(type);
         }
 
         public Error(string strError)
         {
-            this.ErrorDescription = strError;
+            this.ErrorDescription = new ErrorDescription(strError);
         }
 
 
@@ -421,8 +504,8 @@ namespace System.Net.XMPP
             set { m_strCode = value; }
         }
 
-        [XmlText()]
-        public string ErrorDescription = null;
+        [XmlAnyElement()]
+        public ErrorDescription ErrorDescription = null;
 
 //#if WINDOWS_PHONE
 //#else
@@ -462,13 +545,12 @@ namespace System.Net.XMPP
         {
             if (Error != null)
             {
-                XElement elemError = new XElement("error", Error);
+                XElement elemError = new XElement("error");
                 if (Error.Type != null)
                     elemError.Add(new XAttribute("type", Error.Type));
                 if (Error.ErrorDescription != null) 
                 {
-                    string strType = Error.ErrorDescription;
-                    elemError.Add(new XElement(strType));
+                    Error.ErrorDescription.Write(elemError);
                 }
                 elemMessage.Add(elemError);
             }
@@ -485,7 +567,16 @@ namespace System.Net.XMPP
             {
                 this.Error = new Error();
                 if (elemerror.FirstNode != null)
-                    this.Error.ErrorDescription = ((XElement)elemerror.FirstNode).Value;
+                {
+                    try
+                    {
+                        this.Error.ErrorDescription = ((XElement)elemerror.FirstNode).Name.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        // todo.. make all nodes use object streaming instead of parsing if possible on all platforms
+                    }
+                }
                 break;
             }
             base.ParseInnerXML(elem);
@@ -538,9 +629,9 @@ namespace System.Net.XMPP
 
      
 
-        private DateTime m_dtDelivered = DateTime.MinValue;
+        private DateTime ?m_dtDelivered = null;
 
-        public DateTime Delivered
+        public DateTime? Delivered
         {
             get { return m_dtDelivered; }
             set { m_dtDelivered = value; }

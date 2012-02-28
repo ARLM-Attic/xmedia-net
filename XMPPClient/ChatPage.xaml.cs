@@ -18,6 +18,8 @@ using System.IO.IsolatedStorage;
 using Microsoft.Phone.Tasks;
 using System.Text.RegularExpressions;
 
+using System.Windows.Navigation;
+
 namespace XMPPClient
 {
     public partial class ChatPage : PhoneApplicationPage
@@ -70,7 +72,6 @@ namespace XMPPClient
             }
 
             OurRosterItem = App.XMPPClient.FindRosterItem(new JID(strJID));
-
 
             if (this.InFileTransferMode == true)
             {
@@ -403,7 +404,20 @@ namespace XMPPClient
                 //bmp.SetSource(e.ChosenPhoto);
                 //myImage.Source = bmp;
             }
+
+            /// know bug occurs sometimes when re-opening this app, this fixes it:
+            /// http://social.msdn.microsoft.com/Forums/en-US/windowsphone7series/thread/e079d99e-d2ac-47ab-a87e-f4ce0d3660d5
+            NavigationService.Navigated += new NavigatedEventHandler(navigateCompleted);
+
         }
+
+        void navigateCompleted(object sender, EventArgs e)
+        {
+            //Do the delayed navigation from the main page
+            this.NavigationService.Navigate(new Uri("/FileTransferPage.xaml", UriKind.Relative));
+            NavigationService.Navigated -= new NavigatedEventHandler(navigateCompleted);
+        }
+
 
         void SendMessage(string strMessage)
         {

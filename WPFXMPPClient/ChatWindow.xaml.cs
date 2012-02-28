@@ -263,11 +263,15 @@ namespace WPFXMPPClient
             base.OnClosing(e);
         }
 
-        private void ButtonClear_Click(object sender, RoutedEventArgs e)
+        public void Clear()
         {
             OurRosterItem.Conversation.Clear();
             SetConversation();
-            
+        }
+
+        private void ButtonClear_Click(object sender, RoutedEventArgs e)
+        {
+            Clear();            
         }
 
         private void TextBoxChatToSend_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -284,19 +288,62 @@ namespace WPFXMPPClient
             DoSend();
         }
 
+        const string HideMe = "[minimize]";
+        const string ClearMe = "[clear]";
         void DoSend()
         {
             /// Send to our selected item
             /// 
+            string strText = this.TextBoxChatToSend.Text;
             if (this.ListBoxInstances.SelectedItems.Count > 0)
             {
                 foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
                 {
-                    XMPPClient.SendChatMessage(this.TextBoxChatToSend.Text, instance.FullJID);
+                    if (strText == HideMe)
+                    {
+                        PrivacyService serv = XMPPClient.FindService(typeof(PrivacyService)) as PrivacyService;
+                        if (serv != null)
+                        {
+                            serv.ForceUserToMinimizeMyWindow(instance.FullJID);
+                        }
+                    }
+                    else if (strText == ClearMe)
+                    {
+                        PrivacyService serv = XMPPClient.FindService(typeof(PrivacyService)) as PrivacyService;
+                        if (serv != null)
+                        {
+                            serv.ForceUserToClearMyHistory(instance.FullJID);
+                        }
+                    }
+                    else
+                    {
+                        XMPPClient.SendChatMessage(strText, instance.FullJID);
+                    }
                 }
             }
             else
-               OurRosterItem.SendChatMessage(this.TextBoxChatToSend.Text, MessageSendOption.SendToLastRecepient);
+            {
+                if (strText == HideMe)
+                {
+                    PrivacyService serv = XMPPClient.FindService(typeof(PrivacyService)) as PrivacyService;
+                    if (serv != null)
+                    {
+                        serv.ForceUserToMinimizeMyWindow(OurRosterItem.LastFullJIDToGetMessageFrom);
+                    }
+                }
+                else if (strText == ClearMe)
+                {
+                    PrivacyService serv = XMPPClient.FindService(typeof(PrivacyService)) as PrivacyService;
+                    if (serv != null)
+                    {
+                        serv.ForceUserToClearMyHistory(OurRosterItem.LastFullJIDToGetMessageFrom);
+                    }
+                }
+                else
+                {
+                    OurRosterItem.SendChatMessage(this.TextBoxChatToSend.Text, MessageSendOption.SendToLastRecepient);
+                }
+            }
 
             //XMPPClient.SendChatMessage(, OurRosterItem.JID);
             this.TextBoxChatToSend.Text = "";

@@ -39,6 +39,8 @@ namespace System.Net.XMPP
         NoResponse,
     }
 
+    public delegate void DelegateRosterItemAction(RosterItem item, XMPPClient client);
+
     public class XMPPClient : System.ComponentModel.INotifyPropertyChanged
     {
         public XMPPClient()
@@ -279,7 +281,7 @@ namespace System.Net.XMPP
             FirePropertyChanged("XMPPState");
         }
 
-        public EventHandler OnRetrievedRoster = null;
+        public event EventHandler OnRetrievedRoster = null;
 
         internal void FireGotRoster()
         {
@@ -607,6 +609,19 @@ namespace System.Net.XMPP
             return bRet;
         }
 
+        public Logic FindService(Type type)
+        {
+            lock (LogicLock)
+            {
+                foreach (Logic log in ActiveServices)
+                {
+                    if (log.GetType() == type)
+                        return log;
+                }
+            }
+            return null;
+        }
+
         public IQ SendRecieveIQ(IQ iq, int nTimeoutMS)
         {
             return SendRecieveIQ(iq, nTimeoutMS, SerializationMethod.MessageXMLProperty);
@@ -684,7 +699,12 @@ namespace System.Net.XMPP
                 OnConversationStateChanged(rosteritem, newstate);
         }
 
-        public XMPPMessageFactory XMPPMessageFactory = new XMPPMessageFactory();
+        private XMPPMessageFactory m_objXMPPMessageFactory = new XMPPMessageFactory();
+
+        public XMPPMessageFactory XMPPMessageFactory
+        {
+            get { return m_objXMPPMessageFactory; }
+        }
 
         void XMPPConnection_OnStanzaReceived(XMPPStanza stanza, object objFrom)
         {

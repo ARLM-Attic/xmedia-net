@@ -125,6 +125,15 @@ namespace System.Net.XMPP
             set { m_nAccuracy = value; }
         }
 
+        private DateTime m_dtTimeStamp = DateTime.Now;
+        [XmlElement(ElementName = "timestamp")]
+        [DataMember]
+        public DateTime TimeStamp
+        {
+            get { return m_dtTimeStamp; }
+            set { m_dtTimeStamp = value; }
+        }
+
         [XmlIgnore()]
         public bool IsDirty = true;
 

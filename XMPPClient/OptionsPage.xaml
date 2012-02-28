@@ -37,6 +37,10 @@
                     <toolkit:ToggleSwitch FontSize="22" x:Name="TogglePlaySounds" IsChecked="{Binding PlaySoundOnNewMessage,Mode=TwoWay}">Play Sound On New Message</toolkit:ToggleSwitch>
                     <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleVibrate" IsChecked="{Binding VibrateOnNewMessage,Mode=TwoWay}">Vibrate On New Message</toolkit:ToggleSwitch>
                     <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleSendGeoCoords" IsChecked="{Binding SendGeoCoordinates,Mode=TwoWay}" ToolTipService.ToolTip="Aquire lat/long from the GPS service and update them in your personal presence node">Send Geo-Coordinates</toolkit:ToggleSwitch>
+                    <Grid>
+                        <TextBlock Margin="10,0,0,0" VerticalAlignment="Center">GeoTime Frequency in seconds</TextBlock>
+                        <TextBox HorizontalAlignment="Right" Margin="0,0,30,0" x:Name="TextBoxGeoFreq" Width="100" FontSize="22" Text="{Binding GeoTimeFrequency,Mode=TwoWay}" />
+                    </Grid>
                     <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleUseOnlyIBB" IsChecked="{Binding UseOnlyIBBFileTransfer,Mode=TwoWay}" ToolTipService.ToolTip="Only use inband-byte streams for sending files.">Use only inband file transfer</toolkit:ToggleSwitch>
                     <TextBlock ToolTipService.ToolTip="The SOCKS5 Bytestream proxy to use if one is not provided by the XMPP Host.  Use this to prevent falling back to IBB file transfers">SOCKS5 Bytestream Proxy</TextBlock>
                     <TextBox x:Name="TextBoxAlternateProxy" FontSize="22" Text="{Binding SOCKS5ByteStreamProxy,Mode=TwoWay}" />

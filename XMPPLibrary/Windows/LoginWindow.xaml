@@ -39,7 +39,7 @@
             </StackPanel>
         <StackPanel Grid.Row="3" Orientation="Horizontal">
                 <Label Width="100">Password</Label>
-                <s:SurfacePasswordBox Width="150" x:Name="TextBoxPassword"></s:SurfacePasswordBox>
+                <s:SurfacePasswordBox Width="150" x:Name="TextBoxPassword" PasswordChanged="TextBoxPassword_PasswordChanged"></s:SurfacePasswordBox>
             </StackPanel>
         <StackPanel Grid.Row="4" Orientation="Horizontal">
                 <Label Width="100">Domain</Label>

@@ -67,8 +67,8 @@ namespace System.Net.XMPP
                         txtmsg.From = chatmsg.From;
                         txtmsg.To = chatmsg.To;
                         txtmsg.Received = DateTime.Now;
-                        if (chatmsg.Delivered > DateTime.MinValue)
-                            txtmsg.Received = chatmsg.Delivered; /// May have been a server stored message
+                        if (chatmsg.Delivered.HasValue == true)
+                            txtmsg.Received = chatmsg.Delivered.Value; /// May have been a server stored message
                         txtmsg.Message = chatmsg.Body;
                         txtmsg.Sent = false;
                         item.AddRecvTextMessage(txtmsg);

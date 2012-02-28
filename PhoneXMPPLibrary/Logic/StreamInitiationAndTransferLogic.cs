@@ -285,6 +285,24 @@ namespace System.Net.XMPP
                     }
 
                 }
+                else if (iq.Type == IQType.error.ToString())
+                {
+                    /// May be a response to our pending request to send
+                    /// 
+                    StreamInitIQ initalrequest = null;
+                    if (FileSendRequests.ContainsKey(iq.ID) == true)
+                    {
+                        initalrequest = FileSendRequests[iq.ID];
+                        FileSendRequests.Remove(iq.ID);
+                    }
+
+                    if (initalrequest != null)
+                    {
+
+                        XMPPClient.FileTransferManager.GotStreamErrorResponse(initalrequest.FileTransferObject, iq);
+                    }
+
+                }
                 //else if (siiq.StreamInitIQType == StreamInitIQType.Offer)
                 else if (iq.Type == IQType.set.ToString())
                 {
@@ -692,6 +710,8 @@ namespace System.Net.XMPP
                 {
                     if (iq.Type == IQType.error.ToString())
                     {
+                        if (iq.Error != null)
+                            FileTransfer.Error = iq.Error.ErrorDescription;
                         FileTransfer.FileTransferState = FileTransferState.Error;
                         IsCompleted = true; /// Remove this guy
                         XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
@@ -711,6 +731,8 @@ namespace System.Net.XMPP
                     {
                         /// TODO.. notify the user there was a failure transferring blocks
                         /// 
+                        if (iq.Error != null)
+                            FileTransfer.Error = iq.Error.ErrorDescription;
                         FileTransfer.FileTransferState = FileTransferState.Error;
                         XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                         IsCompleted = true;
@@ -940,6 +962,8 @@ namespace System.Net.XMPP
                     if (iq.Type == IQType.error.ToString())
                     {
                         IsCompleted = true;
+                        if (iq.Error != null)
+                            FileTransfer.Error = iq.Error.ErrorDescription;
                         FileTransfer.FileTransferState = FileTransferState.Error;
                         XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                     }
@@ -953,6 +977,8 @@ namespace System.Net.XMPP
                         else if (bsiq.Type == IQType.error.ToString())
                         {
                             IsCompleted = true;
+                            if (iq.Error != null)
+                                FileTransfer.Error = bsiq.Error.ErrorDescription;
                             FileTransfer.FileTransferState = FileTransferState.Error;
 
                         }
@@ -1061,7 +1087,7 @@ namespace System.Net.XMPP
 
                 while (buffer.Size > 0)
                 {
-                    int nSize = (buffer.Size > 4096)?4096:buffer.Size;
+                    int nSize = (buffer.Size > 16384) ? 16384 : buffer.Size;
                     Sockets.SocketAsyncEventArgs asyncsend = new Sockets.SocketAsyncEventArgs();
                     asyncsend.SetBuffer(buffer.GetNSamples(nSize), 0, nSize);
                     asyncsend.Completed += new EventHandler<Sockets.SocketAsyncEventArgs>(asyncsend_Completed);
@@ -1069,7 +1095,18 @@ namespace System.Net.XMPP
                     
                     SendCompletedEvent.Reset();
                     bSendSuccess = false;
-                    bool bSent = client.socket.SendAsync(asyncsend);
+                    bool bSent = false;
+                    try
+                    {
+                        client.socket.SendAsync(asyncsend);
+                    }
+                    catch (Exception ex)
+                    {
+                        IsCompleted = true;
+                        FileTransfer.Error = ex.Message;
+                        FileTransfer.FileTransferState = FileTransferState.Error;
+                        return;
+                    }
                     SendCompletedEvent.WaitOne();
                     if (IsCompleted == true)
                         break;
@@ -1090,8 +1127,9 @@ namespace System.Net.XMPP
                 return;
             }
 
-              FileTransfer.FileTransferState = FileTransferState.Error;
-              IsCompleted = true;
+            FileTransfer.Error = "Failed to send data";
+            FileTransfer.FileTransferState = FileTransferState.Error;
+            IsCompleted = true;
         }
 
         System.Threading.ManualResetEvent SendCompletedEvent = new Threading.ManualResetEvent(false);
@@ -1175,6 +1213,7 @@ namespace System.Net.XMPP
             response.Type = IQType.error.ToString();
             response.Error = new Error(ErrorType.remoteservertimeout);
             XMPPClient.SendXMPP(response);
+            FileTransfer.Error = "Could not connect to proxy";
             FileTransfer.FileTransferState = FileTransferState.Error;
             XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
         }

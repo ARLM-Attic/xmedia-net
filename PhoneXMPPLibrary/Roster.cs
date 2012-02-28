@@ -102,7 +102,6 @@ namespace System.Net.XMPP
             { 
                 m_objJID = value;
                 Conversation.JID = value;
-                LastFullJIDToGetMessageFrom = value;
             }
         }
         private string m_strName = "";
@@ -134,7 +133,15 @@ namespace System.Net.XMPP
         public geoloc GeoLoc
         {
             get { return m_objGeoLoc; }
-            set { m_objGeoLoc = value; FirePropertyChanged("GeoString"); }
+            set 
+            {
+                if (m_objGeoLoc != value)
+                {
+                    m_objGeoLoc = value;
+                    FirePropertyChanged("GeoLoc");
+                    FirePropertyChanged("GeoString");
+                }
+            }
         }
 
         public string GeoString
@@ -185,7 +192,25 @@ namespace System.Net.XMPP
         }
 
 
-        public JID LastFullJIDToGetMessageFrom = "";
+        string m_strLastFullJIDToGetMessageFrom = null;
+        public JID LastFullJIDToGetMessageFrom
+        {
+            get
+            {
+                if (m_strLastFullJIDToGetMessageFrom != null)
+                    return m_strLastFullJIDToGetMessageFrom;
+
+                if (ClientInstances.Count > 0)
+                {
+                    return ClientInstances[0].FullJID;
+                }
+                return this.JID;
+            }
+            set
+            {
+                m_strLastFullJIDToGetMessageFrom = value;
+            }
+        }
 
         public void AddSendTextMessage(TextMessage msg)
         {

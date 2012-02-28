@@ -72,7 +72,10 @@ namespace System.Net.XMPP
         public System.Net.XMPP.XMPPAccount ActiveAccount
         {
             get { return m_objActiveAccount; }
-            set { m_objActiveAccount = value; }
+            set 
+            { 
+                m_objActiveAccount = value; 
+            }
         }
 
         public List<System.Net.XMPP.XMPPAccount> AllAccounts = null;
@@ -112,10 +115,12 @@ namespace System.Net.XMPP
                 this.AllAccounts.Add(ActiveAccount);
 
             this.ComboBoxAccounts.ItemsSource = AllAccounts;
+            bLoading = true;
             if (this.ComboBoxAccounts.Items.Contains(ActiveAccount) == true)
                 this.ComboBoxAccounts.SelectedItem = ActiveAccount;
             else
                 this.ComboBoxAccounts.SelectedIndex = 0;
+            bLoading = false;
         }
 
         void SaveAccounts()
@@ -138,19 +143,28 @@ namespace System.Net.XMPP
             }
         }
 
+        bool bLoading = false;
+        bool bIgnoreChanges = false;
         private void ComboBoxAccounts_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (bIgnoreChanges == true)
+                return;
+
             if (ActiveAccount == null)
                 return;
-            ActiveAccount.Password = this.TextBoxPassword.Password;
 
             ActiveAccount = this.ComboBoxAccounts.SelectedItem as XMPPAccount;
             if (ActiveAccount == null)
                 return;
             ActiveAccount.LastPrescence.IsDirty = true;
-            this.DataContext = ActiveAccount;
             this.TextBoxPassword.Password = ActiveAccount.Password;
-            SaveAccounts();
+
+            bIgnoreChanges = true;
+            this.DataContext = ActiveAccount;
+            bIgnoreChanges = false;
+
+            if (bLoading == false)
+                SaveAccounts();
         }
 
         private void ButtonAddAccount_Click(object sender, RoutedEventArgs e)
@@ -177,6 +191,15 @@ namespace System.Net.XMPP
                 this.ComboBoxAccounts.SelectedItem = this.ActiveAccount;
                 this.ComboBoxAccounts.Text = this.TextBoxAccountName.Text;
             }
+        }
+
+        private void TextBoxPassword_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            ActiveAccount = this.ComboBoxAccounts.SelectedItem as XMPPAccount;
+            if (ActiveAccount == null)
+                return;
+
+            ActiveAccount.Password = this.TextBoxPassword.Password;
         }
 
 

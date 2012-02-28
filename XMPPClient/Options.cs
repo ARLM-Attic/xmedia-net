@@ -43,6 +43,14 @@ namespace XMPPClient
             set { m_bSendGeoCoordinates = value; }
         }
 
+        private int m_nGeoTimeFrequency = 60;
+        [DataMember]
+        public int GeoTimeFrequency
+        {
+            get { return m_nGeoTimeFrequency; }
+            set { m_nGeoTimeFrequency = value; }
+        }
+
         private bool m_bSavePasswords = true;
         [DataMember]
         public bool SavePasswords

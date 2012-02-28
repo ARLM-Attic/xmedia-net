@@ -37,6 +37,55 @@ namespace WPFXMPPClient
             InitializeComponent();
         }
 
+       
+        public XMPPClient XMPPClient = new XMPPClient();
+        List<System.Net.XMPP.XMPPAccount> AllAccounts = null;
+
+        PrivacyService PrivService = null;
+
+        private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            PrivService = new PrivacyService(XMPPClient);
+            PrivService.OnMustClearUserHistory += new DelegateRosterItemAction(PrivService_OnMustClearUserHistory);
+            PrivService.OnMustHideMyChatWindow += new DelegateRosterItemAction(PrivService_OnMustHideMyChatWindow);
+
+            this.RectangleConnect.DataContext = this;
+            this.DataContext = XMPPClient;
+            this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
+            XMPPClient.OnRetrievedRoster += new EventHandler(RetrievedRoster);
+            XMPPClient.OnRosterItemsChanged += new EventHandler(RosterChanged);
+            XMPPClient.OnStateChanged += new EventHandler(XMPPStateChanged);
+            XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            XMPPClient.OnUserSubscriptionRequest += new System.Net.XMPP.XMPPClient.DelegateShouldSubscribeUser(XMPPClient_OnUserSubscriptionRequest);
+
+            XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
+            XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
+
+            SendRawXMLWindow.SetXMPPClient(XMPPClient);
+        }
+
+        void PrivService_OnMustHideMyChatWindow(RosterItem item, XMPPClient client)
+        {
+            this.Dispatcher.Invoke( new Action(() => 
+                {
+                    ChatWindow win = FindOrCreateChatWIndow(item);
+                    if ((win != null) && (win.IsLoaded == true))
+                        win.WindowState = System.Windows.WindowState.Minimized;
+                } ) 
+            );
+        }
+
+        void PrivService_OnMustClearUserHistory(RosterItem item, XMPPClient client)
+        {
+            this.Dispatcher.Invoke(new Action(() =>
+                {
+                    ChatWindow win = FindOrCreateChatWIndow(item);
+                    if ((win != null) && (win.IsLoaded == true))
+                        win.Clear();
+                })
+            );
+        }
+
         /// <summary>
         /// Occurs when the window is about to close. 
         /// </summary>
@@ -46,16 +95,10 @@ namespace WPFXMPPClient
             if (SendRawXMLWindow.IsLoaded == true)
                 SendRawXMLWindow.Close();
 
-
             base.OnClosed(e);
-
             Application.Current.Shutdown();
         }
 
-
-        public XMPPClient XMPPClient = new XMPPClient();
-
-        List<System.Net.XMPP.XMPPAccount> AllAccounts = null;
 
         private void HyperlinkConnect_Click(object sender, RoutedEventArgs e)
         {
@@ -118,31 +161,6 @@ namespace WPFXMPPClient
             {
             }
         }
-
-
-        
-
-        private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-
-            this.RectangleConnect.DataContext = this;
-            this.DataContext = XMPPClient;
-            this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
-            XMPPClient.OnRetrievedRoster += new EventHandler(RetrievedRoster);
-            XMPPClient.OnRosterItemsChanged += new EventHandler(RosterChanged);
-            XMPPClient.OnStateChanged += new EventHandler(XMPPStateChanged);
-            XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
-            XMPPClient.OnUserSubscriptionRequest += new System.Net.XMPP.XMPPClient.DelegateShouldSubscribeUser(XMPPClient_OnUserSubscriptionRequest);
-
-            XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
-            XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
-
-            SendRawXMLWindow.SetXMPPClient(XMPPClient);
-
-
-        }
-
-       
 
         protected override void OnPreviewKeyDown(KeyEventArgs e)
         {
@@ -344,6 +362,7 @@ namespace WPFXMPPClient
             if (ChatWindows.ContainsKey(item.JID.BareJID) == true)
             {
                 ChatWindow exwin = ChatWindows[item.JID.BareJID];
+                exwin.WindowState = System.Windows.WindowState.Normal;
                 exwin.Activate();
                 return;
             }

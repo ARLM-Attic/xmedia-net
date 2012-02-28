@@ -81,7 +81,22 @@ namespace XMPPClient
                 PhoneApplicationService.Current.UserIdleDetectionMode = IdleDetectionMode.Disabled;
             }
 
+            StartGeoStuff();
 
+            GeoTimer = new System.Windows.Threading.DispatcherTimer();
+            GeoTimer.Interval = TimeSpan.FromSeconds(Options.GeoTimeFrequency);
+            GeoTimer.Tick += new EventHandler(GeoTimer_Tick);
+            GeoTimer.Start();
+
+            App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
+            App.XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
+            App.XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
+            App.XMPPClient.OnServerDisconnect += new EventHandler(XMPPClient_OnServerDisconnect);
+
+        }
+
+        void StartGeoStuff()
+        {
             // The watcher variable was previously declared as type GeoCoordinateWatcher. 
             if ((gpswatcher == null) && (App.Options.SendGeoCoordinates == true))
             {
@@ -92,17 +107,6 @@ namespace XMPPClient
                 gpswatcher.PositionChanged += new EventHandler<GeoPositionChangedEventArgs<GeoCoordinate>>(gpswatcher_PositionChanged);
                 gpswatcher.Start();
             }
-
-            GeoTimer = new System.Windows.Threading.DispatcherTimer();
-            GeoTimer.Interval = TimeSpan.FromMinutes(1);
-            GeoTimer.Tick += new EventHandler(GeoTimer_Tick);
-            GeoTimer.Start();
-
-            App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
-            App.XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
-            App.XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
-            App.XMPPClient.OnServerDisconnect += new EventHandler(XMPPClient_OnServerDisconnect);
-
         }
 
         void XMPPClient_OnServerDisconnect(object sender, EventArgs e)
@@ -323,6 +327,10 @@ namespace XMPPClient
                 }
 
             }
+
+
+            ((App)Application.Current).GeoTimer.Interval = TimeSpan.FromSeconds(Options.GeoTimeFrequency);
+            ((App)Application.Current).StartGeoStuff();
 
             FileTransferManager.UseIBBOnly = Options.UseOnlyIBBFileTransfer;
             FileTransferManager.SOCKS5Proxy = Options.SOCKS5ByteStreamProxy;
