@@ -1,4 +1,8 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Net;
 
 using System.Collections.Generic;
@@ -268,7 +272,7 @@ namespace System.Net.XMPP
 
             IQ IQResponse = connection.SendRecieveIQ(pubsub, 10000);
 
-            if (IQResponse.Type == IQType.error.ToString())
+            if ( (IQResponse == null) || (IQResponse.Type == IQType.error.ToString()) )
             {
                 return null;
             }
@@ -280,15 +284,13 @@ namespace System.Net.XMPP
             ///     </pubsub>
             /// </iq>
             /// 
-            XElement firstelem = IQResponse.InitalXMLElement.FirstNode as XElement;
-            if ((firstelem != null) && (firstelem.Name == "{http://jabber.org/protocol/pubsub}pubsub"))
-            {
-                foreach (XElement subelem in firstelem.Descendants("{http://jabber.org/protocol/pubsub}subscription"))
-                {
-                    return subelem.Attribute("subid").Value;
-                }
-            }
 
+            if (IQResponse is PubSubIQ)
+            {
+                PubSubIQ psiq = IQResponse as PubSubIQ;
+                if ( (psiq.PubSub != null) && (psiq.PubSub.Subscription != null) )
+                    return psiq.PubSub.Subscription.subid;
+            }
 
             return null;
         }

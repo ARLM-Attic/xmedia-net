@@ -1,4 +1,8 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -67,7 +71,7 @@ namespace XMPPClient
                 if (NavigationContext.QueryString["Refresh"] != null)
                     bQuery = true;
             }
-            catch (Exception microsoftshouldprovideacheckinsteadofthrowinganexception)
+            catch (Exception)
             {
             }
 
@@ -112,7 +116,7 @@ namespace XMPPClient
                                 OurRosterItem.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                         }
                         finally
@@ -228,7 +232,7 @@ namespace XMPPClient
                 {
                     link.NavigateUri = new Uri(strMessage.Substring(matchype.Index, matchype.Length));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
                 link.Click += new RoutedEventHandler(link_Click);
@@ -296,7 +300,7 @@ namespace XMPPClient
                 {
                     ser.WriteObject(location, item.Conversation);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
                 location.Close();
@@ -379,7 +383,7 @@ namespace XMPPClient
                 photoChooserTask.ShowCamera = true;
                 photoChooserTask.Show();
             }
-            catch (System.InvalidOperationException ex)
+            catch (System.InvalidOperationException)
             {
                 MessageBox.Show("Unable to select a photo");
             }

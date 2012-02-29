@@ -252,16 +252,16 @@ namespace JingleToneGeneratorService
                         continue; /// ignore well known IP addresses
 
 
-                     if (addrinfo.Address.Address != 0)
+                     if (addrinfo.Address.Equals(IPAddress.Any) == false)
                      {
 
                         if (addrinfo.Address.Equals(IPAddress.Parse("127.0.0.1") ) == false)
-                           IPs.Add(new IPAddress(addrinfo.Address.Address));
+                           IPs.Add(new IPAddress(addrinfo.Address.GetAddressBytes()));
                      }
 
                  }
              }
-             catch (Exception ex)
+             catch (Exception)
              {
              }
          }

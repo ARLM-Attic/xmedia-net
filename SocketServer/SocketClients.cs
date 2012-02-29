@@ -1,3 +1,7 @@
+/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -244,7 +248,7 @@ namespace SocketServer
             SOCKStrans.IsFilterActive = true;
         }
 
-        public new bool Connect(string ipaddr, int nport)
+        public bool Connect(string ipaddr, int nport)
         {
             return Connect(ipaddr, nport, true);
         }
@@ -297,7 +301,7 @@ namespace SocketServer
             }
 
 
-            if ((IsIPVersion6 == true) && (System.Net.Sockets.Socket.SupportsIPv6 == false))
+            if ((IsIPVersion6 == true) && (System.Net.Sockets.Socket.OSSupportsIPv6 == false))
             {
                 if (m_Logger != null)
                     m_Logger.LogError(ToString(), MessageImportance.Highest, string.Format("IP Version 6 not support, can't connect to {0}", ipaddr));
@@ -681,7 +685,7 @@ namespace SocketServer
                     m_Logger.LogError(ToString(), MessageImportance.Highest, e.ToString());
                 return;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             finally

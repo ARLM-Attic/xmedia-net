@@ -1,4 +1,8 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -153,7 +157,7 @@ namespace XMPPClient
                         App.XMPPClient.SetGeoLocation(CurrentLocation.lat, CurrentLocation.lon);
                         CurrentLocation.IsDirty = false;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         /// It appears we don't always get notifed when we loose our connection, we just don't find out until we send
                         /// 
@@ -287,7 +291,7 @@ namespace XMPPClient
 
                         Options = ser.ReadObject(location) as Options;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         Options = new Options();
                     }
@@ -317,7 +321,7 @@ namespace XMPPClient
                     DataContractSerializer ser = new DataContractSerializer(typeof(Options));
                     ser.WriteObject(location, Options);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
                 finally
@@ -350,7 +354,7 @@ namespace XMPPClient
                     byte [] bException = System.Text.UTF8Encoding.UTF8.GetBytes(strException);
                     location.Write(bException, 0, bException.Length);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
                 finally
@@ -383,7 +387,7 @@ namespace XMPPClient
 
                         strExceptionText = System.Text.UTF8Encoding.UTF8.GetString(bException, 0, bException.Length);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                     }
                     finally

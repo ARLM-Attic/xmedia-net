@@ -1,8 +1,11 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Net;
 
 using SocketServer;
-using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
 
@@ -56,7 +59,7 @@ namespace System.Net.XMPP
                     this.ConnectClient = null;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
@@ -107,7 +110,7 @@ namespace System.Net.XMPP
 
                     DoAsyncRead();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 { }
 
                 return;
@@ -250,7 +253,7 @@ namespace System.Net.XMPP
                 //Console.WriteLine(string.Format("--> {0}", ByteSize.ByteUtils.HexStringFromByte(bData, true)));
                 nRet = base.Send(bData);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 this.Disconnect();
             }
@@ -265,7 +268,7 @@ namespace System.Net.XMPP
                 //Console.WriteLine(string.Format("--> {0}", ByteSize.ByteUtils.HexStringFromByte(bData, true)));
                 nRet = base.Send(bData, nLength);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 this.Disconnect();
             }

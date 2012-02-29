@@ -1,10 +1,15 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Net;
 
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using System.IO;
+
 
 namespace System.Net.XMPP
 {
@@ -81,5 +86,18 @@ namespace System.Net.XMPP
             }
             return objRet;
         }
+
+        public static XElement GetXmlNode(string strNode)
+        {
+            return XElement.Parse(strNode);
+        }
+
+        public static object GetObjectFromElement(XElement elem, Type objType)
+        {
+            return ParseObjectFromXMLString(elem.ToString(), objType);
+        }
     }
+
+
+    
 }

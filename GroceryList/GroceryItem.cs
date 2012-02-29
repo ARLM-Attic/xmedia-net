@@ -11,7 +11,7 @@ namespace GroceryList
 {
 
     [DataContract]
-    [XmlRoot(ElementName = "groceryitem")]
+    [XmlRoot(ElementName = "groceryitem", Namespace=null)]
     public class GroceryItem
     {
         public GroceryItem()

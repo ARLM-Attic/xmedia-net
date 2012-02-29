@@ -1,4 +1,8 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Net;
 
 using System.Xml.Linq;
@@ -106,7 +110,9 @@ namespace System.Net.XMPP
             }
             else if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub#event}event")
             {
-                return new PubSubEventMessage(strXML);
+                PubSubEventMessage query = Utility.ParseObjectFromXMLString(strXML, typeof(PubSubEventMessage)) as PubSubEventMessage;
+                return query;
+                //return new PubSubEventMessage(strXML);
             }
 
             return new Message(strXML);
@@ -146,17 +152,10 @@ namespace System.Net.XMPP
                {
                    return new StreamInitIQ(strXML);
                }
-               else if ( (strType == "set") && (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub") )
+               else if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub")
                {
-                   return new PubSubPublishIQ(strXML);
-               }
-               else if ((strType == "get") && (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub"))
-               {
-                   return new PubSubGetIQ(strXML);
-               }
-               else if ((strType == "result") && (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/pubsub}pubsub"))
-               {
-                   return new PubSubResultIQ(strXML);
+                   PubSubIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(PubSubIQ)) as PubSubIQ;
+                   return query;
                }
                else if (((XElement)elem.FirstNode).Name == "{http://jabber.org/protocol/bytestreams}query")
                {

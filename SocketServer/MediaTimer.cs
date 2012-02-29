@@ -1,3 +1,7 @@
+/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
 using System;
 using System.Collections;
 using System.Threading;
@@ -240,7 +244,6 @@ namespace SocketServer
                   ArrayList alTimersRemoveAndFire = new ArrayList();
                   lock (TimerLock)
                   {
-                     int nIndexInsert = 0;
                      if (SortedTimers.Count == 0)  /// no timers, no need to check until we get signaled
                      {
                         dtNextDue = DateTime.Now.AddMilliseconds(Convert.ToDouble(TimerCheck));
@@ -289,7 +292,7 @@ namespace SocketServer
                }
 
             }
-            catch (System.Exception e2)
+            catch (System.Exception)
             {
                /// should not have any exceptions here
                /// 

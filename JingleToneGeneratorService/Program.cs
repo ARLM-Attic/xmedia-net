@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 
 using System.Net.XMPP;
-using System.Collections.Generic;
 
 namespace JingleToneGeneratorService
 {

@@ -1,4 +1,8 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -60,7 +64,7 @@ namespace SOCKS5ServiceLibrary
                     this.ConnectClient = null;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
@@ -111,7 +115,7 @@ namespace SOCKS5ServiceLibrary
 
                     DoAsyncRead();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 { }
 
                 return;
@@ -288,7 +292,7 @@ namespace SOCKS5ServiceLibrary
                 //Console.WriteLine(string.Format("--> {0}", ByteSize.ByteUtils.HexStringFromByte(bData, true)));
                 nRet = base.Send(bData);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 this.Disconnect();
             }
@@ -303,7 +307,7 @@ namespace SOCKS5ServiceLibrary
                 //Console.WriteLine(string.Format("--> {0}", ByteSize.ByteUtils.HexStringFromByte(bData, true)));
                 nRet = base.Send(bData, nLength);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 this.Disconnect();
             }
@@ -490,7 +494,6 @@ namespace SOCKS5ServiceLibrary
                 /// Let's try to connect
                 /// 
                 ListenPortToRemoteEndpointForwardService service = new ListenPortToRemoteEndpointForwardService(this);
-                IPEndPoint BindPort = null;
                 SocksReplyMessage reply = null;
                 if (reqmsg.AddressType == AddressType.DomainName)
                     reply = service.Start(reqmsg.DestinationDomain, reqmsg.DestinationPort);

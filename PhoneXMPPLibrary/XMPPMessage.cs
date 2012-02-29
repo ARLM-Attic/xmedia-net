@@ -1,4 +1,8 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Net;
 
 using System.Xml;
@@ -572,7 +576,7 @@ namespace System.Net.XMPP
                     {
                         this.Error.ErrorDescription = ((XElement)elemerror.FirstNode).Name.ToString();
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         // todo.. make all nodes use object streaming instead of parsing if possible on all platforms
                     }
@@ -585,7 +589,9 @@ namespace System.Net.XMPP
 
 
 
+#if !WINDOWS_PHONE
     [XmlRoot(ElementName = "message")]
+#endif
     public class Message : XMPPMessageBase
     {
         public Message()

@@ -1,4 +1,8 @@
-﻿using System;
+﻿/// Copyright (c) 2011 Brian Bonnett
+/// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+/// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+using System;
 using System.Net; 
 
 using System.Collections.Generic;
@@ -53,12 +57,12 @@ namespace System.Net.XMPP
         public override string ToString()
         {
             if (this.FileTransferState == XMPP.FileTransferState.Error)
-                return string.Format("Error performing {0} operation to {1}, Error: {2}", FileTransferDirection, RemoteJID.User, Error);
+                return string.Format("Error with {0} of {1} to {2}, Error: {3}", this.FileName, FileTransferDirection, RemoteJID.User, Error);
 
             if (this.FileTransferDirection == System.Net.XMPP.FileTransferDirection.Send)
-                return string.Format("Sending {0} byte file to {1}, State: {2}", BytesTotal, RemoteJID.User, this.FileTransferState);
+                return string.Format("Sending file {0}, length {1} to {2}, State: {3}", this.FileName, BytesTotal, RemoteJID.User, this.FileTransferState);
             else
-                return string.Format("Receiving {0} byte file from {1}, State: {2}", BytesTotal, RemoteJID.User, this.FileTransferState);
+                return string.Format("Receiving file {0}, length {1} from {2}, State: {3}", this.FileName, BytesTotal, RemoteJID.User, this.FileTransferState);
         }
 
         public object Tag = null;
