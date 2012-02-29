@@ -265,7 +265,7 @@ namespace WPFXMPPClient
 
         public void RosterChanged(object obj, EventArgs arg)
         {
-            this.Dispatcher.Invoke(new DelegateVoid(SetFuckingRoster));
+            this.Dispatcher.Invoke(new DelegateVoid(SetRoster));
         }
 
         public delegate void DelegateVoid();
