@@ -307,11 +307,11 @@ namespace WPFXMPPClient
                 }
             }
 
-            this.Dispatcher.Invoke(new DelegateVoid(SetFuckingRoster));
+            this.Dispatcher.Invoke(new DelegateVoid(SetRoster));
         }
 
-        void SetFuckingRoster()
-        {
+        void SetRoster()
+        { 
             this.ListBoxRoster.ItemsSource = null;
             this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
 
