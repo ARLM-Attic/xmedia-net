@@ -24,6 +24,8 @@ using System.Runtime.InteropServices;
 
 using System.Text.RegularExpressions;
 
+using System.Speech.Synthesis;
+
 namespace WPFXMPPClient
 {
     /// <summary>
@@ -39,8 +41,15 @@ namespace WPFXMPPClient
         public XMPPClient XMPPClient = null;
         public RosterItem OurRosterItem = null;
 
+        System.Threading.Thread ThreadSpeak = null;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            ThreadSpeak = new System.Threading.Thread(new System.Threading.ThreadStart(SpeakThread));
+            ThreadSpeak.Name = "Speak Thread";
+            ThreadSpeak.IsBackground = true;
+            ThreadSpeak.Start();
+
+
             /// See if we have this conversation in storage if there are no messages
             if (OurRosterItem.HasLoadedConversation == false)
             {
@@ -215,6 +224,20 @@ namespace WPFXMPPClient
         [DllImport("user32.dll")]
         static extern bool FlashWindow(IntPtr hwnd, bool bInvert);
 
+        void SpeakThread()
+        {
+            while (true)
+            {
+                string strSpeak = PhrasesToSpeak.WaitNext(5000);
+                if (strSpeak != null)
+                {
+                    syn.Speak(strSpeak);
+                }
+            }
+        }
+
+        System.Speech.Synthesis.SpeechSynthesizer syn = new SpeechSynthesizer();
+        SocketServer.EventQueueWithNotification<string> PhrasesToSpeak = new SocketServer.EventQueueWithNotification<string>();
         void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
             if (bReceived == true)
@@ -235,9 +258,16 @@ namespace WPFXMPPClient
 
                 if (bReceived == true)
                 {
-                    System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/ding.wav");
-                    player.Play();
-
+                    if (this.CheckBoxUseSpeech.IsChecked == true)
+                    {
+                        PhrasesToSpeak.Enqueue(msg.Message);
+                        
+                    }
+                    else
+                    {
+                        System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/ding.wav");
+                        player.Play();
+                    }
                     IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
                     FlashWindow(windowHandle, true);
 

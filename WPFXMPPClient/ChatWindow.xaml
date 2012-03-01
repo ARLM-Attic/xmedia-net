@@ -96,7 +96,7 @@
 
 
 
-
+                <CheckBox x:Name="CheckBoxUseSpeech" Grid.Column="1" HorizontalAlignment="Right" IsChecked="True">Speak</CheckBox>
                 <s:SurfaceButton ToolTip="Send File" Grid.Column="2" x:Name="ButtonSendFile" Click="ButtonSendFile_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/mail - copy.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
