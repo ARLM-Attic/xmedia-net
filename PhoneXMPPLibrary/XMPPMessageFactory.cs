@@ -27,6 +27,8 @@ namespace System.Net.XMPP
         /// <param name="strXML"></param>
         /// <returns></returns>
         IQ BuildIQ(XElement elem, string strXML);
+
+        PresenceMessage BuildPresence(XElement elem, string strXML);
     }
 
     /// <summary>
@@ -67,6 +69,20 @@ namespace System.Net.XMPP
                 foreach (IXMPPMessageBuilder builder in m_listBuilders)
                 {
                     Message msg = builder.BuildMessage(elem, strXML);
+                    if (msg != null)
+                        return msg;
+                }
+            }
+            return null;
+        }
+
+        public PresenceMessage BuildPresence(XElement elem, string strXML)
+        {
+            lock (BuilderLock)
+            {
+                foreach (IXMPPMessageBuilder builder in m_listBuilders)
+                {
+                    PresenceMessage msg = builder.BuildPresence(elem, strXML);
                     if (msg != null)
                         return msg;
                 }
@@ -116,6 +132,12 @@ namespace System.Net.XMPP
             }
 
             return new Message(strXML);
+        }
+
+        public PresenceMessage BuildPresence(XElement elem, string strXML)
+        {
+            PresenceMessage pres = Utility.ParseObjectFromXMLString(strXML, typeof(PresenceMessage)) as PresenceMessage;
+            return pres;
         }
 
         public IQ BuildIQ(XElement elem, string strXML)

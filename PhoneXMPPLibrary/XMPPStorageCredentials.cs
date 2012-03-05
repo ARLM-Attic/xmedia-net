@@ -222,6 +222,17 @@ namespace System.Net.XMPP
             }
         }
 
+        /// <summary>
+        /// Capabilities of a client.  This may be set if the user wants to advertise caps in their presence messages
+        /// (XEP-0115)
+        /// </summary>
+        private Capabilities m_objCapabilities = null;
+        public Capabilities Capabilities
+        {
+            get { return m_objCapabilities; }
+            set { m_objCapabilities = value; }
+        }
+
 
         #region INotifyPropertyChanged Members
 

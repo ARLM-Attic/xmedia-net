@@ -102,9 +102,13 @@
             <TextBlock Margin="10,0" x:Name="ApplicationTitle" FontWeight="Bold"  Text="{Binding XMPPState}" VerticalAlignment="Center" Grid.Column="1"  />
 
             <TextBlock Margin="10,0" x:Name="JID" Text="{Binding JID}" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" VerticalAlignment="Center" />
-           <TextBox Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding Path='PresenceStatus.Status', Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="4"/>
+           <TextBox x:Name="TextBoxStatus" Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding Path='PresenceStatus.Status', Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="4"/>
 
-           <ComboBox Background="{x:Null}" Grid.Row="3" Grid.Column="0" x:Name="ComboBoxPresence" IsEnabled="False" Foreground="{Binding PresenceStatus.PresenceBrush}"
+           <s:SurfaceButton ToolTip="Update Presence" Grid.Row="2" Grid.Column="5" x:Name="ButtonSetStatus" IsEnabled="True" Click="ButtonSetStatus_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+                <Image Source="Images/check.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+           </s:SurfaceButton>
+
+                <ComboBox Background="{x:Null}" Grid.Row="3" Grid.Column="0" x:Name="ComboBoxPresence" IsEnabled="False" Foreground="{Binding PresenceStatus.PresenceBrush}"
                               Text="{Binding Path='PresenceStatus.PresenceType', Mode=TwoWay, NotifyOnTargetUpdated=True}" VerticalAlignment="Center"
                               TargetUpdated="TextBox_TargetUpdated" FontSize="10">
                     <ComboBoxItem>

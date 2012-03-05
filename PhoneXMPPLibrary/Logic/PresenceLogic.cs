@@ -171,43 +171,36 @@ namespace System.Net.XMPP
             set { m_objAvatar = value; }
         }
 
-        public override void AddInnerXML(XElement elemMessage)
-        {
-        }
 
-        public override void ParseInnerXML(XElement elem)
-        {
-        }
+        //[XmlIgnore()]
+        //public override string MessageXML
+        //{
+        //    get
+        //    {
+        //        return Utility.GetXMLStringFromObject(this);
 
-        [XmlIgnore()]
-        public override string MessageXML
-        {
-            get
-            {
-                return Utility.GetXMLStringFromObject(this);
+        //    }
+        //    set
+        //    {
+        //        if ((value == null) || (value.Length <= 0))
+        //            return;
 
-            }
-            set
-            {
-                if ((value == null) || (value.Length <= 0))
-                    return;
+        //        PresenceMessage msg = Utility.ParseObjectFromXMLString(value, typeof(PresenceMessage)) as PresenceMessage;
+        //        if (msg != null)
+        //        {
+        //            this.ID = msg.ID;
+        //            this.Type = msg.Type;
+        //            this.From = msg.From;
+        //            this.To = msg.To;
 
-                PresenceMessage msg = Utility.ParseObjectFromXMLString(value, typeof(PresenceMessage)) as PresenceMessage;
-                if (msg != null)
-                {
-                    this.ID = msg.ID;
-                    this.Type = msg.Type;
-                    this.From = msg.From;
-                    this.To = msg.To;
-
-                    this.PresenceStatus = msg.PresenceStatus;
-                    this.VCardUpdate = msg.VCardUpdate;
-                    this.Capabilities = msg.Capabilities;
-                }
+        //            this.PresenceStatus = msg.PresenceStatus;
+        //            this.VCardUpdate = msg.VCardUpdate;
+        //            this.Capabilities = msg.Capabilities;
+        //        }
 
 
-            }
-        }
+        //    }
+        //}
 
     }
 
@@ -223,12 +216,13 @@ namespace System.Net.XMPP
         }
 
 
-        public void SetPresence(PresenceStatus status, string strImageHash)
+        public void SetPresence(PresenceStatus status, Capabilities caps, string strImageHash)
         {
             PresenceMessage pres = new PresenceMessage(null);
             pres.From = XMPPClient.JID;
             pres.To = null;
             pres.PresenceStatus = status;
+            pres.Capabilities = caps;
 
             if ((strImageHash != null) && (strImageHash.Length > 0))
             {
@@ -236,7 +230,7 @@ namespace System.Net.XMPP
                 pres.VCardUpdate.PhotoHash = strImageHash;
             }
 
-            XMPPClient.SendXMPP(pres);
+            XMPPClient.SendObject(pres);
         }
 
 
@@ -247,7 +241,7 @@ namespace System.Net.XMPP
             pres.From = null;
             pres.Type = "subscribe";
             pres.PresenceStatus.PresenceType = PresenceType.subscribe;
-            XMPPClient.SendXMPP(pres);
+            XMPPClient.SendObject(pres);
         }
 
         /// <summary>
@@ -261,7 +255,7 @@ namespace System.Net.XMPP
             pres.To = pres.From.BareJID;
             pres.From = null;
 
-            XMPPClient.SendXMPP(pres);
+            XMPPClient.SendObject(pres);
         }
 
         /// <summary>
@@ -274,7 +268,7 @@ namespace System.Net.XMPP
             pres.Type = "unsubscribed";
             pres.To = pres.From.BareJID;
             pres.From = null;
-            XMPPClient.SendXMPP(pres);
+            XMPPClient.SendObject(pres);
         }
 
        

@@ -305,7 +305,7 @@ namespace System.Net.XMPP
         {
             if (this.XMPPAccount.LastPrescence.IsDirty == true)
             {
-                PresenceLogic.SetPresence(this.XMPPAccount.LastPrescence, this.AvatarImagePath);
+                PresenceLogic.SetPresence(this.XMPPAccount.LastPrescence, this.XMPPAccount.Capabilities, this.AvatarImagePath);
                 this.XMPPAccount.LastPrescence.IsDirty = false;
             }
         }
@@ -565,7 +565,14 @@ namespace System.Net.XMPP
 
         public void SendRawXML(string strXML)
         {
-            XMPPConnection.Send(strXML);
+            try
+            {
+                XMPPConnection.Send(strXML);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Exception sending raw XML", ex);
+            }
         }
 
         /// <summary>
@@ -574,12 +581,26 @@ namespace System.Net.XMPP
         /// <param name="iq"></param>
         public void SendXMPP(XMPPMessageBase iq)
         {
-            XMPPConnection.Send(iq.MessageXML);
+            try
+            {
+                XMPPConnection.Send(iq.MessageXML);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Exception sending XMPP class", ex);
+            }
         }
 
         public void SendObject(object objXMLSerializable)
         {
-            XMPPConnection.Send(Utility.GetXMLStringFromObject(objXMLSerializable));
+            try
+            {
+                XMPPConnection.Send(Utility.GetXMLStringFromObject(objXMLSerializable));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Exception sending object", ex);
+            }
         }
 
         /// <summary>
@@ -751,7 +772,8 @@ namespace System.Net.XMPP
                }
                else if (elem.Name == "presence")
                {
-                   msg = new PresenceMessage(stanza.XML);
+                   msg = XMPPMessageFactory.BuildPresence(elem, stanza.XML);
+                   //msg = new PresenceMessage(stanza.XML);
                }
                    /// TODO.. log IQ, MESSAGE or PRESENCE event, maybe have an event handler
                    /// 

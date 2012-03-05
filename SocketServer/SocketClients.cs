@@ -586,6 +586,15 @@ namespace SocketServer
                     {
                         if (m_Logger != null)
                             m_Logger.LogError(ToString(), MessageImportance.Highest, ex.ToString());
+                        
+                        OnDisconnect("Send failed");
+                    }
+                    catch (Exception ex2)
+                    {
+                        if (m_Logger != null)
+                            m_Logger.LogError(ToString(), MessageImportance.Highest, ex2.ToString());
+
+                        OnDisconnect("Send failed");
                     }
                 }
             }

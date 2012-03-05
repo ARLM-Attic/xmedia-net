@@ -149,13 +149,13 @@ Global
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release|x86.ActiveCfg = Release|Any CPU
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug|Mixed Platforms.ActiveCfg = Debug|x86

@@ -25,7 +25,7 @@ namespace System.Net.XMPP
 
         List<string> ListSentIQs = new List<string>();
 
-        public void PublishTuneInfo(TuneItem item)
+        public bool PublishTuneInfo(TuneItem item)
         {
             //string strTuneXML = Utility.GetXMLStringFromObject(item);
 
@@ -38,10 +38,12 @@ namespace System.Net.XMPP
             iq.PubSub.Publish.Item.SetNodeFromObject(item);
 
             ListSentIQs.Add(iq.ID);
+
             XMPPClient.SendObject(iq);
+            return true;
         }
 
-        public void PublishGeoInfo(geoloc item)
+        public bool PublishGeoInfo(geoloc item)
         {
             string strGeoInfo = Utility.GetXMLStringFromObject(item);
 
@@ -53,10 +55,18 @@ namespace System.Net.XMPP
             iq.PubSub.Publish.Item.SetNodeFromObject(item);
 
             ListSentIQs.Add(iq.ID);
-            XMPPClient.SendObject(iq);
+            try
+            {
+                XMPPClient.SendObject(iq);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
 
-         public void PublishAvatarData(byte [] bImageData, int nWidth, int nHeight)
+         public bool PublishAvatarData(byte [] bImageData, int nWidth, int nHeight)
         {
              // publish avatar data node
             avatardata data = new avatardata();
@@ -93,6 +103,7 @@ namespace System.Net.XMPP
             ListSentIQs.Add(iqmeta.ID);
             XMPPClient.SendObject(iqmeta);
 
+            return true;
         }
 
          public void DownloadDataNode(JID jidto, string strNodeName, string strItem)

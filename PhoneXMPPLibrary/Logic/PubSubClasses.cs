@@ -208,7 +208,7 @@ namespace System.Net.XMPP
         {
         }
 
-        public XElement X = null; /// x form data... TODO... make those classes serializable, redo DataForm.cs
+        //public XElement X = null; /// x form data... TODO... make those classes serializable, redo DataForm.cs
     }
 
 
@@ -219,7 +219,7 @@ namespace System.Net.XMPP
         {
         }
 
-        public XElement X = null; /// x form data... TODO... make those classes serializable, redo DataForm.cs
+        //public XElement X = null; /// x form data... TODO... make those classes serializable, redo DataForm.cs
     }
 
     [XmlRoot(ElementName = "items")]
@@ -235,7 +235,7 @@ namespace System.Net.XMPP
         [XmlAttribute(AttributeName = "subid")]
         public string subid = null;
 
-        public PubSubItem[] m_objItems = null;
+        protected PubSubItem[] m_objItems = null;
         [XmlElement(ElementName="item")]
         public PubSubItem[] Items
         {
@@ -284,8 +284,9 @@ namespace System.Net.XMPP
         public PubSubItems Items = null;
 
 
-        [XmlArray(ElementName = "affiliations")]
-        [XmlArrayItem(ElementName = "affiliation")]
+        //[XmlArray(ElementName = "affiliations")]
+        //[XmlArrayItem(ElementName = "affiliation")]
+        [XmlElement(ElementName = "affiliation")]
         public Affiliation[] Affiliations = null;
 
     }

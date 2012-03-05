@@ -144,6 +144,16 @@ namespace WPFXMPPClient
             return false;
         }
 
+
+        #region IXMPPMessageBuilder Members
+
+
+        public PresenceMessage BuildPresence(XElement elem, string strXML)
+        {
+            return null;
+        }
+
+        #endregion
     }
 
 

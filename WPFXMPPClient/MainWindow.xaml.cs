@@ -65,6 +65,7 @@ namespace WPFXMPPClient
             XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
             XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
 
+      
             SendRawXMLWindow.SetXMPPClient(XMPPClient);
         }
 
@@ -122,6 +123,12 @@ namespace WPFXMPPClient
                 }
                 XMPPClient.XMPPAccount = loginwin.ActiveAccount;
                 AllAccounts = loginwin.AllAccounts;
+
+                XMPPClient.XMPPAccount.Capabilities = new Capabilities();
+                XMPPClient.XMPPAccount.Capabilities.Node = "http://xmedianet.codeplex.com/wpfclient/caps";
+                XMPPClient.XMPPAccount.Capabilities.Version = "1.0";
+                XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1 video-v1 camera-v1"; /// google talk capabilities
+
                 XMPPClient.Connect();
 
             }
@@ -424,17 +431,7 @@ namespace WPFXMPPClient
 
 
 
-        private void TextBox_TargetUpdated(object sender, DataTransferEventArgs e)
-        {
-            if (XMPPClient.XMPPState == XMPPState.Ready)
-            {
-                XMPPClient.UpdatePresence();
-            }
-            /// Should save our accounts here
-        }
-
-      
-
+       
 
         #region INotifyPropertyChanged Members
 
@@ -527,6 +524,25 @@ namespace WPFXMPPClient
 
         void XMPPClient_OnDownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom)
         {
+        }
+
+
+        private void TextBox_TargetUpdated(object sender, DataTransferEventArgs e)
+        {
+           
+            /// Should save our accounts here
+        }
+
+        private void ButtonSetStatus_Click(object sender, RoutedEventArgs e)
+        {
+            if (XMPPClient.XMPPState == XMPPState.Ready)
+            {
+
+                ComboBoxItem item = this.ComboBoxPresence.SelectedItem as ComboBoxItem;
+                XMPPClient.PresenceStatus.PresenceType = (PresenceType) item.Content;
+                XMPPClient.PresenceStatus.Status = this.TextBoxStatus.Text;
+                XMPPClient.UpdatePresence();
+            }
         }
 
 
