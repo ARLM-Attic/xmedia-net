@@ -39,6 +39,22 @@ namespace XMPPClient
             set { m_bLogXML = value; }
         }
 
+        private bool m_bLogDebug = true;
+        [DataMember]
+        public bool LogDebug
+        {
+            get { return m_bLogDebug; }
+            set { m_bLogDebug = value; }
+        }
+
+        private bool m_bLogTLS = false;
+        [DataMember]
+        public bool LogTLS
+        {
+            get { return m_bLogTLS; }
+            set { m_bLogTLS = value; }
+        }
+
         private bool m_bSendGeoCoordinates = false;
         [DataMember]
         public bool SendGeoCoordinates

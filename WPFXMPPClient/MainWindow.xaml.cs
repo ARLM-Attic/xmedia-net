@@ -129,6 +129,7 @@ namespace WPFXMPPClient
                 XMPPClient.XMPPAccount.Capabilities.Version = "1.0";
                 XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1 video-v1 camera-v1"; /// google talk capabilities
 
+                XMPPClient.FileTransferManager.AutoDownload = true;
                 XMPPClient.Connect();
 
             }
@@ -505,6 +506,7 @@ namespace WPFXMPPClient
 
         void FileTransferManager_OnTransferFinished(FileTransfer trans)
         {
+            /// Save the file automatically
         }
 
         void FileTransferManager_OnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)

@@ -393,7 +393,8 @@ namespace XMPPClient
         void photoChooserTask_Completed(object sender, PhotoResult e)
         {
             App.XMPPClient.Connect();
-            App.WaitConnected();
+            App.WaitReady();
+            System.Threading.Thread.Sleep(2000);
 
             if (e.TaskResult == TaskResult.OK)
             {

@@ -28,7 +28,7 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace XMPPClient
 {
-    public partial class App : Application
+    public partial class App : Application, SocketServer.ILogInterface
     {
         /// <summary>
         /// Provides easy access to the root frame of the Phone Application.
@@ -55,8 +55,8 @@ namespace XMPPClient
             /// Load our options
             /// 
             LoadOptions();
-            if (Options.LogXML == true)
-                SocketServer.SocketClient.ShowDebug = true;
+            //if (Options.LogXML == true)
+            //    SocketServer.SocketClient.ShowDebug = true;
 
             if (Options.RunWithScreenLocked == true)
                PhoneApplicationService.Current.ApplicationIdleDetectionMode = IdleDetectionMode.Disabled;
@@ -92,6 +92,9 @@ namespace XMPPClient
             GeoTimer.Tick += new EventHandler(GeoTimer_Tick);
             GeoTimer.Start();
 
+            SocketServer.SocketClient.ShowDebug = true;
+
+            App.XMPPClient.AutoReconnect = true;
             App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
             App.XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
             App.XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
@@ -115,12 +118,13 @@ namespace XMPPClient
 
         void XMPPClient_OnServerDisconnect(object sender, EventArgs e)
         {
-            Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(DoServerDisconnect), sender, e);
+            this.LogMessage("XMPP", SocketServer.MessageImportance.Medium, "Disconnected from server at {0}", DateTime.Now);
+            //Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(DoServerDisconnect), sender, e);
         }
 
         void DoServerDisconnect(object sender, EventArgs e)
         {
-            MessageBox.Show("You have been disconnected from the server");
+            //MessageBox.Show("You have been disconnected from the server");
         }
 
         void FileTransferManager_OnTransferFinished(FileTransfer trans)
@@ -138,6 +142,7 @@ namespace XMPPClient
         }
 
 
+        object GeoLock = new object();
 
         void GeoTimer_Tick(object sender, EventArgs e)
         {
@@ -147,20 +152,26 @@ namespace XMPPClient
                 {
                     if (App.XMPPClient.Connected == false)
                     {
-                        if (MessageBox.Show("Client was disconnected, would you like to re-connect?", "Connection Lost", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
-                            App.XMPPClient.Connect();
+                        LogError("Geo", SocketServer.MessageImportance.Medium, "Can't send geo coordinates.  XPP state is ready but we're not connected");
+                        //if (MessageBox.Show("Client was disconnected, would you like to re-connect?", "Connection Lost", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                        //App.XMPPClient.Connect(this);
                         return;
                     }
 
-                    try
+                    if (System.Threading.Monitor.TryEnter(GeoLock) == true)
                     {
-                        App.XMPPClient.SetGeoLocation(CurrentLocation.lat, CurrentLocation.lon);
-                        CurrentLocation.IsDirty = false;
-                    }
-                    catch (Exception)
-                    {
-                        /// It appears we don't always get notifed when we loose our connection, we just don't find out until we send
-                        /// 
+                        try
+                        {
+                            App.XMPPClient.SetGeoLocation(CurrentLocation.lat, CurrentLocation.lon);
+                            CurrentLocation.IsDirty = false;
+                        }
+                        catch (Exception ex)
+                        {
+                            /// It appears we don't always get notifed when we loose our connection, we just don't find out until we send
+                            /// 
+                            LogError("Geo", SocketServer.MessageImportance.Medium, "Exception sending GeoLocation: {0}", ex.Message);
+                        }
+                        System.Threading.Monitor.Exit(GeoLock);
                     }
                 }
             }
@@ -236,15 +247,15 @@ namespace XMPPClient
             switch (e.NotificationType)
             {
                 case NetworkNotificationType.InterfaceConnected:
-                    XMPPLogBuilder.AppendFormat("Network was Connected\r\n");
+                    LogMessage("Network", SocketServer.MessageImportance.Medium, "Network was Connected at {0}\r\n", DateTime.Now);
 
                     if ((XMPPClient != null) && (XMPPClient.XMPPState == XMPPState.Unknown) && (XMPPClient.XMPPAccount != null) && (XMPPClient.XMPPAccount.HaveSuccessfullyConnectedAndAuthenticated==true))
                     {
-                        XMPPClient.Connect();
+                        XMPPClient.Connect(this);
                     }
                     break;
                 case NetworkNotificationType.InterfaceDisconnected:
-                    XMPPLogBuilder.AppendFormat("Network was Disconnected\r\n");
+                    LogMessage("Network", SocketServer.MessageImportance.Medium, "Network was Disconnected at {0}\r\n", DateTime.Now);
                     if ((XMPPClient != null) && (XMPPClient.XMPPState != XMPPState.Unknown))
                     {
                         MessageBox.Show("Network connection lost");
@@ -265,13 +276,35 @@ namespace XMPPClient
         void XMPPClient_OnXMLSent(System.Net.XMPP.XMPPClient client, string strXML)
         {
             if (Options.LogXML == true)
-               XMPPLogBuilder.AppendFormat("--> {0}\r\n", strXML);
+            {
+                XMPPLogBuilder.Append("\r\n-->");
+                foreach (char c in strXML)
+                {
+                    if ( (char.IsControl(c) == true) && (c != 13) && (c != 10) )
+                        XMPPLogBuilder.Append(string.Format("0x{0:X2}", (int)c));
+                    else
+                        XMPPLogBuilder.Append(c);
+                }
+                //strXML = strXML.Replace("\0", "");
+                //XMPPLogBuilder.AppendFormat("--> {0}\r\n", strXML);
+            }
         }
 
         void XMPPClient_OnXMLReceived(System.Net.XMPP.XMPPClient client, string strXML)
         {
             if (Options.LogXML == true)
-                XMPPLogBuilder.AppendFormat("<-- {0}\r\n", strXML);
+            {
+                XMPPLogBuilder.Append("\r\n<--");
+                foreach (char c in strXML)
+                {
+                    if ((char.IsControl(c) == true) && (c != 13) && (c != 10))
+                        XMPPLogBuilder.Append(string.Format("0x{0:X2}", (int)c));
+                    else
+                        XMPPLogBuilder.Append(c);
+                }
+                //strXML = strXML.Replace("\0", "");
+                //XMPPLogBuilder.AppendFormat("<-- {0}\r\n", strXML);
+            }
         }
 
 
@@ -404,13 +437,25 @@ namespace XMPPClient
             {
                 if (MessageBox.Show("An exception occurred the last time this application was run, would you like to forward the details to the developers?", "Application Exception", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                 {
-                    Microsoft.Phone.Tasks.EmailComposeTask task = new Microsoft.Phone.Tasks.EmailComposeTask();
-                    task.Body = strExceptionText;
-                    task.Subject = "[XMPPClient] Crash Notification Details";
-                    task.To = "bonnbria@gmail.com";
-                    task.Show();
+                    MailException(strExceptionText);
                 }
             }
+        }
+        public static void MailLog()
+        {
+            MailException(XMPPLogBuilder.ToString());
+        }
+
+        static void MailException(string strExceptionText)
+        {
+            Microsoft.Phone.Tasks.EmailComposeTask task = new Microsoft.Phone.Tasks.EmailComposeTask();
+            if (strExceptionText.Length < 32000)
+                task.Body = strExceptionText;
+            else
+                task.Body = strExceptionText.Substring(strExceptionText.Length - 32000);
+            task.Subject = "[XMPPClient] Log/Crash Notification Details";
+            task.To = "bonnbria@gmail.com";
+            task.Show();
         }
 
         public static System.Net.XMPP.XMPPClient XMPPClient = new System.Net.XMPP.XMPPClient();
@@ -443,9 +488,24 @@ namespace XMPPClient
                 App.XMPPClient.ConnectHandle.WaitOne(15000);
         }
 
+        public static void WaitReady()
+        {
+            /// Wait for the client to reconnect... should have already been activated above
+            if (App.XMPPClient.Connected == false)
+                App.XMPPClient.ConnectHandle.WaitOne(15000);
+
+            int nCount = 0;
+            while ( (App.XMPPClient.XMPPState != XMPPState.Ready) && (nCount < 10) )
+            {
+                System.Threading.Thread.Sleep(0);
+                nCount++;
+            }
+        }
+
+
         static void DoConnect(object junk)
         {
-            App.XMPPClient.Connect();
+            App.XMPPClient.Connect((SocketServer.ILogInterface)Application.Current);
         }
 
         public static bool WasConnected = false;
@@ -537,6 +597,50 @@ namespace XMPPClient
 
             // Remove this handler since it is no longer needed
             RootFrame.Navigated -= CompleteInitializePhoneApplication;
+        }
+
+        #endregion
+
+        #region ILogInterface Members
+
+        public void LogMessage(string strCateogry, string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        {
+            if (Options.LogDebug == true)
+                XMPPLogBuilder.AppendFormat(strMessage, msgparams);
+        }
+
+        public void LogWarning(string strCateogry, string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        {
+            if (Options.LogDebug == true)
+                XMPPLogBuilder.AppendFormat(strMessage, msgparams);
+        }
+
+        public void LogError(string strCateogry, string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        {
+            if (Options.LogDebug == true)
+                XMPPLogBuilder.AppendFormat(strMessage, msgparams);
+        }
+
+        public void LogMessage(string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        {
+            if (Options.LogDebug == true)
+                XMPPLogBuilder.AppendFormat(strMessage, msgparams);
+        }
+
+        public void LogWarning(string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        {
+            if (Options.LogDebug == true)
+                XMPPLogBuilder.AppendFormat(strMessage, msgparams);
+        }
+
+        public void LogError(string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        {
+            if (Options.LogDebug == true)
+                XMPPLogBuilder.AppendFormat(strMessage, msgparams);
+        }
+
+        public void ClearLog()
+        {
         }
 
         #endregion

@@ -18,6 +18,8 @@ using Microsoft.Phone.Controls;
 using System.Net.XMPP;
 using Microsoft.Phone.Shell;
 
+using Microsoft.Phone.Tasks;
+using System.Device.Location;
 
 
 
@@ -138,12 +140,32 @@ namespace XMPPClient
             QuitException.Quit();
         }
 
-      
+
+        protected override void OnNavigatingFrom(System.Windows.Navigation.NavigatingCancelEventArgs e)
+        {
+            if (e.NavigationMode == System.Windows.Navigation.NavigationMode.Back)
+            {
+                if (MessageBox.Show("Are you sure you want to leave this application?", "Confirm Exit", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                }
+                else
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+            base.OnNavigatingFrom(e);
+        }
+
 
         protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
         {
             if (e.NavigationMode == System.Windows.Navigation.NavigationMode.Back)
+            {
                 QuitException.Quit();
+
+            }
+
             base.OnNavigatedFrom(e);
         }
 
@@ -279,6 +301,31 @@ namespace XMPPClient
         private void ButtonFileTransfers_Click(object sender, EventArgs e)
         {
             NavigationService.Navigate(new Uri(string.Format("/FileTransferPage.xaml"), UriKind.Relative)); 
+        }
+
+
+        private void ButtonMapFriend_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+        
+            //BingMapsDirectionsTask bingMapsDirectionsTask = new BingMapsDirectionsTask();
+
+            BingMapsTask bingMap = new BingMapsTask();
+            bingMap.Center = new GeoCoordinate(item.GeoLoc.lat, item.GeoLoc.lon);
+
+            // GeoCoordinate spaceNeedleLocation = new GeoCoordinate(47.6204,-122.3493);
+            // LabeledMapLocation spaceNeedleLML = new LabeledMapLocation("Space Needle", spaceNeedleLocation);
+
+            // If you set the geocoordinate parameter to null, the label parameter is used as a search term.
+            //LabeledMapLocation spaceNeedleLML = new LabeledMapLocation("Space Needle", null);
+
+            //bingMapsDirectionsTask.End = spaceNeedleLML;
+
+            // If bingMapsDirectionsTask.Start is not set, the user's current location is used as the start point.
+
+            bingMap.Show();
         }
 
     }

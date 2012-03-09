@@ -33,6 +33,20 @@ namespace SocketServer
             SOCKStrans = new SOCKSTransform(this);
         }
 
+
+        public SocketClient(ILogInterface logmgr, string strGuid)
+            : this()
+        {
+            m_Logger = logmgr;
+            OurGuid = strGuid;
+        }
+
+        public SocketClient(Socket s)
+            : this()
+        {
+            Client = s;
+        }
+
         public static bool ShowDebug = false;
 
         protected bool m_bSocketClientDisposed = false;
@@ -59,18 +73,6 @@ namespace SocketServer
 
         public static IBufferPool m_BufferPool = null;
 
-        public SocketClient(ILogInterface logmgr, string strGuid)
-            : base()
-        {
-            m_Logger = logmgr;
-            OurGuid = strGuid;
-            this.Client = null;
-        }
-
-        public SocketClient(Socket s)
-            : base()
-        {
-        }
 
         /// <summary>
         /// set for logging
@@ -227,6 +229,9 @@ namespace SocketServer
             if (ipaddr.Length <= 0)
                 return false;
 
+            if (m_Logger != null)
+                m_Logger.LogMessage(ToString(), MessageImportance.Medium, "Calling ConnectAsync to {0}:{1}", ipaddr, nport);
+
             if (SOCKStrans.IsFilterActive == true)
             {
                 /// Set our proxy remote location just in case we've been activated
@@ -288,6 +293,9 @@ namespace SocketServer
 
             if (SOCKStrans.IsFilterActive == true)
             {
+                if (m_Logger != null)
+                    m_Logger.LogMessage(ToString(), MessageImportance.Medium, "Starting TLS negotiation");
+
                 SOCKStrans.Start();
                 // SOCKS object will trigger the connection finished event when it's done
                 return;
@@ -301,6 +309,9 @@ namespace SocketServer
         {
             if (bSuccess == false)
             {
+                if (m_Logger != null)
+                    m_Logger.LogError(ToString(), MessageImportance.Medium, "Failed TLS negotiation");
+
                 try
                 {
                     Client.Shutdown(System.Net.Sockets.SocketShutdown.Both);
@@ -309,6 +320,9 @@ namespace SocketServer
                 {
                 }
             }
+
+            if (m_Logger != null)
+                m_Logger.LogMessage(ToString(), MessageImportance.Medium, "Connected");
 
             OnConnected(bSuccess, strErrors);
             if (OnAsyncConnectFinished != null)

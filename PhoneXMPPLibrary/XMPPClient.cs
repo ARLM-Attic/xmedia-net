@@ -47,6 +47,11 @@ namespace System.Net.XMPP
 
     public class XMPPClient : System.ComponentModel.INotifyPropertyChanged
     {
+        public XMPPClient(SocketServer.ILogInterface loginterface) : this()
+        {
+            LogInterface = loginterface;
+        }
+
         public XMPPClient()
         {
             StreamNegotiationLogic = new StreamNegotiationLogic(this);
@@ -106,6 +111,15 @@ namespace System.Net.XMPP
 
         }
 
+        void LogMessage(string strMsg, params object [] msgparams)
+        {
+            if (LogInterface != null)
+                LogInterface.LogMessage(this.JID, MessageImportance.Medium, strMsg, msgparams);
+            else
+               System.Diagnostics.Debug.WriteLine(strMsg, msgparams);
+        }
+
+        protected ILogInterface LogInterface = null;
 
         private StreamNegotiationLogic StreamNegotiationLogic = null;
         private GenericIQLogic GenericIQLogic = null;
@@ -173,7 +187,8 @@ namespace System.Net.XMPP
             if (m_nAutoReconnectAttempts > 8)
                 DueTimeMs = 300000;
             m_nAutoReconnectAttempts++;
-            System.Diagnostics.Debug.WriteLine("XMPP Client attempting reconnect in {0} ms", DueTimeMs);
+            
+            LogMessage("XMPP Client attempting reconnect in {0} ms", DueTimeMs);
             m_objReconnectTimer = new System.Threading.Timer(new System.Threading.TimerCallback(OnTimeTryReconnect), this, DueTimeMs, System.Threading.Timeout.Infinite);
         }
 
@@ -199,7 +214,7 @@ namespace System.Net.XMPP
                 if (m_eXMPPState != value)
                 {
                     m_eXMPPState = value;
-                    System.Diagnostics.Debug.WriteLine(string.Format("Setting state to {0}", m_eXMPPState));
+                    LogMessage("Setting state to {0}", m_eXMPPState);
 
                     StateChanged();
                 }
@@ -527,6 +542,12 @@ namespace System.Net.XMPP
 
         public void Connect()
         {
+            Connect(null);
+        }
+
+        public void Connect(ILogInterface log)
+        {
+            LogMessage("Calling XMPPClient::Connect()");
             string strCurrentAccountName = this.JID.BareJID.Replace("@", "").Replace(" ", "").Replace("/", "_").Replace("\\", "");
             AvatarStorage.AccountFolder = strCurrentAccountName;
             if (this.XMPPAccount.AccountName == null)
@@ -534,7 +555,7 @@ namespace System.Net.XMPP
 
             this.RosterItems.Clear();
 
-            XMPPConnection = new XMPPConnection(this);
+            XMPPConnection = new XMPPConnection(this, log);
             XMPPConnection.OnStanzaReceived += new System.Net.XMPP.XMPPConnection.DelegateStanza(XMPPConnection_OnStanzaReceived);
             XMPPConnection.Connect();
         }
@@ -543,6 +564,7 @@ namespace System.Net.XMPP
 
         public void Disconnect()
         {
+            LogMessage("Calling XMPPClient::Disconnect()");
             if (XMPPConnection != null)
             {
                 XMPPConnection.Disconnect();
@@ -571,6 +593,7 @@ namespace System.Net.XMPP
             }
             catch (Exception ex)
             {
+                LogMessage("Exception sending raw XML: {0}", ex);
                 throw new Exception("Exception sending raw XML", ex);
             }
         }
@@ -587,6 +610,7 @@ namespace System.Net.XMPP
             }
             catch (Exception ex)
             {
+                LogMessage("Exception sending XMPP class: {0}", ex);
                 throw new Exception("Exception sending XMPP class", ex);
             }
         }
@@ -599,6 +623,7 @@ namespace System.Net.XMPP
             }
             catch (Exception ex)
             {
+                LogMessage("Exception sending object: {0}", ex);
                 throw new Exception("Exception sending object", ex);
             }
         }

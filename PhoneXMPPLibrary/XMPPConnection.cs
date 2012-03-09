@@ -16,6 +16,12 @@ namespace System.Net.XMPP
             XMPPClient = client;
         }
 
+        public XMPPConnection(XMPPClient client, SocketServer.ILogInterface loginterface)
+            : base(loginterface, "")
+        {
+            XMPPClient = client;
+        }
+
         XMPPClient XMPPClient = null;
         public void Connect()
         {
@@ -48,7 +54,7 @@ namespace System.Net.XMPP
         public override bool Disconnect()
         {
             XMPPClient.XMPPState = XMPPState.Unknown;
-            if (Client.Connected == true)
+            if ( (Client != null) && (Client.Connected == true))
             {
                 Send("</stream>");
                 bool bRet = base.Disconnect();
@@ -140,7 +146,8 @@ namespace System.Net.XMPP
             
 
             string strSend = System.Text.UTF8Encoding.UTF8.GetString(bData, 0, nLength);
-            XMPPClient.FireXMLSent(strSend);
+            if (bTransform == true)
+               XMPPClient.FireXMLSent(strSend);
 
             return base.Send(bData, nLength, bTransform);
         }

@@ -155,6 +155,9 @@ namespace System.Net.XMPP
            m_strDomain = "";
            m_strUser = "";
            m_strResource = "";
+           if (m_strFullJID == null)
+               m_strFullJID = "";
+
            Match match = RegexJID.Match(m_strFullJID);
            if (match.Success == true)
            {

@@ -314,6 +314,14 @@ namespace System.Net.XMPP
 
         XMPPClient XMPPClient = null;
 
+        private bool m_bAutoDownload = false;
+        public bool AutoDownload
+        {
+            get { return m_bAutoDownload; }
+            set { m_bAutoDownload = value; }
+        }
+
+
         object m_objFileTransferLock = new object();
 
 #if WINDOWS_PHONE
@@ -480,6 +488,22 @@ namespace System.Net.XMPP
         /// <param name="trans"></param>
         internal void NewIncomingFileRequest(FileTransfer trans)
         {
+            if (AutoDownload == true)
+            {
+#if WINDOWS_PHONE
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(new DelegateAddTrans(DoAddTrans), trans);
+#else
+                lock (m_objFileTransferLock)
+                {
+                    FileTransfers.Add(trans);
+                }
+#endif
+                this.AcceptFileDownload(trans);
+                return;
+            }
+
+
+
             if (OnNewIncomingFileTransferRequest != null)
             {
 
@@ -533,6 +557,7 @@ namespace System.Net.XMPP
                     if (item != null)
                         OnTransferFinished(trans);
                 }
+
             }
             catch (Exception)
             {

@@ -35,5 +35,11 @@ namespace XMPPClient
             App.SaveOptions();
             base.OnNavigatedFrom(e);
         }
+
+        private void ButtonDumpLog_Click(object sender, EventArgs e)
+        {
+            NavigationService.Navigate(new Uri("/DebugPage.xaml", UriKind.Relative));
+            //App.MailLog();
+        }
     }
 }

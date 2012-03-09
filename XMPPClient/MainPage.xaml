@@ -88,6 +88,7 @@
         			x:Name="HyperlinkRosterItem" Click="HyperlinkRosterItem_Click" 
         			FontWeight="Bold"  BorderThickness="0" FontSize="18"  Content="{Binding Name}" Style="{StaticResource ButtonStyle1}" />
 
+                
 
         		<Button BorderThickness="0" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" 
         			ToolTipService.ToolTip="View New Messages" Grid.Row="0" Grid.Column="2"
@@ -102,8 +103,8 @@
        			
         		</Button>
 
-                <Button Background="#44EEFFEE" Visibility="Collapsed" Style="{StaticResource ButtonStyle1}" ToolTipService.ToolTip="Start an Audio Call" Grid.Row="0" Grid.Column="3" x:Name="ButtonStartAudioCall" Click="ButtonStartAudioCall_Click" >
-        			<Image  Source="Images/volume.png" Margin="10" />
+                <Button Background="#44EEFFEE" Visibility="Visible" Style="{StaticResource ButtonStyle1}" ToolTipService.ToolTip="Map" Grid.Row="0" Grid.Column="3" x:Name="ButtonMapFriend" Click="ButtonMapFriend_Click" >
+        			<Image  Source="Images/globe.png" Margin="10" />
         		</Button>
 
         		<StackPanel Grid.Row="1" Grid.Column="1"  Margin="4,0" Grid.ColumnSpan="3" Orientation="Horizontal">
@@ -230,7 +231,6 @@
             <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/connect.png" Text="Connect" x:Name="ButtonConnect" Click="ButtonConnect_Click"/>
             <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/tools.png" Text="Options" x:Name="ButtonOptions" Click="ButtonOptions_Click"/>
             <shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/file.png" Text="Transfers" x:Name="ButtonFileTransfers" Click="ButtonFileTransfers_Click"/>
-            <!--<shell:ApplicationBarIconButton IsEnabled="True" IconUri="Images/delete.png" Text="Exit" x:Name="ButtonExit" Click="ButtonExit_Click"/>-->
         </shell:ApplicationBar> 
     </phone:PhoneApplicationPage.ApplicationBar>
         

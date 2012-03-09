@@ -11,7 +11,7 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
-    mc:Ignorable="d" d:DesignHeight="768" d:DesignWidth="480"
+    mc:Ignorable="d" d:DesignHeight="696" d:DesignWidth="480"
     shell:SystemTray.IsVisible="True">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
@@ -32,6 +32,7 @@
             <ScrollViewer>
                 <StackPanel>
                     <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleRunScreenLock" IsChecked="{Binding RunWithScreenLocked,Mode=TwoWay}">Run with screen locked</toolkit:ToggleSwitch>
+                    <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleLogDebug" IsChecked="{Binding LogDebug,Mode=TwoWay}">Log Debug</toolkit:ToggleSwitch>
                     <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleLogXML" IsChecked="{Binding LogXML,Mode=TwoWay}">Log XML</toolkit:ToggleSwitch>
                     <toolkit:ToggleSwitch FontSize="22" x:Name="ToggleSavePasswords" IsChecked="{Binding SavePasswords,Mode=TwoWay}">Save Passwords</toolkit:ToggleSwitch>
                     <toolkit:ToggleSwitch FontSize="22" x:Name="TogglePlaySounds" IsChecked="{Binding PlaySoundOnNewMessage,Mode=TwoWay}">Play Sound On New Message</toolkit:ToggleSwitch>
@@ -52,15 +53,10 @@
     </Grid>
  
     <!--Sample code showing usage of ApplicationBar-->
-    <!--<phone:PhoneApplicationPage.ApplicationBar>
+    <phone:PhoneApplicationPage.ApplicationBar>
         <shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
-            <shell:ApplicationBarIconButton IconUri="/Images/appbar_button1.png" Text="Button 1"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/appbar_button2.png" Text="Button 2"/>
-            <shell:ApplicationBar.MenuItems>
-                <shell:ApplicationBarMenuItem Text="MenuItem 1"/>
-                <shell:ApplicationBarMenuItem Text="MenuItem 2"/>
-            </shell:ApplicationBar.MenuItems>
+            <shell:ApplicationBarIconButton IconUri="/Images/file.png" x:Name="ButtonDumpLog" Click="ButtonDumpLog_Click" Text="Dump Log"/>
         </shell:ApplicationBar>
-    </phone:PhoneApplicationPage.ApplicationBar>-->
+    </phone:PhoneApplicationPage.ApplicationBar>
 
 </phone:PhoneApplicationPage>

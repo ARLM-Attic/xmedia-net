@@ -38,17 +38,15 @@ namespace SocketServer
 
 
         public SocketClient(ILogInterface logmgr, string strGuid)
-            : base()
+            : this()
         {
             m_Logger = logmgr;
             OurGuid = strGuid;
-            this.Client = null;
         }
 
         public SocketClient(Socket s, ConnectMgr parentnotify)
-            : base()
+            : this()
         {
-            m_AsyncConnect = new AsyncCallback(OnClientConnected);
             Init(s, parentnotify);
         }
 
@@ -551,12 +549,12 @@ namespace SocketServer
             if (bData == null)
                 return -1;
 
-            return Send(bData, bData.Length, false);
+            return Send(bData, bData.Length, true);
         }
 
         public virtual int Send(byte[] bData, int nLength)
         {
-            return Send(bData, nLength, false);
+            return Send(bData, nLength, true);
         }
 
         public virtual int Send(byte[] bData, int nLength, bool bTransform)
