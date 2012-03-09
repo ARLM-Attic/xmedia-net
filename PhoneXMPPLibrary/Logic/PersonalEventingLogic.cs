@@ -53,6 +53,7 @@ namespace System.Net.XMPP
             iq.From = XMPPClient.JID;
             iq.PubSub.Publish = new Publish() { Node = "http://jabber.org/protocol/geoloc", Item = new PubSubItem()};
             iq.PubSub.Publish.Item.SetNodeFromObject(item);
+            iq.PubSub.Publish.Item.Id = "lastlocation";
 
             ListSentIQs.Add(iq.ID);
             try
