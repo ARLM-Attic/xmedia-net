@@ -124,7 +124,7 @@ namespace System.Net.XMPP
         private StreamNegotiationLogic StreamNegotiationLogic = null;
         private GenericIQLogic GenericIQLogic = null;
         private RosterLogic RosterLogic = null;
-        private PresenceLogic PresenceLogic = null;
+        internal PresenceLogic PresenceLogic = null;
         private GenericMessageLogic GenericMessageLogic = null;
         private ServiceDiscoveryLogic ServiceDiscoveryLogic = null;
         public Jingle.JingleSessionManager JingleSessionManager = null;

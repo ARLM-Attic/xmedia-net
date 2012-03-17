@@ -112,7 +112,7 @@ namespace System.Net.XMPP
 
         private string m_strType = null;
         [XmlAttribute(AttributeName = "type")]
-        public string Type
+        public virtual string Type
         {
             get { return m_strType; }
             set { m_strType = value; }

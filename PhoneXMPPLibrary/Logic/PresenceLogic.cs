@@ -85,11 +85,13 @@ namespace System.Net.XMPP
         public PresenceMessage()
             : base(null, "presence")
         {
+            m_objPresenceStatus.PresenceType = PresenceType.available;
         }
 
         public PresenceMessage(string strXML)
             : base(strXML, "presence")
         {
+            m_objPresenceStatus.PresenceType = PresenceType.available;
         }
 
         private PresenceStatus m_objPresenceStatus = new PresenceStatus();
@@ -98,6 +100,37 @@ namespace System.Net.XMPP
         {
             get { return m_objPresenceStatus; }
             set { m_objPresenceStatus = value; }
+        }
+
+
+        [XmlAttribute(AttributeName="type")]
+        public override string Type
+        {
+            get
+            {
+                if (m_objPresenceStatus.PresenceType == PresenceType.available)
+                    return null;
+                return m_objPresenceStatus.PresenceType.ToString();
+            }
+            set
+            {
+                if (value == null)
+                    m_objPresenceStatus.PresenceType = PresenceType.available;
+                else if (value == PresenceType.error.ToString())
+                    m_objPresenceStatus.PresenceType = PresenceType.error;
+                else if (value == PresenceType.probe.ToString())
+                    m_objPresenceStatus.PresenceType = PresenceType.probe;
+                else if (value == PresenceType.subscribe.ToString())
+                    m_objPresenceStatus.PresenceType = PresenceType.subscribe;
+                else if (value == PresenceType.subscribed.ToString())
+                    m_objPresenceStatus.PresenceType = PresenceType.subscribed;
+                else if (value == PresenceType.unavailable.ToString())
+                    m_objPresenceStatus.PresenceType = PresenceType.unavailable;
+                else if (value == PresenceType.unsubscribe.ToString())
+                    m_objPresenceStatus.PresenceType = PresenceType.unsubscribe;
+                else if (value == PresenceType.unsubscribed.ToString())
+                    m_objPresenceStatus.PresenceType = PresenceType.unsubscribed;
+            }
         }
 
         [XmlElement(ElementName = "show")]

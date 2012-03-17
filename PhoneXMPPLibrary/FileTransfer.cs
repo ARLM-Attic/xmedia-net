@@ -498,6 +498,8 @@ namespace System.Net.XMPP
                     FileTransfers.Add(trans);
                 }
 #endif
+                System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoAskUserIfTheyWantToReceiveFile), trans);
+
                 this.AcceptFileDownload(trans);
                 return;
             }
@@ -518,7 +520,7 @@ namespace System.Net.XMPP
 
                 System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoAskUserIfTheyWantToReceiveFile), trans);
             }
-            else
+            else 
             {
                 XMPPClient.StreamInitiationAndTransferLogic.DeclineIncomingFileRequest(trans);
             }

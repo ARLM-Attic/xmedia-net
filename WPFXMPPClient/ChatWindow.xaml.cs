@@ -435,6 +435,15 @@ namespace WPFXMPPClient
                         /// Just send it to 1 recepient for now, must have a full jid
                         string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, instance.FullJID);
 
+                        foreach (Window wind in Application.Current.Windows)
+                        {
+                            if (wind is MainWindow)
+                            {
+                                ((MainWindow)wind).ShowFileTransfer();
+                                break;
+                            }
+                        }
+
                         break;
                     }
                 }

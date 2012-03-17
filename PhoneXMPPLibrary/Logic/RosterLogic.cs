@@ -318,6 +318,14 @@ namespace System.Net.XMPP
 
                             XMPPClient.AsyncFireListChanged();
                         }
+
+                        if (item.Subscription == subscription.from.ToString())  /// should only have a from subscription if we've added the roster item
+                        {
+                            //if (XMPPClient.AutoAcceptPresenceSubscribe
+                            /// subscribe to presence of this one
+                            XMPPClient.PresenceLogic.SubscribeToPresence(ros.JID.BareJID);
+                        }
+
                     }
  
                     iq.Type = IQType.result.ToString();
@@ -370,7 +378,7 @@ namespace System.Net.XMPP
             }
 
             newitem.JID = newjid;
-            
+            newitem.Subscription = subscription.none.ToString();
             newitem.Groups = new string[] { strGroup };
 
             AddRosterIQ.Query.RosterItems = new rosteritem[] { newitem };
@@ -409,6 +417,7 @@ namespace System.Net.XMPP
 
             rosteritem deleteitem = new rosteritem();
             deleteitem.JID = jid;
+            deleteitem.Subscription = subscription.remove.ToString();
 
             DeleteRosterIQ.Query.RosterItems = new rosteritem[] { deleteitem };
 

@@ -492,15 +492,24 @@ namespace WPFXMPPClient
         {
             FileTransferWindow.XMPPClient = this.XMPPClient;
 
+            ShowFileTransfer();
+        }
+
+        public void ShowFileTransfer()
+        {
             if (FileTransferWindow.IsLoaded == false)
             {
                 FileTransferWindow = new FileTransferWindow();
                 FileTransferWindow.XMPPClient = this.XMPPClient;
                 FileTransferWindow.Show();
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(FileTransferWindow).Handle;
+                FlashWindow(windowHandle, true);
             }
             else
             {
                 FileTransferWindow.Activate();
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(FileTransferWindow).Handle;
+                FlashWindow(windowHandle, true);
             }
         }
 
