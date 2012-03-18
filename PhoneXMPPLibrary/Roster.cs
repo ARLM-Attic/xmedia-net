@@ -83,6 +83,12 @@ namespace System.Net.XMPP
         {
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is RosterItem)
+                return JID.Equals(((RosterItem)obj).JID);
+            return false;
+        }
 
 
         private XMPPClient m_objXMPPClient = null;

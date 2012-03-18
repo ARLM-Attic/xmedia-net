@@ -52,6 +52,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OtherLibs\WPFImageControls\WPFImageWindows\WPFImageWindows.csproj">
+      <Project>{B914EE15-6A3C-4BAA-AB12-932D1325C86D}</Project>
+      <Name>WPFImageWindows</Name>
+    </ProjectReference>
     <ProjectReference Include="..\XMPPLibrary\xmpp.csproj">
       <Project>{8DE3A173-A7A8-447F-846E-16C95F9C22AE}</Project>
       <Name>xmpp</Name>

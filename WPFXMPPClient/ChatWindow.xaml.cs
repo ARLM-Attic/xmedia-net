@@ -452,6 +452,56 @@ namespace WPFXMPPClient
             }
         }
 
+        private void ButtonSendScreenCapture_Click(object sender, RoutedEventArgs e)
+        {
+            List<Window> RestoreList = new List<Window>();
+            foreach (Window win in Application.Current.Windows)
+            {
+                if (win.WindowState != System.Windows.WindowState.Minimized)
+                {
+                    win.WindowState = System.Windows.WindowState.Minimized;
+                    RestoreList.Add(win);
+                }
+            }
+
+            byte [] bPng = WPFImageWindows.ScreenGrabUtility.GetScreenPNG();
+
+            foreach (Window win in RestoreList)
+            {
+                win.WindowState = System.Windows.WindowState.Normal;
+            }
+
+            if (bPng != null)
+            {
+                string strFileName = string.Format("sc_{0}.png", Guid.NewGuid());
+
+                if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
+                    this.ListBoxInstances.SelectedIndex = 0;
+
+                if (this.ListBoxInstances.SelectedItems.Count > 0)
+                {
+                    foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                    {
+                        /// Just send it to 1 recepient for now, must have a full jid
+                        string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, bPng, instance.FullJID);
+
+                        foreach (Window wind in Application.Current.Windows)
+                        {
+                            if (wind is MainWindow)
+                            {
+                                ((MainWindow)wind).ShowFileTransfer();
+                                break;
+                            }
+                        }
+
+                        break;
+                    }
+                }
+                
+            }
+        }
+
+
         public void DownloadFinished(string strRequestId, string strLocalFileName, RosterItem itemfrom)
         {
             System.Diagnostics.Process.Start(strLocalFileName);
@@ -469,5 +519,6 @@ namespace WPFXMPPClient
 
         }
 
+    
     }
 }

@@ -11,10 +11,17 @@ namespace Tests
 {
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             //TestIQErrorParsing();
-            TestPubSubParsing();
+            //TestPubSubParsing();
+            TestCapture();
+        }
+
+        static void TestCapture()
+        {
+            WPFImageWindows.ScreenGrabUtility.GetScreenPNG();
         }
 
         static void TestIQErrorParsing()

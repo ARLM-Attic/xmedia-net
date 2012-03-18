@@ -33,14 +33,14 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>36</ApplicationRevision>
+    <ApplicationRevision>37</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -151,6 +151,10 @@
     <None Include="WPFXMPPClient_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OtherLibs\WPFImageControls\WPFImageWindows\WPFImageWindows.csproj">
+      <Project>{B914EE15-6A3C-4BAA-AB12-932D1325C86D}</Project>
+      <Name>WPFImageWindows</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SocketServer\socketserver.csproj">
       <Project>{77F78E2F-A04F-4823-A2A9-3F1F27D0F8B8}</Project>
       <Name>socketserver</Name>

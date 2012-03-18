@@ -41,6 +41,7 @@
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="23" />
@@ -100,12 +101,16 @@
                 <s:SurfaceButton ToolTip="Send File" Grid.Column="2" x:Name="ButtonSendFile" Click="ButtonSendFile_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/mail - copy.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
+                 
+                <s:SurfaceButton ToolTip="Screen Capture" Grid.Column="3" x:Name="ButtonSendScreenCapture" Click="ButtonSendScreenCapture_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                    <Image Source="Images/photo - crop.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
+                </s:SurfaceButton>
 
-                <s:SurfaceButton ToolTip="Clear" Grid.Column="3" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                <s:SurfaceButton ToolTip="Clear" Grid.Column="4" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/trash.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" ImageFailed="Image_ImageFailed" />
                 </s:SurfaceButton>
 
-                <s:SurfaceButton ToolTip="Close" Grid.Column="4" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                <s:SurfaceButton ToolTip="Close" Grid.Column="5" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
             </Grid>

@@ -107,5 +107,24 @@ namespace WPFXMPPClient
                 System.Diagnostics.Process.Start(strFullFileName);
             }
         }
+
+        private void ButtonClearTransfers_Click(object sender, RoutedEventArgs e)
+        {
+            List<FileTransfer> ClearList = new List<FileTransfer>();
+            foreach (FileTransfer trans in XMPPClient.FileTransferManager.FileTransfers)
+            {
+                if ((trans.FileTransferState == FileTransferState.Done) || (trans.FileTransferState == FileTransferState.Error))
+                {
+                    ClearList.Add(trans);
+                }
+            }
+
+            foreach (FileTransfer trans in ClearList)
+            {
+                XMPPClient.FileTransferManager.FileTransfers.Remove(trans);
+                trans.Close();
+            }
+
+        }
     }
 }
