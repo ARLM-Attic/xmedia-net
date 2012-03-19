@@ -109,6 +109,43 @@ namespace System.Net.XMPP
 
             return objImage;
         }
+#else
+        public byte [] GetAvatarImage(string strHash)
+        {
+            byte [] bImage = null;
+            IsolatedStorageFile storage = null;
+
+            storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null);
+
+            string strFileName = string.Format("{0}/{1}", AccountFolder, strHash);
+            if (storage.FileExists(strFileName) == false)
+            {
+                storage.Dispose();
+                return null;
+            }
+
+            IsolatedStorageFileStream stream = null;
+            try
+            {
+                stream = new IsolatedStorageFileStream(strFileName, System.IO.FileMode.Open, storage);
+        
+                bImage = new byte[stream.Length];
+                stream.Read(bImage, 0, bImage.Length);
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Close();
+
+                storage.Dispose();
+            }
+
+            return bImage;
+        }
+
 #endif
 
 
