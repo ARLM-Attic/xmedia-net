@@ -280,8 +280,7 @@ namespace System.Net.XMPP
 
                 foreach (RosterItem item in RosterItems)
                 {
-                    item.Presence.PresenceType = PresenceType.unavailable;
-                    item.Presence.PresenceShow = PresenceShow.xa;
+                    item.SetDisconnected();
                 }
             }
             else if (XMPPState == System.Net.XMPP.XMPPState.Ready)
@@ -897,10 +896,42 @@ namespace System.Net.XMPP
 
         public FileTransferManager FileTransferManager = null;
 
+        private geoloc m_objGeoLocation = new geoloc() { lat = 0.0f, lon = 0.0f };
+        string m_strGeoLocation = "Unknown Location";
+
+        public geoloc GeoLocation
+        {
+            get { return m_objGeoLocation; }
+            set 
+            { 
+                m_objGeoLocation = value; 
+            }
+        }
+        public string GeoLocationString
+        {
+            get
+            {
+                return m_strGeoLocation;
+            }
+            set
+            {
+                m_strGeoLocation = value;
+                FirePropertyChanged("GeoLocationString");
+            }
+        }            
+
         public void SetGeoLocation(double fLat, double fLon)
         {
-            geoloc loc = new geoloc() { lat = fLat, lon = fLon };
-            this.PersonalEventingLogic.PublishGeoInfo(loc);
+            m_objGeoLocation.lat = fLat;
+            m_objGeoLocation.lon = fLon;
+            if ((m_objGeoLocation.lat == 0.0f) && (m_objGeoLocation.lon == 0.0f))
+                GeoLocationString = "Unknown Location";
+            else
+                GeoLocationString = string.Format("{0:N3}, {1:N3}", m_objGeoLocation.lat, m_objGeoLocation.lon);
+
+            FirePropertyChanged("GeoLocation");
+            
+            this.PersonalEventingLogic.PublishGeoInfo(m_objGeoLocation);
         }
 
         public AvatarStorage AvatarStorage = new AvatarStorage("default");

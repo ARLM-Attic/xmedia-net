@@ -409,6 +409,7 @@ namespace SocketServer
                             m_Logger.LogError(ToString(), MessageImportance.Highest, ex.ToString());
 
                         OnDisconnect("Send failed");
+                        throw new Exception("Send Failed", ex);
                     }
                     catch (System.Exception ex2)
                     {
@@ -416,7 +417,12 @@ namespace SocketServer
                             m_Logger.LogError(ToString(), MessageImportance.Highest, ex2.ToString());
 
                         OnDisconnect(ex2.ToString());
+                        throw new Exception("Send Failed", ex2);
                     }
+                }
+                else
+                {
+                    OnDisconnect("Client not connected");
                 }
             }
             return nRet;

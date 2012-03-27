@@ -271,13 +271,12 @@
             <TextBlock Text="{Binding XMPPAccount.AccountName}" FontWeight="Bold"  Style="{StaticResource PhoneTextNormalStyle}" Margin="12,0" VerticalAlignment="Center" />
             <TextBlock x:Name="ApplicationTitle" Text="{Binding XMPPState}" VerticalAlignment="Center" Margin="12,0" Style="{StaticResource PhoneTextNormalStyle}" />
         </StackPanel>
-        <TextBox Visibility="Collapsed" Grid.Column="1" Grid.Row="1" Text="{Binding PresenceStatus.Status,Mode=TwoWay}" GotFocus="TextBoxStatus_GotFocus" LostFocus="TextBoxStatus_LostFocus" x:Name="TextBoxStatus" Margin="20,0" Padding="0" BorderThickness="0" FontSize="18.667" Style="{StaticResource TextBoxStyle1}" />
+        <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="1">
+            <TextBox Visibility="Collapsed" Text="{Binding PresenceStatus.Status,Mode=TwoWay}" GotFocus="TextBoxStatus_GotFocus" LostFocus="TextBoxStatus_LostFocus" x:Name="TextBoxStatus" Margin="20,0" Padding="0" BorderThickness="0" FontSize="18.667" Style="{StaticResource TextBoxStyle1}" />
+            <TextBox Text="{Binding GeoLocationString}" x:Name="TextBoxGeo" Margin="20,0" Padding="0" BorderThickness="0" FontSize="18.667" Style="{StaticResource TextBoxStyle1}" />
+        </StackPanel>
 
-        
-        <Grid Grid.Row="2" Grid.ColumnSpan="2">
-            <ProgressBar x:Name="ProgressBarDownload" Visibility="Visible" Height="30" />
-            <TextBlock HorizontalAlignment="Center" x:Name="TextBlockProgress" />
-        </Grid>
+
 
         <toolkit:LongListSelector x:Name="ListBoxRoster" 
                                           Grid.Row="3" Grid.ColumnSpan="3"

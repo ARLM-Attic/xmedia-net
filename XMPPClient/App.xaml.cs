@@ -195,6 +195,12 @@ namespace XMPPClient
         {
             if ((gpswatcher != null) && (App.Options.SendGeoCoordinates == true))
             {
+                if (e.Status == GeoPositionStatus.NoData)
+                    App.XMPPClient.GeoLocationString = "Unknown Location";
+                else if (e.Status == GeoPositionStatus.Initializing)
+                    App.XMPPClient.GeoLocationString = "Initializing";
+                else if (e.Status == GeoPositionStatus.Disabled)
+                    App.XMPPClient.GeoLocationString = "GPS Disabled";
             }
         }
 

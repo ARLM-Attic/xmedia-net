@@ -298,6 +298,16 @@ namespace System.Net.XMPP
             }
         }
 
+        public void SetDisconnected()
+        {
+            lock (m_lockClientInstances)
+            {
+                m_listClientInstances.Clear();
+            }
+            Presence.PresenceType = PresenceType.unavailable;
+            Presence.PresenceShow = PresenceShow.unknown;
+        }
+
         public void SetPresence(PresenceMessage pres)
         {
            

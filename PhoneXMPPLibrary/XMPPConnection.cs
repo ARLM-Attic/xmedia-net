@@ -138,18 +138,15 @@ namespace System.Net.XMPP
 
         public override int Send(byte[] bData, int nLength, bool bTransform)
         {
-            if (Client.Connected == false)
+            int nRet = base.Send(bData, nLength, bTransform);
+
+            if ( (bTransform == true) && (nRet == nLength) )
             {
-                XMPPClient.XMPPState = XMPPState.Unknown;
-                throw new Exception("XMPP Client is not connected");
+                string strSend = System.Text.UTF8Encoding.UTF8.GetString(bData, 0, nLength);
+                XMPPClient.FireXMLSent(strSend);
             }
-            
 
-            string strSend = System.Text.UTF8Encoding.UTF8.GetString(bData, 0, nLength);
-            if (bTransform == true)
-               XMPPClient.FireXMLSent(strSend);
-
-            return base.Send(bData, nLength, bTransform);
+            return nRet;
         }
 
         XMPPStream XMPPStream = new XMPPStream();

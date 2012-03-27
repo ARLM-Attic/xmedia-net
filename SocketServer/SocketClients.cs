@@ -537,7 +537,8 @@ namespace SocketServer
                 return -1;
 
             byte[] sendBytes = System.Text.Encoding.UTF8.GetBytes(strLine);
-            int nRet = Send(sendBytes);
+            int nRet = 0;
+            nRet = Send(sendBytes);
             return nRet;
         }
 
@@ -584,8 +585,9 @@ namespace SocketServer
                     {
                         if (m_Logger != null)
                             m_Logger.LogError(ToString(), MessageImportance.Highest, ex.ToString());
-                        
+
                         OnDisconnect("Send failed");
+                        throw new Exception("Send Failed", ex);
                     }
                     catch (Exception ex2)
                     {
@@ -593,7 +595,12 @@ namespace SocketServer
                             m_Logger.LogError(ToString(), MessageImportance.Highest, ex2.ToString());
 
                         OnDisconnect("Send failed");
+                        throw new Exception("Send Failed", ex2);
                     }
+                }
+                else
+                {
+                    OnDisconnect("Client not connected");
                 }
             }
             return nRet;
