@@ -376,8 +376,11 @@ namespace System.Net.XMPP.Jingle
         }
 
         public const string SessionInitiate = "session-initiate";
+        public const string Initiate = "initiate";
         public const string SessionAccept = "session-accept";
+        public const string Accept = "accept";
         public const string SessionTerminate = "session-terminate";
+        public const string Terminate = "terminate";
         public const string ContentAdd = "content-add";
         public const string ContentModify = "content-modify";
         public const string ContentReject = "content-reject";
@@ -549,169 +552,177 @@ namespace System.Net.XMPP.Jingle
         {
             /// New message coming in, see if it is session accept or session terminate
             /// 
-            if (jingleiq.Jingle.Action == Jingle.SessionAccept)
+            if (jingleiq.Type == IQType.error.ToString())
             {
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = IncomingRequestMessage.From;
-                iqresponse.Type = IQType.result.ToString();
-                XMPPClient.SendXMPP(iqresponse);
-
-                JingleSessionManager.FireSessionAcceptedReceived(this.SessionId, jingleiq.Jingle);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.SessionTerminate)
-            {
-                /// Tell the user we've been terminated.  Ack and finish this logic
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
                 JingleSessionManager.FireSessionTerminated(this.SessionId);
-
-                this.IsCompleted = true;
+                return;
             }
-            else if (jingleiq.Jingle.Action == Jingle.ContentAdd)
+
+            if (jingleiq.Type == IQType.set.ToString())
             {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
+                if ((jingleiq.Jingle.Action == Jingle.SessionAccept)||(jingleiq.Jingle.Action == Jingle.Accept))
+                {
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+                    XMPPClient.SendXMPP(iqresponse);
 
-                XMPPClient.SendXMPP(iqresponse);
+                    JingleSessionManager.FireSessionAcceptedReceived(this.SessionId, jingleiq.Jingle);
+                }
+                else if ((jingleiq.Jingle.Action == Jingle.SessionTerminate)||(jingleiq.Jingle.Action == Jingle.Terminate))
+                {
+                    /// Tell the user we've been terminated.  Ack and finish this logic
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                    JingleSessionManager.FireSessionTerminated(this.SessionId);
+
+                    this.IsCompleted = true;
+                }
+                else if (jingleiq.Jingle.Action == Jingle.ContentAdd)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.ContentModify)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.ContentReject)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.ContentAccept)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.DescriptionInfo)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.SessionInfo)
+                {
+                    //if (jingleiq.Jingle.JingleStateChange != JingleStateChange.None)
+
+                    /// Some type of status message, just ack
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+
+                    /// TODO, notify client of state change
+                    /// 
+                    System.Diagnostics.Debug.WriteLine("Got a Jingle state changed event of {0}", jingleiq.Jingle.JingleStateChange);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.TransportInfo)
+                {
+
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+                    XMPPClient.SendXMPP(iqresponse);
+
+                    JingleSessionManager.FireSessionTransportInfoReceived(this.SessionId, jingleiq.Jingle);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.TransportAccept)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.TransportReject)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else if (jingleiq.Jingle.Action == Jingle.TransportReplace)
+                {
+                    /// TODO, notify user of this
+                    /// 
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.result.ToString();
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
+                else
+                {
+                    IQ iqresponse = new IQ();
+                    iqresponse.ID = jingleiq.ID;
+                    iqresponse.From = XMPPClient.JID;
+                    iqresponse.To = jingleiq.From;
+                    iqresponse.Type = IQType.error.ToString();
+                    iqresponse.Error = new Error("<Unknown action />");
+
+                    XMPPClient.SendXMPP(iqresponse);
+                }
             }
-            else if (jingleiq.Jingle.Action == Jingle.ContentModify)
-            {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.ContentReject)
-            {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.ContentAccept)
-            {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.DescriptionInfo)
-            {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.SessionInfo)
-            {
-                //if (jingleiq.Jingle.JingleStateChange != JingleStateChange.None)
-
-                /// Some type of status message, just ack
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-                
-                /// TODO, notify client of state change
-                /// 
-                System.Diagnostics.Debug.WriteLine("Got a Jingle state changed event of {0}", jingleiq.Jingle.JingleStateChange);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.TransportInfo)
-            {
-                
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = IncomingRequestMessage.From;
-                iqresponse.Type = IQType.result.ToString();
-                XMPPClient.SendXMPP(iqresponse);
-
-                JingleSessionManager.FireSessionTransportInfoReceived(this.SessionId, jingleiq.Jingle);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.TransportAccept)
-            {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.TransportReject)
-            {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-            else if (jingleiq.Jingle.Action == Jingle.TransportReplace)
-            {
-                /// TODO, notify user of this
-                /// 
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.result.ToString();
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-            else 
-            {
-                IQ iqresponse = new IQ();
-                iqresponse.ID = jingleiq.ID;
-                iqresponse.From = XMPPClient.JID;
-                iqresponse.To = jingleiq.From;
-                iqresponse.Type = IQType.error.ToString();
-                iqresponse.Error = new Error("<Unknown action />");
-
-                XMPPClient.SendXMPP(iqresponse);
-            }
-
 
 
         }
@@ -751,7 +762,8 @@ namespace System.Net.XMPP.Jingle
             OutgoingRequestMessage.Jingle = jingleinfo;
             OutgoingRequestMessage.Jingle.Action = Jingle.SessionInitiate;
             OutgoingRequestMessage.Jingle.Initiator = XMPPClient.JID;
-            OutgoingRequestMessage.Jingle.SID = Guid.NewGuid().ToString();
+            if (OutgoingRequestMessage.Jingle.SID == null)
+               OutgoingRequestMessage.Jingle.SID = Guid.NewGuid().ToString();
 
             XMPPClient.SendObject(OutgoingRequestMessage);
         }
@@ -955,7 +967,7 @@ namespace System.Net.XMPP.Jingle
                     return true;
                 }
 
-                if (jingleiq.Jingle.Action == Jingle.SessionInitiate) /// A new jingle session has been requested that we didn't initiate.  Start it's own "JingleLogic"
+                if ( (jingleiq.Jingle.Action == Jingle.SessionInitiate) || (jingleiq.Jingle.Action == Jingle.Initiate) )/// A new jingle session has been requested that we didn't initiate.  Start it's own "JingleLogic"
                 {
                     JingleSessionLogic newrequestlogic = new JingleSessionLogic(this.XMPPClient, strSessionId, this);
                     lock (SessionLock)
@@ -1017,6 +1029,7 @@ namespace System.Net.XMPP.Jingle
 
             string strSessionId = Guid.NewGuid().ToString();
             JingleSessionLogic session = new JingleSessionLogic(this.XMPPClient, strSessionId, this);
+            jingleinfo.SID = strSessionId;
             lock (SessionLock)
             {
                 Sessions.Add(strSessionId, session);

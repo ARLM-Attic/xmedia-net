@@ -519,6 +519,22 @@ namespace WPFXMPPClient
 
         }
 
+        private void ButtonStartAudioCall_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItemPresenceInstance item = ((FrameworkElement)sender).DataContext as RosterItemPresenceInstance;
+            if (item == null)
+                return;
+
+            foreach (Window win in Application.Current.Windows)
+            {
+                if (win is AudioMuxerWindow)
+                {
+                    ((AudioMuxerWindow)win).InitiateOrShowCallTo(item.FullJID);
+                    break;
+                }
+            }
+        }
+
     
     }
 }

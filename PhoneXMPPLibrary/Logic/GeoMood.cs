@@ -251,7 +251,7 @@ namespace System.Net.XMPP
     }
 
     [DataContract]
-    [XmlRoot(ElementName = "metadata", Namespace = "urn:xmpp:avatar:data")]
+    [XmlRoot(ElementName = "metadata", Namespace = "urn:xmpp:avatar:metadata")]
     public class avatarmetadata
     {
         public avatarmetadata()

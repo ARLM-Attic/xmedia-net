@@ -96,6 +96,10 @@ namespace SocketServer
         /// <returns></returns>
         public byte[] GetNSamples(int nSamples)
         {
+            if (nSamples <= 0)
+                return new byte[] { };
+
+
            lock (BufferLock)
            {
               byte[] Samples = new byte[nSamples];

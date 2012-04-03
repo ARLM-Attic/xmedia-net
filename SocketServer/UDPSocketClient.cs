@@ -195,12 +195,14 @@ namespace SocketServer
 
         public bool StartReceiving(bool bBind)
         {
+#if !MONO
             /// See http://blog.devstone.com/aaron/archive/2005/02/20/460.aspx
             /// This will stop winsock errors when receiving an ICMP packet 
             /// "Destination unreachable"
             byte[] inValue = new byte[] { 0, 0, 0, 0 };     // == false
             byte[] outValue = new byte[] { 0, 0, 0, 0 };    // initialize to 0
             s.IOControl(SIO_UDP_CONNRESET, inValue, outValue);
+#endif
 
             if ((bBind == true) && (Bind() == false))
                 return false;
@@ -212,18 +214,13 @@ namespace SocketServer
                 /// have 8 pending receives in the queue at all times
 
                 DoReceive();
+#if !MONO
                 if (System.Environment.OSVersion.Version.Major >= 6)
                 {
                     DoReceive();
                     DoReceive();
                 }
-                //DoReceive();
-                //DoReceive();
-                //DoReceive();
-                //DoReceive();
-                //DoReceive();
-                //DoReceive();
-                //DoReceive();
+#endif
             }
             return true;
         }
@@ -337,7 +334,10 @@ namespace SocketServer
             // Pass the data through our receive transform
             if (OnReceiveMessage != null)
             {
-                List<byte[]> ReturnList = TransformReceiveData(bRecv);
+                byte[] bMessage = new byte[nRecv];
+                Array.Copy(bRecv, 0, bMessage, 0, nRecv);
+
+                List<byte[]> ReturnList = TransformReceiveData(bMessage);
                 foreach (byte[] bNextArray in ReturnList)
                     OnReceiveMessage(bNextArray, bNextArray.Length, ipep, this.m_ipEp, dtReceive);
             }

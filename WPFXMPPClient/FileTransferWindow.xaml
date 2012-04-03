@@ -74,7 +74,7 @@
                             <StackPanel Grid.Column="1" Grid.Row="2"  Orientation="Horizontal">
                                 <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonAcceptTransfer" Click="ButtonAcceptTransfer_Click">Accept</s:SurfaceButton>
                                 <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonDeclineTransfer" Click="ButtonDeclineTransfer_Click">Decline</s:SurfaceButton>
-                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonSaveFile" Click="ButtonSaveFile_Click" Content="Save" />
+                                <!--<s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonSaveFile" Click="ButtonSaveFile_Click" Content="Save" />-->
                                 <s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonOpenFile" Click="ButtonOpenFile_Click"  Content="Open" />
                             </StackPanel>
 

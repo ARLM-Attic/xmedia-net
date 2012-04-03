@@ -222,8 +222,10 @@ namespace SocketServer
       {
       }
 
+#if !MONO
       [DllImport("WinMM.DLL")]
       public static extern int timeBeginPeriod(int period);
+#endif
 
       /// <summary>
       ///  Stores global watches so all timers with the same interval (for short duration timers) fire
@@ -356,7 +358,10 @@ namespace SocketServer
 
       private void CheckTimerThread()
       {
-         timeBeginPeriod(1);
+#if !MONO
+          timeBeginPeriod(1);
+#endif
+
          Stopwatch watch = new Stopwatch();
          watch.Start();
          long nNextDueTimeInMs = 0;

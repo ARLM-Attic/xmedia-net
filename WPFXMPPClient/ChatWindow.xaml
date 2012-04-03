@@ -11,7 +11,7 @@
             <GradientStop Color="#FFBBFF81" Offset="0"/>
             <GradientStop Color="#FFEEFFDF" Offset="1"/>
         </LinearGradientBrush>
-    </Window.Background>
+    </Window.Background> 
 
 
     <Border BorderBrush="Black" BorderThickness="1" CornerRadius="2" >
@@ -86,6 +86,10 @@
                                     </TextBlock.Inlines>
                                 </TextBlock>
 
+                                <Button Visibility="{Binding VisibilityCanClientDoAudio}" Background="#AAEEFFEE" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="Start an Audio Call" Grid.Row="0" Grid.Column="3" x:Name="ButtonStartAudioCall" Click="ButtonStartAudioCall_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                                    <Image  Source="Images/volume.png" Width="20" Height="20" />
+                                </Button>
+
                             </StackPanel>
                             
                             
@@ -115,8 +119,13 @@
                 </s:SurfaceButton>
             </Grid>
 
-            <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" TouchDown="TextBlockChat_TouchDown"  TouchMove="TextBlockChat_TouchMove" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"  Margin="5" x:Name="TextBlockChat" Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            </RichTextBox>
+            <TabControl Grid.Row="1" Margin="5" x:Name="TabControlThreads">
+                <TabItem Header="Main Thread">
+                    <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" TouchDown="TextBlockChat_TouchDown"  TouchMove="TextBlockChat_TouchMove" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"  x:Name="TextBlockChat" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    </RichTextBox>
+                </TabItem>
+                
+            </TabControl>
             <!--<s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                  DataContext="{Binding Conversation}" Background="Beige" x:Name="ListBoxConversation">
                 <s:SurfaceListBox.ItemTemplate>

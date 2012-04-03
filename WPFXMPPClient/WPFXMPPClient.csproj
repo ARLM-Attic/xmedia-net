@@ -33,7 +33,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>37</ApplicationRevision>
+    <ApplicationRevision>42</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -77,6 +77,10 @@
     <Reference Include="Microsoft.Surface, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Surface.Presentation, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Surface.Presentation.Generic, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="NSpeex, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Development\nspeex\main\NSpeex\bin\Debug\NSpeex.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
@@ -106,6 +110,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AudioMuxerWindow.xaml.cs">
+      <DependentUpon>AudioMuxerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="FileTransferWindow.xaml.cs">
       <DependentUpon>FileTransferWindow.xaml</DependentUpon>
@@ -151,9 +158,21 @@
     <None Include="WPFXMPPClient_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OtherLibs\AudioClasses\AudioClasses.csproj">
+      <Project>{CB219B28-DC51-4E22-BC61-80B97D8A39C0}</Project>
+      <Name>AudioClasses</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OtherLibs\ImageAquisition\ImageAquisition.vcxproj">
+      <Project>{6D3414FC-4336-426A-BED4-814AB331FDF0}</Project>
+      <Name>ImageAquisition</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OtherLibs\WPFImageControls\WPFImageWindows\WPFImageWindows.csproj">
       <Project>{B914EE15-6A3C-4BAA-AB12-932D1325C86D}</Project>
       <Name>WPFImageWindows</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RTP\rtp.csproj">
+      <Project>{69A1BADF-4974-4D35-A3EC-75B77B0A003B}</Project>
+      <Name>rtp</Name>
     </ProjectReference>
     <ProjectReference Include="..\SocketServer\socketserver.csproj">
       <Project>{77F78E2F-A04F-4823-A2A9-3F1F27D0F8B8}</Project>
@@ -170,6 +189,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="AddNewRosterItemWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="AudioMuxerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -245,6 +268,26 @@
     <Content Include="Images\chat-hollow.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Images\speaker.png" />
+    <Resource Include="Images\speakermute.png" />
+    <Resource Include="Images\deafen.jpg" />
+    <Resource Include="Images\play.png" />
+    <Resource Include="Images\Stop.png" />
+    <Resource Include="Images\offhook.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\onhook.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\connected.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\mic-live.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Images\mic-muted.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Images\connect.png" />
     <Resource Include="Images\disconnect.png" />
     <Resource Include="Avatars\darkavatar.png" />

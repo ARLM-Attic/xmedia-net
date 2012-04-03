@@ -5,7 +5,7 @@
     xmlns:phone="clr-namespace:System.Net.XMPP;assembly=xmpp"
     AllowsTransparency="True" WindowStyle="None"
     MouseDown="Window_MouseDown" ResizeMode="CanResizeWithGrip"
-    Width="369" Height="481" Title="XMPP Chat Client" Loaded="SurfaceWindow_Loaded">
+    Width="501" Height="481" Title="XMPP Chat Client" Loaded="SurfaceWindow_Loaded">
 
     <Window.Resources>
         <DataTemplate x:Key="ChatMessageTemplate">
@@ -13,7 +13,6 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="44" />
                         <ColumnDefinition Width="300*" />
-                        <ColumnDefinition Width="33" />
                         <ColumnDefinition Width="33" />
                     </Grid.ColumnDefinitions>
                     
@@ -45,14 +44,10 @@
                         <Image  Source="Images/mail.png" Width="20" Height="20" />
                     </Button>
 
-                    <Button Background="#AAEEFFEE" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="Start an Audio Call" Grid.Row="0" Grid.Column="3" x:Name="ButtonStartAudioCall" Click="ButtonStartAudioCall_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
-                        <Image  Source="Images/volume.png" Width="20" Height="20" />
-                    </Button>
-
                     <!--<s:ElementMenu>
                         <s:ElementMenuItem x:Name="MenuItemQuery" Click="MenuItemQuery_Click">Query</s:ElementMenuItem>
                     </s:ElementMenu>-->
-                    <StackPanel Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="4" Orientation="Horizontal">
+                    <StackPanel Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="3" Orientation="Horizontal">
                         <TextBlock Margin="5,0" Text="{Binding Path=Presence.PresenceType}" />
                         <TextBlock Margin="5,0" Text="{Binding Path=Presence.Status}" />
                         <TextBlock Margin="5,0" Text="{Binding GeoString}"  />
@@ -89,6 +84,7 @@
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="34" />
@@ -102,9 +98,9 @@
             <TextBlock Margin="10,0" x:Name="ApplicationTitle" FontWeight="Bold"  Text="{Binding XMPPState}" VerticalAlignment="Center" Grid.Column="1"  />
 
             <TextBlock Margin="10,0" x:Name="JID" Text="{Binding JID}" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" VerticalAlignment="Center" />
-           <TextBox x:Name="TextBoxStatus" Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding Path='PresenceStatus.Status', Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="4"/>
+           <TextBox x:Name="TextBoxStatus" Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding Path='PresenceStatus.Status', Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="5"/>
 
-           <s:SurfaceButton ToolTip="Update Presence" Grid.Row="2" Grid.Column="5" x:Name="ButtonSetStatus" IsEnabled="True" Click="ButtonSetStatus_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+           <s:SurfaceButton ToolTip="Update Presence" Grid.Row="2" Grid.Column="6" x:Name="ButtonSetStatus" IsEnabled="True" Click="ButtonSetStatus_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/check.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
            </s:SurfaceButton>
 
@@ -166,7 +162,10 @@
             <s:SurfaceButton ToolTip="View Downloads" Grid.Column="4" x:Name="ButtonTransfers" IsEnabled="True" Click="ButtonTransfers_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/file.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </s:SurfaceButton>
-            <s:SurfaceButton ToolTip="Close" Grid.Column="5" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+            <s:SurfaceButton ToolTip="View Media Sessions" Grid.Column="5" x:Name="ButtonMediaSessions" IsEnabled="True" Click="ButtonMediaSessions_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+                <Image Source="Images/volume.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </s:SurfaceButton>
+            <s:SurfaceButton ToolTip="Close" Grid.Column="6" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                     <Image Source="Images/calculator - multiply.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </s:SurfaceButton>
 

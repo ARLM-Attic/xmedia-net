@@ -161,23 +161,31 @@ namespace RTP
 
         public static RTPPacket BuildPacket(byte[] bRecvData)
         {
+            return BuildPacket(bRecvData, 0, bRecvData.Length);
+        }
+
+        public static RTPPacket BuildPacket(byte[] bRecvData, int nOffset, int nLength)
+        {
             RTPPacket packet = new RTPPacket();
-	        if (bRecvData.Length < 12)
+	        if (nLength < 12)
 		        return null;
 
-            packet.VersionPaddingHeaderCRSCCountByte = bRecvData[0];
-            packet.MarkerPayloadByte = bRecvData[1];
-            packet.SequenceNumber = (ushort) ( (bRecvData[2]<<8) | bRecvData[3]);
-            packet.TimeStamp = (uint) ( (bRecvData[4]<<24) | (bRecvData[5]<<16) | (bRecvData[6]<<8) | (bRecvData[7]) );
-            packet.SSRC = (uint) ( (bRecvData[8]<<24) | (bRecvData[9]<<16) | (bRecvData[10]<<8) | (bRecvData[11]) );
+            byte[] bRTPData = new byte[nLength];
+            Array.Copy(bRecvData, nOffset, bRTPData, 0, nLength);
+
+            packet.VersionPaddingHeaderCRSCCountByte = bRTPData[0];
+            packet.MarkerPayloadByte = bRTPData[1];
+            packet.SequenceNumber = (ushort)((bRTPData[2] << 8) | bRTPData[3]);
+            packet.TimeStamp = (uint)((bRTPData[4] << 24) | (bRTPData[5] << 16) | (bRTPData[6] << 8) | (bRTPData[7]));
+            packet.SSRC = (uint)((bRTPData[8] << 24) | (bRTPData[9] << 16) | (bRTPData[10] << 8) | (bRTPData[11]));
 
             int nByteAt = 12;
 	        for (int i=0; i<packet.CRSCCount; i++)
 	        {
-                if (bRecvData.Length < (nByteAt+4))
+                if (bRTPData.Length < (nByteAt + 4))
                     return null;
 
-                packet.CSRCList.Add((uint) ( (bRecvData[nByteAt++]<<24) | (bRecvData[nByteAt++]<<16) | (bRecvData[nByteAt++]<<8) | (bRecvData[nByteAt++]) ) );
+                packet.CSRCList.Add((uint)((bRTPData[nByteAt++] << 24) | (bRTPData[nByteAt++] << 16) | (bRTPData[nByteAt++] << 8) | (bRTPData[nByteAt++])));
 	        }
 
 	        int nExtensionLen = 0;
@@ -190,13 +198,13 @@ namespace RTP
 
 
 	        int nDataStartAt = 12 + 4*packet.CRSCCount + nExtensionLen;
-	        int nBytesLeft = bRecvData.Length - nDataStartAt;
+            int nBytesLeft = bRTPData.Length - nDataStartAt;
 
 	        /// Finally, let's find out what is next and add that as data
 	        if (nBytesLeft > 0)
 	        {
 		        packet.PayloadData = new byte[nBytesLeft];
-		        Array.Copy(bRecvData, nDataStartAt, packet.PayloadData, 0, nBytesLeft);
+                Array.Copy(bRTPData, nDataStartAt, packet.PayloadData, 0, nBytesLeft);
 	        }
 
 	        return packet;

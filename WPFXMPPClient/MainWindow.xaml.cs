@@ -46,6 +46,7 @@ namespace WPFXMPPClient
         List<System.Net.XMPP.XMPPAccount> AllAccounts = null;
 
         PrivacyService PrivService = null;
+        AudioMuxerWindow AudioMuxerWindow = new AudioMuxerWindow();
 
         private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -65,6 +66,7 @@ namespace WPFXMPPClient
             XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
             XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
 
+            AudioMuxerWindow.RegisterXMPPClient(XMPPClient);
       
             SendRawXMLWindow.SetXMPPClient(XMPPClient);
         }
@@ -99,6 +101,8 @@ namespace WPFXMPPClient
         {
             if (SendRawXMLWindow.IsLoaded == true)
                 SendRawXMLWindow.Close();
+            if (AudioMuxerWindow.IsLoaded == true)
+                AudioMuxerWindow.Close();
 
             base.OnClosed(e);
             Application.Current.Shutdown();
@@ -128,6 +132,10 @@ namespace WPFXMPPClient
                 XMPPClient.XMPPAccount.Capabilities.Node = "http://xmedianet.codeplex.com/wpfclient/caps";
                 XMPPClient.XMPPAccount.Capabilities.Version = "1.0";
                 XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1 video-v1 camera-v1"; /// google talk capabilities
+                
+                //XMPPClient.XMPPAccount.Capabilities.Node = "http://www.apple.com/ichat/caps";
+                //XMPPClient.XMPPAccount.Capabilities.Version = "800";
+                //XMPPClient.XMPPAccount.Capabilities.Extensions = "ice recauth rdserver maudio audio rdclient mvideo auxvideo rdmuxing avcap avavail video"; /// mac iChat capabilities
 
                 XMPPClient.FileTransferManager.AutoDownload = true;
                 XMPPClient.Connect();
@@ -482,10 +490,6 @@ namespace WPFXMPPClient
 
         }
 
-        private void ButtonStartAudioCall_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
 
         FileTransferWindow FileTransferWindow  = new FileTransferWindow();
         private void ButtonTransfers_Click(object sender, RoutedEventArgs e)
@@ -516,6 +520,25 @@ namespace WPFXMPPClient
         void FileTransferManager_OnTransferFinished(FileTransfer trans)
         {
             /// Save the file automatically
+            /// 
+            /// save this file to our directory
+            /// 
+            if ( (trans != null) && (trans.Bytes != null) && (trans.Bytes.Length > 0) )
+            {
+                string strDir = string.Format("{0}\\XMPPFiles\\", System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                if (Directory.Exists(strDir) == false)
+                    Directory.CreateDirectory(strDir);
+                string strFullFileName = string.Format("{0}{1}", strDir, trans.FileName);
+                if (File.Exists(strFullFileName) == false)
+                {
+                    FileStream stream = new FileStream(strFullFileName, FileMode.Create, FileAccess.Write);
+                    stream.Write(trans.Bytes, 0, trans.Bytes.Length);
+                    stream.Close();
+                    trans.FileName = strFullFileName;
+                }
+                
+                trans.Close();
+            }
         }
 
         void FileTransferManager_OnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
@@ -553,6 +576,30 @@ namespace WPFXMPPClient
                 XMPPClient.PresenceStatus.PresenceType = (PresenceType) item.Content;
                 XMPPClient.PresenceStatus.Status = this.TextBoxStatus.Text;
                 XMPPClient.UpdatePresence();
+            }
+        }
+
+        public void StartAudioCall(string strFullJID)
+        {
+            ShowAudioMuxer();
+
+            AudioMuxerWindow.InitiateOrShowCallTo(strFullJID);
+        }
+
+        private void ButtonMediaSessions_Click(object sender, RoutedEventArgs e)
+        {
+            ShowAudioMuxer();
+        }
+
+        void ShowAudioMuxer()
+        {
+            if (AudioMuxerWindow.IsLoaded == false)
+            {
+                AudioMuxerWindow.Show();
+            }
+            else
+            {
+                AudioMuxerWindow.Visibility = System.Windows.Visibility.Visible;
             }
         }
 

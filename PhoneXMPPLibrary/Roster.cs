@@ -45,6 +45,30 @@ namespace System.Net.XMPP
             }
         }
 
+        private bool m_bCanClientDoAudio = false;
+
+        public bool CanClientDoAudio
+        {
+            get { return m_bCanClientDoAudio; }
+            set
+            {
+               m_bCanClientDoAudio = value;
+            }
+        }
+
+#if !MONO
+        public System.Windows.Visibility VisibilityCanClientDoAudio
+        {
+            get
+            {
+                if (m_bCanClientDoAudio == true)
+                    return Windows.Visibility.Visible;
+                return Windows.Visibility.Collapsed;
+            }
+        }
+#endif
+
+
         #region INotifyPropertyChanged Members
 
         void FirePropertyChanged(string strName)
@@ -310,7 +334,17 @@ namespace System.Net.XMPP
 
         public void SetPresence(PresenceMessage pres)
         {
-           
+            /// Hack for now to show who can do audio
+            /// 
+            bool bCanDoAudio = false;
+            if (pres.Capabilities != null)
+            {
+                if (pres.Capabilities.Extensions != null)
+                {
+                    if (pres.Capabilities.Extensions.IndexOf("voice-v1") >= 0)
+                        bCanDoAudio = true;
+                }
+            }
 
             if ((pres.From.Resource != null) && (pres.From.Resource.Length > 0))
             {
@@ -333,6 +367,7 @@ namespace System.Net.XMPP
                 {
                     instance = new RosterItemPresenceInstance(pres.From);
                     instance.Presence = pres.PresenceStatus;
+                    instance.CanClientDoAudio = bCanDoAudio;
                     lock (m_lockClientInstances)
                     {
                         m_listClientInstances.Add(instance);
@@ -525,6 +560,7 @@ namespace System.Net.XMPP
             }
         }
 #endif
+
 
         public rosteritem Node { get; set; }
 

@@ -50,10 +50,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AudioConferenceMixer.cs" />
     <Compile Include="Codecs\Codec.cs" />
     <Compile Include="Codecs\G711Codec.cs" />
+    <Compile Include="Codecs\G722Codec.cs" />
+    <Compile Include="Codecs\G722CodecWrapper.cs" />
     <Compile Include="Codecs\SpeexCodec.cs" />
     <Compile Include="ICE.cs" />
+    <Compile Include="JingleMediaSession.cs" />
+    <Compile Include="RTPAudioStream.cs" />
+    <Compile Include="RTPStream.cs" />
     <Compile Include="RTPIncomingAudioStream.cs" />
     <Compile Include="RTPIncomingVideoFeed.cs" />
     <Compile Include="RTPOutgoingAudioStream.cs" />
@@ -67,9 +73,17 @@
     <Compile Include="VideoFrameFragmentor.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OtherLibs\AudioClasses\AudioClasses.csproj">
+      <Project>{CB219B28-DC51-4E22-BC61-80B97D8A39C0}</Project>
+      <Name>AudioClasses</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SocketServer\socketserver.csproj">
       <Project>{77F78E2F-A04F-4823-A2A9-3F1F27D0F8B8}</Project>
       <Name>socketserver</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XMPPLibrary\xmpp.csproj">
+      <Project>{8DE3A173-A7A8-447F-846E-16C95F9C22AE}</Project>
+      <Name>xmpp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

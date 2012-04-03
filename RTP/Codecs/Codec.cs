@@ -4,7 +4,7 @@
 
 using System;
 using System.Net;
-
+using AudioClasses;
 
 namespace RTP
 {
@@ -12,7 +12,7 @@ namespace RTP
     ///  Base class for codecs
     /// </summary>
     public class Codec
-    {
+    { 
 
         public Codec(string strName)
         {
@@ -40,6 +40,32 @@ namespace RTP
         {
             get { return m_nPayloadType; }
             set { m_nPayloadType = value; }
+        }
+
+        protected uint m_nPacketsEncoded = 0;
+        protected System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+        public double AverageEncodeTime
+        {
+            get
+            {
+                
+                if (m_nPacketsEncoded <= 0)
+                    return 0;
+                return watch.ElapsedMilliseconds / m_nPacketsEncoded;
+            }
+        }
+
+        protected AudioFormat m_objAudioFormat = AudioFormat.SixteenByEightThousandMono;
+        public virtual AudioFormat AudioFormat
+        {
+            get
+            {
+                return m_objAudioFormat;
+            }
+            protected set
+            {
+                m_objAudioFormat = value;
+            }
         }
 
         public virtual RTPPacket[] Encode(short[] sData)

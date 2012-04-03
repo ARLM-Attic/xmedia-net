@@ -5,6 +5,7 @@
 using System;
 using System.Net;
 using NSpeex;
+using AudioClasses;
 
 namespace RTP
 {
@@ -32,9 +33,21 @@ namespace RTP
             set { m_eMode = value; }
         }
 
+        public override AudioFormat AudioFormat
+        {
+            get
+            {
+                if (Mode == BandMode.Narrow)
+                    return AudioFormat.SixteenByEightThousandMono;
+                else if (Mode == BandMode.Wide)
+                    return AudioFormat.SixteenBySixteenThousandMono;
+                else 
+                    return AudioFormat.SixteenBySixteenThousandMono; /// TODO, figure out what format this codec wants
+            }
+        }
         byte[] bEncodeBuffer = new byte[512];
         short[] bDecodeBuffer = new short[1024];
-        
+
         public override RTPPacket[] Encode(short[] sData)
         {
             if (sData.Length != Encoder.FrameSize)
@@ -42,15 +55,18 @@ namespace RTP
 
             int nRet = 0;
 
-            try
-            {
+            //try
+            //{
+                watch.Start();
                 nRet = Encoder.Encode(sData, 0, sData.Length, bEncodeBuffer, 0, bEncodeBuffer.Length);
-            }
-            catch (ArgumentNullException)
-            { }
-            catch (ArgumentOutOfRangeException)
-            {
-            }
+                watch.Stop();
+                m_nPacketsEncoded++;
+            //}
+            //catch (ArgumentNullException)
+            //{ }
+            //catch (ArgumentOutOfRangeException)
+            //{
+            //}
 
             byte[] bRet = new byte[nRet];
             Array.Copy(bEncodeBuffer, 0, bRet, 0, nRet);
@@ -82,15 +98,7 @@ namespace RTP
         public override byte[] DecodeToBytes(RTPPacket packet)
         {
             short[] sBytes = DecodeToShorts(packet);
-            byte[] bBytes = new byte[sBytes.Length * 2];
-            for (int i = 0; i < sBytes.Length; i++)
-            {
-                // little endian, right?
-                bBytes[i] = (byte) (sBytes[i] & 0xFF);
-                bBytes[i + 1] = (byte) ((sBytes[i] & 0xFF00) >> 8);
-            }
-
-            return bBytes;
+            return AudioClasses.Utils.ConvertShortArrayToByteArray(sBytes);
         }
 
     }

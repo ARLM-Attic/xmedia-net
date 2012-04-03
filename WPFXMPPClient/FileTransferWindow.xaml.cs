@@ -97,14 +97,8 @@ namespace WPFXMPPClient
             FileTransfer trans = ((FrameworkElement)sender).DataContext as FileTransfer;
             if (trans != null)
             {
-                string strFullFileName = string.Format("{0}\\{1}", System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), trans.FileName);
-                if (File.Exists(strFullFileName) == false)
-                {
-                    FileStream stream = new FileStream(strFullFileName, FileMode.Create, FileAccess.Write);
-                    stream.Write(trans.Bytes, 0, trans.Bytes.Length);
-                    stream.Close();
-                }
-                System.Diagnostics.Process.Start(strFullFileName);
+                /// We've set auto save - which changes the full file name to the full directory
+                System.Diagnostics.Process.Start(trans.FileName);
             }
         }
 
