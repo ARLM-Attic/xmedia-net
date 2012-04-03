@@ -104,4 +104,54 @@ namespace ImageAquisition
 	};
 
 
+		// Resamples blocks of a fixed sample size - introduces a delay 1/4 of the sample size
+	public ref class SampleConvertor
+	{
+    public:
+		 /// example... Downsampling from 48000 to 8000, a source factor of 48 and a dest factor of 8 would work for small sample sizes (sizes over 48)
+		 /// for a larger sample size, 480 and 80 would work
+		 SampleConvertor(int nSourceFactor, int nDestFactor, int nSampleSize);
+		 SampleConvertor(int nSourceFactor, int nDestFactor, int nSampleSize, float fPreLowPassFilterFrequencyZeroToPointFive, float fPostLowPassFilterFrequency);
+		 SampleConvertor(int nSourceFactor, int nDestFactor, int nSampleSize, int nStartEndBufferSize);
+		 virtual ~SampleConvertor() ;
+
+		 array<short>^ Convert(array<short>^ SourcePCM);
+		 array<short>^ ConvertAnySize(array<short>^ SourcePCM);
+
+	protected:
+
+		array<short>^ DoubleSource;
+		array<short>^ DoubleSourcePreFiltered;
+		array<short>^ LastSource;
+		array<short>^ Resample;					/// Resampled data on the DoubleSource between 0 and .5 
+		array<short>^ ResampleAndFiltered;  /// Resampled data on the DoubleSource between 0 and .5 
+
+		int StartEndBufferSize;
+		int SampleSize;
+		int ResampleSize;
+		int ResampleSizeBuffer;
+		int ResampleSizeWithBuffer;
+		IntPtr Taps;
+		IntPtr DelayLine;
+		int filterLen;
+		short delayLen;
+		int UpSample;
+		int DownSample;
+
+
+		bool bDoPostLowPassFilter;
+		IntPtr TapsPostLP;
+		int PostLPFilterLen;
+		IntPtr DelayLinePost;
+		short delayLenPost;
+
+		bool bDoPreLowPassFilter;
+		IntPtr TapsPreLP;
+		int PreLPFilterLen;
+		IntPtr DelayLinePre;
+		short delayLenPre;
+
+	};
+
+
 }

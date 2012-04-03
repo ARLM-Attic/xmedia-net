@@ -66,9 +66,12 @@ namespace ImageAquisition
 		static array<AudioDevice ^> ^GetSpeakerDevices();
 
 		bool Start();
-		//bool StartNoEchoCancellation();
-		//bool StartRawMicMode();
-		//bool StartSpeakerDeviceLoopBackMode();
+
+#ifdef USE_IPP		
+		bool StartNoEchoCancellation();
+		bool StartRawMicMode();
+		bool StartSpeakerDeviceLoopBackMode();
+#endif
 		bool Stop();
 		
 		property String ^Name
@@ -227,9 +230,12 @@ namespace ImageAquisition
 
 
 		void ReadMicEchoCancellationFunction();
-		//void ReadMicNoEchoFunction();
-		//void ReadMicRawMode();
-		//void ReadSpeakerAsMicInLoopBackModeFunction();
+#ifdef USE_IPP		
+		void ReadMicNoEchoFunction();
+		void ReadMicRawMode();
+		void ReadSpeakerAsMicInLoopBackModeFunction();
+#endif
+
 		Thread ^RecordThread;
 		bool m_bExit;
 

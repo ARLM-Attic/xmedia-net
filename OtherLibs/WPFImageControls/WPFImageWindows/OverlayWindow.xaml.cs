@@ -63,11 +63,13 @@ namespace WPFImageWindows
             {
                 this.DialogResult = true;
                 SaveScreenAndClose();
+                return;
             }
             else if (e.Key == Key.Escape)
             {
                 this.DialogResult = false;
                 this.Close();
+                return;
             }
             base.OnPreviewKeyDown(e);
         }

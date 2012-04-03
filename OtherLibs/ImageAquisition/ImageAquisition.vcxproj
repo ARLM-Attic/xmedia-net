@@ -75,8 +75,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;C:\Program Files %28x86%29\Intel\IPP\6.1.0.032\ia32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\Program Files %28x86%29\Intel\IPP\6.1.0.032\ia32\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -85,8 +85,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;C:\Program Files %28x86%29\Intel\IPP\6.1.0.032\ia32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\Program Files %28x86%29\Intel\IPP\6.1.0.032\ia32\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -97,12 +97,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);USE_IPP</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ole32.lib;WiaGuid.Lib;Mfuuid.lib;Mfplat.lib;Mf.lib;Mfreadwrite.lib;Msdmo.lib;dmoguids.lib;uuid.lib;amstrmid.lib;avrt.lib;wmcodecdspuuid.lib;Shlwapi.lib;dsound.lib;dxguid.lib</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;WiaGuid.Lib;Mfuuid.lib;Mfplat.lib;Mf.lib;Mfreadwrite.lib;Msdmo.lib;dmoguids.lib;uuid.lib;amstrmid.lib;avrt.lib;wmcodecdspuuid.lib;Shlwapi.lib;dsound.lib;dxguid.lib;ippcorel.lib;ippsmerged.lib;ippimerged.lib;ippcvmerged.lib;ippccmerged.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -120,13 +120,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions);USE_IPP</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ole32.lib;WiaGuid.Lib;Mfuuid.lib;Mfplat.lib;Mf.lib;Mfreadwrite.lib;Msdmo.lib;dmoguids.lib;uuid.lib;amstrmid.lib;avrt.lib;wmcodecdspuuid.lib;Shlwapi.lib;dsound.lib;dxguid.lib</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;WiaGuid.Lib;Mfuuid.lib;Mfplat.lib;Mf.lib;Mfreadwrite.lib;Msdmo.lib;dmoguids.lib;uuid.lib;amstrmid.lib;avrt.lib;wmcodecdspuuid.lib;Shlwapi.lib;dsound.lib;dxguid.lib;ippcorel.lib;ippsmerged.lib;ippimerged.lib;ippcvmerged.lib;ippccmerged.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,6 +152,7 @@
     <ClInclude Include="ImageAquisition.h" />
     <ClInclude Include="NarrowBandMic.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SampleConverter.h" />
     <ClInclude Include="Stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +161,7 @@
     <ClCompile Include="DirectShowFilters.cpp" />
     <ClCompile Include="ImageAquisition.cpp" />
     <ClCompile Include="NarrowBandMic.cpp" />
+    <ClCompile Include="SampleConverter.cpp" />
     <ClCompile Include="Stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
