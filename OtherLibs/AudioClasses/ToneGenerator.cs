@@ -91,7 +91,7 @@ namespace AudioClasses
         ///  Push to our no where
         /// </summary>
         /// <param name="sample"></param>
-        public void PushSample(MediaSample sample)
+        public void PushSample(MediaSample sample, object objSource)
         {
         }
 

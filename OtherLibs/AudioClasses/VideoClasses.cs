@@ -17,6 +17,7 @@ namespace AudioClasses
 	{
 		Unknown,
 		RGB32, // RGB32 frames
+        RGB24,
 		MJPEG, /// motion jpeg frames (each frame a jpeg)
         MP4, // H.264 in mp4 container
         WMV9, // windows media 9 in asf container
@@ -140,4 +141,39 @@ namespace AudioClasses
             set { m_nStreamIndex = value; }
         }
     }
+
+
+    /// <summary>
+    /// Our main WCF interface for controlling network cameras
+    /// </summary>
+    public delegate void DelegateRawFrame(byte[] bRawData, VideoDataFormat format, int nWidth, int nHeight);
+
+    public interface ICameraControl
+    {
+        void PanLeft();
+        void PanRight();
+        void PanRelative(int Units);
+
+        void TiltUp();
+        void TiltDown();
+        void TiltRelative(int Units);
+
+        void Zoom(int Factor);
+
+        void TurnOffLED();
+
+    }
+
+    public interface IVideoSource
+    {
+        VideoCaptureRate[] GetSupportedCaptureRates();
+
+        event DelegateRawFrame NewFrame;
+
+        VideoCaptureRate ActiveVideoCaptureRate { get; set; }
+
+        string Name { get; set; }
+    }
+
+   
 }

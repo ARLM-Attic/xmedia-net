@@ -59,6 +59,7 @@
     <Compile Include="ICE.cs" />
     <Compile Include="JingleMediaSession.cs" />
     <Compile Include="RTPAudioStream.cs" />
+    <Compile Include="RTPPacketBuffer.cs" />
     <Compile Include="RTPStream.cs" />
     <Compile Include="RTPIncomingAudioStream.cs" />
     <Compile Include="RTPIncomingVideoFeed.cs" />

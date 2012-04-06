@@ -50,7 +50,7 @@ array<AudioDevice ^> ^SpeakerFilter::GetSpeakerDevices()
 }
 
 
-bool SpeakerFilter::PushSample(MediaSample ^sample)
+bool SpeakerFilter::PushSample(MediaSample ^sample, System::Object ^objSource)
 {
 	if (sample == nullptr)
 		return false;
@@ -235,7 +235,8 @@ void SpeakerFilter::PlayThreadFunction()
 	int nThirdSize = m_nDSBufferSize/3;
 	int nTwoThirdSize = 2*m_nDSBufferSize/3;
 
-	bool bGotBytes = ByteQueue->WaitForSize(m_nDSBufferSize, Timeout::Infinite, EventThreadExit);
+	//bool bGotBytes = ByteQueue->WaitForSize(m_nDSBufferSize, Timeout::Infinite, EventThreadExit);
+	bool bGotBytes = ByteQueue->WaitForSize(nThirdSize, Timeout::Infinite, EventThreadExit);
 	if (bGotBytes == false) // since we waited forever, must have stopped playing
 	{
 		//System::Diagnostics::Debug::Assert(false);

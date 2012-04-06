@@ -62,7 +62,7 @@ namespace WPFXMPPClient
             addresses = AudioMuxerWindow.FindAddresses();
 
             XMPPClient = client;
-            XMPPClient.JingleSessionManager.OnNewSession += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnNewSession);
+            XMPPClient.JingleSessionManager.OnNewSession += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfoAndIQ(JingleSessionManager_OnNewSession);
             XMPPClient.JingleSessionManager.OnNewSessionAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnNewSessionAckReceived);
             XMPPClient.JingleSessionManager.OnSessionAcceptedAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionAcceptedAckReceived);
             XMPPClient.JingleSessionManager.OnSessionAcceptedReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionAcceptedReceived);
@@ -73,7 +73,7 @@ namespace WPFXMPPClient
             /// 
             MicrophoneDevices = ImageAquisition.NarrowBandMic.GetMicrophoneDevices();
             SpeakerDevices = ImageAquisition.NarrowBandMic.GetSpeakerDevices();
-
+             
         }
 
         AudioClasses.AudioDevice[] MicrophoneDevices = null;
@@ -81,6 +81,7 @@ namespace WPFXMPPClient
 
         ImageAquisition.NarrowBandMic Microphone = null;
         DirectShowFilters.SpeakerFilter Speaker = null;
+        SocketServer.IMediaTimer ExpectPacketTimer = null;
         bool m_bAudioActive = false;
 
 
@@ -89,8 +90,11 @@ namespace WPFXMPPClient
         ImageAquisition.AudioDeviceVolume SpeakerVolume = null;
 
         IPAddress[] addresses = null;
+        System.Windows.Threading.DispatcherTimer UpdateTimer = null;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            UpdateTimer = new System.Windows.Threading.DispatcherTimer(TimeSpan.FromSeconds(1), System.Windows.Threading.DispatcherPriority.Normal, new EventHandler(UpdateGuiTimer), this.Dispatcher);
+            UpdateTimer.Start();
 
             this.ListViewAudioSessions.ItemsSource = ObservSessionList;
 
@@ -111,6 +115,15 @@ namespace WPFXMPPClient
 
 
             this.DataContext = this;
+        }
+
+        void UpdateGuiTimer(object obj, EventArgs args)
+        {
+            JingleMediaSession[] sessions = ObservSessionList.ToArray();
+            foreach (JingleMediaSession session in sessions)
+            {
+                session.CallDuration = TimeSpan.MaxValue;
+            }
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -170,10 +183,18 @@ namespace WPFXMPPClient
 
             Microphone = new ImageAquisition.NarrowBandMic(micdevice, speakdevice.Guid, helper.Handle);
             Microphone.AGC = true;
+            Microphone.UseKinectArray = false;
             Speaker = new DirectShowFilters.SpeakerFilter(speakdevice.Guid, 20, format, helper.Handle);
             Speaker.Start();
-            Microphone.Start();
-            m_bAudioActive = true;
+ 
+            if (UseAEC == true)
+            {
+                Microphone.Start();
+            }
+            else
+            {
+                Microphone.StartNoEchoCancellation();
+            } m_bAudioActive = true;
             AudioMixer.Start();
         }
 
@@ -193,6 +214,13 @@ namespace WPFXMPPClient
         /// <param name="item"></param>
         public void InitiateOrShowCallTo(JID jidto)
         {
+            foreach (JingleMediaSession currsess in ObservSessionList)
+            {
+                if (currsess.RemoteJID == jidto)
+                    return;
+            }
+
+
             StartMicrophoneAndSpeaker(AudioFormat.SixteenBySixteenThousandMono);
 
             if (addresses.Length <= 0)
@@ -205,7 +233,6 @@ namespace WPFXMPPClient
             
             /// may need a lock here to make sure we have this session added to our list before the xmpp response gets back, though this should be many times faster than network traffic
             JingleMediaSession jinglesession = new JingleMediaSession(jidto, ep, XMPPClient);
-            jinglesession.UseStun = UseStun;
             try
             {
                 string strSession = jinglesession.SendInitiateSession();
@@ -218,16 +245,17 @@ namespace WPFXMPPClient
             }
         }
 
-        private bool m_bUseStun = true;
-
-        public bool UseStun
+        void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.JingleIQ iq, System.Net.XMPP.Jingle.Jingle jingle, XMPPClient client)
         {
-            get { return m_bUseStun; }
-            set { m_bUseStun = value; }
-        }
+            foreach (JingleMediaSession currsess in ObservSessionList)
+            {
+                if (currsess.RemoteJID == iq.From) /// Don't allow sessions from the same person twice
+                {
+                    XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.Decline);
+                    return;
+                }
+            }
 
-        void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.Jingle jingle, XMPPClient client)
-        {
             bool bAcceptNewCall = (bool)this.Dispatcher.Invoke(new DelegateAcceptSession(ShouldAcceptSession), strSession, jingle);
 
             if (bAcceptNewCall == true)
@@ -236,7 +264,6 @@ namespace WPFXMPPClient
                 IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
 
                 JingleMediaSession session = new JingleMediaSession(strSession, jingle, KnownAudioPayload.G722|KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711, ep, client);
-                session.UseStun = UseStun;
                 try
                 {
                     session.SendAcceptSession();
@@ -346,14 +373,14 @@ namespace WPFXMPPClient
         ///  Push to our speaker
         /// </summary>
         /// <param name="sample"></param>
-        public void PushSample(MediaSample sample)
+        public void PushSample(MediaSample sample, object objSource)
         {
             lock (SpeakerLock)
             {
                 // send this sample to our speakers, please
                 if (Speaker != null)
                 {
-                    Speaker.PushSample(sample);
+                    Speaker.PushSample(sample, this);
                 }
             }
         }
@@ -605,11 +632,28 @@ namespace WPFXMPPClient
                     Speaker = new DirectShowFilters.SpeakerFilter(speakdevice.Guid, 20, AudioFormat.SixteenBySixteenThousandMono, helper.Handle);
                     Microphone = new ImageAquisition.NarrowBandMic(micdevice, speakdevice.Guid, helper.Handle);
                     Microphone.AGC = true;
+                    Microphone.UseKinectArray = false;
                     Speaker.Start();
-                    Microphone.Start();
+                    if (UseAEC == true)
+                    {
+                        Microphone.Start();
+                    }
+                    else
+                    {
+                        Microphone.StartNoEchoCancellation();
+                    }
                 }
             }
         }
+
+        private bool m_bUseAEC = true;
+
+        public bool UseAEC
+        {
+            get { return m_bUseAEC; }
+            set { m_bUseAEC = value; }
+        }
+
         private void ComboBoxSpeakerDevices_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ResetMicAndSpeakers();
@@ -617,6 +661,36 @@ namespace WPFXMPPClient
         }
 
         private void ComboBoxMicDevices_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ResetMicAndSpeakers();
+        }
+
+        private void AudioViewerControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            /// Set the sources on this audio control
+            /// 
+            WPFImageWindows.AudioViewerControl audiocontrol = sender as WPFImageWindows.AudioViewerControl;
+            if (audiocontrol == null)
+                return;
+
+            JingleMediaSession currsess = audiocontrol.DataContext as JingleMediaSession;
+            if (currsess == null)
+                return;
+
+            //currsess.AudioRTPStream.RenderSink
+            currsess.AudioRTPStream.RenderSink = audiocontrol.AudioDisplayFilter;
+            WPFImageWindows.AudioSource source = new WPFImageWindows.AudioSource(currsess.AudioRTPStream);
+            audiocontrol.Sources.Add(source);
+            audiocontrol.AudioDisplayFilter.AddSource(source);
+
+        }
+
+        private void CheckBoxUseAEC_Checked(object sender, RoutedEventArgs e)
+        {
+            ResetMicAndSpeakers();
+        }
+
+        private void CheckBoxUseAEC_Unchecked(object sender, RoutedEventArgs e)
         {
             ResetMicAndSpeakers();
         }

@@ -239,7 +239,7 @@ namespace RTP
                     
 
                     MediaSample outputsample = new MediaSample(sOutput, AudioFormat);
-                    nextobj.AudioSink.PushSample(outputsample);
+                    nextobj.AudioSink.PushSample(outputsample, this);
                 }
             }
 

@@ -91,7 +91,7 @@ namespace AudioClasses
 
         #region IAudioSink Members
 
-        public void PushSample(MediaSample sample)
+        public void PushSample(MediaSample sample, object objSource)
         {
             // no conversion here, sample must be in 16x16 form
 

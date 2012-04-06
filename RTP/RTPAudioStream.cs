@@ -45,19 +45,31 @@ namespace RTP
         }
 
         object ReceiveLock = new object();
-        protected override void NewRTPPacket(RTPPacket packet, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived)
+        protected override void PushNextMediaSample()
         {
-            lock (ReceiveLock)
+            if (AudioCodec == null)
+                return;
+
+            RTPPacket packet = IncomingRTPPacketBuffer.GetPacket();
+            if (packet == null)
+                return; 
+                
+            byte[] bNewAudioData = AudioCodec.DecodeToBytes(packet);
+
+            if (bNewAudioData != null)
             {
-                if (AudioCodec == null)
-                    return;
-
-                byte[] bNewAudioData = AudioCodec.DecodeToBytes(packet);
-
-                /// TODO... add our jitter buffer class to these projects
                 ReceiveAudioQueue.AppendData(bNewAudioData);
+
+                if (RenderSink != null)
+                {
+                    MediaSample samp = new MediaSample(bNewAudioData, AudioCodec.AudioFormat);
+                    RenderSink.PushSample(samp, this);
+                }
             }
         }
+
+        public IAudioSink RenderSink = null;
+
 
         AudioClasses.ByteBuffer SendAudioQueue = new AudioClasses.ByteBuffer();
         AudioClasses.ByteBuffer ReceiveAudioQueue = new AudioClasses.ByteBuffer();
@@ -120,7 +132,7 @@ namespace RTP
         /// Push a sample to this filter's outgoing queue.
         /// </summary>
         /// <param name="sample"></param>
-        public void PushSample(MediaSample sample)
+        public void PushSample(MediaSample sample, object objSource)
         {
             if (AudioCodec == null)
                 return;

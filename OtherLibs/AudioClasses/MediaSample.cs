@@ -38,7 +38,7 @@ namespace AudioClasses
     /// </summary>
     public interface IAudioSink
     {
-        void PushSample(MediaSample sample);
+        void PushSample(MediaSample sample, object objSource);
         bool IsSinkActive { get; set; }
 
         double SinkAmplitudeMultiplier { get; set; }

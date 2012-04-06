@@ -25,6 +25,13 @@ namespace RTP
         }
         static Random ran = new Random();
 
+        private uint m_nReceiveSSRC = 0;
+        public uint ReceiveSSRC
+        {
+            get { return m_nReceiveSSRC; }
+            protected set { m_nReceiveSSRC = value; }
+        }
+
         private uint m_nSSRC = 0;
 
         public uint SSRC
@@ -77,6 +84,7 @@ namespace RTP
 
 
         protected IMediaTimer SendTimer = null;
+        protected IMediaTimer ExpectPacketTimer = null;
         protected object TimerLock = new object();
 
         public void Bind(IPEndPoint localEp)
@@ -165,6 +173,8 @@ namespace RTP
             PTime = nPacketTime;
 
             SendTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTime, new SocketServer.DelegateTimerFired(OnTimeToPushPacket), "", null);
+            ExpectPacketTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTime, new SocketServer.DelegateTimerFired(OnTimeToForwardPacket), "", null);
+
             IsActive = true;           
         }
 
@@ -175,6 +185,8 @@ namespace RTP
 
             IsActive = false;
             IsBound = false;
+            SendTimer.Cancel();
+            ExpectPacketTimer.Cancel();
             RTPUDPClient.StopReceiving();
             RTPUDPClient.OnReceiveMessage -= new UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
             RTPUDPClient = null;
@@ -183,6 +195,13 @@ namespace RTP
         void OnTimeToPushPacket(IMediaTimer timer)
         {
             SendNextPacket();
+        }
+
+        /// Time to decode the next packet and add the audio to our outgoing audio buffer
+        /// 
+        void OnTimeToForwardPacket(IMediaTimer timer)
+        {
+            PushNextMediaSample();
         }
 
         void  RTPUDPClient_OnReceiveMessage(byte[] bData, int nLength, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived)
@@ -239,15 +258,21 @@ namespace RTP
             }
 
  	        RTPPacket packet = RTPPacket.BuildPacket(bData, 0, nLength);
-            if (packet.PayloadType == this.Payload)
-                    NewRTPPacket(packet, epfrom, epthis, dtReceived);
+            if (ReceiveSSRC == 0)
+                ReceiveSSRC = packet.SSRC;
+            if ( (packet.PayloadType == this.Payload) && (packet.SSRC == this.ReceiveSSRC) )
+            {
+                IncomingRTPPacketBuffer.AddPacket(packet);
+            }
         }
+
+        protected RTPPacketBuffer IncomingRTPPacketBuffer = new RTPPacketBuffer(2, 4);
 
         protected virtual void SendNextPacket()
         {
         }
 
-        protected virtual void NewRTPPacket(RTPPacket packet, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived)
+        protected virtual void PushNextMediaSample()
         {
         }
 
@@ -279,6 +304,8 @@ namespace RTP
 
         public void Reset()
         {
+            this.IncomingRTPPacketBuffer.Reset();
+            ReceiveSSRC = 0;
             m_nSequence = 0;
             m_nTimeStamp = 0;
         }

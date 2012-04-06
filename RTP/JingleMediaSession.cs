@@ -197,6 +197,10 @@ namespace RTP
             {
                 return DateTime.Now - m_dtStartTime;
             }
+            set
+            {
+                FirePropertyChanged("CallDuration");
+            }
         }
 
         void ParsePayloads(Jingle jingle)

@@ -460,7 +460,7 @@ bool NarrowBandMic::StartNoEchoCancellation()
 	/// Start our play thread
 	RecordThread = gcnew Thread(gcnew ThreadStart(this, &NarrowBandMic::ReadMicNoEchoFunction));
 	RecordThread->IsBackground = true;
-	RecordThread->Name = String::Format("Kinect record thread on device {0}", SpeakerGuid);
+	RecordThread->Name = String::Format("MIC record thread on device {0}", SpeakerGuid);
 	RecordThread->Priority = System::Threading::ThreadPriority::AboveNormal;
 	RecordThread->Start();
 
@@ -612,7 +612,14 @@ void NarrowBandMic::ReadMicEchoCancellationFunction()
 	//CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_FEATR_NS, pvNoise));
 	//PropVariantClear(&pvNoise);
 
+	PROPVARIANT pvEchoLength;
+	PropVariantInit(&pvEchoLength);
+    pvEchoLength.vt = VT_I4;
+    pvEchoLength.lVal = 512;  //128, 256, 512, 1024
+    CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_FEATR_ECHO_LENGTH, pvEchoLength));
+    PropVariantClear(&pvEchoLength);
 
+	 
     DWORD cOutputBufLen = 0;
     BYTE *pbOutputBuffer = NULL;
 
@@ -858,7 +865,8 @@ void NarrowBandMic::ReadMicNoEchoFunction()
     CHECK_ALLOC (pbOutputBuffer, "out of memory.\n");
 
 
-	ImageAquisition::SampleConvertor ^Converter = gcnew ImageAquisition::SampleConvertor(16, 48, iFrameSize);
+	/// Use this is we need to resample our data (in this case from 16000 to 48000)
+	//ImageAquisition::SampleConvertor ^Converter = gcnew ImageAquisition::SampleConvertor(16, 48, iFrameSize);
 
 	int totalBytes = 0;
 	
@@ -896,20 +904,22 @@ void NarrowBandMic::ReadMicNoEchoFunction()
 				unsigned char *pbNextData = (unsigned char *)ppbNextData;
 
 				memcpy(pbNextData, pbOutputBuffer, cbProduced);
+				ByteQueue->AppendData(bNextData);
+				if (ByteQueue->Size >= 640*4)
+					ByteQueue->GetNSamples(ByteQueue->Size-640*4);
 
-				// Upsample our data because we need 48KHz audio for aac.
-				// can't record at this rate because some of these devices don't support it
-			    array<short> ^sData = ImageAquisition::Utils::ConvertByteArrayToShortArrayLittleEndian(bNextData);
-	            array<short> ^sUpSample = Converter->Convert(sData);
-				array<unsigned char> ^bConverted = ImageAquisition::Utils::ConvertShortArrayToByteArray(sUpSample);
-				ByteQueue->AppendData(bConverted);
+				//// Upsample our data because we need 48KHz audio for aac.
+				//// can't record at this rate because some of these devices don't support it
+			 //   array<short> ^sData = ImageAquisition::Utils::ConvertByteArrayToShortArrayLittleEndian(bNextData);
+	   //         array<short> ^sUpSample = Converter->Convert(sData);
+				//array<unsigned char> ^bConverted = ImageAquisition::Utils::ConvertShortArrayToByteArray(sUpSample);
+				//ByteQueue->AppendData(bConverted);
 
-				if (ByteQueue->Size > 96000*10) /// If we have more than 10 s data queued, somethings wrong, remove the first 9 seconds
+	/*			if (ByteQueue->Size > 96000*10) /// If we have more than 10 s data queued, somethings wrong, remove the first 9 seconds
 				{
 					ByteQueue->GetNSamples(96000*9);
-				}
+				}*/
 			}
-
 
         } 
 		while (OutputBufferStruct.dwStatus & DMO_OUTPUT_DATA_BUFFERF_INCOMPLETE);

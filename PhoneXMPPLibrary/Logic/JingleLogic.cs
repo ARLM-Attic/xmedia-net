@@ -742,7 +742,7 @@ namespace System.Net.XMPP.Jingle
             iqresponse.Type = IQType.result.ToString();
             XMPPClient.SendXMPP(iqresponse);
 
-            JingleSessionManager.FireNewSession(this.SessionId, iq.Jingle);
+            JingleSessionManager.FireNewSession(this.SessionId, iq);
             
         }
 
@@ -1156,10 +1156,11 @@ namespace System.Net.XMPP.Jingle
         }
 
         public delegate void DelegateJingleSessionEventWithInfo(string strSession, Jingle jingle, XMPPClient client);
+        public delegate void DelegateJingleSessionEventWithInfoAndIQ(string strSession, JingleIQ iq, Jingle jingle, XMPPClient client);
         public delegate void DelegateJingleSessionEvent(string strSession, XMPPClient client);
         public delegate void DelegateJingleSessionEventBool(string strSession, IQResponseAction response, XMPPClient client);
-        
-        public event DelegateJingleSessionEventWithInfo OnNewSession = null;
+
+        public event DelegateJingleSessionEventWithInfoAndIQ OnNewSession = null;
         public event DelegateJingleSessionEventBool OnNewSessionAckReceived = null;
 
         public event DelegateJingleSessionEventWithInfo OnSessionAcceptedReceived = null;
@@ -1171,10 +1172,10 @@ namespace System.Net.XMPP.Jingle
 
 
 
-        internal void FireNewSession(string strSession, Jingle jingleinfo)
+        internal void FireNewSession(string strSession, JingleIQ iq)
         {
             if (OnNewSession != null)
-                OnNewSession(strSession, jingleinfo, XMPPClient);
+                OnNewSession(strSession, iq, iq.Jingle, XMPPClient);
         }
 
         internal void FireNewSessionAckReceived(string strSessionId, IQResponseAction response)

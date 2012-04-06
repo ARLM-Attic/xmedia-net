@@ -32,7 +32,7 @@ namespace JingleToneGeneratorService
             XMPPClient.RetrieveRoster = false;
 
             XMPPClient.OnStateChanged += new EventHandler(XMPPClient_OnStateChanged);
-            XMPPClient.JingleSessionManager.OnNewSession += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnNewSession);
+            XMPPClient.JingleSessionManager.OnNewSession += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfoAndIQ(JingleSessionManager_OnNewSession);
             XMPPClient.JingleSessionManager.OnNewSessionAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnNewSessionAckReceived);
             XMPPClient.JingleSessionManager.OnSessionAcceptedAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionAcceptedAckReceived);
             XMPPClient.JingleSessionManager.OnSessionAcceptedReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionAcceptedReceived);
@@ -59,7 +59,7 @@ namespace JingleToneGeneratorService
             XMPPClient.Disconnect();
         }
 
-        static void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.Jingle jingle, XMPPClient client)
+        static void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.JingleIQ iq, System.Net.XMPP.Jingle.Jingle jingle, XMPPClient client)
         {
             Console.WriteLine("A new incoming session [{0}] has been found", strSession);
 

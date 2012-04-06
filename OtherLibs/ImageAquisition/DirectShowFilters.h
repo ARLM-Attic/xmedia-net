@@ -59,7 +59,7 @@ namespace DirectShowFilters
 		}
 
 		Guid SpeakerGuid;
-        bool PushSample(MediaSample ^sample);
+        bool PushSample(MediaSample ^sample, System::Object ^objSource);
 		static array<AudioDevice ^> ^GetSpeakerDevices();
 		
 		bool Start();
