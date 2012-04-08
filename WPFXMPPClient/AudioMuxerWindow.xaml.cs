@@ -49,8 +49,8 @@ namespace WPFXMPPClient
         /// </summary>
         AudioConferenceMixer AudioMixer = new AudioConferenceMixer(AudioFormat.SixteenBySixteenThousandMono);
 
-        ObservableCollectionEx<JingleMediaSession> ObservSessionList = new ObservableCollectionEx<JingleMediaSession>();
-        Dictionary<string, JingleMediaSession> SessionList = new Dictionary<string, JingleMediaSession>();
+        ObservableCollectionEx<MediaSession> ObservSessionList = new ObservableCollectionEx<MediaSession>();
+        Dictionary<string, MediaSession> SessionList = new Dictionary<string, MediaSession>();
 
         /// <summary>
         /// Our XMPP client
@@ -62,19 +62,22 @@ namespace WPFXMPPClient
             addresses = AudioMuxerWindow.FindAddresses();
 
             XMPPClient = client;
-            XMPPClient.JingleSessionManager.OnNewSession += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfoAndIQ(JingleSessionManager_OnNewSession);
-            XMPPClient.JingleSessionManager.OnNewSessionAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnNewSessionAckReceived);
+            XMPPClient.JingleSessionManager.OnNewSession += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnNewSession);
+            XMPPClient.JingleSessionManager.OnNewSessionAckReceived += new JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnNewSessionAckReceived);
             XMPPClient.JingleSessionManager.OnSessionAcceptedAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionAcceptedAckReceived);
             XMPPClient.JingleSessionManager.OnSessionAcceptedReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionAcceptedReceived);
             XMPPClient.JingleSessionManager.OnSessionTerminated += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEvent(JingleSessionManager_OnSessionTerminated);
             XMPPClient.JingleSessionManager.OnSessionTransportInfoReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionTransportInfoReceived);
+            XMPPClient.JingleSessionManager.OnSessionTransportInfoAckReceived += new JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionTransportInfoAckReceived);
 
+            
             /// Get all our speaker and mic devices
             /// 
             MicrophoneDevices = ImageAquisition.NarrowBandMic.GetMicrophoneDevices();
             SpeakerDevices = ImageAquisition.NarrowBandMic.GetSpeakerDevices();
              
         }
+
 
         AudioClasses.AudioDevice[] MicrophoneDevices = null;
         AudioClasses.AudioDevice[] SpeakerDevices = null;
@@ -119,8 +122,8 @@ namespace WPFXMPPClient
 
         void UpdateGuiTimer(object obj, EventArgs args)
         {
-            JingleMediaSession[] sessions = ObservSessionList.ToArray();
-            foreach (JingleMediaSession session in sessions)
+            MediaSession[] sessions = ObservSessionList.ToArray();
+            foreach (MediaSession session in sessions)
             {
                 session.CallDuration = TimeSpan.MaxValue;
             }
@@ -214,7 +217,7 @@ namespace WPFXMPPClient
         /// <param name="item"></param>
         public void InitiateOrShowCallTo(JID jidto)
         {
-            foreach (JingleMediaSession currsess in ObservSessionList)
+            foreach (MediaSession currsess in ObservSessionList)
             {
                 if (currsess.RemoteJID == jidto)
                     return;
@@ -229,10 +232,13 @@ namespace WPFXMPPClient
             int nPort = GetNextPort();
             IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
 
+            MediaSession jinglesession = null;
 
+            /// Determine if we are calling via jingle, or google voice
+            /// (For now only make outgoing calls via jingle, accept incomgin google voice)
             
             /// may need a lock here to make sure we have this session added to our list before the xmpp response gets back, though this should be many times faster than network traffic
-            JingleMediaSession jinglesession = new JingleMediaSession(jidto, ep, XMPPClient);
+            jinglesession = new JingleMediaSession(jidto, ep, XMPPClient);
             try
             {
                 string strSession = jinglesession.SendInitiateSession();
@@ -245,9 +251,9 @@ namespace WPFXMPPClient
             }
         }
 
-        void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.JingleIQ iq, System.Net.XMPP.Jingle.Jingle jingle, XMPPClient client)
+        void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.JingleIQ iq, XMPPClient client)
         {
-            foreach (JingleMediaSession currsess in ObservSessionList)
+            foreach (MediaSession currsess in ObservSessionList)
             {
                 if (currsess.RemoteJID == iq.From) /// Don't allow sessions from the same person twice
                 {
@@ -256,17 +262,16 @@ namespace WPFXMPPClient
                 }
             }
 
-            bool bAcceptNewCall = (bool)this.Dispatcher.Invoke(new DelegateAcceptSession(ShouldAcceptSession), strSession, jingle);
+            bool bAcceptNewCall = (bool)this.Dispatcher.Invoke(new DelegateAcceptSession(ShouldAcceptSession), strSession, iq);
 
             if (bAcceptNewCall == true)
             {
                 int nPort = GetNextPort();
                 IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
 
-                JingleMediaSession session = new JingleMediaSession(strSession, jingle, KnownAudioPayload.G722|KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711, ep, client);
+                JingleMediaSession session = new JingleMediaSession(strSession, iq, KnownAudioPayload.G722 | KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711, ep, client);
                 try
                 {
-                    session.SendAcceptSession();
                     SessionList.Add(strSession, session);
                     ObservSessionList.Add(session);
                 }
@@ -283,40 +288,54 @@ namespace WPFXMPPClient
 
         }
 
-
-        void JingleSessionManager_OnSessionTransportInfoReceived(string strSession, System.Net.XMPP.Jingle.Jingle jingle, XMPPClient client)
+        void JingleSessionManager_OnNewSessionAckReceived(string strSession, IQResponseAction response, XMPPClient client)
         {
             if (SessionList.ContainsKey(strSession) == true)
             {
-                JingleMediaSession session = SessionList[strSession];
-                session.GotTransportInfo(jingle);
-                session.SendAcceptSession();
+                MediaSession session = SessionList[strSession];
+                session.GotNewSessionAck();
             }
         }
 
+        void JingleSessionManager_OnSessionTransportInfoReceived(string strSession, System.Net.XMPP.Jingle.JingleIQ jingleiq, XMPPClient client)
+        {
+            if (SessionList.ContainsKey(strSession) == true)
+            {
+                MediaSession session = SessionList[strSession];
+                session.GotTransportInfo(jingleiq);
+            }
+        }
+
+        void JingleSessionManager_OnSessionTransportInfoAckReceived(string strSession, IQResponseAction response, XMPPClient client)
+        {
+            if (SessionList.ContainsKey(strSession) == true)
+            {
+                MediaSession session = SessionList[strSession];
+                session.GotSendTransportInfoAck();
+            }
+        }
 
         void JingleSessionManager_OnSessionTerminated(string strSession, XMPPClient client)
         {
             if (SessionList.ContainsKey(strSession) == true)
             {
-                JingleMediaSession session = SessionList[strSession];
+                MediaSession session = SessionList[strSession];
                 session.StopMedia(AudioMixer);
                 SessionList.Remove(strSession);
                 ObservSessionList.Remove(session);
             }
         }
-
-        void JingleSessionManager_OnSessionAcceptedReceived(string strSession, System.Net.XMPP.Jingle.Jingle jingle, XMPPClient client)
+     
+        void JingleSessionManager_OnSessionAcceptedReceived(string strSession, System.Net.XMPP.Jingle.JingleIQ jingle, XMPPClient client)
         {
             Console.WriteLine("Session {0} has accepted our invitation", strSession);
             if (SessionList.ContainsKey(strSession) == true)
             {
-                JingleMediaSession session = SessionList[strSession];
-                session.SessionAccepted(jingle);
-                session.StartMedia(AudioMixer);
+                MediaSession session = SessionList[strSession];
+                session.SessionAccepted(jingle, AudioMixer);
             }
         }
-
+     
         void JingleSessionManager_OnSessionAcceptedAckReceived(string strSession, System.Net.XMPP.Jingle.IQResponseAction response, XMPPClient client)
         {
             if (response.AcceptIQ == true)
@@ -324,28 +343,27 @@ namespace WPFXMPPClient
                 Console.WriteLine("Session {0} has said OK to our Accept invitation", strSession);
                 if (SessionList.ContainsKey(strSession) == true)
                 {
-                    JingleMediaSession session = SessionList[strSession];
-                    session.StartMedia(AudioMixer);
+                    MediaSession session = SessionList[strSession];
+                    session.GotAcceptSessionAck(AudioMixer);
+                    
                 }
             }
             
         }
 
-        void JingleSessionManager_OnNewSessionAckReceived(string strSession, System.Net.XMPP.Jingle.IQResponseAction response, XMPPClient client)
-        {
-            
-        }
+     
+     
 
-        delegate bool DelegateAcceptSession(string strSession, System.Net.XMPP.Jingle.Jingle jingle);
+        delegate bool DelegateAcceptSession(string strSession, IQ iq);
 
-        bool ShouldAcceptSession(string strSession, System.Net.XMPP.Jingle.Jingle jingle)
+        bool ShouldAcceptSession(string strSession, IQ iq)
         {
             StartMicrophoneAndSpeaker(AudioFormat.SixteenBySixteenThousandMono);
 
             if (AutoAnswer == true)
                 return true;
 
-            if (MessageBox.Show(string.Format("Accept new Call from {0}", jingle.Initiator), "New Call", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show(string.Format("Accept new Call from {0}", iq.From), "New Call", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                 return true;
             return false;
         }
@@ -558,7 +576,7 @@ namespace WPFXMPPClient
 
         private void ButtonClose_Click_1(object sender, RoutedEventArgs e)
         {
-            JingleMediaSession session = ((FrameworkElement)sender).DataContext as JingleMediaSession;
+            MediaSession session = ((FrameworkElement)sender).DataContext as MediaSession;
             if (session != null)
             {
                 session.StopMedia(AudioMixer);
@@ -673,7 +691,7 @@ namespace WPFXMPPClient
             if (audiocontrol == null)
                 return;
 
-            JingleMediaSession currsess = audiocontrol.DataContext as JingleMediaSession;
+            MediaSession currsess = audiocontrol.DataContext as MediaSession;
             if (currsess == null)
                 return;
 

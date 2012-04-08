@@ -114,7 +114,8 @@ namespace System.Net.XMPP
 
         void QueryItemsForProxy(object obj)
         {
-            foreach (item nextitem in XMPPClient.ServerServiceDiscoveryFeatureList.Items)
+            item [] items = XMPPClient.ServerServiceDiscoveryFeatureList.Items.ToArray();
+            foreach (item nextitem in items)
             {
                 QueryItemType(nextitem);
             }

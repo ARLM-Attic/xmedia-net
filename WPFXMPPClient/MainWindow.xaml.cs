@@ -131,7 +131,8 @@ namespace WPFXMPPClient
                 XMPPClient.XMPPAccount.Capabilities = new Capabilities();
                 XMPPClient.XMPPAccount.Capabilities.Node = "http://xmedianet.codeplex.com/wpfclient/caps";
                 XMPPClient.XMPPAccount.Capabilities.Version = "1.0";
-                XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1 video-v1 camera-v1"; /// google talk capabilities
+                //XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1 video-v1 camera-v1"; /// google talk capabilities
+                XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1"; /// google talk capabilities
                 
                 //XMPPClient.XMPPAccount.Capabilities.Node = "http://www.apple.com/ichat/caps";
                 //XMPPClient.XMPPAccount.Capabilities.Version = "800";

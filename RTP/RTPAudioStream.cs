@@ -32,10 +32,33 @@ namespace RTP
                 m_objAudioCodec = value;
                 if (m_objAudioCodec != null)
                 {
+            		m_nPacketSamples = m_objAudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(PTime));
+            		m_nPacketBytes = m_nPacketSamples * m_objAudioCodec.AudioFormat.BytesPerSample;
+					
                     m_nMaxSendBufferSize = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(100));
                     m_nMaxRecvBufferSize = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(100));
                 }
             }
+        }
+
+        protected int m_nPacketSamples = 320;
+        /// <summary>
+        /// The number of samples in each packet
+        /// </summary>
+        public int PacketSamples
+        {
+            get { return m_nPacketSamples; }
+            set { m_nPacketSamples = value; }
+        }
+
+        protected int m_nPacketBytes = 640;
+        /// <summary>
+        /// Number of uncompressed bytes in each packet
+        /// </summary>
+        public int PacketBytes
+        {
+            get { return m_nPacketBytes; }
+            set { m_nPacketBytes = value; }
         }
 
         public override void Start(IPEndPoint destinationEp, int nPacketTime)
@@ -45,6 +68,7 @@ namespace RTP
         }
 
         object ReceiveLock = new object();
+		public static int MaxAudioPacketsQueue = 10;
         protected override void PushNextMediaSample()
         {
             if (AudioCodec == null)
@@ -59,6 +83,10 @@ namespace RTP
             if (bNewAudioData != null)
             {
                 ReceiveAudioQueue.AppendData(bNewAudioData);
+				if (ReceiveAudioQueue.Size > m_nPacketBytes*MaxAudioPacketsQueue)  // someone isn't taking our packets (either directly our through IAudioSource), so let's not get too big
+				{
+					ReceiveAudioQueue.GetNSamples(ReceiveAudioQueue.Size-m_nPacketBytes*MaxAudioPacketsQueue);
+				}
 
                 if (RenderSink != null)
                 {
@@ -71,8 +99,8 @@ namespace RTP
         public IAudioSink RenderSink = null;
 
 
-        AudioClasses.ByteBuffer SendAudioQueue = new AudioClasses.ByteBuffer();
-        AudioClasses.ByteBuffer ReceiveAudioQueue = new AudioClasses.ByteBuffer();
+        public AudioClasses.ByteBuffer SendAudioQueue = new AudioClasses.ByteBuffer();
+        public AudioClasses.ByteBuffer ReceiveAudioQueue = new AudioClasses.ByteBuffer();
 
         object SendLock = new object();
         protected override void SendNextPacket()
@@ -84,14 +112,17 @@ namespace RTP
                 return;
 
 
-            int nPacketSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(PTime));
-            int nPacketBytes = nPacketSamples * AudioCodec.AudioFormat.BytesPerSample;
-            if (SendAudioQueue.Size < nPacketBytes)
+            if (SendAudioQueue.Size < m_nPacketBytes)
                 return;
 
 
-            byte[] bUncompressedAudio = SendAudioQueue.GetNSamples(nPacketBytes);
+            byte[] bUncompressedAudio = SendAudioQueue.GetNSamples(m_nPacketBytes);
+
+            if (DestinationEndpoint == null)
+                return;
+
             short[] sUncompressedAudio = AudioClasses.Utils.ConvertByteArrayToShortArrayLittleEndian(bUncompressedAudio);
+
 
             RTPPacket[] packets = new RTPPacket[] { };
             lock (SendLock)

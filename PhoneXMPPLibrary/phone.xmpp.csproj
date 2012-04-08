@@ -66,6 +66,7 @@
     <Compile Include="JID.cs" />
     <Compile Include="Logic\AvatarStorage.cs" />
     <Compile Include="Logic\GeoMood.cs" />
+    <Compile Include="Logic\GoogleTalkLogic.cs" />
     <Compile Include="Logic\JingleLogic.cs" />
     <Compile Include="Logic\FeatureLogic.cs" />
     <Compile Include="Logic\GenericMessageLogic.cs" />

@@ -6,14 +6,68 @@ using System;
 
 namespace SocketServer.TLS
 {
+    public enum Endianess
+    {
+        Little,
+        Big
+    }
+
     public class ByteHelper
     {
-        public static void WriteUInt32BigEndian(byte[] bArrayWriteTo, int nIndex, uint value)
+        public static byte [] GetBytesForInt32(int value, Endianess endian)
         {
-            WriteUInt32BigEndian(bArrayWriteTo, nIndex, value, 4);
+            byte[] bRet = new byte[4];
+            if (endian == Endianess.Little)
+            {
+                bRet[0] = (byte)((value & 0xFF000000) >> 24);
+                bRet[1] = (byte)((value & 0xFF0000) >> 16);
+                bRet[2] = (byte)((value & 0x00FF00) >> 8);
+                bRet[3] = (byte)((value & 0x0000FF));
+            }
+            else
+            {
+                bRet[3] = (byte)((value & 0xFF000000) >> 24);
+                bRet[2] = (byte)((value & 0xFF0000) >> 16);
+                bRet[1] = (byte)((value & 0x00FF00) >> 8);
+                bRet[0] = (byte)((value & 0x0000FF));
+            }
+            return bRet;
         }
 
-        public static void WriteUInt32BigEndian(byte[] bArrayWriteTo, int nIndex, uint value, int nLength)
+        public static byte[] GetBytesForUint64(ulong value, Endianess endian)
+        {
+            byte[] bRet = new byte[8];
+            if (endian == Endianess.Little)
+            {
+                bRet[0] = (byte)((value & 0xFF00000000000000) >> 56);
+                bRet[1] = (byte)((value & 0xFF000000000000) >> 48);
+                bRet[2] = (byte)((value & 0xFF0000000000) >> 40);
+                bRet[3] = (byte)((value & 0xFF00000000) >> 32);
+                bRet[4] = (byte)((value & 0xFF000000) >> 24);
+                bRet[5] = (byte)((value & 0xFF0000) >> 16);
+                bRet[6] = (byte)((value & 0x00FF00) >> 8);
+                bRet[7] = (byte)((value & 0x0000FF));
+            }
+            else
+            {
+                bRet[7] = (byte)((value & 0xFF00000000000000) >> 56);
+                bRet[6] = (byte)((value & 0xFF000000000000) >> 48);
+                bRet[5] = (byte)((value & 0xFF0000000000) >> 40);
+                bRet[4] = (byte)((value & 0xFF00000000) >> 32);
+                bRet[3] = (byte)((value & 0xFF000000) >> 24);
+                bRet[2] = (byte)((value & 0xFF0000) >> 16);
+                bRet[1] = (byte)((value & 0x00FF00) >> 8);
+                bRet[0] = (byte)((value & 0x0000FF));
+            }
+            return bRet;
+        }
+
+        public static int WriteUInt32BigEndian(byte[] bArrayWriteTo, int nIndex, uint value)
+        {
+            return WriteUInt32BigEndian(bArrayWriteTo, nIndex, value, 4);
+        }
+
+        public static int WriteUInt32BigEndian(byte[] bArrayWriteTo, int nIndex, uint value, int nLength)
         {
             if (nLength == 4)
             {
@@ -21,39 +75,61 @@ namespace SocketServer.TLS
                 bArrayWriteTo[nIndex + 1] = (byte)((value & 0xFF0000) >> 16);
                 bArrayWriteTo[nIndex + 2] = (byte)((value & 0x00FF00) >> 8);
                 bArrayWriteTo[nIndex + 3] = (byte)((value & 0x0000FF));
+                return 4;
             }
             else if (nLength == 3)
             {
                 bArrayWriteTo[nIndex + 0] = (byte)((value & 0xFF0000) >> 16);
                 bArrayWriteTo[nIndex + 1] = (byte)((value & 0x00FF00) >> 8);
                 bArrayWriteTo[nIndex + 2] = (byte)((value & 0x0000FF));
+                return 3;
             }
             else if (nLength == 2)
             {
                 bArrayWriteTo[nIndex + 0] = (byte)((value & 0x00FF00) >> 8);
                 bArrayWriteTo[nIndex + 1] = (byte)((value & 0x0000FF));
+                return 2;
             }
             else if (nLength == 1)
             {
                 bArrayWriteTo[nIndex + 0] = (byte)((value & 0x0000FF));
+                return 1;
             }
+
+            return 0;
         }
 
-        public static void WriteUShortBigEndian(byte[] bArrayWriteTo, int nIndex, ushort value)
+        public static int WriteULongBigEndian(byte[] bArrayWriteTo, int nIndex, ulong value)
+        {
+            bArrayWriteTo[nIndex + 0] = (byte)((value & 0xFF00000000000000) >> 56);
+            bArrayWriteTo[nIndex + 1] = (byte)((value & 0xFF000000000000) >> 48);
+            bArrayWriteTo[nIndex + 2] = (byte)((value & 0xFF0000000000) >> 40);
+            bArrayWriteTo[nIndex + 3] = (byte)((value & 0xFF00000000) >> 32);
+            bArrayWriteTo[nIndex + 4] = (byte)((value & 0xFF000000) >> 24);
+            bArrayWriteTo[nIndex + 5] = (byte)((value & 0xFF0000) >> 16);
+            bArrayWriteTo[nIndex + 6] = (byte)((value & 0x00FF00) >> 8);
+            bArrayWriteTo[nIndex + 7] = (byte)((value & 0x0000FF));
+            return 8;
+        }
+
+        public static int WriteUShortBigEndian(byte[] bArrayWriteTo, int nIndex, ushort value)
         {
             bArrayWriteTo[nIndex + 0] = (byte)((value & 0x00FF00) >> 8);
             bArrayWriteTo[nIndex + 1] = (byte)((value & 0x0000FF));
+            return 2;
         }
 
 
-        public static void WriteByte(byte[] bArrayWriteTo, int nIndex, byte value)
+        public static int WriteByte(byte[] bArrayWriteTo, int nIndex, byte value)
         {
             bArrayWriteTo[nIndex + 0] = value;
+            return 1;
         }
 
-        public static void WriteByteArray(byte[] bArrayWriteTo, int nIndex, byte [] bValue)
+        public static int WriteByteArray(byte[] bArrayWriteTo, int nIndex, byte [] bValue)
         {
             Array.Copy(bValue, 0, bArrayWriteTo, nIndex, (int)bValue.Length);
+            return bValue.Length;
         }
 
         public static uint ReadUintBigEndian(byte[] bRet, int nIndex)
@@ -73,6 +149,11 @@ namespace SocketServer.TLS
                 return (uint)((bData[nIndex + 0]));
 
             return 0;
+        }
+
+        public static ulong ReadULongBigEndian(byte[] bData, int nIndex)
+        {
+            return (ulong)((bData[nIndex + 0] << 56) | (bData[nIndex + 1] << 48) | (bData[nIndex + 2] << 40) | (bData[nIndex + 3] << 32)| (bData[nIndex + 4] << 24) | (bData[nIndex + 5] << 16) | (bData[nIndex + 6] << 8) | (bData[nIndex + 7]));
         }
 
         public static ushort ReadUshortBigEndian(byte[] bRet, int nIndex)

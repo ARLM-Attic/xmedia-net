@@ -33,6 +33,7 @@ namespace RTP
         LegacySourceAddress = 0x0004,
         LegacyChangedAddress = 0x0005,
         UserName = 0x0006,
+        Password = 0x0007,
         MessageIntegrity = 0x0008,
         ErrorCode = 0x0009,
         UnknownAttributes = 0x000A,
@@ -41,7 +42,11 @@ namespace RTP
         XorMappedAddress = 0x0020,
         Software = 0x8022,
         AlternateServer = 0x8023,
-        Fingerprint = 0x8028
+        Fingerprint = 0x8028,
+        Priority = 0x0024, /// ICE PRIORITY attribute
+        UseCandidate = 0x0025, 
+        IceControlled = 0x8029,
+        IceControlling = 0x802A,
     }
 
     public class STUNAttribute
@@ -325,6 +330,35 @@ namespace RTP
         }
     }
 
+    public class PasswordAttribute : STUNAttribute
+    {
+        public PasswordAttribute()
+            : base(StunAttributeType.Password)
+        {
+        }
+
+        private string m_strPassword = "";
+
+        public string Password
+        {
+            get { return m_strPassword; }
+            set { m_strPassword = value; }
+        }
+
+
+        public override byte[] GetBytes(STUNMessage parentmessage)
+        {
+            m_bBytes = System.Text.UTF8Encoding.UTF8.GetBytes(Password);
+            return m_bBytes;
+        }
+
+        public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
+        {
+            m_bBytes = bBytes;
+            Password = System.Text.UTF8Encoding.UTF8.GetString(m_bBytes, 0, m_bBytes.Length);
+        }
+    }
+
     public class MessageIntegrityAttribute : STUNAttribute
     {
         public MessageIntegrityAttribute()
@@ -493,7 +527,101 @@ namespace RTP
         }
     }
 
-  
+    public class PriorityAttribute : STUNAttribute
+    {
+        public PriorityAttribute()
+            : base(StunAttributeType.Priority)
+        {
+        }
+
+        private int m_nPriority = 0;
+
+        public int Priority
+        {
+            get { return m_nPriority; }
+            set { m_nPriority = value; }
+        }
+
+
+        public override byte[] GetBytes(STUNMessage parentmessage)
+        {
+            m_bBytes = SocketServer.TLS.ByteHelper.GetBytesForInt32(Priority, SocketServer.TLS.Endianess.Big);
+            return m_bBytes;
+        }
+
+        public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
+        {
+            m_bBytes = bBytes;
+            Priority = (int) SocketServer.TLS.ByteHelper.ReadUintBigEndian(bBytes, 0);
+        }
+    }
+
+    public class UseCandidateAttribute : STUNAttribute
+    {
+        public UseCandidateAttribute()
+            : base(StunAttributeType.UseCandidate)
+        {
+        }
+
+        public override byte[] GetBytes(STUNMessage parentmessage)
+        {
+            return new byte[] {};
+        }
+
+        public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
+        {
+            m_bBytes = bBytes;
+        }
+    }
+
+    public class IceControlledAttribute : STUNAttribute
+    {
+        public IceControlledAttribute()
+            : base(StunAttributeType.IceControlled)
+        {
+            Random rand = new Random();
+            byte [] Random = new byte[8];
+            rand.NextBytes(Random);
+            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(Random, 0);
+        }
+
+        public ulong RandomNumber = 0;
+        public override byte[] GetBytes(STUNMessage parentmessage)
+        {
+            return SocketServer.TLS.ByteHelper.GetBytesForUint64(RandomNumber, SocketServer.TLS.Endianess.Big);
+        }
+
+        public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
+        {
+            m_bBytes = bBytes;
+            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(m_bBytes, 0);
+        }
+    }
+
+    public class IceControllingAttribute : STUNAttribute
+    {
+        public IceControllingAttribute()
+            : base(StunAttributeType.IceControlling)
+        {
+            Random rand = new Random();
+            byte[] Random = new byte[8];
+            rand.NextBytes(Random);
+            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(Random, 0);
+        }
+
+        public ulong RandomNumber = 0;
+        public override byte[] GetBytes(STUNMessage parentmessage)
+        {
+            return SocketServer.TLS.ByteHelper.GetBytesForUint64(RandomNumber, SocketServer.TLS.Endianess.Big);
+        }
+
+        public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
+        {
+            m_bBytes = bBytes;
+            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(m_bBytes, 0);
+        }
+    }
+
 
     public class STUNAttributeContainer
     {
@@ -619,6 +747,11 @@ namespace RTP
                 m_objParsedAttribute = new UserNameAttribute();
                 m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
             }
+            else if (nType == (ushort)StunAttributeType.Password)
+            {
+                m_objParsedAttribute = new PasswordAttribute();
+                m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
+            }
             else if (nType == (ushort)StunAttributeType.XorMappedAddress)
             {
                 m_objParsedAttribute = new XORMappedAddressAttribute();
@@ -642,6 +775,26 @@ namespace RTP
             else if (nType == (ushort)StunAttributeType.LegacyChangedAddress)
             {
                 m_objParsedAttribute = new LegacyChangedAddressAttribute();
+                m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
+            }
+            else if (nType == (ushort)StunAttributeType.Priority)
+            {
+                m_objParsedAttribute = new PriorityAttribute();
+                m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
+            }
+            else if (nType == (ushort)StunAttributeType.UseCandidate)
+            {
+                m_objParsedAttribute = new UseCandidateAttribute();
+                m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
+            }
+            else if (nType == (ushort)StunAttributeType.IceControlled)
+            {
+                m_objParsedAttribute = new IceControlledAttribute();
+                m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
+            }
+            else if (nType == (ushort)StunAttributeType.IceControlling)
+            {
+                m_objParsedAttribute = new IceControllingAttribute();
                 m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
             }            
                

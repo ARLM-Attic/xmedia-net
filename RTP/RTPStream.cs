@@ -15,6 +15,67 @@ using SocketServer;
 
 namespace RTP
 {
+    public class STUNRequestResponse
+    {
+        public STUNRequestResponse(STUNMessage requestmessage)
+        {
+            RequestMessage = requestmessage;
+        }
+
+        private STUNMessage m_objRequestMessage = null;
+
+        public STUNMessage RequestMessage
+        {
+            get { return m_objRequestMessage; }
+            set { m_objRequestMessage = value; }
+        }
+
+        private STUNMessage m_objResponseMessage = null;
+        public STUNMessage ResponseMessage
+        {
+          get { return m_objResponseMessage; }
+          set { m_objResponseMessage = value; }
+        }
+
+        public bool IsThisYourResponseSetIfItIs(STUNMessage msg)
+        {
+            bool bRet = SocketServer.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, msg.TransactionId);
+            if (bRet == true)
+            {
+                ResponseMessage = msg;
+                if (WaitHandle != null)
+                    WaitHandle.Set();
+            }
+            return bRet; 
+        }
+
+        public void Reset(STUNMessage requestmessage)
+        {
+            RequestMessage = requestmessage;
+            if (WaitHandle != null)
+            {
+                WaitHandle.Close();
+                WaitHandle = null;
+            }
+            WaitHandle = new System.Threading.ManualResetEvent(false);
+            ResponseMessage = null;
+        }
+
+        public bool WaitForResponse(int nTimeOut)
+        {
+            bool bRet = false;
+            if (WaitHandle != null)
+            {
+                bRet = WaitHandle.WaitOne(nTimeOut);
+                WaitHandle.Close();
+                WaitHandle = null;
+            }
+
+            return bRet;
+        }
+
+        protected System.Threading.ManualResetEvent WaitHandle = new System.Threading.ManualResetEvent(false);
+    }
 
     public class RTPStream
     {
@@ -103,70 +164,40 @@ namespace RTP
             }
         }
 
-        public const ushort StunPort = 3478;
-        bool m_bIsWaitingOnSTUN = false;
-        public System.Threading.ManualResetEvent STUNResponseWaitHandle = new System.Threading.ManualResetEvent(false);
-        public STUNMessage ResponseMessage = null;
+        public delegate void DelegateSTUNMessage(STUNMessage smsg, IPEndPoint epfrom);
+        public event DelegateSTUNMessage OnUnhandleSTUNMessage = null;
 
-        public IPEndPoint PublicIPEndpoint = null;
+        protected List<STUNRequestResponse> StunRequestResponses = new List<STUNRequestResponse>();
+        protected object StunLock = new object();
 
-        public IPEndPoint PerformSTUNRequest(string strStunServer, int nTimeout)
+        public STUNMessage SendRecvSTUN(IPEndPoint epStun, STUNMessage msgRequest, int nTimeout)
         {
-            IPEndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(strStunServer, StunPort);
-            return PerformSTUNRequest(epStun, nTimeout);
-        }
-
-        /// <summary>
-        ///  Send out a stun request to discover our IP address transalation
-        /// </summary>
-        /// <param name="strStunServer"></param>
-        /// <returns></returns>
-        public IPEndPoint PerformSTUNRequest(IPEndPoint epStun, int nTimeout)
-        {
-            ResponseMessage = null;
-            m_bIsWaitingOnSTUN = true;
-            STUNResponseWaitHandle.Reset();
-
-            STUNMessage msgRequest = new STUNMessage();
-            msgRequest.Method = StunMethod.Binding;
-            msgRequest.Class = StunClass.Request;
-
-
-            MappedAddressAttribute mattr = new MappedAddressAttribute();
-            mattr.IPAddress = LocalEndpoint.Address;
-            mattr.Port = (ushort)LocalEndpoint.Port;
-
-
-            msgRequest.AddAttribute(mattr);
-
-            byte[] bMessage = msgRequest.Bytes;
-            this.RTPUDPClient.SendUDP(bMessage, bMessage.Length, epStun);
-
-            bool m_bGotMessage = STUNResponseWaitHandle.WaitOne(nTimeout);
-            m_bIsWaitingOnSTUN = false;
-
-            IPEndPoint retep = null;
-            if (m_bGotMessage == true)
+            STUNRequestResponse req = new STUNRequestResponse(msgRequest);
+            lock (StunLock)
             {
-                foreach (STUNAttributeContainer cont in ResponseMessage.Attributes)
-                {
-                    if (cont.ParsedAttribute.Type == StunAttributeType.MappedAddress)
-                    {
-                        
-                        MappedAddressAttribute attrib = cont.ParsedAttribute as MappedAddressAttribute;
-                        retep = new IPEndPoint(attrib.IPAddress, attrib.Port);
-                    }
-                }
+                StunRequestResponses.Add(req);
             }
-            return retep;
+
+            SendSTUNMessage(msgRequest, epStun);
+
+            req.WaitForResponse(nTimeout);
+            return req.ResponseMessage;
         }
+
+        public int SendSTUNMessage(STUNMessage msg, IPEndPoint epStun)
+        {
+            byte[] bMessage = msg.Bytes;
+            return this.RTPUDPClient.SendUDP(bMessage, bMessage.Length, epStun);
+        }
+
+    
 
         public virtual void Start(IPEndPoint destinationEp, int nPacketTime)
         {
             if (IsActive == true)
                 return;
             if (IsBound == false)
-                throw new Exception("You first must bind local socket by calling Bind()");
+                throw new Exception("You first must bind the local socket by calling Bind()");
 
             Reset();
             DestinationEndpoint = destinationEp;
@@ -206,9 +237,7 @@ namespace RTP
 
         void  RTPUDPClient_OnReceiveMessage(byte[] bData, int nLength, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived)
         {
-            /// TODO... if we are an performing ICE, see if this is an ICE packet instead of an RTP one
-            /// 
-
+            /// if we are an performing ICE, see if this is an ICE packet instead of an RTP one
             if (nLength >= 8)
             {
                 //0x2112A442
@@ -220,39 +249,27 @@ namespace RTP
                     Array.Copy(bData, 0, bStun, 0, nLength);
                     smsg.Bytes = bStun;
 
-                    if (m_bIsWaitingOnSTUN == true)
+                    STUNRequestResponse foundreq = null;
+                    lock (StunLock)
                     {
-                        ResponseMessage = smsg;
-                        STUNResponseWaitHandle.Set();
-                        m_bIsWaitingOnSTUN = false;
-                        return;
-                    }
-
-                    /// See if we should send a STUN response
-                    /// 
-                    if (smsg.Class == StunClass.Request)
-                    {
-                        if (smsg.Method == StunMethod.Binding)
+                        foreach (STUNRequestResponse queuedreq in StunRequestResponses)
                         {
+                            if (queuedreq.IsThisYourResponseSetIfItIs(smsg) == true)
+                            {
+                                foundreq = queuedreq;
+                                break;
+                            }
+                        }
 
-                            STUNMessage sresp = new STUNMessage();
-                            sresp.TransactionId = smsg.TransactionId;
-                            sresp.Method = StunMethod.Binding;
-                            sresp.Class = StunClass.Success;
-                            MappedAddressAttribute attr = new MappedAddressAttribute();
-                            attr.Port = (ushort) epfrom.Port;
-                            attr.IPAddress = epfrom.Address;
-                            attr.Type = StunAttributeType.MappedAddress;
-                            attr.AddressFamily = StunAddressFamily.IPv4;
-                            sresp.AddAttribute(attr);
-                            
-                            byte[] bMessage = sresp.Bytes;
-                            this.RTPUDPClient.SendUDP(bMessage, bMessage.Length, epfrom);
-
+                        if (foundreq != null)
+                        {
+                            StunRequestResponses.Remove(foundreq);
+                            return;
                         }
                     }
-                         
 
+                    if (OnUnhandleSTUNMessage != null)
+                        OnUnhandleSTUNMessage(smsg, epfrom);
                     return;
                 }
             }

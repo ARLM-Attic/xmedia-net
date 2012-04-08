@@ -106,23 +106,29 @@ namespace System.Net.XMPP.Jingle
         public Candidate()
         {
         }
-        [XmlAttribute(AttributeName="component")]
-        public int component = 1;
-
-        [XmlAttribute(AttributeName = "foundation")]
-        public int foundation = 0;
-        
-        [XmlAttribute(AttributeName = "generation")]
-        public int generation = 0;
-
-        [XmlAttribute(AttributeName = "id")]
-        public string id = "";
+     
 
         [XmlAttribute(AttributeName = "ip")]
         public string ipaddress = "";
 
+        [XmlAttribute(AttributeName = "address")]
+        public string address
+        {
+            get
+            {
+                return ipaddress;
+            }
+            set
+            {
+                ipaddress = value;
+            }
+        }
+
+        [XmlAttribute(AttributeName = "preference")]
+        public string preference = "1";
+
         [XmlAttribute(AttributeName = "network")]
-        public int network = 1;
+        public string network = "0";
 
         [XmlAttribute(AttributeName = "port")]
         public int port = 8080;
@@ -133,7 +139,7 @@ namespace System.Net.XMPP.Jingle
         [XmlAttribute(AttributeName = "protocol")]
         public string protocol = "udp";
 
-        [XmlAttribute(AttributeName = "host")]
+        [XmlAttribute(AttributeName = "type")]
         public string type = "host";
 
         [XmlAttribute(AttributeName = "reladdr")]
@@ -141,6 +147,31 @@ namespace System.Net.XMPP.Jingle
 
         [XmlAttribute(AttributeName = "relport")]
         public string relport = null;
+
+        /// Google talk specific candidates
+        [XmlAttribute(AttributeName = "username")]
+        public string username = null;
+
+        [XmlAttribute(AttributeName = "password")]
+        public string password = null;
+
+        [XmlAttribute(AttributeName = "name")]
+        public string name = "rtp";
+
+        [XmlAttribute(AttributeName = "component")]
+        public int component = 1;
+
+        [XmlAttribute(AttributeName = "foundation")]
+        public string foundation = "0";
+
+        [XmlAttribute(AttributeName = "generation")]
+        public int generation = 0;
+
+        [XmlAttribute(AttributeName = "id")]
+        public string id = null;
+
+        [XmlIgnore()]
+        public IPEndPoint IPEndPoint = null;
 
     }
 
@@ -195,6 +226,9 @@ namespace System.Net.XMPP.Jingle
 
         [XmlElement(ElementName = "transport", Namespace = "urn:xmpp:jingle:transports:raw-udp:1")]
         public Transport RawUDPTransport = null;
+
+        [XmlElement(ElementName = "transport", Namespace = "http://www.google.com/transport/p2p")]
+        public Transport GoogleTransport = null;
 
     }
 
@@ -535,6 +569,20 @@ namespace System.Net.XMPP.Jingle
                 JingleSessionManager.FireSessionAcceptedAck(SessionId, response);
                 return true;
             }
+            if ((TransportInfoRequest != null) && (iq.ID == TransportInfoRequest.ID))
+            {
+                /// Client accept our session
+
+                IQResponseAction response = new IQResponseAction();
+                if (iq.Type != IQType.result.ToString())
+                {
+                    response.AcceptIQ = false;
+                    response.Error = iq.Error;
+                }
+
+                JingleSessionManager.FireSessionTransportInfoAck(SessionId, response);
+                return true;
+            }
             if ((TerminateSessionRequest != null) && (iq.ID == TerminateSessionRequest.ID))
             {
                 /// Got an ack, analyze it an tell the client what is going on
@@ -569,7 +617,7 @@ namespace System.Net.XMPP.Jingle
                     iqresponse.Type = IQType.result.ToString();
                     XMPPClient.SendXMPP(iqresponse);
 
-                    JingleSessionManager.FireSessionAcceptedReceived(this.SessionId, jingleiq.Jingle);
+                    JingleSessionManager.FireSessionAcceptedReceived(this.SessionId, jingleiq);
                 }
                 else if ((jingleiq.Jingle.Action == Jingle.SessionTerminate)||(jingleiq.Jingle.Action == Jingle.Terminate))
                 {
@@ -673,7 +721,7 @@ namespace System.Net.XMPP.Jingle
                     iqresponse.Type = IQType.result.ToString();
                     XMPPClient.SendXMPP(iqresponse);
 
-                    JingleSessionManager.FireSessionTransportInfoReceived(this.SessionId, jingleiq.Jingle);
+                    JingleSessionManager.FireSessionTransportInfoReceived(this.SessionId, jingleiq);
                 }
                 else if (jingleiq.Jingle.Action == Jingle.TransportAccept)
                 {
@@ -772,7 +820,7 @@ namespace System.Net.XMPP.Jingle
         internal void AcceptSession(Jingle jingleinfo)
         {
             if (AcceptSessionMessage != null) /// we've already started a session, the user needs to create a new one
-                throw new Exception(string.Format("Cannot accpet a session that already exists, Session [{0}] has already been accepted, client must create a new session", this.SessionId));
+                throw new Exception(string.Format("Cannot accept a session that already exists, Session [{0}] has already been accepted, client must create a new session", this.SessionId));
 
             AcceptSessionMessage = new JingleIQ();
             AcceptSessionMessage.From = XMPPClient.JID;
@@ -780,7 +828,7 @@ namespace System.Net.XMPP.Jingle
             AcceptSessionMessage.Type = IQType.set.ToString();
             AcceptSessionMessage.Jingle = jingleinfo;
             AcceptSessionMessage.Jingle.Action = Jingle.SessionAccept;
-            AcceptSessionMessage.Jingle.Initiator = XMPPClient.JID;
+            //AcceptSessionMessage.Jingle.Initiator = XMPPClient.JID;
             AcceptSessionMessage.Jingle.SID = this.SessionId;
 
             XMPPClient.SendObject(AcceptSessionMessage);
@@ -797,7 +845,21 @@ namespace System.Net.XMPP.Jingle
 
             XMPPClient.SendObject(iq);
         }
-        
+
+        JingleIQ TransportInfoRequest = null;
+        internal void SendTransportInfo(Jingle jingle)
+        {
+            TransportInfoRequest = new JingleIQ();
+            TransportInfoRequest.From = XMPPClient.JID;
+            TransportInfoRequest.To = RemoteJID;
+            TransportInfoRequest.Type = IQType.set.ToString();
+            TransportInfoRequest.Jingle = jingle;
+            TransportInfoRequest.Jingle.Action = Jingle.TransportInfo;
+            TransportInfoRequest.Jingle.SID = this.SessionId;
+
+            XMPPClient.SendObject(TransportInfoRequest);
+
+        }
 
         JingleIQ TerminateSessionRequest = null;
         internal void TerminateSession(TerminateReason reason)
@@ -1075,6 +1137,23 @@ namespace System.Net.XMPP.Jingle
 
         }
 
+        public void SendTransportInfo(string strSessionId, Jingle jingle)
+        {
+            JingleSessionLogic session = null;
+            lock (SessionLock)
+            {
+                if (Sessions.ContainsKey(strSessionId) == true)
+                {
+                    session = Sessions[strSessionId];
+                }
+            }
+            if (session != null)
+            {
+                session.SendTransportInfo(jingle);
+            }
+
+        }
+
         public void SendJingle(string strSessionId, Jingle jingleinfo)
         {
             /// Create a new session logic and send out the intial session create request
@@ -1155,18 +1234,18 @@ namespace System.Net.XMPP.Jingle
             return jinglecontent;
         }
 
-        public delegate void DelegateJingleSessionEventWithInfo(string strSession, Jingle jingle, XMPPClient client);
-        public delegate void DelegateJingleSessionEventWithInfoAndIQ(string strSession, JingleIQ iq, Jingle jingle, XMPPClient client);
+        public delegate void DelegateJingleSessionEventWithInfo(string strSession, JingleIQ iq, XMPPClient client);
         public delegate void DelegateJingleSessionEvent(string strSession, XMPPClient client);
         public delegate void DelegateJingleSessionEventBool(string strSession, IQResponseAction response, XMPPClient client);
 
-        public event DelegateJingleSessionEventWithInfoAndIQ OnNewSession = null;
+        public event DelegateJingleSessionEventWithInfo OnNewSession = null;
         public event DelegateJingleSessionEventBool OnNewSessionAckReceived = null;
 
         public event DelegateJingleSessionEventWithInfo OnSessionAcceptedReceived = null;
         public event DelegateJingleSessionEventBool OnSessionAcceptedAckReceived = null;
 
         public event DelegateJingleSessionEventWithInfo OnSessionTransportInfoReceived = null;
+        public event DelegateJingleSessionEventBool OnSessionTransportInfoAckReceived = null;
 
         public event DelegateJingleSessionEvent OnSessionTerminated = null;
 
@@ -1175,7 +1254,7 @@ namespace System.Net.XMPP.Jingle
         internal void FireNewSession(string strSession, JingleIQ iq)
         {
             if (OnNewSession != null)
-                OnNewSession(strSession, iq, iq.Jingle, XMPPClient);
+                OnNewSession(strSession, iq, XMPPClient);
         }
 
         internal void FireNewSessionAckReceived(string strSessionId, IQResponseAction response)
@@ -1185,12 +1264,10 @@ namespace System.Net.XMPP.Jingle
         }
 
 
-
-        
-        internal void FireSessionAcceptedReceived(string strSession, Jingle jingleinfo)
+        internal void FireSessionAcceptedReceived(string strSession, JingleIQ iq)
         {
             if (OnSessionAcceptedReceived != null)
-                OnSessionAcceptedReceived(strSession, jingleinfo, XMPPClient);
+                OnSessionAcceptedReceived(strSession, iq, XMPPClient);
         }
 
         internal void FireSessionAcceptedAck(string strSessionId, IQResponseAction response)
@@ -1200,12 +1277,17 @@ namespace System.Net.XMPP.Jingle
         }
 
 
-        internal void FireSessionTransportInfoReceived(string strSession, Jingle jingleinfo)
+        internal void FireSessionTransportInfoReceived(string strSession, JingleIQ iq)
         {
             if (OnSessionTransportInfoReceived != null)
-                OnSessionTransportInfoReceived(strSession, jingleinfo, XMPPClient);
+                OnSessionTransportInfoReceived(strSession, iq, XMPPClient);
         }
 
+        internal void FireSessionTransportInfoAck(string strSessionId, IQResponseAction response)
+        {
+            if (OnSessionTransportInfoAckReceived != null)
+                OnSessionTransportInfoAckReceived(strSessionId, response, XMPPClient);
+        }
 
         internal void FireSessionTerminated(string strSession)
         {

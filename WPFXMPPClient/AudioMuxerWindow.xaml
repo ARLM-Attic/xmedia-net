@@ -163,7 +163,20 @@
                                                 </Image.Style>
                                             </Image>
                                         </ToggleButton>
-                                        <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top">Mute</Label>
+                                        <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top">
+                                            <Label.Style>
+                                                <Style>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding AudioRTPStream.Muted}" Value="True">
+                                                            <Setter Property="Label.Content" Value="Muted" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding AudioRTPStream.Muted}" Value="False">
+                                                            <Setter Property="Label.Content" Value="Can Speak" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Label.Style>
+                                        </Label>
 
                                     </StackPanel>
                                     <StackPanel Orientation="Vertical">
@@ -171,7 +184,20 @@
                                             <Image x:Name="ImageDeafen" Width="28" Height="28" Source="Images/deafen.jpg">
                                             </Image>
                                         </ToggleButton>
-                                        <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top">Deafen</Label>
+                                        <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top">
+                                            <Label.Style>
+                                                <Style>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding AudioRTPStream.Deafened}" Value="True">
+                                                            <Setter Property="Label.Content" Value="Deafened" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding AudioRTPStream.Deafened}" Value="False">
+                                                            <Setter Property="Label.Content" Value="Can Hear" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Label.Style>
+                                        </Label>                                        
                                     </StackPanel>
                                     <StackPanel Orientation="Vertical">
                                         <Slider Height="32" x:Name="SliderVolume" Minimum="0" Maximum="2" Value="{Binding AudioRTPStream.SourceAmplitudeMultiplier}" Width="60" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
