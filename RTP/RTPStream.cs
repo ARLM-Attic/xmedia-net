@@ -283,7 +283,7 @@ namespace RTP
             }
         }
 
-        protected RTPPacketBuffer IncomingRTPPacketBuffer = new RTPPacketBuffer(2, 4);
+        public RTPPacketBuffer IncomingRTPPacketBuffer = new RTPPacketBuffer(2, 4);
 
         protected virtual void SendNextPacket()
         {

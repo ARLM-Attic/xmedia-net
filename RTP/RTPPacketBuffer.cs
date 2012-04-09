@@ -124,6 +124,15 @@ namespace RTP
          int nNewSize = 0;
          lock (PacketLock)
          {
+            /// If packet is before the last one we've given out, discard it, we already assumed it was lost
+            if (CompareSequence(packet.SequenceNumber, m_nNextExpectedSequence) < 0)
+            {
+               DiscardedPackets++;
+               return;
+            }
+
+
+
             Packets.Add(packet);
             Packets.Sort(this);
 
@@ -181,6 +190,11 @@ namespace RTP
       {
          int nXSeq = x.SequenceNumber;
          int nYSeq = y.SequenceNumber;
+         return CompareSequence(nXSeq, nYSeq);
+      }
+
+      public int CompareSequence(int nXSeq, int nYSeq)
+      {
          if (Math.Abs(nXSeq - nYSeq) > 60000) // we rolled around, add to our zero index so it appears in order
          {
             if (nXSeq < 5000)
