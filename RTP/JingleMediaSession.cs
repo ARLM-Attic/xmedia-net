@@ -524,7 +524,7 @@ namespace RTP
                         string strPassword = nextcand.password;
                         EventWaitForInitiatedToRespond.Reset();
 
-                        epresponded = this.PerformSTUNRequest(nextcand.IPEndPoint, 200, true, true, nextcand.priority, strUserName, strPassword);
+                        epresponded = this.PerformSTUNRequest(nextcand.IPEndPoint, 800, true, true, nextcand.priority, strUserName, strPassword);
                         if (epresponded != null)
                         {
                             this.RemoteEndpoint = nextcand.IPEndPoint;
@@ -637,7 +637,7 @@ namespace RTP
                             string strPassword = CurrentLeftCandidate.password;
                             /// CurrentLeftCandidate.IPEndPoint should be epfrom
 
-                            IPEndPoint ep = this.PerformSTUNRequest(CurrentLeftCandidate.IPEndPoint, 200, true, true, CurrentLeftCandidate.priority, strUserName, strPassword);
+                            IPEndPoint ep = this.PerformSTUNRequest(CurrentLeftCandidate.IPEndPoint, 800, true, true, CurrentLeftCandidate.priority, strUserName, strPassword);
                             if (ep != null)
                             {
                                 RemoteEndpoint = CurrentLeftCandidate.IPEndPoint;
@@ -648,7 +648,7 @@ namespace RTP
                         else
                         {
                             // Shouldn't happen
-                            IPEndPoint ep = this.PerformSTUNRequest(epfrom, 200, true, true, 0, null, null);
+                            IPEndPoint ep = this.PerformSTUNRequest(epfrom, 800, true, true, 0, null, null);
                             RemoteEndpoint = epfrom;
                             EventWaitForInitiatedToRespond.Set();
                             ICEDoneStartRTP();

@@ -97,8 +97,11 @@ namespace WPFXMPPClient
             FileTransfer trans = ((FrameworkElement)sender).DataContext as FileTransfer;
             if (trans != null)
             {
-                /// We've set auto save - which changes the full file name to the full directory
-                System.Diagnostics.Process.Start(trans.FileName);
+                if (File.Exists(trans.FileName) == true)
+                {
+                    /// We've set auto save - which changes the full file name to the full directory
+                    System.Diagnostics.Process.Start(trans.FileName);
+                }
             }
         }
 
