@@ -30,14 +30,39 @@ namespace RTP
             set 
             { 
                 m_objAudioCodec = value;
-                if (m_objAudioCodec != null)
-                {
-            		m_nPacketSamples = m_objAudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(PTime));
-            		m_nPacketBytes = m_nPacketSamples * m_objAudioCodec.AudioFormat.BytesPerSample;
-					
-                    m_nMaxSendBufferSize = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(100));
-                    m_nMaxRecvBufferSize = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(100));
-                }
+                CalculateSampleSizes();
+            }
+        }
+
+        void CalculateSampleSizes()
+        {
+            if (AudioCodec != null)
+            {
+                m_nPacketSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(PTimeReceive));
+                m_nPacketBytes = m_nPacketSamples * m_objAudioCodec.AudioFormat.BytesPerSample;
+
+                m_nMaxSendBufferSize = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(100));
+                m_nMaxRecvBufferSize = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(100));
+            }
+        }
+
+        public virtual int PTimeReceive
+        {
+            get { return m_nPTimeReceive; }
+            set
+            {
+                m_nPTimeReceive = value;
+                CalculateSampleSizes();
+            }
+        }
+
+        public override int PTimeTransmit
+        {
+            get { return m_nPTimeTransmit; }
+            set 
+            { 
+                m_nPTimeTransmit = value;
+                CalculateSampleSizes();
             }
         }
 
@@ -61,10 +86,12 @@ namespace RTP
             set { m_nPacketBytes = value; }
         }
 
-        public override void Start(IPEndPoint destinationEp, int nPacketTime)
+        public override void Start(IPEndPoint destinationEp, int nPacketTimeTx, int nPacketTimeRx)
         {
             SendAudioQueue.Clear();
-            base.Start(destinationEp, nPacketTime);
+            this.AudioCodec.ReceivePTime = nPacketTimeRx;
+            this.AudioCodec.TransmitPTime = nPacketTimeTx;
+            base.Start(destinationEp, nPacketTimeTx, nPacketTimeRx);
         }
 
         object ReceiveLock = new object();

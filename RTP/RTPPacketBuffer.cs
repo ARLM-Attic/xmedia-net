@@ -13,9 +13,9 @@ namespace RTP
       }
       public RTPPacketBuffer(int nPacketQueueMinimumSize, int nMaxQueueSize)
       {
-         PacketQueueMinimumSize = nPacketQueueMinimumSize;
-         MaxQueueSize = nMaxQueueSize;
-         if (PacketQueueMinimumSize < 0)
+         InitialPacketQueueMinimumSize = nPacketQueueMinimumSize;
+         InitialMaxQueueSize = nMaxQueueSize;
+         if (InitialPacketQueueMinimumSize < 0)
             throw new Exception("Packet queue size must be greater than zero");
       }
 
@@ -24,16 +24,31 @@ namespace RTP
          return string.Format("RTPPacketBuffer, Current Size {0}, Last Received Sequence: {1}", m_nCurrentQueueSize, m_nLastReceivedSequence);
       }
 
-      private int m_nPacketQueueMinimumSize = 2;
+      private int m_nInitialPacketQueueMinimumSize = 2;
+      public int InitialPacketQueueMinimumSize
+      {
+          get { return m_nInitialPacketQueueMinimumSize; }
+          set { m_nInitialPacketQueueMinimumSize = value; }
+      }
 
-      public int PacketQueueMinimumSize
+      private int m_nPacketQueueMinimumSize = 2;
+      public int CurrentPacketQueueMinimumSize
       {
         get { return m_nPacketQueueMinimumSize; }
         set { m_nPacketQueueMinimumSize = value; }
       }
-      private int m_nMaxQueueSize = 4;
 
-      public int MaxQueueSize
+      public int PacketSizeShiftMax = 4; // allow the PacketQueueMinimumSize and MaxQueueSize to grow by 4 if needed
+
+      private int m_nInitialMaxQueueSize = 4;
+      public int InitialMaxQueueSize
+      {
+          get { return m_nInitialMaxQueueSize; }
+          set { m_nInitialMaxQueueSize = value; }
+      }
+
+      private int m_nMaxQueueSize = 4;
+      public int CurrentMaxQueueSize
       {
         get { return m_nMaxQueueSize; }
         set { m_nMaxQueueSize = value; }
@@ -98,6 +113,8 @@ namespace RTP
           m_bHaveSetInitialSequence = false;
           m_nNextExpectedSequence = 0xFFFF;
           m_nLastReceivedSequence = 0xFFFF;
+          m_nTotalPackets = 0;
+          FirstPacketTime = DateTime.Now;
           lock (PacketLock)
           {
               Packets.Clear();
@@ -106,14 +123,63 @@ namespace RTP
 
       bool m_bHaveSetInitialSequence = false;
       ushort m_nNextExpectedSequence = 0xFFFF;
-
       ushort m_nLastReceivedSequence = 0xFFFF;
+      private uint m_nTotalPackets = 0;
+      public uint TotalPackets
+      {
+          get { return m_nTotalPackets; }
+          set { m_nTotalPackets = value; }
+      }
+
+      private DateTime m_dtFirstPacket = DateTime.MinValue;
+
+      public DateTime FirstPacketTime
+      {
+          get { return m_dtFirstPacket; }
+          set { m_dtFirstPacket = value; }
+      }
+
+      public TimeSpan Duration
+      {
+          get
+          {
+              if (m_dtFirstPacket == DateTime.MinValue)
+                  return TimeSpan.Zero;
+
+              return DateTime.Now - m_dtFirstPacket;
+          }
+      }
+
+      public double AverageInterPacketTimeMs
+      {
+          get
+          {
+              if (m_nTotalPackets <= 1)
+                  return 0.0f;
+              TimeSpan duration = Duration;
+              return duration.TotalMilliseconds / m_nTotalPackets;
+          }
+      }
+
+      public string Statistics
+      {
+          get
+          {
+              if (m_nTotalPackets == 0)
+                  return "none";
+
+              double fPercent = ((double)(DiscardedPackets*100.0f)) / (double)m_nTotalPackets;
+              return string.Format("Loss: {0}, Total: {1}, Discarded: {2}, NA: {3}, Size: {4}", fPercent.ToString("N2"), m_nTotalPackets, DiscardedPackets, UnavailablePackets, CurrentQueueSize);
+
+          }
+      }
       /// <summary>
       /// Adds a packet to our buffer
       /// </summary>
       /// <param name="packet"></param>
       public void AddPacket(RTPPacket packet)
       {
+          m_nTotalPackets++;
          m_nLastReceivedSequence = packet.SequenceNumber;
          if (m_bHaveSetInitialSequence == false)
          {
@@ -125,18 +191,18 @@ namespace RTP
          lock (PacketLock)
          {
             /// If packet is before the last one we've given out, discard it, we already assumed it was lost
-            if (CompareSequence(packet.SequenceNumber, m_nNextExpectedSequence) < 0)
+            /// 
+            int nSequenceCompare = CompareSequence(packet.SequenceNumber, m_nNextExpectedSequence);
+            if (nSequenceCompare < 0)
             {
                DiscardedPackets++;
                return;
             }
 
-
-
             Packets.Add(packet);
             Packets.Sort(this);
 
-            while (Packets.Count > MaxQueueSize)
+            while (Packets.Count > CurrentMaxQueueSize)
             {
                Packets.RemoveAt(0);
                DiscardedPackets++;
@@ -157,25 +223,57 @@ namespace RTP
           int nNewSize = 0;
           lock (PacketLock)
           {
-              if (Packets.Count < PacketQueueMinimumSize)
+              if (Packets.Count < CurrentPacketQueueMinimumSize)  /// If packet unavailability becomes common, grow our queue so it stops happenning
               {
                   UnavailablePackets++;
+                  if (UnavailablePackets > 10)
+                  {
+                      if (CurrentPacketQueueMinimumSize < (InitialPacketQueueMinimumSize+PacketSizeShiftMax) )
+                      {
+                        UnavailablePackets = 0;
+                        CurrentPacketQueueMinimumSize++;
+                        CurrentMaxQueueSize++;
+                      }
+                  }
                   return null;
               }
 
               packetret = Packets[0];
-              if (packetret.SequenceNumber <= m_nNextExpectedSequence) /// Packet is the expected one, or before the expected one
+              if (packetret.SequenceNumber > m_nNextExpectedSequence)
               {
-                  Packets.RemoveAt(0);
-                  m_nNextExpectedSequence = (ushort)(packetret.SequenceNumber + 1);
+                  if (Packets.Count >= CurrentMaxQueueSize)
+                  {
+                      // May have lost the desired packet.  We've waited all we can, get the lowest packet number
+                      Packets.RemoveAt(0);
+                      m_nNextExpectedSequence = (ushort)(packetret.SequenceNumber + 1);
+                  }
+                  else
+                  {
+                      /// we haven't filled our queue, so we can wait a little longer
+                      packetret = null;
+                  }
               }
-              else if (Packets.Count == MaxQueueSize) // May have lost the desired packet.  We've waited all we can, get the lowest packet number
+              else if (packetret.SequenceNumber == m_nNextExpectedSequence)
               {
                   Packets.RemoveAt(0);
                   m_nNextExpectedSequence = (ushort)(packetret.SequenceNumber + 1);
               }
               else
+              {
+                  /// packet sequence is before the expected value... should never happen
                   packetret = null;
+              }
+
+              //if (packetret.SequenceNumber <= m_nNextExpectedSequence) /// Packet is the expected one, or before the expected one... should never happen since we don't add packets before the next expected one
+              //{
+              //    Packets.RemoveAt(0);
+              //    m_nNextExpectedSequence = (ushort)(packetret.SequenceNumber + 1);
+              //}
+              //else if (Packets.Count == MaxQueueSize) // May have lost the desired packet.  We've waited all we can, get the lowest packet number
+              //{
+              //    Packets.RemoveAt(0);
+              //    m_nNextExpectedSequence = (ushort)(packetret.SequenceNumber + 1);
+              //}
 
               nNewSize = Packets.Count;
           }

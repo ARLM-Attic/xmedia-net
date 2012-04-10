@@ -52,7 +52,7 @@ namespace RTP
         
         public override RTPPacket[] Encode(short[] sData)
         {
-            byte [] bCompressed = new byte[160];
+            byte [] bCompressed = new byte[this.ReceivePTime*8];
             Codec.Encode(EncodeState, bCompressed, sData, sData.Length);
             RTPPacket packet = new RTPPacket();
             packet.PayloadData = bCompressed;

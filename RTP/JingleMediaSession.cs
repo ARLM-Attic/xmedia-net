@@ -33,6 +33,7 @@ namespace RTP
         Speex16000 = 2,
         Speex8000 = 4,
         G722 = 8,
+        G722_40 = 16,
     }
 
     
@@ -187,6 +188,17 @@ namespace RTP
             }
         }
 
+        public string Statistics
+        {
+            get
+            {
+                return AudioRTPStream.IncomingRTPPacketBuffer.Statistics;
+            }
+            set
+            {
+                FirePropertyChanged("Statistics");
+            }
+        }
 
         public virtual string SendInitiateSession()
         {
@@ -265,7 +277,7 @@ namespace RTP
             SessionState = SessionState.Established;
             if (AudioMixer != null)
                 AudioMixer.AddInputOutputSource(AudioRTPStream, AudioRTPStream);
-            AudioRTPStream.Start(RemoteEndpoint, 20);
+            AudioRTPStream.Start(RemoteEndpoint, AudioRTPStream.PTimeTransmit, AudioRTPStream.PTimeReceive);
         }
 
         public virtual void GotAcceptSessionAck(AudioConferenceMixer AudioMixer)
@@ -273,7 +285,7 @@ namespace RTP
             SessionState = SessionState.Established;
             if (AudioMixer != null)
                 AudioMixer.AddInputOutputSource(AudioRTPStream, AudioRTPStream);
-            AudioRTPStream.Start(RemoteEndpoint, 20);
+            AudioRTPStream.Start(RemoteEndpoint, AudioRTPStream.PTimeTransmit, AudioRTPStream.PTimeReceive);
         }
 
 
@@ -391,6 +403,12 @@ namespace RTP
                     {
                         bFoundAgreeableCodec = true;
                         AgreedPayload = remotepayload;
+                        if ((AgreedPayload.Ptime != null) && (AgreedPayload.Ptime.Length > 0))
+                        {
+                            this.AudioRTPStream.PTimeReceive = Convert.ToInt32(AgreedPayload.Ptime);
+                            this.AudioRTPStream.PTimeTransmit = Convert.ToInt32(AgreedPayload.Ptime);
+                        }
+
                         break;
                     }
                 }
@@ -427,7 +445,9 @@ namespace RTP
                 AudioRTPStream.Payload = (byte) m_objAgreedPayload.PayloadId;
                 if ((m_objAgreedPayload.Name == "G722") && (m_objAgreedPayload.ClockRate == "16000"))
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
-                else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "16000") )
+                else if ((m_objAgreedPayload.Name == "G722_40") && (m_objAgreedPayload.ClockRate == "16000"))
+                    AudioRTPStream.AudioCodec = new G722CodecWrapper();
+                else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "16000"))
                    AudioRTPStream.AudioCodec = new SpeexCodec(NSpeex.BandMode.Wide);
                 else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "8000") )
                    AudioRTPStream.AudioCodec = new SpeexCodec(NSpeex.BandMode.Narrow);
@@ -439,7 +459,9 @@ namespace RTP
         public void AddKnownAudioPayload(KnownAudioPayload payload)
         {
             if ((payload & KnownAudioPayload.G722) == KnownAudioPayload.G722)
-                LocalPayloads.Add(new Payload() { PayloadId = 9, Channels = "1", ClockRate = "16000", Name = "G722" });
+                LocalPayloads.Add(new Payload() { PayloadId = 9, Channels = "1", ClockRate = "16000", Name = "G722", Ptime="20" });
+            if ((payload & KnownAudioPayload.G722_40) == KnownAudioPayload.G722_40)
+                LocalPayloads.Add(new Payload() { PayloadId = 9, Channels = "1", ClockRate = "16000", Name = "G722", Ptime = "40" });
             if ((payload & KnownAudioPayload.Speex16000) == KnownAudioPayload.Speex16000)
                LocalPayloads.Add(new Payload() { PayloadId = 96, Channels = "1", ClockRate = "16000", Name = "speex" });
             if ((payload & KnownAudioPayload.Speex8000) == KnownAudioPayload.Speex8000)

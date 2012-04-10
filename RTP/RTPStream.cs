@@ -135,14 +135,23 @@ namespace RTP
             set { m_bIsBound = value; }
         }
 
-        private int m_nPTime = 20;
+        protected int m_nPTimeReceive = 20;
 
-        protected int PTime
+        public virtual int PTimeReceive
         {
-          get { return m_nPTime; }
-          set { m_nPTime = value; }
+          get { return m_nPTimeReceive; }
+          set 
+          { 
+              m_nPTimeReceive = value; 
+          }
         }
 
+        protected int m_nPTimeTransmit = 20;
+        public virtual int PTimeTransmit
+        {
+            get { return m_nPTimeTransmit; }
+            set { m_nPTimeTransmit = value; }
+        }
 
         protected IMediaTimer SendTimer = null;
         protected IMediaTimer ExpectPacketTimer = null;
@@ -192,7 +201,7 @@ namespace RTP
 
     
 
-        public virtual void Start(IPEndPoint destinationEp, int nPacketTime)
+        public virtual void Start(IPEndPoint destinationEp, int nPacketTimeTx, int nPacketTimeRx)
         {
             if (IsActive == true)
                 return;
@@ -201,10 +210,11 @@ namespace RTP
 
             Reset();
             DestinationEndpoint = destinationEp;
-            PTime = nPacketTime;
+            PTimeReceive = nPacketTimeRx;
+            PTimeTransmit = nPacketTimeTx;
 
-            SendTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTime, new SocketServer.DelegateTimerFired(OnTimeToPushPacket), "", null);
-            ExpectPacketTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTime, new SocketServer.DelegateTimerFired(OnTimeToForwardPacket), "", null);
+            SendTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeTransmit, new SocketServer.DelegateTimerFired(OnTimeToPushPacket), "", null);
+            ExpectPacketTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeReceive, new SocketServer.DelegateTimerFired(OnTimeToForwardPacket), "", null);
 
             IsActive = true;           
         }
@@ -334,7 +344,7 @@ namespace RTP
         public virtual uint GetNextTimeStamp()
         {
             uint nRet = m_nTimeStamp;
-            m_nTimeStamp += (uint) (this.PTime*8);
+            m_nTimeStamp += (uint)(this.PTimeTransmit* 8);
             return nRet;
         }
 

@@ -4,5 +4,30 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          
+        <Style x:Key="ButtonLink" TargetType="Button">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource HyperBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#00000000" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <TextBlock TextDecorations="Underline" Foreground="{TemplateBinding Foreground}" Text="{TemplateBinding Content}" Background="{TemplateBinding Background}">
+                            
+                        </TextBlock>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True" >
+                                <Setter Property="Foreground" Value="Red" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+        
+        
     </Application.Resources>
 </Application>

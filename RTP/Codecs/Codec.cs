@@ -27,13 +27,22 @@ namespace RTP
             set { m_strName = value; }
         }
 
-        private int m_nPTime = 20;
+        private int m_nReceivePTime = 20;
 
-        public int PTime
+        public int ReceivePTime
         {
-            get { return m_nPTime; }
-            set { m_nPTime = value; }
+            get { return m_nReceivePTime; }
+            set { m_nReceivePTime = value; }
         }
+
+        private int m_nTransmitPTime = 20;
+
+        public int TransmitPTime
+        {
+            get { return m_nTransmitPTime; }
+            set { m_nTransmitPTime = value; }
+        }
+
         private int m_nPayloadType = 0;
 
         public int PayloadType

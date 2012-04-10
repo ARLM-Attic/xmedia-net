@@ -79,7 +79,7 @@ namespace System.Net.XMPP.Jingle
         }
 
         
-        public string m_strPtime = null;
+        private string m_strPtime = null;
         [XmlAttribute(AttributeName = "ptime")]
         public string Ptime
         {
@@ -87,8 +87,8 @@ namespace System.Net.XMPP.Jingle
             set { m_strPtime = value; }
         }
 
-        
-        public string m_strMaxptime = null;
+
+        private string m_strMaxptime = null;
         [XmlAttribute(AttributeName = "maxptime")]
         public string Maxptime
         {

@@ -126,6 +126,7 @@ namespace WPFXMPPClient
             foreach (MediaSession session in sessions)
             {
                 session.CallDuration = TimeSpan.MaxValue;
+                session.Statistics = "";
             }
         }
 
@@ -323,6 +324,8 @@ namespace WPFXMPPClient
                 session.StopMedia(AudioMixer);
                 SessionList.Remove(strSession);
                 ObservSessionList.Remove(session);
+                this.Dispatcher.Invoke(new DelegateAcceptSession(SessionEnded), strSession, null);
+
             }
         }
      
@@ -360,6 +363,11 @@ namespace WPFXMPPClient
         {
             StartMicrophoneAndSpeaker(AudioFormat.SixteenBySixteenThousandMono);
 
+            this.Activate();
+            System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/enter.wav");
+            player.Play();
+
+
             if (AutoAnswer == true)
                 return true;
 
@@ -368,6 +376,12 @@ namespace WPFXMPPClient
             return false;
         }
 
+        bool SessionEnded(string strSession, IQ iq)
+        {
+            System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/leave.wav");
+            player.Play();
+            return true;
+        }
 
         private bool m_bAutoAnswer = false;
 
@@ -711,6 +725,14 @@ namespace WPFXMPPClient
         private void CheckBoxUseAEC_Unchecked(object sender, RoutedEventArgs e)
         {
             ResetMicAndSpeakers();
+        }
+
+        private void ButtonResetStats_Click(object sender, RoutedEventArgs e)
+        {
+            MediaSession currsess = ((FrameworkElement)sender).DataContext as MediaSession;
+            if (currsess == null)
+                return;
+            currsess.AudioRTPStream.IncomingRTPPacketBuffer.Reset();
         }
     }
 
