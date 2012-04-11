@@ -133,6 +133,13 @@ namespace RTP
         /// </summary>
         public ushort SequenceNumber = 0;
 
+        public static ushort GetNextSequence(ushort currentseq)
+        {
+            if (currentseq == ushort.MaxValue)
+                return 0;
+            return (ushort) (currentseq + 1);
+        }
+
         /// <summary>
         /// Sampling instance of the first octet in the RTP data packet. (32 bits)
         /// Intially random, incremented by the number of samples for u-law and a-law only)

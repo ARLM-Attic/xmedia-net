@@ -46,7 +46,7 @@ namespace RTP
             }
         }
 
-        public virtual int PTimeReceive
+        public override int PTimeReceive
         {
             get { return m_nPTimeReceive; }
             set
@@ -96,7 +96,7 @@ namespace RTP
 
         object ReceiveLock = new object();
 		public static int MaxAudioPacketsQueue = 10;
-        protected override void PushNextMediaSample()
+        protected override void PushNextPacket()
         {
             if (AudioCodec == null)
                 return;
@@ -123,11 +123,46 @@ namespace RTP
             }
         }
 
+        public override byte[] GetNextPacketSample()
+        {
+            if (AudioCodec == null)
+                return null;
+
+            int nSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(AudioCodec.ReceivePTime));
+            int nSizeBytes = nSamples * AudioCodec.AudioFormat.BytesPerSample;
+
+            RTPPacket packet = IncomingRTPPacketBuffer.GetPacket();
+            if (packet == null)
+                return new byte[nSizeBytes];
+
+            return AudioCodec.DecodeToBytes(packet);
+        }
+
+
         public IAudioSink RenderSink = null;
 
 
         public AudioClasses.ByteBuffer SendAudioQueue = new AudioClasses.ByteBuffer();
         public AudioClasses.ByteBuffer ReceiveAudioQueue = new AudioClasses.ByteBuffer();
+
+        /// <summary>
+        /// Sends the next sample directly.  A client can either do the default, with UseInternalTimersForPacketPushPull set to true, which uses timers and reads audio from the
+        /// SendAudioQueue, or it can push them directly by turning off UseInternalTimersForPacketPushPull and calling SendNextSample at the appropriate ptime
+        /// </summary>
+        /// <param name="bData"></param>
+        public override void SendNextSample(byte[] bUncompressedAudio)
+        {
+            if (IsActive == false)
+                return;
+
+            if (AudioCodec == null)
+                return;
+
+            if (DestinationEndpoint == null)
+                return;
+
+            SendAudio(bUncompressedAudio);
+        }
 
         object SendLock = new object();
         protected override void SendNextPacket()
@@ -148,6 +183,11 @@ namespace RTP
             if (DestinationEndpoint == null)
                 return;
 
+            SendAudio(bUncompressedAudio);
+        }
+
+        protected void SendAudio(byte[] bUncompressedAudio)
+        {
             short[] sUncompressedAudio = AudioClasses.Utils.ConvertByteArrayToShortArrayLittleEndian(bUncompressedAudio);
 
 
@@ -167,9 +207,7 @@ namespace RTP
                         RTPUDPClient.SendUDP(bDataPacket, bDataPacket.Length, DestinationEndpoint);
                 }
             }
-            
         }
-
         private int m_nMaxSendBufferSize = AudioClasses.AudioFormat.SixteenBySixteenThousandMono.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(100));
         public int MaxSendBufferSize
         {

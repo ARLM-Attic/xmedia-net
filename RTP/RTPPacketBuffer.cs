@@ -113,6 +113,8 @@ namespace RTP
           m_bHaveSetInitialSequence = false;
           m_nNextExpectedSequence = 0xFFFF;
           m_nLastReceivedSequence = 0xFFFF;
+          CurrentPacketQueueMinimumSize = InitialPacketQueueMinimumSize;
+          CurrentMaxQueueSize = InitialMaxQueueSize;
           m_nTotalPackets = 0;
           FirstPacketTime = DateTime.Now;
           lock (PacketLock)
@@ -221,6 +223,7 @@ namespace RTP
       {
           RTPPacket packetret = null;
           int nNewSize = 0;
+
           lock (PacketLock)
           {
               if (Packets.Count < CurrentPacketQueueMinimumSize)  /// If packet unavailability becomes common, grow our queue so it stops happenning
@@ -239,13 +242,15 @@ namespace RTP
               }
 
               packetret = Packets[0];
-              if (packetret.SequenceNumber > m_nNextExpectedSequence)
+              int nSequenceCompare = CompareSequence(packetret.SequenceNumber, m_nNextExpectedSequence);
+
+              if (nSequenceCompare > 0) //(packetret.SequenceNumber > m_nNextExpectedSequence)
               {
                   if (Packets.Count >= CurrentMaxQueueSize)
                   {
                       // May have lost the desired packet.  We've waited all we can, get the lowest packet number
                       Packets.RemoveAt(0);
-                      m_nNextExpectedSequence = (ushort)(packetret.SequenceNumber + 1);
+                      m_nNextExpectedSequence = RTPPacket.GetNextSequence(packetret.SequenceNumber);
                   }
                   else
                   {
@@ -253,10 +258,10 @@ namespace RTP
                       packetret = null;
                   }
               }
-              else if (packetret.SequenceNumber == m_nNextExpectedSequence)
+              else if (nSequenceCompare == 0) //(packetret.SequenceNumber == m_nNextExpectedSequence)
               {
                   Packets.RemoveAt(0);
-                  m_nNextExpectedSequence = (ushort)(packetret.SequenceNumber + 1);
+                  m_nNextExpectedSequence = RTPPacket.GetNextSequence(packetret.SequenceNumber);
               }
               else
               {

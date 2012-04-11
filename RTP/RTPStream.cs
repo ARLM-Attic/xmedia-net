@@ -83,6 +83,7 @@ namespace RTP
         {
             Payload = nPayload;
             SSRC = (uint) ran.Next();
+            Sequence = (ushort) ran.Next(ushort.MaxValue);
         }
         static Random ran = new Random();
 
@@ -213,10 +214,21 @@ namespace RTP
             PTimeReceive = nPacketTimeRx;
             PTimeTransmit = nPacketTimeTx;
 
-            SendTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeTransmit, new SocketServer.DelegateTimerFired(OnTimeToPushPacket), "", null);
-            ExpectPacketTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeReceive, new SocketServer.DelegateTimerFired(OnTimeToForwardPacket), "", null);
+            if (UseInternalTimersForPacketPushPull == true)
+            {
+                SendTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeTransmit, new SocketServer.DelegateTimerFired(OnTimeToPushPacket), "", null);
+                ExpectPacketTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeReceive, new SocketServer.DelegateTimerFired(OnTimeToForwardPacket), "", null);
+            }
 
             IsActive = true;           
+        }
+
+        private bool m_bUseInternalTimersForPacketPushPull = true;
+
+        public bool UseInternalTimersForPacketPushPull
+        {
+            get { return m_bUseInternalTimersForPacketPushPull; }
+            set { m_bUseInternalTimersForPacketPushPull = value; }
         }
 
         public virtual void StopSending()
@@ -226,8 +238,16 @@ namespace RTP
 
             IsActive = false;
             IsBound = false;
-            SendTimer.Cancel();
-            ExpectPacketTimer.Cancel();
+            if (SendTimer != null)
+            {
+                SendTimer.Cancel();
+                SendTimer = null;
+            }
+            if (ExpectPacketTimer != null)
+            {
+                ExpectPacketTimer.Cancel();
+                ExpectPacketTimer = null;
+            }
             RTPUDPClient.StopReceiving();
             RTPUDPClient.OnReceiveMessage -= new UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
             RTPUDPClient = null;
@@ -242,7 +262,7 @@ namespace RTP
         /// 
         void OnTimeToForwardPacket(IMediaTimer timer)
         {
-            PushNextMediaSample();
+            PushNextPacket();
         }
 
         void  RTPUDPClient_OnReceiveMessage(byte[] bData, int nLength, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived)
@@ -299,11 +319,25 @@ namespace RTP
         {
         }
 
-        protected virtual void PushNextMediaSample()
+        public virtual void SendNextSample(byte[] bData)
         {
         }
 
 
+
+        /// <summary>
+        /// Pushes the next available packet to the audio/video receive buffer
+        /// </summary>
+        protected virtual void PushNextPacket()
+        {
+        }
+
+        public virtual byte[] GetNextPacketSample()
+        {
+            return null;
+        }
+
+      
      
         private byte m_nPayload = 9;
 
@@ -331,9 +365,11 @@ namespace RTP
 
         public void Reset()
         {
+            Random ran = new Random();
             this.IncomingRTPPacketBuffer.Reset();
             ReceiveSSRC = 0;
-            m_nSequence = 0;
+            SSRC = (uint)ran.Next();
+            m_nSequence = (ushort) ran.Next(ushort.MaxValue);
             m_nTimeStamp = 0;
         }
 
@@ -355,7 +391,8 @@ namespace RTP
             packet.PayloadType = this.Payload;
             packet.Marker = (m_nSequence == 0) ? true : false;
 
-            packet.SequenceNumber = m_nSequence++;
+            m_nSequence = RTPPacket.GetNextSequence(m_nSequence);
+            packet.SequenceNumber = m_nSequence;
         }
     }
 
