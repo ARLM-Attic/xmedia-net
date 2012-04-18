@@ -1222,8 +1222,18 @@ MFVideoEncoder::~MFVideoEncoder()
 }
 
 
+
 bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, DateTime dtStart, bool Supply48by16Audio)
+{
+	return Start(strFileName, videoformat, dtStart, true, Supply48by16Audio);
+}
+
+bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, DateTime dtStart, bool bSupplyVideo, bool Supply48by16Audio)
 {    
+
+	if ( (bSupplyVideo == false) && (Supply48by16Audio == false) )
+		throw gcnew Exception("Must supply video, audio or both");
+
 	StartTime = dtStart;
 	VideoFormat = videoformat;
 	HRESULT hr;
@@ -1257,45 +1267,48 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 	
     // Set the output media type.
 	hr = MFCreateMediaType(&pMediaTypeOut);   
-	hr = pMediaTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);     
-	if (videoformat->VideoDataFormat == VideoDataFormat::MP4)
-		hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);   
-	else if (videoformat->VideoDataFormat == VideoDataFormat::WMV9)
-		hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_WMV3);   
-	else if (videoformat->VideoDataFormat == VideoDataFormat::WMVSCREEN)
-		hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_MSS2);   
-	else if (videoformat->VideoDataFormat == VideoDataFormat::VC1)
-		hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_WVC1);   
-	else
-		hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);   
 
-	hr = pMediaTypeOut->SetUINT32(MF_MT_AVG_BITRATE, videoformat->EncodingBitRate);   
-	hr = pMediaTypeOut->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);   
-	hr = MFSetAttributeSize(pMediaTypeOut, MF_MT_FRAME_SIZE, videoformat->Width, videoformat->Height);
-	hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_FRAME_RATE, videoformat->FrameRate, 1);   
-	hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);   
-
-	if (videoformat->VideoDataFormat == VideoDataFormat::WMVSCREEN)
+	if (bSupplyVideo == true)
 	{
-		//hr = pMediaTypeOut->SetUINT32(MFPKEY_ASFOVERHEADPERFRAME, MFVideoInterlace_Progressive);   
+		hr = pMediaTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);     
+		if (videoformat->VideoDataFormat == VideoDataFormat::MP4)
+			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);   
+		else if (videoformat->VideoDataFormat == VideoDataFormat::WMV9)
+			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_WMV3);   
+		else if (videoformat->VideoDataFormat == VideoDataFormat::WMVSCREEN)
+			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_MSS2);   
+		else if (videoformat->VideoDataFormat == VideoDataFormat::VC1)
+			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_WVC1);   
+		else
+			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);   
+
+		hr = pMediaTypeOut->SetUINT32(MF_MT_AVG_BITRATE, videoformat->EncodingBitRate);   
+		hr = pMediaTypeOut->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);   
+		hr = MFSetAttributeSize(pMediaTypeOut, MF_MT_FRAME_SIZE, videoformat->Width, videoformat->Height);
+		hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_FRAME_RATE, videoformat->FrameRate, 1);   
+		hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);   
+
+		if (videoformat->VideoDataFormat == VideoDataFormat::WMVSCREEN)
+		{
+			//hr = pMediaTypeOut->SetUINT32(MFPKEY_ASFOVERHEADPERFRAME, MFVideoInterlace_Progressive);   
 		
+		}
+
+
+		hr = pSinkWriter->AddStream(pMediaTypeOut, &streamIndexVideo);   
+
+
+		// Set the video input media type.
+		hr = MFCreateMediaType(&pMediaTypeIn);   
+		hr = pMediaTypeIn->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);   
+		hr = pMediaTypeIn->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);     
+		hr = pMediaTypeIn->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);   
+		hr = MFSetAttributeSize(pMediaTypeIn, MF_MT_FRAME_SIZE, videoformat->Width, videoformat->Height);   
+		hr = MFSetAttributeRatio(pMediaTypeIn, MF_MT_FRAME_RATE, videoformat->FrameRate, 1);   
+		hr = MFSetAttributeRatio(pMediaTypeIn, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);   
+		hr = pMediaTypeIn->SetUINT32(MF_MT_DEFAULT_STRIDE, videoformat->Width*4);   
+		hr = pSinkWriter->SetInputMediaType(streamIndexVideo, pMediaTypeIn, NULL);   
 	}
-
-
-	hr = pSinkWriter->AddStream(pMediaTypeOut, &streamIndexVideo);   
-
-
-    // Set the video input media type.
-    hr = MFCreateMediaType(&pMediaTypeIn);   
-    hr = pMediaTypeIn->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);   
-    hr = pMediaTypeIn->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);     
-	hr = pMediaTypeIn->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);   
-    hr = MFSetAttributeSize(pMediaTypeIn, MF_MT_FRAME_SIZE, videoformat->Width, videoformat->Height);   
-    hr = MFSetAttributeRatio(pMediaTypeIn, MF_MT_FRAME_RATE, videoformat->FrameRate, 1);   
-    hr = MFSetAttributeRatio(pMediaTypeIn, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);   
-    hr = pMediaTypeIn->SetUINT32(MF_MT_DEFAULT_STRIDE, videoformat->Width*4);   
-    hr = pSinkWriter->SetInputMediaType(streamIndexVideo, pMediaTypeIn, NULL);   
-
 
 
 	if (Supply48by16Audio == true)
@@ -1368,8 +1381,11 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 		StreamIndexAudio = streamIndexAudio;
     }
 
-	pMediaTypeOut->Release();
-	pMediaTypeOut = NULL;
+	if (pMediaTypeOut != NULL)
+	{
+		pMediaTypeOut->Release();
+		pMediaTypeOut = NULL;
+	}
 
 	if (pAudioMediaTypeOut != NULL)
 	{
@@ -1377,8 +1393,11 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 		pAudioMediaTypeOut = NULL;
 	}
 
-	pMediaTypeIn->Release();
-	pMediaTypeIn = NULL;
+	if (pMediaTypeIn != NULL)
+	{
+		pMediaTypeIn->Release();
+		pMediaTypeIn = NULL;
+	}
 
 	if (pAudioMediaTypeIn != NULL)
 	{

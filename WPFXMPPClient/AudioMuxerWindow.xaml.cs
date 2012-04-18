@@ -42,6 +42,7 @@ namespace WPFXMPPClient
             this.Visibility = System.Windows.Visibility.Hidden;
         }
 
+
         /// <summary>
         /// Our audio muxer.  Takes our microphone device and each incoming RTP stream as input, outputs
         /// to our speaker device and each outgoing RTP stream.  May also have a recording interface as ouput and tone/song generators as inputs
@@ -115,6 +116,11 @@ namespace WPFXMPPClient
                 SpeakerVolume = new ImageAquisition.AudioDeviceVolume(SpeakerDevices[0]);
                 this.SliderSpeakerVolume.DataContext = SpeakerVolume;
             }
+
+            AnswerTypeInformation normal = new AnswerTypeInformation() { AnswerType = AnswerType.Normal, Description = "Normal Answer" };
+            AnswerTypeInformation dnd = new AnswerTypeInformation() { AnswerType = AnswerType.DND, Description = "Do Not Disturb" };
+            AnswerTypeInformation conference = new AnswerTypeInformation() { AnswerType = AnswerType.AcceptToConference, Description = "Auto Add to Conference" };
+
 
 
             this.DataContext = this;
@@ -736,5 +742,36 @@ namespace WPFXMPPClient
         }
     }
 
+    public enum AnswerType
+    {
+        Normal,
+        DND,
+        AcceptToConference,
+        AcceptToHold,
+    }
+
+    public class AnswerTypeInformation
+    {
+        public AnswerTypeInformation()
+        {
+        }
+
+        private AnswerType m_eAnswerType = AnswerType.Normal;
+
+        public AnswerType AnswerType
+        {
+            get { return m_eAnswerType; }
+            set { m_eAnswerType = value; }
+        }
+
+        private string m_strDescription = "";
+
+        public string Description
+        {
+            get { return m_strDescription; }
+            set { m_strDescription = value; }
+        }
+        
+    }
   
 }

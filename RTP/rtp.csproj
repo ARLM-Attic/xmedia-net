@@ -56,6 +56,7 @@
     <Compile Include="Codecs\G722Codec.cs" />
     <Compile Include="Codecs\G722CodecWrapper.cs" />
     <Compile Include="Codecs\SpeexCodec.cs" />
+    <Compile Include="Codecs\UDPMotionJpegCodec.cs" />
     <Compile Include="ICE.cs" />
     <Compile Include="JingleMediaSession.cs" />
     <Compile Include="RTPAudioStream.cs" />

@@ -77,6 +77,14 @@ namespace RTP
             }
         }
 
+        private VideoCaptureRate m_objVideoFormat = null;
+
+        protected virtual VideoCaptureRate VideoFormat
+        {
+            get { return m_objVideoFormat; }
+            set { m_objVideoFormat = value; }
+        }
+
         public virtual RTPPacket[] Encode(short[] sData)
         {
             return null;

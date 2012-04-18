@@ -89,6 +89,7 @@ namespace ImageAquisition
 
 
 		bool Start(String ^strFileName, VideoCaptureRate ^videoformat, System::DateTime dtStart, bool Supply48by16Audio);
+		bool Start(String ^strFileName, VideoCaptureRate ^videoformat, System::DateTime dtStart, bool SupplyVideo, bool Supply48by16Audio);
 		void AddVideoFrame(array<unsigned char> ^RGBData, DateTime dtStart);
 		void AddAudioFrame(array<unsigned char> ^PCMData48KHz16Bit, DateTime dtStart);
 		void Stop();
