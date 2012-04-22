@@ -204,10 +204,10 @@ namespace RTP
 
     
 
-        public virtual void Start(IPEndPoint destinationEp, int nPacketTimeTx, int nPacketTimeRx)
+        public virtual bool Start(IPEndPoint destinationEp, int nPacketTimeTx, int nPacketTimeRx)
         {
             if (IsActive == true)
-                return;
+                return false;
             if (IsBound == false)
                 throw new Exception("You first must bind the local socket by calling Bind()");
 
@@ -222,7 +222,9 @@ namespace RTP
                 ExpectPacketTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeReceive, new SocketServer.DelegateTimerFired(OnTimeToForwardPacket), "", null);
             }
 
-            IsActive = true;           
+            IsActive = true;
+
+            return true;
         }
 
         private bool m_bUseInternalTimersForPacketPushPull = true;

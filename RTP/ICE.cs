@@ -139,13 +139,6 @@ namespace RTP
             pattr.Priority = (int) CalculatePriority(110, 10, this.LocalCandidate.component); ///Peer reflexive, not sure of the purpose of this yet  //this.Priority;
             msgRequest.AddAttribute(pattr);
 
-            if (strUsername != null)
-            {
-                UserNameAttribute unameattr = new UserNameAttribute();
-                unameattr.UserName = strUsername;
-                msgRequest.AddAttribute(unameattr);
-            }
-
             if (IsControlling == true)
             {
                 IceControllingAttribute cattr = new IceControllingAttribute();
@@ -156,6 +149,15 @@ namespace RTP
                 IceControlledAttribute cattr = new IceControlledAttribute();
                 msgRequest.AddAttribute(cattr);
             }
+
+            if (strUsername != null)
+            {
+                UserNameAttribute unameattr = new UserNameAttribute();
+                unameattr.UserName = strUsername;
+                msgRequest.AddAttribute(unameattr);
+            }
+
+          
 
             /// Add message integrity, computes over all the items currently added
             /// 
@@ -207,15 +209,12 @@ namespace RTP
             msgRequest.Method = StunMethod.Binding;
             msgRequest.Class = StunClass.Request;
 
-            //MappedAddressAttribute mattr = new MappedAddressAttribute();
-            //mattr.IPAddress = LocalCandidate.IPEndPoint.Address;
-            //mattr.Port = (ushort)LocalCandidate.IPEndPoint.Port;
-
-            //msgRequest.AddAttribute(mattr);
-
             PriorityAttribute pattr = new PriorityAttribute();
-            pattr.Priority = this.Priority;
+            pattr.Priority = (int)CalculatePriority(110, 30, this.LocalCandidate.component); ///Peer reflexive, not sure of the purpose of this yet  //this.Priority;
             msgRequest.AddAttribute(pattr);
+
+            IceControllingAttribute cattr = new IceControllingAttribute();
+            msgRequest.AddAttribute(cattr);
 
             UseCandidateAttribute uattr = new UseCandidateAttribute();
             msgRequest.AddAttribute(uattr);
@@ -227,8 +226,6 @@ namespace RTP
                 msgRequest.AddAttribute(unameattr);
             }
            
-            IceControllingAttribute cattr = new IceControllingAttribute();
-            msgRequest.AddAttribute(cattr);
 
             /// Add message integrity, computes over all the items currently added
             /// 
@@ -250,6 +247,21 @@ namespace RTP
                 if (ResponseMessage != null)
                     break;
             }
+
+
+            /// Need to send a binding indication every 3 s from now on?
+            STUN2Message msgBindingIndication = new STUN2Message();
+            msgBindingIndication.Method = StunMethod.Binding;
+            msgBindingIndication.Class = StunClass.Inidication;
+
+
+            /// Add fingerprint
+            /// 
+            nLengthWithoutFingerPrint = msgBindingIndication.Bytes.Length;
+            fattr = new FingerPrintAttribute();
+            msgBindingIndication.AddAttribute(fattr);
+            fattr.ComputeCRC(msgBindingIndication, nLengthWithoutFingerPrint);
+            STUN2Message ResponseMessage2 = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgBindingIndication, 100);
         }
         public int[] Timeouts = new int[] { 200, 500, 800, 1200 };
 

@@ -45,6 +45,9 @@ namespace RTP
     {
         public MediaSession(string strSession, string strRemoteJID, IPEndPoint LocalEp, XMPPClient client)
         {
+            UserName = GenerateRandomString(8);
+            Password = GenerateRandomString(16);
+
             m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
             AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
             AddKnownAudioPayload(KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711 | KnownAudioPayload.G722);
@@ -59,6 +62,9 @@ namespace RTP
 
         public MediaSession(string strRemoteJID, IPEndPoint LocalEp, XMPPClient client)
         {
+            UserName = GenerateRandomString(8);
+            Password = GenerateRandomString(16);
+
             m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
             AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
             AddKnownAudioPayload(KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711 | KnownAudioPayload.G722);
@@ -72,6 +78,9 @@ namespace RTP
 
         public MediaSession(string strSession, IQ intialJingle, KnownAudioPayload LocalPayloads, IPEndPoint LocalEp, XMPPClient client)
         {
+            UserName = GenerateRandomString(8);
+            Password = GenerateRandomString(16);
+
             m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
             AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
             AddKnownAudioPayload(LocalPayloads);
@@ -84,13 +93,17 @@ namespace RTP
             SessionState = SessionState.Incoming;
         }
 
-        public void StartIncoming(IQ intialJingle)
+
+        public IQ InitialJingle = null;
+        public void StartIncoming(IQ initialJingle)
         {
+            InitialJingle = initialJingle;
+
             Bind();
 
-            ParsePayloads(intialJingle);
+            ParsePayloads(initialJingle);
             /// If we don't have any candidates in our sesion-initate message, we must wait for a transport info to get the candidates
-            ParseCandidates(intialJingle);
+            ParseCandidates(initialJingle);
             //if (RemoteCandidates.Count > 0)
             //    SendAcceptSession();
             if (RemoteCandidates.Count > 0)
@@ -221,25 +234,66 @@ namespace RTP
 
         public virtual string SendInitiateSession()
         {
-            return null;
+            Jingle jingleinfo = BuildOutgoingAudioRequest(true, true);
+
+            string strSession = XMPPClient.JingleSessionManager.InitiateNewSession(RemoteJID, jingleinfo);
+            Session = strSession;
+            return Session;
         }
 
         public void GotNewSessionAck()
         {
-            if (Initiator == true)
-            {
-                Jingle jingleinfo = this.BuildOutgoingTransportInfo();
-                XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, jingleinfo);
-            }
+            //if (Initiator == true)
+            //{
+            //    Jingle jingleinfo = this.BuildOutgoingTransportInfo();
+            //    XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, jingleinfo);
+            //}
         }
         /// <summary>
         /// Accept the session as soon as we agree on media.  Candidates are then tried
         /// </summary>
-        protected virtual void SendAcceptSession()
+        bool m_bHasAccepted = false;
+
+        /// <summary>
+        ///  The user must accept this call
+        /// </summary>
+        bool m_bHasUserAccepted = false;
+        /// <summary>
+        /// ICE negotiation must complete successfully before we can send an accept
+        /// </summary>
+        bool m_bHasICEAccepted = false;
+        protected void ICEDoneStartRTP()
         {
-            if (RemoteCandidates.Count < 0)
-                return;
+            if (Initiator == false)
+            {
+                if (RemoteCandidates.Count < 0)
+                    return;
+
+                m_bHasICEAccepted = true;
+                DoSendAcceptSession();
+            }
         }
+
+        public void UserAcceptSession()
+        {
+            m_bHasUserAccepted = true;
+            DoSendAcceptSession();
+        }
+
+        void DoSendAcceptSession()
+        {
+            if (m_bHasAccepted == true)
+                return;
+            if (m_bHasUserAccepted == false)
+                return;
+            if (m_bHasICEAccepted == false)
+                return;
+
+            m_bHasAccepted = true;
+            Jingle jingleinfo = BuildOutgoingAudioRequest(false, false);
+            XMPPClient.JingleSessionManager.SendAcceptSession(this.Session, jingleinfo);
+        }
+
      
         public virtual void GotTransportInfo(IQ iq)
         {
@@ -249,7 +303,13 @@ namespace RTP
                 return;
 
             ParseCandidates(iq);
-            PerformICEStunProcedures(); /// Should have all our transport info  now
+            if (Initiator == true) // we send our transport info in our session initiate, so we should now have both
+            {
+                PerformICEStunProcedures(); /// Should have all our transport info  now
+            }
+            else
+            {
+            }
         }
 
         void SendTransportInfo()
@@ -282,19 +342,18 @@ namespace RTP
                 /// Not sure how stun is supposed to work, but unless we send out packets to, the firewall is never opened on the receiver side
                 /// 
 
+                Jingle jingleinfo = new Jingle();
+                jingleinfo.Action = Jingle.SessionInfo;
+                jingleinfo.JingleStateChange = JingleStateChange.Ringing;
+                jingleinfo.Content = null;
+                XMPPClient.JingleSessionManager.SendJingle(this.Session, jingleinfo);
+
                 PerformICEStunProcedures(); /// Should have all our transport info  now
             }
 
         }
 
-        protected void ICEDoneStartRTP()
-        {
-            if (Initiator == false)
-            {
-                SendAcceptSession();
-            }
-        }
-
+      
         AudioConferenceMixer AudioMixer = null;
         public void SessionAccepted(IQ iq, AudioConferenceMixer objAudioMixer)
         {
@@ -380,8 +439,6 @@ namespace RTP
             {
                 jingleinfo.Content.ICETransport = new Transport();
                 jingleinfo.Content.GoogleTransport = null;
-                UserName = GenerateRandomString(8);
-                Password = GenerateRandomString(16);
                 jingleinfo.Content.ICETransport.ufrag = UserName;
                 jingleinfo.Content.ICETransport.pwd = Password;
 
@@ -442,41 +499,48 @@ namespace RTP
             LocalCandidates.Clear();
             if (UseStun == true)
             {
-                IPEndPoint publicep = this.PerformSTUNRequest(STUNServer, 1000);
-                if (publicep != null)
+                try
                 {
-
-                    //Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "stun", component = 1 };
-                    Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "srflx", component = 1, relport = this.AudioRTPStream.LocalEndpoint.Port.ToString(), reladdr=this.AudioRTPStream.LocalEndpoint.Address.ToString() };
-                    stuncand.IPEndPoint = publicep;
-                    //stuncand.username = GenerateRandomString(16);
-                    //stuncand.password = GenerateRandomString(16);
-                    if (UseGoogleTalkProtocol == true)
+                    IPEndPoint publicep = this.PerformSTUNRequest(STUNServer, 1000);
+                    if (publicep != null)
                     {
-                        stuncand.foundation = null;
-                        stuncand.preference = "1.0";
+
+                        //Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "stun", component = 1 };
+                        Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "srflx", component = 1, relport = this.AudioRTPStream.LocalEndpoint.Port.ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
+                        stuncand.IPEndPoint = publicep;
+                        //stuncand.username = GenerateRandomString(16);
+                        //stuncand.password = GenerateRandomString(16);
+                        if (UseGoogleTalkProtocol == true)
+                        {
+                            stuncand.foundation = null;
+                            stuncand.preference = "1.0";
+                        }
+                        else
+                        {
+                            stuncand.foundation = "2";
+                            stuncand.id = "2";
+                            stuncand.preference = null;
+                            stuncand.name = null;
+                        }
+
+                        CalculatePriority(100, 10, stuncand);
+                        LocalCandidates.Add(stuncand);
+
+                        /// RTCP candidate
+                        Candidate stunrtcpcand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port + 1, type = "srflx", component = 2, relport = (this.AudioRTPStream.LocalEndpoint.Port + 1).ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
+                        stunrtcpcand.IPEndPoint = new IPEndPoint(publicep.Address, publicep.Port + 1);
+                        stunrtcpcand.foundation = "2";
+                        stunrtcpcand.id = "4";
+                        stunrtcpcand.preference = null;
+                        stunrtcpcand.name = null;
+                        CalculatePriority(100, 10, stunrtcpcand);
+                        LocalCandidates.Add(stunrtcpcand);
+
                     }
-                    else
-                    {
-                        stuncand.foundation = "2";
-                        stuncand.id = "2";
-                        stuncand.preference = null;
-                        stuncand.name = null;
-                    }
-
-                    CalculatePriority(100, 10, stuncand);
-                    LocalCandidates.Add(stuncand);
-
-                    /// RTCP candidate
-                    Candidate stunrtcpcand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port+1, type = "srflx", component = 2, relport = (this.AudioRTPStream.LocalEndpoint.Port+1).ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
-                    stunrtcpcand.IPEndPoint = new IPEndPoint(publicep.Address, publicep.Port+1);
-                    stunrtcpcand.foundation = "4";
-                    stunrtcpcand.id = "4";
-                    stunrtcpcand.preference = null;
-                    stunrtcpcand.name = null;
-                    CalculatePriority(100, 10, stunrtcpcand);
-                    LocalCandidates.Add(stunrtcpcand);
-
+                }
+                catch (Exception ex)
+                {
+                    /// STUN server DNS was invalid, guess we get not public ip
                 }
             }
 
@@ -504,7 +568,7 @@ namespace RTP
             /// RTCP candidate
             Candidate rtcpcand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port+1, type = "host", component=2 };
             rtcpcand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port + 1);
-            rtcpcand.foundation = "3";
+            rtcpcand.foundation = "1";
             rtcpcand.id = "3";
             rtcpcand.preference = null;
             rtcpcand.name = null;
@@ -525,7 +589,7 @@ namespace RTP
             {
                 foreach (Payload localpayload in LocalPayloads)
                 {
-                    if ((remotepayload.Name == localpayload.Name) && (remotepayload.ClockRate == localpayload.ClockRate))
+                    if ( (string.Compare(remotepayload.Name, localpayload.Name, true) == 0) && (remotepayload.ClockRate == localpayload.ClockRate))
                     {
                         bFoundAgreeableCodec = true;
                         AgreedPayload = remotepayload;
@@ -569,9 +633,9 @@ namespace RTP
             { 
                 m_objAgreedPayload = value;
                 AudioRTPStream.Payload = (byte) m_objAgreedPayload.PayloadId;
-                if ((m_objAgreedPayload.Name == "G722") && (m_objAgreedPayload.ClockRate == "16000"))
+                if ((m_objAgreedPayload.Name == "G722") && (m_objAgreedPayload.ClockRate == "8000"))
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
-                else if ((m_objAgreedPayload.Name == "G722_40") && (m_objAgreedPayload.ClockRate == "16000"))
+                else if ((m_objAgreedPayload.Name == "G722_40") && (m_objAgreedPayload.ClockRate == "8000"))
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
                 else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "16000"))
                    AudioRTPStream.AudioCodec = new SpeexCodec(NSpeex.BandMode.Wide);
@@ -585,9 +649,9 @@ namespace RTP
         public void AddKnownAudioPayload(KnownAudioPayload payload)
         {
             if ((payload & KnownAudioPayload.G722) == KnownAudioPayload.G722)
-                LocalPayloads.Add(new Payload() { PayloadId = 9, Channels = "1", ClockRate = "16000", Name = "G722", Ptime="20" });
+                LocalPayloads.Add(new Payload() { PayloadId = 9, Channels = "1", ClockRate = "8000", Name = "G722", Ptime="20" });
             if ((payload & KnownAudioPayload.G722_40) == KnownAudioPayload.G722_40)
-                LocalPayloads.Add(new Payload() { PayloadId = 9, Channels = "1", ClockRate = "16000", Name = "G722", Ptime = "40" });
+                LocalPayloads.Add(new Payload() { PayloadId = 9, Channels = "1", ClockRate = "8000", Name = "G722", Ptime = "40" });
             if ((payload & KnownAudioPayload.Speex16000) == KnownAudioPayload.Speex16000)
                LocalPayloads.Add(new Payload() { PayloadId = 96, Channels = "1", ClockRate = "16000", Name = "speex" });
             if ((payload & KnownAudioPayload.Speex8000) == KnownAudioPayload.Speex8000)
@@ -627,13 +691,13 @@ namespace RTP
         System.Threading.ManualResetEvent EventWaitForInitiatedToRespond = new System.Threading.ManualResetEvent(false);
         protected virtual void PerformICEStunProcedures()
         {
+            System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoICEStunProcedures), this);
+        }
+
+        void DoICEStunProcedures(object obj)
+        {
             IceDone = false;
 
-            Jingle jingleinfo = new Jingle();
-            jingleinfo.Action = Jingle.SessionInfo;
-            jingleinfo.JingleStateChange = JingleStateChange.Ringing;
-            jingleinfo.Content = null;
-            XMPPClient.JingleSessionManager.SendJingle(this.Session, jingleinfo);
 
             IPEndPoint epDefault = null;
 
@@ -774,25 +838,21 @@ namespace RTP
                                 strlfrag = unameattrib.UserName.Substring(nColonAt + 1);
                             }
                         }
-                        if (cont.ParsedAttribute.Type == StunAttributeType.Priority)
-                        {
-
-                            PriorityAttribute pattrib = cont.ParsedAttribute as PriorityAttribute;
-                            foreach (CandidatePair nextpair in this.CandidatePairs)
-                            {
-                                if (epfrom == nextpair.RemoteCandidate.IPEndPoint)
-                                {
-                                    PairReferenced = nextpair;
-                                    nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
-                                    break;
-                                }
-                            }
-                        }
                         if ((cont.ParsedAttribute.Type == StunAttributeType.UseCandidate) && (Initiator == false))
                         {
                             /// Other end is telling us to use this candiate
                             /// 
                             UseThisCandidate = true;
+                        }
+                    }
+
+                    foreach (CandidatePair nextpair in this.CandidatePairs)
+                    {
+                        if ( (epfrom.Address.Equals(nextpair.RemoteCandidate.IPEndPoint.Address) == true) && (epfrom.Port == nextpair.RemoteCandidate.IPEndPoint.Port))
+                        {
+                            PairReferenced = nextpair;
+                            nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
+                            break;
                         }
                     }
 
@@ -861,6 +921,7 @@ namespace RTP
         public IPEndPoint PerformSTUNRequest(string strStunServer, int nTimeout)
         {
             IPEndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(strStunServer, StunPort);
+
             return PerformSTUNRequest(epStun, nTimeout);
         }
 
@@ -997,29 +1058,7 @@ namespace RTP
         {
         }
 
-        public override string SendInitiateSession()
-        {
-            Jingle jingleinfo = BuildOutgoingAudioRequest(true, true);
-
-            string strSession = XMPPClient.JingleSessionManager.InitiateNewSession(RemoteJID, jingleinfo);
-            Session = strSession;
-            return Session;
-        }
-
-        bool m_bHasAccepted = false;
-        protected override void SendAcceptSession()
-        {
-            if (RemoteCandidates.Count < 0)
-                return;
-            if (m_bHasAccepted == true)
-                return;
-
-            m_bHasAccepted = true;
-            Jingle jingleinfo = BuildOutgoingAudioRequest(false, false);
-            XMPPClient.JingleSessionManager.SendAcceptSession(this.Session, jingleinfo);
-        }
-
-
+  
         protected override void ParsePayloads(IQ iq)
         {
             JingleIQ jingleiq = iq as JingleIQ;

@@ -290,27 +290,37 @@ namespace WPFXMPPClient
             {
                 SessionList.Add(strSession, session);
                 ObservSessionList.Add(session);
+                session.StartIncoming(iq);
+                System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoUserAcceptCall), session);
             }
             catch (Exception ex)
             {
+                SessionList.Remove(strSession);
+                ObservSessionList.Remove(session);
+
                 /// No compatible codecs probably
                 XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.MediaError);
                 return;
             }
 
 
-            bool bAcceptNewCall = (bool)this.Dispatcher.Invoke(new DelegateAcceptSession(ShouldAcceptSession), strSession, iq);
+        }
+
+        void DoUserAcceptCall(object obj)
+        {
+            JingleMediaSession session = obj as JingleMediaSession;
+            bool bAcceptNewCall = (bool)this.Dispatcher.Invoke(new DelegateAcceptSession(ShouldAcceptSession), session.Session, session.InitialJingle);
 
             if (bAcceptNewCall == true)
             {
-                session.StartIncoming(iq);
+                session.UserAcceptSession();
             }
             else
             {
-                SessionList.Remove(strSession);
+                SessionList.Remove(session.Session);
                 ObservSessionList.Remove(session);
 
-                XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.Decline);
+                XMPPClient.JingleSessionManager.TerminateSession(session.Session, TerminateReason.Decline);
             }
 
         }

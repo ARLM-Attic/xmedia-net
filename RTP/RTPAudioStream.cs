@@ -86,12 +86,14 @@ namespace RTP
             set { m_nPacketBytes = value; }
         }
 
-        public override void Start(IPEndPoint destinationEp, int nPacketTimeTx, int nPacketTimeRx)
+        public override bool Start(IPEndPoint destinationEp, int nPacketTimeTx, int nPacketTimeRx)
         {
+            if (this.AudioCodec == null)
+                return false;
             SendAudioQueue.Clear();
             this.AudioCodec.ReceivePTime = nPacketTimeRx;
             this.AudioCodec.TransmitPTime = nPacketTimeTx;
-            base.Start(destinationEp, nPacketTimeTx, nPacketTimeRx);
+            return base.Start(destinationEp, nPacketTimeTx, nPacketTimeRx);
         }
 
         object ReceiveLock = new object();

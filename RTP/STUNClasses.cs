@@ -388,6 +388,9 @@ namespace RTP
 
         public void ComputeHMACShortTermCredentials(STUNMessage msgWithoutHMAC, int nLengthWithoutMessageIntegrity, string strPassword)
         {
+            if (strPassword == null)
+                strPassword = "";
+
             /// No MD5 on short term credentials
             byte[] bKey = System.Text.UTF8Encoding.UTF8.GetBytes(strPassword);
 
