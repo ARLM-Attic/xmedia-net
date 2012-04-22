@@ -17,7 +17,7 @@ namespace SocketServer.TLS
         public static byte [] GetBytesForInt32(int value, Endianess endian)
         {
             byte[] bRet = new byte[4];
-            if (endian == Endianess.Little)
+            if (endian == Endianess.Big)
             {
                 bRet[0] = (byte)((value & 0xFF000000) >> 24);
                 bRet[1] = (byte)((value & 0xFF0000) >> 16);
@@ -37,27 +37,27 @@ namespace SocketServer.TLS
         public static byte[] GetBytesForUint64(ulong value, Endianess endian)
         {
             byte[] bRet = new byte[8];
-            if (endian == Endianess.Little)
+            if (endian == Endianess.Big)
             {
                 bRet[0] = (byte)((value & 0xFF00000000000000) >> 56);
-                bRet[1] = (byte)((value & 0xFF000000000000) >> 48);
-                bRet[2] = (byte)((value & 0xFF0000000000) >> 40);
-                bRet[3] = (byte)((value & 0xFF00000000) >> 32);
-                bRet[4] = (byte)((value & 0xFF000000) >> 24);
-                bRet[5] = (byte)((value & 0xFF0000) >> 16);
-                bRet[6] = (byte)((value & 0x00FF00) >> 8);
-                bRet[7] = (byte)((value & 0x0000FF));
+                bRet[1] = (byte)((value & 0x00FF000000000000) >> 48);
+                bRet[2] = (byte)((value & 0x0000FF0000000000) >> 40);
+                bRet[3] = (byte)((value & 0x000000FF00000000) >> 32);
+                bRet[4] = (byte)((value & 0x00000000FF000000) >> 24);
+                bRet[5] = (byte)((value & 0x0000000000FF0000) >> 16);
+                bRet[6] = (byte)((value & 0x000000000000FF00) >> 8);
+                bRet[7] = (byte)((value & 0x00000000000000FF));
             }
             else
             {
                 bRet[7] = (byte)((value & 0xFF00000000000000) >> 56);
-                bRet[6] = (byte)((value & 0xFF000000000000) >> 48);
-                bRet[5] = (byte)((value & 0xFF0000000000) >> 40);
-                bRet[4] = (byte)((value & 0xFF00000000) >> 32);
-                bRet[3] = (byte)((value & 0xFF000000) >> 24);
-                bRet[2] = (byte)((value & 0xFF0000) >> 16);
-                bRet[1] = (byte)((value & 0x00FF00) >> 8);
-                bRet[0] = (byte)((value & 0x0000FF));
+                bRet[6] = (byte)((value & 0x00FF000000000000) >> 48);
+                bRet[5] = (byte)((value & 0x0000FF0000000000) >> 40);
+                bRet[4] = (byte)((value & 0x000000FF00000000) >> 32);
+                bRet[3] = (byte)((value & 0x00000000FF000000) >> 24);
+                bRet[2] = (byte)((value & 0x0000000000FF0000) >> 16);
+                bRet[1] = (byte)((value & 0x000000000000FF00) >> 8);
+                bRet[0] = (byte)((value & 0x00000000000000FF));
             }
             return bRet;
         }
@@ -153,7 +153,7 @@ namespace SocketServer.TLS
 
         public static ulong ReadULongBigEndian(byte[] bData, int nIndex)
         {
-            return (ulong)((bData[nIndex + 0] << 56) | (bData[nIndex + 1] << 48) | (bData[nIndex + 2] << 40) | (bData[nIndex + 3] << 32)| (bData[nIndex + 4] << 24) | (bData[nIndex + 5] << 16) | (bData[nIndex + 6] << 8) | (bData[nIndex + 7]));
+            return (ulong)(((long)bData[nIndex + 0] << 56) | ((long)bData[nIndex + 1] << 48) | ((long)bData[nIndex + 2] << 40) | ((long)bData[nIndex + 3] << 32) | ((long)bData[nIndex + 4] << 24) | ((long)bData[nIndex + 5] << 16) | ((long)bData[nIndex + 6] << 8) | ((long)bData[nIndex + 7]));
         }
 
         public static ushort ReadUshortBigEndian(byte[] bRet, int nIndex)

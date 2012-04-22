@@ -106,48 +106,62 @@ namespace System.Net.XMPP.Jingle
         public Candidate()
         {
         }
-     
 
-        [XmlAttribute(AttributeName = "ip")]
-        public string ipaddress = "";
+        [XmlAttribute(AttributeName = "foundation")]
+        public string foundation = "0";
 
-        [XmlAttribute(AttributeName = "address")]
-        public string address
-        {
-            get
-            {
-                return ipaddress;
-            }
-            set
-            {
-                ipaddress = value;
-            }
-        }
-
-        [XmlAttribute(AttributeName = "preference")]
-        public string preference = "1";
-
-        [XmlAttribute(AttributeName = "network")]
-        public string network = "0";
-
-        [XmlAttribute(AttributeName = "port")]
-        public int port = 8080;
-
-        [XmlAttribute(AttributeName = "priority")]
-        public int priority = 1231245;
+        [XmlAttribute(AttributeName = "component")]
+        public int component = 1;
 
         [XmlAttribute(AttributeName = "protocol")]
         public string protocol = "udp";
 
+        [XmlAttribute(AttributeName = "priority")]
+        public int priority = 1231245;
+
+        [XmlAttribute(AttributeName = "generation")]
+        public int generation = 0;
+
+        [XmlAttribute(AttributeName = "id")]
+        public string id = null;
+
+        [XmlAttribute(AttributeName = "ip")]
+        public string ipaddress = "";
+
+        //[XmlAttribute(AttributeName = "address")]
+        //public string address
+        //{
+        //    get
+        //    {
+        //        return ipaddress;
+        //    }
+        //    set
+        //    {
+        //        ipaddress = value;
+        //    }
+        //}
+
+        [XmlAttribute(AttributeName = "port")]
+        public int port = 8080;
+
         [XmlAttribute(AttributeName = "type")]
         public string type = "host";
 
-        [XmlAttribute(AttributeName = "reladdr")]
+        [XmlAttribute(AttributeName = "rel-addr")]
         public string reladdr = null;
 
-        [XmlAttribute(AttributeName = "relport")]
+        [XmlAttribute(AttributeName = "rel-port")]
         public string relport = null;
 
+
+        [XmlAttribute(AttributeName = "network")]
+        public string network = "0";
+
+
+
+        [XmlAttribute(AttributeName = "preference")]
+        public string preference = "1";
+      
         /// Google talk specific candidates
         [XmlAttribute(AttributeName = "username")]
         public string username = null;
@@ -158,17 +172,9 @@ namespace System.Net.XMPP.Jingle
         [XmlAttribute(AttributeName = "name")]
         public string name = "rtp";
 
-        [XmlAttribute(AttributeName = "component")]
-        public int component = 1;
 
-        [XmlAttribute(AttributeName = "foundation")]
-        public string foundation = "0";
 
-        [XmlAttribute(AttributeName = "generation")]
-        public int generation = 0;
 
-        [XmlAttribute(AttributeName = "id")]
-        public string id = null;
 
         [XmlIgnore()]
         public IPEndPoint IPEndPoint = null;
@@ -778,6 +784,15 @@ namespace System.Net.XMPP.Jingle
         JingleIQ IncomingRequestMessage = null;
         internal void NewIncomingSessionRequest(JingleIQ iq)
         {
+            /// Handle this in a different thread so the we can still process xmpp messages but the user can reply at will
+            /// 
+
+            System.Threading.ThreadPool.QueueUserWorkItem(new Threading.WaitCallback(FireNewSessionThreaded), iq);
+        }
+
+        void FireNewSessionThreaded(object obj)
+        {
+            JingleIQ iq = obj as JingleIQ;
             IncomingRequestMessage = iq;
             RemoteJID = iq.From;
 
@@ -1254,7 +1269,7 @@ namespace System.Net.XMPP.Jingle
         internal void FireNewSession(string strSession, JingleIQ iq)
         {
             if (OnNewSession != null)
-                OnNewSession(strSession, iq, XMPPClient);
+                OnNewSession(iq.Jingle.SID, iq, XMPPClient);
         }
 
         internal void FireNewSessionAckReceived(string strSessionId, IQResponseAction response)

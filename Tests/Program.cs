@@ -6,6 +6,8 @@ using System.Text;
 using System.Net.XMPP;
 using System.Xml.Serialization;
 using System.Runtime.Serialization;
+using System.IO;
+using AudioClasses;
 
 namespace Tests
 {
@@ -16,7 +18,12 @@ namespace Tests
         {
             //TestIQErrorParsing();
             //TestPubSubParsing();
-            TestCapture();
+            //TestCapture();
+            
+            //TestCorrelation();
+            //TestCorrelationScaledMix();
+            //TestHMAC();
+            TestCRC32();
         }
 
         static void TestCapture()
@@ -69,7 +76,121 @@ namespace Tests
 
             System.Diagnostics.Debug.Assert(newitem.Name == item.Name);
         }
+
+
+        /// <summary>
+        /// Test that a source signal can be found in a mix where the source is mixed in at full amplitude
+        /// </summary>
+        static void TestCorrelation()
+        {
+            short[] sRTPIn = ReadPCMFile("../../Incoming16x16pcm.pcm");
+            short[] sMicIn = ReadPCMFile("../../Mic_Mix16x16pcm.pcm");
+
+
+            int nMaxAt = 0;
+            float[] fData = SimpleEchoCanceller.CrossCorrelation(sMicIn, sMicIn.Length, sRTPIn, out nMaxAt);
+            float fValue = fData[nMaxAt];
+            /// subtract the array and see what we get
+            /// 
+            for (int i = nMaxAt; i < nMaxAt + sRTPIn.Length; i++)
+            {
+                sMicIn[i] -= sRTPIn[i - nMaxAt];
+            }
+            
+            byte[] bData = Utils.ConvertShortArrayToByteArray(sMicIn);
+            FileStream stream = new FileStream("../../output.pcm", FileMode.Create);
+            stream.Write(bData, 0, bData.Length);
+            stream.Close();
+        }
+
+        /// <summary>
+        /// Mic_Mix_amp_16x16pcm.pcm has some normal audio and the Incoming audio mixed in at 60% amplitude.  This test
+        /// finds the input in the mix, finds what it scaled to, removes it and saves the file.
+        /// A manual comparison must be done to see that it is the same since I'm too lazy to code it
+        /// </summary>
+        static void TestCorrelationScaledMix()
+        {
+            short[] sRTPIn = ReadPCMFile("../../Incoming16x16pcm.pcm");
+            short[] sMicIn = ReadPCMFile("../../Mic_Mix_amp_16x16pcm.pcm");
+
+            float fAutoCorrelationValue = SimpleEchoCanceller.GetSelfCorrelationValue(sRTPIn);
+
+            int nMaxAt = 0;
+            float[] fData = SimpleEchoCanceller.CrossCorrelation(sMicIn, sMicIn.Length, sRTPIn, out nMaxAt);
+
+            float fValue = fData[nMaxAt];
+
+            float fScaleValue = fValue/fAutoCorrelationValue;
+
+            SimpleEchoCanceller.ScaleArray(fScaleValue, sRTPIn);
+            /// subtract the array and see what we get
+            /// 
+            for (int i = nMaxAt; i < nMaxAt + sRTPIn.Length; i++)
+            {
+                sMicIn[i] -= sRTPIn[i - nMaxAt];
+            }
+
+            byte[] bData = Utils.ConvertShortArrayToByteArray(sMicIn);
+            FileStream stream = new FileStream("../../output.pcm", FileMode.Create);
+            stream.Write(bData, 0, bData.Length);
+            stream.Close();
+
+            //SimpleEchoCanceller can = new SimpleEchoCanceller(AudioFormat.SixteenBySixteenThousandMono, TimeSpan.FromMilliseconds(100));
+        }
+
+     
+
+        static short[] ReadPCMFile(string strFileName)
+        {
+            FileStream stream = new FileStream(strFileName, FileMode.Open);
+            byte[] bData = new byte[stream.Length];
+            stream.Read(bData, 0, bData.Length);
+            stream.Close();
+
+            return AudioClasses.Utils.ConvertByteArrayToShortArrayLittleEndian(bData);
+        }
+
+        /// <summary>
+        /// Test function for STUN message integrity
+        /// </summary>
+        static void TestHMAC()
+        {
+            string RemotePassword = "6j4036s66j3jqfqn3n5bb457t2";
+            string Password = "LIbovkUZpfMCL9py";
+
+
+            string strAllBytes = "000100582112a442540ba8d83601ad2d9b63a731002400046e000aff802a00087c5b0d397c1780900006000e79505051513857623a3569396971000080220009696365346a2e6f7267000000000800140dc86c4e0e5f98f9476a746f389bbdd80e7213da802800047df4e33a";
+            string strBytes = "000100502112a442540ba8d83601ad2d9b63a731002400046e000aff802a00087c5b0d397c1780900006000e79505051513857623a3569396971000080220009696365346a2e6f7267000000";
+
+            byte [] bBytes = SocketServer.TLS.ByteHelper.ByteFromHexString(strBytes);
+
+            RTP.MessageIntegrityAttribute macattr = new RTP.MessageIntegrityAttribute();
+            macattr.ComputeHMACShortTermCredentials(bBytes, bBytes.Length, Password);
+
+            string strHMACshouldbe = "0dc86c4e0e5f98f9476a746f389bbdd80e7213da";
+            
+        }
+
+        /// <summary>
+        /// Test function for STUN fingerprint
+        /// </summary>
+        static void TestCRC32()
+        {
+            string strAllBytes = "000100582112a442540ba8d83601ad2d9b63a731002400046e000aff802a00087c5b0d397c1780900006000e79505051513857623a3569396971000080220009696365346a2e6f7267000000000800140dc86c4e0e5f98f9476a746f389bbdd80e7213da802800047df4e33a";
+            string strBytes = "000100582112a442540ba8d83601ad2d9b63a731002400046e000aff802a00087c5b0d397c1780900006000e79505051513857623a3569396971000080220009696365346a2e6f7267000000000800140dc86c4e0e5f98f9476a746f389bbdd80e7213da";
+
+            byte[] bBytes = SocketServer.TLS.ByteHelper.ByteFromHexString(strBytes);
+
+            RTP.FingerPrintAttribute fattr = new RTP.FingerPrintAttribute();
+            fattr.ComputeCRC(bBytes, bBytes.Length);
+
+            int nCRCSHouldBe = 0x7df4e33a;
+
+        }
+
     }
+
+    
 
 
     [DataContract]

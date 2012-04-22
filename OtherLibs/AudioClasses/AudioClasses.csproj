@@ -78,6 +78,7 @@
     <Compile Include="AudioClasses.cs" />
     <Compile Include="BufferFilter.cs" />
     <Compile Include="ByteBuffer.cs" />
+    <Compile Include="SimpleEchoCanceller.cs" />
     <Compile Include="ToneGenerator.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoClasses.cs" />

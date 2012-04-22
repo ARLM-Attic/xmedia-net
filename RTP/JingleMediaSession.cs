@@ -45,7 +45,8 @@ namespace RTP
     {
         public MediaSession(string strSession, string strRemoteJID, IPEndPoint LocalEp, XMPPClient client)
         {
-            m_objAudioRTPStream.OnUnhandleSTUNMessage += new RTPStream.DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
             AddKnownAudioPayload(KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711 | KnownAudioPayload.G722);
             Initiator = true;
             LocalEndpoint = LocalEp;
@@ -58,7 +59,8 @@ namespace RTP
 
         public MediaSession(string strRemoteJID, IPEndPoint LocalEp, XMPPClient client)
         {
-            m_objAudioRTPStream.OnUnhandleSTUNMessage += new RTPStream.DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
             AddKnownAudioPayload(KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711 | KnownAudioPayload.G722);
             Initiator = true;
             LocalEndpoint = LocalEp;
@@ -70,7 +72,8 @@ namespace RTP
 
         public MediaSession(string strSession, IQ intialJingle, KnownAudioPayload LocalPayloads, IPEndPoint LocalEp, XMPPClient client)
         {
-            m_objAudioRTPStream.OnUnhandleSTUNMessage += new RTPStream.DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
             AddKnownAudioPayload(LocalPayloads);
 
             Initiator = false;
@@ -79,18 +82,32 @@ namespace RTP
             XMPPClient = client;
             RemoteJID = intialJingle.From;
             SessionState = SessionState.Incoming;
+        }
+
+        public void StartIncoming(IQ intialJingle)
+        {
             Bind();
 
             ParsePayloads(intialJingle);
             /// If we don't have any candidates in our sesion-initate message, we must wait for a transport info to get the candidates
             ParseCandidates(intialJingle);
+            //if (RemoteCandidates.Count > 0)
+            //    SendAcceptSession();
+            if (RemoteCandidates.Count > 0)
+                SendTransportInfo();
         }
 
         public readonly bool Initiator = true;
 
-     
 
-      
+
+
+        protected string UserName = "";
+        protected string Password = "";
+
+        protected string RemoteUserName = "";
+        protected string RemotePassword = "";
+
 
         private RTPAudioStream m_objAudioRTPStream = new RTPAudioStream(0, null);
 
@@ -99,6 +116,8 @@ namespace RTP
             get { return m_objAudioRTPStream; }
             set { m_objAudioRTPStream = value; }
         }
+
+        protected RTCPSession AudioRTCPStream = new RTCPSession();
 
         protected List<Candidate> LocalCandidates = new List<Candidate>();
         protected List<Candidate> RemoteCandidates = new List<Candidate>();
@@ -209,7 +228,8 @@ namespace RTP
         {
             if (Initiator == true)
             {
-                XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, BuildOutgoingTransportInfo());
+                Jingle jingleinfo = this.BuildOutgoingTransportInfo();
+                XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, jingleinfo);
             }
         }
         /// <summary>
@@ -229,19 +249,22 @@ namespace RTP
                 return;
 
             ParseCandidates(iq);
-            if (RemoteCandidates.Count > 0)
-                SendOutBogusSTUNPackets();
+            PerformICEStunProcedures(); /// Should have all our transport info  now
+        }
 
+        void SendTransportInfo()
+        {
              /// If we not the initiator, it's now time to send our candidates
              /// 
             if (Initiator == true)
             {
-                PerformICEStunProcedures(); /// Should have all our transport info  now
             }
             else
             {
-                XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, BuildOutgoingTransportInfo());
+                Jingle jingleinfo = this.BuildOutgoingTransportInfo();
+                XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, jingleinfo);
             }
+
         }
 
         public void GotSendTransportInfoAck()
@@ -249,6 +272,8 @@ namespace RTP
             if (Initiator == true)
             {
                 /// The terminator got our transport info, now lets wait for theirs
+                ///                 
+
             }
             else
             {
@@ -256,7 +281,8 @@ namespace RTP
                 /// 
                 /// Not sure how stun is supposed to work, but unless we send out packets to, the firewall is never opened on the receiver side
                 /// 
-                
+
+                PerformICEStunProcedures(); /// Should have all our transport info  now
             }
 
         }
@@ -269,26 +295,30 @@ namespace RTP
             }
         }
 
-        public void SessionAccepted(IQ iq, AudioConferenceMixer AudioMixer)
+        AudioConferenceMixer AudioMixer = null;
+        public void SessionAccepted(IQ iq, AudioConferenceMixer objAudioMixer)
         {
+            AudioMixer = objAudioMixer;
             ParsePayloads(iq);
-            
-
-            SessionState = SessionState.Established;
-            if (AudioMixer != null)
-                AudioMixer.AddInputOutputSource(AudioRTPStream, AudioRTPStream);
-            AudioRTPStream.Start(RemoteEndpoint, AudioRTPStream.PTimeTransmit, AudioRTPStream.PTimeReceive);
+            StartAudio();
         }
 
-        public virtual void GotAcceptSessionAck(AudioConferenceMixer AudioMixer)
+       
+
+        public virtual void GotAcceptSessionAck(AudioConferenceMixer objAudioMixer)
+        {
+            AudioMixer = objAudioMixer;
+            StartAudio();
+        }
+
+        // Start Audio once ICE is done
+        void StartAudio()
         {
             SessionState = SessionState.Established;
             if (AudioMixer != null)
                 AudioMixer.AddInputOutputSource(AudioRTPStream, AudioRTPStream);
             AudioRTPStream.Start(RemoteEndpoint, AudioRTPStream.PTimeTransmit, AudioRTPStream.PTimeReceive);
         }
-
-
 
         public void StopMedia(AudioConferenceMixer AudioMixer)
         {
@@ -296,12 +326,14 @@ namespace RTP
             if (AudioMixer != null)
                 AudioMixer.RemoveInputOutputSource(AudioRTPStream, AudioRTPStream);
             AudioRTPStream.StopSending();
+            AudioRTCPStream.Stop();
         }
 
 
         void Bind()
         {
             AudioRTPStream.Bind(LocalEndpoint);  // For ICE we should have one rtp stream for each candidate, and they should receive stun packets as well as rtp
+            AudioRTCPStream.Bind(new IPEndPoint(LocalEndpoint.Address, LocalEndpoint.Port + 1));
             BuildLocalCandidates();
         }
 
@@ -322,7 +354,10 @@ namespace RTP
 
         }
 
-        // some protocols want to send candidate separately for some strange reason
+        /// <summary>
+        /// some protocols want to send candidate separately for some strange reason
+        /// </summary>
+        /// <returns></returns>
         protected virtual Jingle BuildOutgoingTransportInfo()
         {
             Jingle jingleinfo = new Jingle();
@@ -330,10 +365,10 @@ namespace RTP
             jingleinfo.Action = Jingle.TransportInfo;
             jingleinfo.Content.Name = "audio";
             jingleinfo.Content.Description = null;
-            if (Initiator == true)
+            //if (Initiator == true)
                 jingleinfo.Content.Creator = "initiator";
-            else
-                jingleinfo.Content.Creator = "responder";
+            //else
+              //  jingleinfo.Content.Creator = "responder";
 
             if (UseGoogleTalkProtocol == true)
             {
@@ -345,7 +380,57 @@ namespace RTP
             {
                 jingleinfo.Content.ICETransport = new Transport();
                 jingleinfo.Content.GoogleTransport = null;
+                UserName = GenerateRandomString(8);
+                Password = GenerateRandomString(16);
+                jingleinfo.Content.ICETransport.ufrag = UserName;
+                jingleinfo.Content.ICETransport.pwd = Password;
+
                 jingleinfo.Content.ICETransport.Candidates.AddRange(LocalCandidates);
+            }
+
+            return jingleinfo;
+        }
+
+        protected Jingle BuildOutgoingAudioRequest(bool IsInitiation, bool bAddCandidates)
+        {
+            Jingle jingleinfo = JingleSessionManager.CreateBasicOutgoingAudioRequest(this.AudioRTPStream.LocalEndpoint.Address.ToString(), this.AudioRTPStream.LocalEndpoint.Port);
+            jingleinfo.Content.Description.Payloads.Clear();
+            jingleinfo.Content.Name = "audio";
+
+            if (IsInitiation == true)
+            {
+                jingleinfo.Content.Description.Payloads.AddRange(LocalPayloads);
+                jingleinfo.Content.Creator = "initiator";
+            }
+
+            else
+            {
+                jingleinfo.Content.Creator = "initiator";
+                //jingleinfo.Content.Creator = "responder";
+                SetCodecsFromPayloads();
+                jingleinfo.Content.Description.Payloads.Add(AgreedPayload);
+            }
+
+            if (UseGoogleTalkProtocol == true)
+            {
+                jingleinfo.Content.ICETransport = null;
+                jingleinfo.Content.GoogleTransport = new Transport();
+                if (bAddCandidates == true)
+                    jingleinfo.Content.GoogleTransport.Candidates.AddRange(LocalCandidates);
+            }
+            else
+            {
+                jingleinfo.Content.ICETransport = new Transport();
+                jingleinfo.Content.GoogleTransport = null;
+                if (bAddCandidates == true)
+                {
+                    UserName = GenerateRandomString(8);
+                    Password = GenerateRandomString(16);
+                    jingleinfo.Content.ICETransport.ufrag = UserName;
+                    jingleinfo.Content.ICETransport.pwd = Password;
+
+                    jingleinfo.Content.ICETransport.Candidates.AddRange(LocalCandidates);
+                }
             }
 
             return jingleinfo;
@@ -361,30 +446,71 @@ namespace RTP
                 if (publicep != null)
                 {
 
-                    Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "stun" };
-                    stuncand.username = GenerateRandomString(16);
-                    stuncand.password = GenerateRandomString(16);
-                    CalculatePriority(50, 100, stuncand);
+                    //Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "stun", component = 1 };
+                    Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "srflx", component = 1, relport = this.AudioRTPStream.LocalEndpoint.Port.ToString(), reladdr=this.AudioRTPStream.LocalEndpoint.Address.ToString() };
+                    stuncand.IPEndPoint = publicep;
+                    //stuncand.username = GenerateRandomString(16);
+                    //stuncand.password = GenerateRandomString(16);
                     if (UseGoogleTalkProtocol == true)
                     {
                         stuncand.foundation = null;
                         stuncand.preference = "1.0";
                     }
+                    else
+                    {
+                        stuncand.foundation = "2";
+                        stuncand.id = "2";
+                        stuncand.preference = null;
+                        stuncand.name = null;
+                    }
 
+                    CalculatePriority(100, 10, stuncand);
                     LocalCandidates.Add(stuncand);
+
+                    /// RTCP candidate
+                    Candidate stunrtcpcand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port+1, type = "srflx", component = 2, relport = (this.AudioRTPStream.LocalEndpoint.Port+1).ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
+                    stunrtcpcand.IPEndPoint = new IPEndPoint(publicep.Address, publicep.Port+1);
+                    stunrtcpcand.foundation = "4";
+                    stunrtcpcand.id = "4";
+                    stunrtcpcand.preference = null;
+                    stunrtcpcand.name = null;
+                    CalculatePriority(100, 10, stunrtcpcand);
+                    LocalCandidates.Add(stunrtcpcand);
+
                 }
             }
 
-            Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "local" };
-            cand.username = GenerateRandomString(16);
-            cand.password = GenerateRandomString(16);
-            CalculatePriority(70, 500, cand);
+            Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "host", component=1 };
+            cand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port );
+            //Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "local", component = 1 };
+            //cand.username = GenerateRandomString(16);
+            //cand.password = GenerateRandomString(16);
             if (UseGoogleTalkProtocol == true)
             {
                 cand.foundation = null;
                 cand.preference = "1.0";
             }
+            else
+            {
+                cand.foundation = "1";
+                cand.id = "1";
+                cand.preference = null;
+                cand.name = null;
+
+            }
+            CalculatePriority(126, 40, cand); 
             LocalCandidates.Add(cand);
+
+            /// RTCP candidate
+            Candidate rtcpcand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port+1, type = "host", component=2 };
+            rtcpcand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port + 1);
+            rtcpcand.foundation = "3";
+            rtcpcand.id = "3";
+            rtcpcand.preference = null;
+            rtcpcand.name = null;
+            CalculatePriority(126, 10, rtcpcand);
+            LocalCandidates.Add(rtcpcand);
+
         }
 
         protected void SetCodecsFromPayloads()
@@ -495,225 +621,236 @@ namespace RTP
             return sb.ToString();
         }
 
-        protected void SendOutBogusSTUNPackets()
-        {
-            foreach (Candidate nextcand in this.RemoteCandidates)
-            {
-                if (nextcand.name == "rtcp")
-                    continue;
+        List<CandidatePair> CandidatePairs = new List<CandidatePair>();
 
-                if ((nextcand.type == "stun") || (nextcand.type == "local"))
-                {
-
-                    STUNMessage msgRequest = new STUNMessage();
-                    msgRequest.Method = StunMethod.Binding;
-                    msgRequest.Class = StunClass.Inidication;
-
-                    this.AudioRTPStream.SendSTUNMessage(msgRequest, nextcand.IPEndPoint);
-                }
-            }
-        }
-
+        protected bool IceDone = false;
         System.Threading.ManualResetEvent EventWaitForInitiatedToRespond = new System.Threading.ManualResetEvent(false);
         protected virtual void PerformICEStunProcedures()
         {
-            Candidate CurrentLocalCandidate = null;
-            Candidate CurrentRemoteCandidate = null;
+            IceDone = false;
 
-            IPEndPoint epRemoteStun = null;
+            Jingle jingleinfo = new Jingle();
+            jingleinfo.Action = Jingle.SessionInfo;
+            jingleinfo.JingleStateChange = JingleStateChange.Ringing;
+            jingleinfo.Content = null;
+            XMPPClient.JingleSessionManager.SendJingle(this.Session, jingleinfo);
 
-            //TODO, sort, priority, all other bs
-            //Candidates.Sort(this); 
-            bool GotBothResponse = false;
+            IPEndPoint epDefault = null;
 
             foreach (Candidate nextlocalcand in this.LocalCandidates)
             {
-                CurrentLocalCandidate = nextlocalcand;
                 // Now perform ICE tests to each of our candidates, see which one we get a response from.
                 foreach (Candidate nextcand in this.RemoteCandidates)
                 {
-                    CurrentRemoteCandidate = nextcand;
-
                     if (nextcand.name == "rtcp")
                         continue;
-                    if (nextcand.type == "stun")
-                        epRemoteStun = nextcand.IPEndPoint;
 
-                    if ((nextcand.type == "stun") || (nextcand.type == "local"))
+                    //if ((nextcand.type == "stun") || (nextcand.type == "local"))
+                    if (nextcand.component == 1) 
                     {
-                        IPEndPoint epresponded = null;
-                        string strUserName = string.Format("{0}:{1}", nextcand.username, nextlocalcand.username);
-                        string strPassword = nextcand.password;
-                        EventWaitForInitiatedToRespond.Reset();
+                        if (nextcand.IPEndPoint.Address.AddressFamily != AddressFamily.InterNetwork)
+                            continue; //only support IPV4 for now, should be easy to add 6 support once we bind to it as well
 
-                        epresponded = this.PerformSTUNRequest(nextcand.IPEndPoint, 800, true, true, nextcand.priority, strUserName, strPassword);
-                        if (epresponded != null)
+                        if (epDefault == null)
+                            epDefault = nextcand.IPEndPoint;
+
+                        CandidatePairs.Add(new CandidatePair(nextlocalcand, nextcand, this.Initiator));
+                    }
+                }
+            }
+
+            string strUserName = string.Format("{0}:{1}", this.RemoteUserName, this.UserName);
+            string strPassword = this.RemotePassword;
+
+            CandidatePair[] pairs = CandidatePairs.ToArray();
+            foreach (CandidatePair nextpair in pairs)
+            {
+                nextpair.PerformOutgoingSTUNCheck(this.AudioRTPStream, strUserName, strPassword);
+                if (nextpair.CandidatePairState == CandidatePairState.Succeeded)
+                {
+                    this.RemoteEndpoint = nextpair.RemoteCandidate.IPEndPoint;
+                    /// Succeeded here, may not succeed the other way though.  Still, store this as a last resort
+                }
+
+                /// See if we have any successful candidates yet if we are the controlling agent
+                if (Initiator == true)
+                {
+                    foreach (CandidatePair nextpair2 in pairs)
+                    {
+                        if ((nextpair2.HasReceivedSuccessfulIncomingSTUNCheck == true) && (nextpair2.CandidatePairState == CandidatePairState.Succeeded))
                         {
-                            this.RemoteEndpoint = nextcand.IPEndPoint;
-
-                            /// Now we must wait until we get an incoming request from the remote end
+                            /// Tell the other end we will be using this candidate pair
                             /// 
-                            if (EventWaitForInitiatedToRespond.WaitOne(2000) == true)
-                            {
-                                GotBothResponse = true;
-                                break;
-                            }
+                            nextpair2.TellRemoteEndToUseThisPair(this.AudioRTPStream, strUserName, strPassword);
+
+                            /// Finished
+                            this.RemoteEndpoint = nextpair2.RemoteCandidate.IPEndPoint;
+                            ICEDoneStartRTP();
+                            return;
                         }
                     }
                 }
+                else
+                {
+                    /// See if the the other end (the initiator) has told us to use candidates
+                    if (IceDone == true)
+                        return;
+                }
 
-                if (GotBothResponse == true)
-                    break;
             }
 
-            CurrentLocalCandidate = null;
-            CurrentRemoteCandidate = null;
+
         
             if (this.RemoteEndpoint == null)
-                this.RemoteEndpoint = epRemoteStun;
+                this.RemoteEndpoint = epDefault;
 
             ICEDoneStartRTP();
         }
 
-
-        void m_objAudioRTPStream_OnUnhandleSTUNMessage(STUNMessage smsg, IPEndPoint epfrom)
+        
+        void m_objAudioRTPStream_OnUnhandleSTUNMessage(STUN2Message smsg, IPEndPoint epfrom)
         {
-            if (Initiator == false)
-            {
-                /// We are the receiver in the call.  Here is the STUN exchange
-                /// Initiator         Receiver (local)
-                /// 
-                /// -->     binding     -->   could be here, getting the initial binding request from the initiator
-                /// <--     response    <--
-                ///     
-                /// <--     binding     <--
-                /// -->     response    -->   could be here, extract/verify info
-
                 
-                /// Our RTPStream received a STUN message.
-                if (smsg.Class == StunClass.Request)
+            /// Our RTPStream received a STUN message.
+            if (smsg.Class == StunClass.Request)
+            {
+                if (smsg.Method == StunMethod.Binding)
                 {
-                    if (smsg.Method == StunMethod.Binding)
+
+                    STUN2Message sresp = new STUN2Message();
+                    sresp.TransactionId = smsg.TransactionId;
+                    sresp.Method = StunMethod.Binding;
+                    sresp.Class = StunClass.Success;
+
+                    XORMappedAddressAttribute attr = new XORMappedAddressAttribute();
+                    attr.Port = (ushort)epfrom.Port;
+                    attr.IPAddress = epfrom.Address;
+                    attr.AddressFamily = StunAddressFamily.IPv4;
+                    sresp.AddAttribute(attr);
+
+                    IceControlledAttribute iattr = new IceControlledAttribute();
+                    sresp.AddAttribute(iattr);
+
+
+                    UserNameAttribute unameattr = new UserNameAttribute();
+                    unameattr.UserName = string.Format("{0}:{1}", this.UserName, this.RemoteUserName);
+                    sresp.AddAttribute(unameattr);
+
+                    /// Add message integrity, computes over all the items currently added
+                    /// 
+                    int nLengthWithoutMessageIntegrity = sresp.Bytes.Length;
+                    MessageIntegrityAttribute mac = new MessageIntegrityAttribute();
+                    sresp.AddAttribute(mac);
+                    mac.ComputeHMACShortTermCredentials(sresp, nLengthWithoutMessageIntegrity, this.RemotePassword);
+
+                    /// Add fingerprint
+                    /// 
+                    int nLengthWithoutFingerPrint = sresp.Bytes.Length;
+                    FingerPrintAttribute fattr = new FingerPrintAttribute();
+                    sresp.AddAttribute(fattr);
+                    fattr.ComputeCRC(sresp, nLengthWithoutFingerPrint);
+
+
+
+
+                    AudioRTPStream.SendSTUNMessage(sresp, epfrom);
+
+                    string strrfrag = "";
+                    string strlfrag = "";
+                    bool UseThisCandidate = false;
+                    CandidatePair PairReferenced = null;
+                    /// Find this candidate pair so we can send to it
+                    foreach (STUNAttributeContainer cont in smsg.Attributes)
                     {
-
-                        STUNMessage sresp = new STUNMessage();
-                        sresp.TransactionId = smsg.TransactionId;
-                        sresp.Method = StunMethod.Binding;
-                        sresp.Class = StunClass.Success;
-
-                        MappedAddressAttribute attr = new MappedAddressAttribute();
-                        attr.Port = (ushort)epfrom.Port;
-                        attr.IPAddress = epfrom.Address;
-                        attr.Type = StunAttributeType.MappedAddress;
-                        attr.AddressFamily = StunAddressFamily.IPv4;
-                        sresp.AddAttribute(attr);
-
-                        IceControlledAttribute iattr = new IceControlledAttribute();
-                        sresp.AddAttribute(iattr);
-
-                        AudioRTPStream.SendSTUNMessage(sresp, epfrom);
-
-                        Candidate CurrentLeftCandidate = null;
-                        Candidate CurrentRightCandidate = null;
-
-
-                        /// Find this candidate pair so we can send to it
-                        foreach (STUNAttributeContainer cont in smsg.Attributes)
+                        if (cont.ParsedAttribute.Type == StunAttributeType.UserName)
                         {
-                            if (cont.ParsedAttribute.Type == StunAttributeType.UserName)
+                            UserNameAttribute unameattrib = cont.ParsedAttribute as UserNameAttribute;
+                            int nColonAt = unameattrib.UserName.IndexOf(":");
+                            if (nColonAt > 0)
                             {
+                                /// should be rusername:lusername
+                                /// 
+                                strrfrag = unameattrib.UserName.Substring(0, nColonAt);
+                                strlfrag = unameattrib.UserName.Substring(nColonAt + 1);
+                            }
+                        }
+                        if (cont.ParsedAttribute.Type == StunAttributeType.Priority)
+                        {
 
-                                UserNameAttribute unameattrib = cont.ParsedAttribute as UserNameAttribute;
-                                int nColonAt = unameattrib.UserName.IndexOf(":");
-                                if (nColonAt > 0)
+                            PriorityAttribute pattrib = cont.ParsedAttribute as PriorityAttribute;
+                            foreach (CandidatePair nextpair in this.CandidatePairs)
+                            {
+                                if (epfrom == nextpair.RemoteCandidate.IPEndPoint)
                                 {
-                                    /// should be rusername:lusername
-                                    /// 
-                                    string strrfrag = unameattrib.UserName.Substring(0, nColonAt);
-                                    string strlfrag = unameattrib.UserName.Substring(nColonAt + 1);
-                                    // try to find these candidate
-                                    foreach (Candidate can in this.LocalCandidates)
-                                    {
-                                        if (can.username == strrfrag)
-                                        {
-                                            CurrentRightCandidate = can;
-                                            break;
-                                        }
-                                    }
-                                    foreach (Candidate can in this.RemoteCandidates)
-                                    {
-                                        if (can.username == strlfrag)
-                                        {
-                                            CurrentLeftCandidate = can;
-                                            break;
-                                        }
-                                    }
+                                    PairReferenced = nextpair;
+                                    nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
+                                    break;
                                 }
                             }
                         }
-
-                        if ((CurrentLeftCandidate != null) && (CurrentRightCandidate != null))
+                        if ((cont.ParsedAttribute.Type == StunAttributeType.UseCandidate) && (Initiator == false))
                         {
-                            /// Send out a binding with our candidate
-                            string strUserName = string.Format("{0}:{1}", CurrentLeftCandidate.username, CurrentRightCandidate.username);
-                            string strPassword = CurrentLeftCandidate.password;
-                            /// CurrentLeftCandidate.IPEndPoint should be epfrom
-
-                            IPEndPoint ep = this.PerformSTUNRequest(CurrentLeftCandidate.IPEndPoint, 800, true, true, CurrentLeftCandidate.priority, strUserName, strPassword);
-                            if (ep != null)
-                            {
-                                RemoteEndpoint = CurrentLeftCandidate.IPEndPoint;
-                                EventWaitForInitiatedToRespond.Set();
-                                ICEDoneStartRTP();
-                            }
-                        }
-                        else
-                        {
-                            // Shouldn't happen
-                            IPEndPoint ep = this.PerformSTUNRequest(epfrom, 800, true, true, 0, null, null);
-                            RemoteEndpoint = epfrom;
-                            EventWaitForInitiatedToRespond.Set();
-                            ICEDoneStartRTP();
+                            /// Other end is telling us to use this candiate
+                            /// 
+                            UseThisCandidate = true;
                         }
                     }
+
+                    if ( (UseThisCandidate == true) && (PairReferenced != null) )
+                    {
+                        IceDone = true;
+                        this.RemoteEndpoint = PairReferenced.RemoteCandidate.IPEndPoint;
+                        ICEDoneStartRTP();
+                    }
+
                 }
             }
-            else 
+        }
+
+        void AudioRTCPStream_OnUnhandleSTUNMessage(STUN2Message smsg, IPEndPoint epfrom)
+        {
+                
+            /// Our RTPStream received a STUN message.
+            if (smsg.Class == StunClass.Request)
             {
-                /// We are the initiator in the call, here is the STUN exchange
-                /// Initiator         Receiver (local)
-                /// 
-                /// -->     binding     -->
-                /// <--     response    <--   (won't be here, because that message is returned as a response to a send and will never hit this event)
-                ///     
-                /// <--     binding     <--   could be here, receiving the binding request from the receiver..  check all the passwords/etc, if we want
-                /// -->     response    -->    
-                /// 
-
-                /// Our RTPStream received a STUN message.
-                if (smsg.Class == StunClass.Request)
+                if (smsg.Method == StunMethod.Binding)
                 {
-                    if (smsg.Method == StunMethod.Binding)
-                    {
 
-                        STUNMessage sresp = new STUNMessage();
-                        sresp.TransactionId = smsg.TransactionId;
-                        sresp.Method = StunMethod.Binding;
-                        sresp.Class = StunClass.Success;
+                    STUN2Message sresp = new STUN2Message();
+                    sresp.TransactionId = smsg.TransactionId;
+                    sresp.Method = StunMethod.Binding;
+                    sresp.Class = StunClass.Success;
 
-                        MappedAddressAttribute attr = new MappedAddressAttribute();
-                        attr.Port = (ushort)epfrom.Port;
-                        attr.IPAddress = epfrom.Address;
-                        attr.Type = StunAttributeType.MappedAddress;
-                        attr.AddressFamily = StunAddressFamily.IPv4;
-                        sresp.AddAttribute(attr);
+                    XORMappedAddressAttribute attr = new XORMappedAddressAttribute();
+                    attr.Port = (ushort)epfrom.Port;
+                    attr.IPAddress = epfrom.Address;
+                    attr.AddressFamily = StunAddressFamily.IPv4;
+                    sresp.AddAttribute(attr);
 
-                        IceControlledAttribute iattr = new IceControlledAttribute();
-                        sresp.AddAttribute(iattr);
+                    IceControlledAttribute iattr = new IceControlledAttribute();
+                    sresp.AddAttribute(iattr);
 
-                        AudioRTPStream.SendSTUNMessage(sresp, epfrom);
 
-                    }
+                    UserNameAttribute unameattr = new UserNameAttribute();
+                    unameattr.UserName = string.Format("{0}:{1}", this.UserName, this.RemoteUserName);
+                    sresp.AddAttribute(unameattr);
+
+                    /// Add message integrity, computes over all the items currently added
+                    /// 
+                    int nLengthWithoutMessageIntegrity = sresp.Bytes.Length;
+                    MessageIntegrityAttribute mac = new MessageIntegrityAttribute();
+                    sresp.AddAttribute(mac);
+                    mac.ComputeHMACShortTermCredentials(sresp, nLengthWithoutMessageIntegrity, this.RemotePassword);
+
+                    /// Add fingerprint
+                    /// 
+                    int nLengthWithoutFingerPrint = sresp.Bytes.Length;
+                    FingerPrintAttribute fattr = new FingerPrintAttribute();
+                    sresp.AddAttribute(fattr);
+                    fattr.ComputeCRC(sresp, nLengthWithoutFingerPrint);
+
+
+                    AudioRTCPStream.SendSTUNMessage(sresp, epfrom);
                 }
             }
         }
@@ -739,7 +876,7 @@ namespace RTP
         /// <returns></returns>
         public IPEndPoint PerformSTUNRequest(IPEndPoint epStun, int nTimeout, bool bICE, bool bIsControlling, int nPriority, string strUsername, string strPassword)
         {
-            STUNMessage msgRequest = new STUNMessage();
+            STUN2Message msgRequest = new STUN2Message();
             msgRequest.Method = StunMethod.Binding;
             msgRequest.Class = StunClass.Request;
 
@@ -784,7 +921,7 @@ namespace RTP
                 }
             }
 
-            STUNMessage ResponseMessage = this.AudioRTPStream.SendRecvSTUN(epStun, msgRequest, nTimeout);
+            STUN2Message ResponseMessage = this.AudioRTPStream.SendRecvSTUN(epStun, msgRequest, nTimeout);
 
             IPEndPoint retep = null;
             if (ResponseMessage != null)
@@ -808,7 +945,7 @@ namespace RTP
               //(2^8)*(local preference) +
               //(2^0)*(256 - component ID)
 
-            uint nPriority = (uint) (((typepref & 0x7E) << 24) | ((localpref & 0xFFFF) >> 8) | (256 - nComponentid & 0xFF));
+            uint nPriority = (uint) (((typepref & 0x7E) << 24) | ((localpref & 0xFFFF) << 8) | (256 - nComponentid & 0xFF));
             return nPriority;
         }
 
@@ -817,8 +954,10 @@ namespace RTP
             // priority = (2^24)*(type preference) +
             //(2^8)*(local preference) +
             //(2^0)*(256 - component ID)
-            cand.priority = (int)(((typepref & 0x7E) << 24) | ((localpref & 0xFFFF) >> 8) | (256 - cand.component & 0xFF));
+            cand.priority = (int)(((typepref & 0x7E) << 24) | ((localpref & 0xFFFF) << 8) | (256 - cand.component & 0xFF));
         }
+
+       
 
         #region INotifyPropertyChanged Members
 
@@ -860,7 +999,7 @@ namespace RTP
 
         public override string SendInitiateSession()
         {
-            Jingle jingleinfo = BuildOutgoingAudioRequest(true, false);
+            Jingle jingleinfo = BuildOutgoingAudioRequest(true, true);
 
             string strSession = XMPPClient.JingleSessionManager.InitiateNewSession(RemoteJID, jingleinfo);
             Session = strSession;
@@ -925,6 +1064,8 @@ namespace RTP
             {
                 if ((jingle.Content != null) && (jingle.Content.ICETransport != null))
                 {
+                    this.RemoteUserName = jingle.Content.ICETransport.ufrag;
+                    this.RemotePassword = jingle.Content.ICETransport.pwd;
                     if (jingle.Content.ICETransport.Candidates.Count > 0)
                     {
                         UseGoogleTalkProtocol = false;
@@ -952,43 +1093,6 @@ namespace RTP
             }
         }
 
-
-        protected Jingle BuildOutgoingAudioRequest(bool IsInitiation, bool bAddCandidates)
-        {
-            Jingle jingleinfo = JingleSessionManager.CreateBasicOutgoingAudioRequest(this.AudioRTPStream.LocalEndpoint.Address.ToString(), this.AudioRTPStream.LocalEndpoint.Port);
-            jingleinfo.Content.Description.Payloads.Clear();
-            jingleinfo.Content.Name = "audio";
-
-            if (IsInitiation == true)
-            {
-                jingleinfo.Content.Description.Payloads.AddRange(LocalPayloads);
-                jingleinfo.Content.Creator = "initiator";
-            }
-
-            else
-            {
-                jingleinfo.Content.Creator = "responder";
-                SetCodecsFromPayloads();
-                jingleinfo.Content.Description.Payloads.Add(AgreedPayload);
-            }
-
-            if (UseGoogleTalkProtocol == true)
-            {
-                jingleinfo.Content.ICETransport = null;
-                jingleinfo.Content.GoogleTransport = new Transport();
-                if (bAddCandidates == true)
-                    jingleinfo.Content.GoogleTransport.Candidates.AddRange(LocalCandidates);
-            }
-            else
-            {
-                jingleinfo.Content.ICETransport = new Transport();
-                jingleinfo.Content.GoogleTransport = null;
-                if (bAddCandidates == true)
-                    jingleinfo.Content.ICETransport.Candidates.AddRange(LocalCandidates);
-            }
-
-            return jingleinfo;
-        }
 
     
     }

@@ -15,29 +15,32 @@ using SocketServer;
 
 namespace RTP
 {
+    public delegate void DelegateSTUNMessage(STUN2Message smsg, IPEndPoint epfrom);
+
+
     public class STUNRequestResponse
     {
-        public STUNRequestResponse(STUNMessage requestmessage)
+        public STUNRequestResponse(STUN2Message requestmessage)
         {
             RequestMessage = requestmessage;
         }
 
-        private STUNMessage m_objRequestMessage = null;
+        private STUN2Message m_objRequestMessage = null;
 
-        public STUNMessage RequestMessage
+        public STUN2Message RequestMessage
         {
             get { return m_objRequestMessage; }
             set { m_objRequestMessage = value; }
         }
 
-        private STUNMessage m_objResponseMessage = null;
-        public STUNMessage ResponseMessage
+        private STUN2Message m_objResponseMessage = null;
+        public STUN2Message ResponseMessage
         {
           get { return m_objResponseMessage; }
           set { m_objResponseMessage = value; }
         }
 
-        public bool IsThisYourResponseSetIfItIs(STUNMessage msg)
+        public bool IsThisYourResponseSetIfItIs(STUN2Message msg)
         {
             bool bRet = SocketServer.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, msg.TransactionId);
             if (bRet == true)
@@ -49,7 +52,7 @@ namespace RTP
             return bRet; 
         }
 
-        public void Reset(STUNMessage requestmessage)
+        public void Reset(STUN2Message requestmessage)
         {
             RequestMessage = requestmessage;
             if (WaitHandle != null)
@@ -174,13 +177,12 @@ namespace RTP
             }
         }
 
-        public delegate void DelegateSTUNMessage(STUNMessage smsg, IPEndPoint epfrom);
         public event DelegateSTUNMessage OnUnhandleSTUNMessage = null;
 
         protected List<STUNRequestResponse> StunRequestResponses = new List<STUNRequestResponse>();
         protected object StunLock = new object();
 
-        public STUNMessage SendRecvSTUN(IPEndPoint epStun, STUNMessage msgRequest, int nTimeout)
+        public STUN2Message SendRecvSTUN(IPEndPoint epStun, STUN2Message msgRequest, int nTimeout)
         {
             STUNRequestResponse req = new STUNRequestResponse(msgRequest);
             lock (StunLock)
@@ -194,7 +196,7 @@ namespace RTP
             return req.ResponseMessage;
         }
 
-        public int SendSTUNMessage(STUNMessage msg, IPEndPoint epStun)
+        public int SendSTUNMessage(STUN2Message msg, IPEndPoint epStun)
         {
             byte[] bMessage = msg.Bytes;
             return this.RTPUDPClient.SendUDP(bMessage, bMessage.Length, epStun);
@@ -274,7 +276,7 @@ namespace RTP
                 if ((bData[4] == 0x21) && (bData[5] == 0x12) && (bData[6] == 0xA4) && (bData[7] == 0x42))
                 {
                     /// STUN message
-                    STUNMessage smsg = new STUNMessage();
+                    STUN2Message smsg = new STUN2Message();
                     byte[] bStun = new byte[nLength];
                     Array.Copy(bData, 0, bStun, 0, nLength);
                     smsg.Bytes = bStun;

@@ -52,14 +52,32 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OtherLibs\AudioClasses\AudioClasses.csproj">
+      <Project>{CB219B28-DC51-4E22-BC61-80B97D8A39C0}</Project>
+      <Name>AudioClasses</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OtherLibs\WPFImageControls\WPFImageWindows\WPFImageWindows.csproj">
       <Project>{B914EE15-6A3C-4BAA-AB12-932D1325C86D}</Project>
       <Name>WPFImageWindows</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RTP\rtp.csproj">
+      <Project>{69A1BADF-4974-4D35-A3EC-75B77B0A003B}</Project>
+      <Name>rtp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketServer\socketserver.csproj">
+      <Project>{77F78E2F-A04F-4823-A2A9-3F1F27D0F8B8}</Project>
+      <Name>socketserver</Name>
     </ProjectReference>
     <ProjectReference Include="..\XMPPLibrary\xmpp.csproj">
       <Project>{8DE3A173-A7A8-447F-846E-16C95F9C22AE}</Project>
       <Name>xmpp</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Incoming16x16pcm.pcm" />
+    <None Include="Mic_Mix16x16pcm.pcm" />
+    <None Include="Mic_Mix_amp_16x16pcm.pcm" />
+    <None Include="PureSource16x16.pcm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

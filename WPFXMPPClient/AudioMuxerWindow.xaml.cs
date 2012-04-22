@@ -145,6 +145,7 @@ namespace WPFXMPPClient
 
         private void ButtonClose_Click(object sender, RoutedEventArgs e)
         {
+            /// Stop all calls
             this.Close();
         }
 
@@ -161,15 +162,17 @@ namespace WPFXMPPClient
 
             if (Microphone != null)
                 return;
+            AudioDevice micdevice = this.ComboBoxMicDevices.SelectedItem as AudioDevice;
+            AudioDevice speakdevice = this.ComboBoxSpeakerDevices.SelectedItem as AudioDevice;
+
+            if ((micdevice == null) || (speakdevice == null))
+                return;
 
             PushPullObject thismember = AudioMixer.AddInputOutputSource(this, this);
             PushPullObject tonemember = AudioMixer.AddInputOutputSource(OurToneGenerator, OurToneGenerator);
             OurToneGenerator.IsSourceActive = false;
             //thismember.SourceExcludeList.Clear();  // clear so we can hear our mic
             thismember.SourceExcludeList.Add(tonemember.AudioSource); /// we don't want to hear the tone we're sending
-
-            AudioDevice micdevice = this.ComboBoxMicDevices.SelectedItem as AudioDevice;
-            AudioDevice speakdevice = this.ComboBoxSpeakerDevices.SelectedItem as AudioDevice;
 
             System.Windows.Interop.WindowInteropHelper helper = new System.Windows.Interop.WindowInteropHelper(Window.GetWindow(this));
 
@@ -230,6 +233,17 @@ namespace WPFXMPPClient
                     return;
             }
 
+            if ((MicrophoneDevices == null) || (MicrophoneDevices.Length <= 0))
+            {
+                MessageBox.Show("You have no microphone device, can't start a call", "No Microphone Device Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if ((SpeakerDevices == null) || (SpeakerDevices.Length <= 0))
+            {
+                MessageBox.Show("You have no speaker device, can't start a call", "No Speaker Device Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+     
 
             StartMicrophoneAndSpeaker(AudioFormat.SixteenBySixteenThousandMono);
 
@@ -269,27 +283,33 @@ namespace WPFXMPPClient
                 }
             }
 
+            int nPort = GetNextPort();
+            IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
+            JingleMediaSession session = new JingleMediaSession(strSession, iq, KnownAudioPayload.G722 | KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711, ep, client);
+            try
+            {
+                SessionList.Add(strSession, session);
+                ObservSessionList.Add(session);
+            }
+            catch (Exception ex)
+            {
+                /// No compatible codecs probably
+                XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.MediaError);
+                return;
+            }
+
+
             bool bAcceptNewCall = (bool)this.Dispatcher.Invoke(new DelegateAcceptSession(ShouldAcceptSession), strSession, iq);
 
             if (bAcceptNewCall == true)
             {
-                int nPort = GetNextPort();
-                IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
-
-                JingleMediaSession session = new JingleMediaSession(strSession, iq, KnownAudioPayload.G722 | KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711, ep, client);
-                try
-                {
-                    SessionList.Add(strSession, session);
-                    ObservSessionList.Add(session);
-                }
-                catch (Exception ex)
-                {
-                    /// No compatible codecs probably
-                    XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.MediaError);
-                }
+                session.StartIncoming(iq);
             }
             else
             {
+                SessionList.Remove(strSession);
+                ObservSessionList.Remove(session);
+
                 XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.Decline);
             }
 
@@ -322,8 +342,25 @@ namespace WPFXMPPClient
             }
         }
 
+        delegate void DelegateWindow(Window win);
+        void SafeCloseWindow(Window win)
+        {
+            if ((win != null) && (win.IsLoaded == true) )
+                win.Close();
+        }
+
         void JingleSessionManager_OnSessionTerminated(string strSession, XMPPClient client)
         {
+            if (IncomingCallWindows.ContainsKey(strSession) == true) /// Call is still waiting on user acceptance
+            {
+                IncomingCallWindow win = IncomingCallWindows[strSession];
+                IncomingCallWindows.Remove(strSession);
+                
+                /// Close the window
+                /// 
+                this.Dispatcher.Invoke(new DelegateWindow(SafeCloseWindow), win);
+            }
+
             if (SessionList.ContainsKey(strSession) == true)
             {
                 MediaSession session = SessionList[strSession];
@@ -365,6 +402,7 @@ namespace WPFXMPPClient
 
         delegate bool DelegateAcceptSession(string strSession, IQ iq);
 
+        Dictionary<string, IncomingCallWindow> IncomingCallWindows = new Dictionary<string, IncomingCallWindow>();
         bool ShouldAcceptSession(string strSession, IQ iq)
         {
             StartMicrophoneAndSpeaker(AudioFormat.SixteenBySixteenThousandMono);
@@ -377,8 +415,26 @@ namespace WPFXMPPClient
             if (AutoAnswer == true)
                 return true;
 
-            if (MessageBox.Show(string.Format("Accept new Call from {0}", iq.From), "New Call", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            // If there is another incoming call window for this session, close it first
+            if (IncomingCallWindows.ContainsKey(strSession) == true)
+            {
+                IncomingCallWindow win = IncomingCallWindows[strSession];
+                IncomingCallWindows.Remove(strSession);
+                SafeCloseWindow(win);
+            }
+
+
+            IncomingCallWindow IncomingCall = new IncomingCallWindow();
+            IncomingCall.IncomingCallFrom = iq.From;
+            IncomingCallWindows.Add(strSession, IncomingCall);
+            IncomingCall.ShowDialog();
+            if (IncomingCallWindows.ContainsKey(strSession) == true)
+                IncomingCallWindows.Remove(strSession);
+            if (IncomingCall.Accepted == true)
                 return true;
+
+            //if (MessageBox.Show(string.Format("Accept new Call from {0}", iq.From), "New Call", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            //    return true;
             return false;
         }
 

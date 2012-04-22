@@ -59,6 +59,7 @@
     <Compile Include="Codecs\UDPMotionJpegCodec.cs" />
     <Compile Include="ICE.cs" />
     <Compile Include="JingleMediaSession.cs" />
+    <Compile Include="RTCPSession.cs" />
     <Compile Include="RTPAudioStream.cs" />
     <Compile Include="RTPPacketBuffer.cs" />
     <Compile Include="RTPStream.cs" />

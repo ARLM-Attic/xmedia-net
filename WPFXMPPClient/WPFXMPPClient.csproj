@@ -117,6 +117,9 @@
     <Compile Include="FileTransferWindow.xaml.cs">
       <DependentUpon>FileTransferWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="IncomingCallWindow.xaml.cs">
+      <DependentUpon>IncomingCallWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PrivacyService.cs" />
     <Compile Include="SendRawXMLWindow.xaml.cs">
       <DependentUpon>SendRawXMLWindow.xaml</DependentUpon>
@@ -201,6 +204,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FileTransferWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="IncomingCallWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
