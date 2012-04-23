@@ -678,9 +678,9 @@ namespace RTP
             { 
                 m_objAgreedPayload = value;
                 AudioRTPStream.Payload = (byte) m_objAgreedPayload.PayloadId;
-                if ((m_objAgreedPayload.Name == "G722") && (m_objAgreedPayload.ClockRate == "8000"))
+                if (m_objAgreedPayload.Name == "G722")
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
-                else if ((m_objAgreedPayload.Name == "G722_40") && (m_objAgreedPayload.ClockRate == "8000"))
+                else if (m_objAgreedPayload.Name == "G722_40")
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
                 else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "16000"))
                    AudioRTPStream.AudioCodec = new SpeexCodec(NSpeex.BandMode.Wide);
