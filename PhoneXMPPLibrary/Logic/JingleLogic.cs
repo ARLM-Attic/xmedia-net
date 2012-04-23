@@ -128,18 +128,18 @@ namespace System.Net.XMPP.Jingle
         [XmlAttribute(AttributeName = "ip")]
         public string ipaddress = "";
 
-        //[XmlAttribute(AttributeName = "address")]
-        //public string address
-        //{
-        //    get
-        //    {
-        //        return ipaddress;
-        //    }
-        //    set
-        //    {
-        //        ipaddress = value;
-        //    }
-        //}
+        [XmlAttribute(AttributeName = "address")]
+        public string address
+        {
+            get
+            {
+                return ipaddress;
+            }
+            set
+            {
+                ipaddress = value;
+            }
+        }
 
         [XmlAttribute(AttributeName = "port")]
         public int port = 8080;

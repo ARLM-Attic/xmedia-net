@@ -57,7 +57,28 @@ namespace RTP
             RemoteJID = strRemoteJID;
             XMPPClient = client;
             SessionState = SessionState.Connecting;
+
+            CheckGoogleTalk();
             Bind();
+        }
+
+        /// <summary>
+        /// See if this specific instance is running a client we know uses google talk protocl
+        /// TODO... see if this a instance running standard jingle as well
+        /// </summary>
+        void CheckGoogleTalk()
+        {
+            RosterItem item = XMPPClient.FindRosterItem(RemoteJID);
+            if (item != null)
+            {
+                RosterItemPresenceInstance specificinstance = item.FindInstance(RemoteJID);
+                if (specificinstance != null)
+                {
+                    UseGoogleTalkProtocol = specificinstance.IsKnownGoogleClient;
+                }
+            }
+            else if (RemoteJID.IndexOf("gmail.com") > 0)
+                UseGoogleTalkProtocol = true;
         }
 
         public MediaSession(string strRemoteJID, IPEndPoint LocalEp, XMPPClient client)
@@ -73,6 +94,8 @@ namespace RTP
             RemoteJID = strRemoteJID;
             XMPPClient = client;
             SessionState = SessionState.Connecting;
+            
+            CheckGoogleTalk();
             Bind();
         }
 
@@ -234,7 +257,7 @@ namespace RTP
 
         public virtual string SendInitiateSession()
         {
-            Jingle jingleinfo = BuildOutgoingAudioRequest(true, true);
+            Jingle jingleinfo = BuildOutgoingAudioRequest(true, !this.UseGoogleTalkProtocol);
 
             string strSession = XMPPClient.JingleSessionManager.InitiateNewSession(RemoteJID, jingleinfo);
             Session = strSession;
@@ -243,11 +266,13 @@ namespace RTP
 
         public void GotNewSessionAck()
         {
-            //if (Initiator == true)
-            //{
-            //    Jingle jingleinfo = this.BuildOutgoingTransportInfo();
-            //    XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, jingleinfo);
-            //}
+            if (UseGoogleTalkProtocol == true)
+            {
+                /// Send our transport info  (google talk sends them right after sending the session initiate
+                /// 
+                Jingle jingleinfo = this.BuildOutgoingTransportInfo();
+                XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, jingleinfo);
+            }
         }
         /// <summary>
         /// Accept the session as soon as we agree on media.  Candidates are then tried
@@ -272,6 +297,9 @@ namespace RTP
                 m_bHasICEAccepted = true;
                 DoSendAcceptSession();
             }
+
+            if (SelectedPair != null)
+                SelectedPair.StartIndicationThread(this.AudioRTPStream, UseGoogleTalkProtocol);
         }
 
         public void UserAcceptSession()
@@ -303,12 +331,16 @@ namespace RTP
                 return;
 
             ParseCandidates(iq);
+
             if (Initiator == true) // we send our transport info in our session initiate, so we should now have both
             {
+                BuildCandidatePairs();
                 PerformICEStunProcedures(); /// Should have all our transport info  now
             }
             else
             {
+                BuildLocalCandidates(); /// Rebuild our local candidates, since this may be google talk and it doesn't follow spec
+                SendTransportInfo();
             }
         }
 
@@ -321,6 +353,7 @@ namespace RTP
             }
             else
             {
+                BuildCandidatePairs();
                 Jingle jingleinfo = this.BuildOutgoingTransportInfo();
                 XMPPClient.JingleSessionManager.SendTransportInfo(this.Session, jingleinfo);
             }
@@ -386,6 +419,12 @@ namespace RTP
                 AudioMixer.RemoveInputOutputSource(AudioRTPStream, AudioRTPStream);
             AudioRTPStream.StopSending();
             AudioRTCPStream.Stop();
+
+            if (SelectedPair != null)
+            {
+                SelectedPair.StopIndicationThread();
+                SelectedPair = null;
+            }
         }
 
 
@@ -481,8 +520,6 @@ namespace RTP
                 jingleinfo.Content.GoogleTransport = null;
                 if (bAddCandidates == true)
                 {
-                    UserName = GenerateRandomString(8);
-                    Password = GenerateRandomString(16);
                     jingleinfo.Content.ICETransport.ufrag = UserName;
                     jingleinfo.Content.ICETransport.pwd = Password;
 
@@ -508,12 +545,12 @@ namespace RTP
                         //Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "stun", component = 1 };
                         Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "srflx", component = 1, relport = this.AudioRTPStream.LocalEndpoint.Port.ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
                         stuncand.IPEndPoint = publicep;
-                        //stuncand.username = GenerateRandomString(16);
-                        //stuncand.password = GenerateRandomString(16);
                         if (UseGoogleTalkProtocol == true)
                         {
+                            stuncand.username = UserName;
+                            stuncand.password = Password;
                             stuncand.foundation = null;
-                            stuncand.preference = "1.0";
+                            stuncand.preference = "0.9";
                         }
                         else
                         {
@@ -526,15 +563,18 @@ namespace RTP
                         CalculatePriority(100, 10, stuncand);
                         LocalCandidates.Add(stuncand);
 
-                        /// RTCP candidate
-                        Candidate stunrtcpcand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port + 1, type = "srflx", component = 2, relport = (this.AudioRTPStream.LocalEndpoint.Port + 1).ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
-                        stunrtcpcand.IPEndPoint = new IPEndPoint(publicep.Address, publicep.Port + 1);
-                        stunrtcpcand.foundation = "2";
-                        stunrtcpcand.id = "4";
-                        stunrtcpcand.preference = null;
-                        stunrtcpcand.name = null;
-                        CalculatePriority(100, 10, stunrtcpcand);
-                        LocalCandidates.Add(stunrtcpcand);
+                        if (UseGoogleTalkProtocol == false)
+                        {
+                            /// RTCP candidate
+                            Candidate stunrtcpcand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port + 1, type = "srflx", component = 2, relport = (this.AudioRTPStream.LocalEndpoint.Port + 1).ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
+                            stunrtcpcand.IPEndPoint = new IPEndPoint(publicep.Address, publicep.Port + 1);
+                            stunrtcpcand.foundation = "2";
+                            stunrtcpcand.id = "4";
+                            stunrtcpcand.preference = null;
+                            stunrtcpcand.name = null;
+                            CalculatePriority(100, 10, stunrtcpcand);
+                            LocalCandidates.Add(stunrtcpcand);
+                        }
 
                     }
                 }
@@ -547,10 +587,10 @@ namespace RTP
             Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "host", component=1 };
             cand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port );
             //Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "local", component = 1 };
-            //cand.username = GenerateRandomString(16);
-            //cand.password = GenerateRandomString(16);
             if (UseGoogleTalkProtocol == true)
             {
+                cand.username = UserName;
+                cand.password = Password;
                 cand.foundation = null;
                 cand.preference = "1.0";
             }
@@ -565,16 +605,21 @@ namespace RTP
             CalculatePriority(126, 40, cand); 
             LocalCandidates.Add(cand);
 
-            /// RTCP candidate
-            Candidate rtcpcand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port+1, type = "host", component=2 };
-            rtcpcand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port + 1);
-            rtcpcand.foundation = "1";
-            rtcpcand.id = "3";
-            rtcpcand.preference = null;
-            rtcpcand.name = null;
-            CalculatePriority(126, 10, rtcpcand);
-            LocalCandidates.Add(rtcpcand);
+            if (UseGoogleTalkProtocol == false)
+            {
+                /// RTCP candidate
+                Candidate rtcpcand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port+1, type = "host", component=2 };
+                rtcpcand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port + 1);
 
+                rtcpcand.foundation = "1";
+                rtcpcand.id = "3";
+                rtcpcand.preference = null;
+                rtcpcand.name = null;
+
+
+                CalculatePriority(126, 10, rtcpcand);
+                LocalCandidates.Add(rtcpcand);
+            }
         }
 
         protected void SetCodecsFromPayloads()
@@ -686,21 +731,17 @@ namespace RTP
         }
 
         List<CandidatePair> CandidatePairs = new List<CandidatePair>();
-
+        CandidatePair SelectedPair = null;
         protected bool IceDone = false;
         System.Threading.ManualResetEvent EventWaitForInitiatedToRespond = new System.Threading.ManualResetEvent(false);
         protected virtual void PerformICEStunProcedures()
         {
+          
             System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoICEStunProcedures), this);
         }
 
-        void DoICEStunProcedures(object obj)
+        void BuildCandidatePairs()
         {
-            IceDone = false;
-
-
-            IPEndPoint epDefault = null;
-
             foreach (Candidate nextlocalcand in this.LocalCandidates)
             {
                 // Now perform ICE tests to each of our candidates, see which one we get a response from.
@@ -710,26 +751,47 @@ namespace RTP
                         continue;
 
                     //if ((nextcand.type == "stun") || (nextcand.type == "local"))
-                    if (nextcand.component == 1) 
+                    if (nextcand.component == 1)
                     {
                         if (nextcand.IPEndPoint.Address.AddressFamily != AddressFamily.InterNetwork)
                             continue; //only support IPV4 for now, should be easy to add 6 support once we bind to it as well
-
-                        if (epDefault == null)
-                            epDefault = nextcand.IPEndPoint;
 
                         CandidatePairs.Add(new CandidatePair(nextlocalcand, nextcand, this.Initiator));
                     }
                 }
             }
+        }
+
+        void DoICEStunProcedures(object obj)
+        {
+            IceDone = false;
+
+
+            IPEndPoint epDefault = null;
+
 
             string strUserName = string.Format("{0}:{1}", this.RemoteUserName, this.UserName);
             string strPassword = this.RemotePassword;
 
+
             CandidatePair[] pairs = CandidatePairs.ToArray();
             foreach (CandidatePair nextpair in pairs)
             {
-                nextpair.PerformOutgoingSTUNCheck(this.AudioRTPStream, strUserName, strPassword);
+                if (UseGoogleTalkProtocol == true)
+                {
+                    strUserName = string.Format("{0}{1}", nextpair.RemoteCandidate.username, this.UserName);
+                    strPassword = nextpair.RemoteCandidate.password;
+                }
+
+                if (epDefault == null)
+                    epDefault = nextpair.RemoteCandidate.IPEndPoint;
+
+
+                if (UseGoogleTalkProtocol == false)
+                    nextpair.PerformOutgoingSTUNCheck(this.AudioRTPStream, strUserName, strPassword);
+                else
+                    nextpair.PerformOutgoingSTUNCheckGoogle(this.AudioRTPStream, strUserName, strPassword);
+
                 if (nextpair.CandidatePairState == CandidatePairState.Succeeded)
                 {
                     this.RemoteEndpoint = nextpair.RemoteCandidate.IPEndPoint;
@@ -749,6 +811,7 @@ namespace RTP
 
                             /// Finished
                             this.RemoteEndpoint = nextpair2.RemoteCandidate.IPEndPoint;
+                            SelectedPair = nextpair2;
                             ICEDoneStartRTP();
                             return;
                         }
@@ -772,7 +835,7 @@ namespace RTP
         }
 
         
-        void m_objAudioRTPStream_OnUnhandleSTUNMessage(STUN2Message smsg, IPEndPoint epfrom)
+        void m_objAudioRTPStream_OnUnhandleSTUNMessage(STUNMessage smsg, IPEndPoint epfrom)
         {
                 
             /// Our RTPStream received a STUN message.
@@ -780,40 +843,88 @@ namespace RTP
             {
                 if (smsg.Method == StunMethod.Binding)
                 {
+                    UserNameAttribute IncomingUserNameAttribute = smsg.FindAttribute(StunAttributeType.UserName) as UserNameAttribute;
+                    UseCandidateAttribute IncomingUseCandidateAttribute = smsg.FindAttribute(StunAttributeType.UseCandidate) as UseCandidateAttribute;
 
+                    CandidatePair PairReferenced = null;
+
+                    if (UseGoogleTalkProtocol == false)
+                    {
+                        foreach (CandidatePair nextpair in this.CandidatePairs)
+                        {
+                            if ((epfrom.Address.Equals(nextpair.RemoteCandidate.IPEndPoint.Address) == true) && (epfrom.Port == nextpair.RemoteCandidate.IPEndPoint.Port))
+                            {
+                                PairReferenced = nextpair;
+                                nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
+                                break;
+                            }
+                        }
+                    }
+                    else if (IncomingUserNameAttribute != null)
+                    {
+                        foreach (CandidatePair nextpair in this.CandidatePairs)
+                        {
+                            if (IncomingUserNameAttribute.UserName.IndexOf(nextpair.RemoteCandidate.username) >= 0)
+                            {
+                                PairReferenced = nextpair;
+                                nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
+                                break;
+                            }
+                        }
+                    }
+
+
+                    /// Send a response
                     STUN2Message sresp = new STUN2Message();
                     sresp.TransactionId = smsg.TransactionId;
                     sresp.Method = StunMethod.Binding;
                     sresp.Class = StunClass.Success;
 
-                    XORMappedAddressAttribute attr = new XORMappedAddressAttribute();
-                    attr.Port = (ushort)epfrom.Port;
-                    attr.IPAddress = epfrom.Address;
-                    attr.AddressFamily = StunAddressFamily.IPv4;
-                    sresp.AddAttribute(attr);
+                    if (UseGoogleTalkProtocol == false)
+                    {
+                        XORMappedAddressAttribute attr = new XORMappedAddressAttribute();
+                        attr.Port = (ushort)epfrom.Port;
+                        attr.IPAddress = epfrom.Address;
+                        attr.AddressFamily = StunAddressFamily.IPv4;
+                        sresp.AddAttribute(attr);
 
-                    IceControlledAttribute iattr = new IceControlledAttribute();
-                    sresp.AddAttribute(iattr);
+                        IceControlledAttribute iattr = new IceControlledAttribute();
+                        sresp.AddAttribute(iattr);
 
+                        UserNameAttribute unameattr = new UserNameAttribute();
+                        unameattr.UserName = string.Format("{0}:{1}", this.UserName, this.RemoteUserName);
+                        sresp.AddAttribute(unameattr);
 
-                    UserNameAttribute unameattr = new UserNameAttribute();
-                    unameattr.UserName = string.Format("{0}:{1}", this.UserName, this.RemoteUserName);
-                    sresp.AddAttribute(unameattr);
+                        /// Add message integrity, computes over all the items currently added
+                        /// 
+                        int nLengthWithoutMessageIntegrity = sresp.Bytes.Length;
+                        MessageIntegrityAttribute mac = new MessageIntegrityAttribute();
+                        sresp.AddAttribute(mac);
+                        mac.ComputeHMACShortTermCredentials(sresp, nLengthWithoutMessageIntegrity, this.RemotePassword);
 
-                    /// Add message integrity, computes over all the items currently added
-                    /// 
-                    int nLengthWithoutMessageIntegrity = sresp.Bytes.Length;
-                    MessageIntegrityAttribute mac = new MessageIntegrityAttribute();
-                    sresp.AddAttribute(mac);
-                    mac.ComputeHMACShortTermCredentials(sresp, nLengthWithoutMessageIntegrity, this.RemotePassword);
+                        /// Add fingerprint
+                        /// 
+                        int nLengthWithoutFingerPrint = sresp.Bytes.Length;
+                        FingerPrintAttribute fattr = new FingerPrintAttribute();
+                        sresp.AddAttribute(fattr);
+                        fattr.ComputeCRC(sresp, nLengthWithoutFingerPrint);
+                    }
+                    else
+                    {
+                        MappedAddressAttribute attr = new MappedAddressAttribute();
+                        attr.Port = (ushort)epfrom.Port;
+                        attr.IPAddress = epfrom.Address;
+                        attr.AddressFamily = StunAddressFamily.IPv4;
+                        sresp.AddAttribute(attr);
 
-                    /// Add fingerprint
-                    /// 
-                    int nLengthWithoutFingerPrint = sresp.Bytes.Length;
-                    FingerPrintAttribute fattr = new FingerPrintAttribute();
-                    sresp.AddAttribute(fattr);
-                    fattr.ComputeCRC(sresp, nLengthWithoutFingerPrint);
+                        UserNameAttribute unameattr = new UserNameAttribute();
+                        if (PairReferenced != null)
+                        {
+                            unameattr.UserName = string.Format("{0}{1}", this.UserName, PairReferenced.RemoteCandidate.username);
+                        }
+                        sresp.AddAttribute(unameattr);
 
+                    }
 
 
 
@@ -822,52 +933,48 @@ namespace RTP
                     string strrfrag = "";
                     string strlfrag = "";
                     bool UseThisCandidate = false;
-                    CandidatePair PairReferenced = null;
-                    /// Find this candidate pair so we can send to it
-                    foreach (STUNAttributeContainer cont in smsg.Attributes)
+
+                    if (IncomingUserNameAttribute != null)
                     {
-                        if (cont.ParsedAttribute.Type == StunAttributeType.UserName)
+                        int nColonAt = IncomingUserNameAttribute.UserName.IndexOf(":");
+                        if (nColonAt > 0)
                         {
-                            UserNameAttribute unameattrib = cont.ParsedAttribute as UserNameAttribute;
-                            int nColonAt = unameattrib.UserName.IndexOf(":");
-                            if (nColonAt > 0)
-                            {
-                                /// should be rusername:lusername
-                                /// 
-                                strrfrag = unameattrib.UserName.Substring(0, nColonAt);
-                                strlfrag = unameattrib.UserName.Substring(nColonAt + 1);
-                            }
-                        }
-                        if ((cont.ParsedAttribute.Type == StunAttributeType.UseCandidate) && (Initiator == false))
-                        {
-                            /// Other end is telling us to use this candiate
+                            /// should be rusername:lusername
                             /// 
-                            UseThisCandidate = true;
+                            strrfrag = IncomingUserNameAttribute.UserName.Substring(0, nColonAt);
+                            strlfrag = IncomingUserNameAttribute.UserName.Substring(nColonAt + 1);
                         }
                     }
-
-                    foreach (CandidatePair nextpair in this.CandidatePairs)
+                    if (IncomingUseCandidateAttribute != null)
                     {
-                        if ( (epfrom.Address.Equals(nextpair.RemoteCandidate.IPEndPoint.Address) == true) && (epfrom.Port == nextpair.RemoteCandidate.IPEndPoint.Port))
-                        {
-                            PairReferenced = nextpair;
-                            nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
-                            break;
-                        }
+                        UseThisCandidate = true;
                     }
-
+                 
                     if ( (UseThisCandidate == true) && (PairReferenced != null) )
                     {
+                        SelectedPair = PairReferenced;
                         IceDone = true;
                         this.RemoteEndpoint = PairReferenced.RemoteCandidate.IPEndPoint;
                         ICEDoneStartRTP();
+                    }
+
+                    if (UseGoogleTalkProtocol == true)
+                    {
+                        // Google talk doesn't have a usecandidate option, so I guess we use the first candidate we send and receive successfully on
+                        if ((PairReferenced != null) && (PairReferenced.CandidatePairState == CandidatePairState.Succeeded) )
+                        {
+                            SelectedPair = PairReferenced;
+                            IceDone = true;
+                            this.RemoteEndpoint = PairReferenced.RemoteCandidate.IPEndPoint;
+                            ICEDoneStartRTP();
+                        }
                     }
 
                 }
             }
         }
 
-        void AudioRTCPStream_OnUnhandleSTUNMessage(STUN2Message smsg, IPEndPoint epfrom)
+        void AudioRTCPStream_OnUnhandleSTUNMessage(STUNMessage smsg, IPEndPoint epfrom)
         {
                 
             /// Our RTPStream received a STUN message.
@@ -982,7 +1089,7 @@ namespace RTP
                 }
             }
 
-            STUN2Message ResponseMessage = this.AudioRTPStream.SendRecvSTUN(epStun, msgRequest, nTimeout);
+            STUNMessage ResponseMessage = this.AudioRTPStream.SendRecvSTUN(epStun, msgRequest, nTimeout);
 
             IPEndPoint retep = null;
             if (ResponseMessage != null)

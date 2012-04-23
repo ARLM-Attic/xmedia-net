@@ -260,6 +260,9 @@ namespace WPFXMPPClient
             
             /// may need a lock here to make sure we have this session added to our list before the xmpp response gets back, though this should be many times faster than network traffic
             jinglesession = new JingleMediaSession(jidto, ep, XMPPClient);
+            jinglesession.AudioRTPStream.RecvResampler = new BetterAudioResampler();
+            jinglesession.AudioRTPStream.SendResampler = new BetterAudioResampler();
+
             try
             {
                 string strSession = jinglesession.SendInitiateSession();
@@ -286,6 +289,9 @@ namespace WPFXMPPClient
             int nPort = GetNextPort();
             IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
             JingleMediaSession session = new JingleMediaSession(strSession, iq, KnownAudioPayload.G722 | KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711, ep, client);
+            session.AudioRTPStream.RecvResampler = new BetterAudioResampler();
+            session.AudioRTPStream.SendResampler = new BetterAudioResampler();
+
             try
             {
                 SessionList.Add(strSession, session);

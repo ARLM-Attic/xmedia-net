@@ -226,6 +226,8 @@ namespace RTP
 
         #region IAudioSink Members
 
+        public AudioResampler SendResampler = new AudioResampler();
+        public AudioResampler RecvResampler = new AudioResampler();
         /// <summary>
         /// Push a sample to this filter's outgoing queue.
         /// </summary>
@@ -235,24 +237,9 @@ namespace RTP
             if (AudioCodec == null)
                 return;
 
-            if ((sample.AudioFormat.AudioSamplingRate == AudioSamplingRate.sr16000) && (AudioCodec.AudioFormat.AudioSamplingRate == AudioSamplingRate.sr8000) )
-            {
-                /// Downsample the data
-                /// 
-                short [] sData = Utils.Resample16000To8000(sample.GetShortData());
-                SendAudioQueue.AppendData(Utils.ConvertShortArrayToByteArray(sData));
-            }
-            else if ((sample.AudioFormat.AudioSamplingRate == AudioSamplingRate.sr16000) && (AudioCodec.AudioFormat.AudioSamplingRate == AudioSamplingRate.sr8000))
-            {
-                /// Upsample the data.  This shouldn't happen because our incoming data should always be higher or equal quality
-                /// 
-                short[] sData = Utils.Resample8000To16000(sample.GetShortData());
-                SendAudioQueue.AppendData(Utils.ConvertShortArrayToByteArray(sData));
-            }
-            else
-            {
-                SendAudioQueue.AppendData(sample.Data);
-            }
+            MediaSample newsample = SendResampler.Resample(sample, AudioCodec.AudioFormat);
+            SendAudioQueue.AppendData(newsample.Data);
+
             if (SendAudioQueue.Size > MaxSendBufferSize)
             {
                 SendAudioQueue.GetNSamples(SendAudioQueue.Size - MaxSendBufferSize);
@@ -315,23 +302,11 @@ namespace RTP
             if (ReceiveAudioQueue.Size >= nBytesNeeded)
             {
                 byte [] bAudioData = ReceiveAudioQueue.GetNSamples(nBytesNeeded);
-                MediaSample newsample = null;
-                if ((format.AudioSamplingRate == AudioSamplingRate.sr16000) && (AudioCodec.AudioFormat.AudioSamplingRate == AudioSamplingRate.sr8000))
-                {
-                    /// Upsample the data.
-                    /// 
-                    short[] sData = Utils.Resample8000To16000(Utils.ConvertByteArrayToShortArrayLittleEndian(bAudioData));
-                    bAudioData = Utils.ConvertShortArrayToByteArray(sData);
-                }
-                else if ((format.AudioSamplingRate == AudioSamplingRate.sr16000) && (AudioCodec.AudioFormat.AudioSamplingRate == AudioSamplingRate.sr8000))
-                {
-                    /// Downsample the data
-                    /// 
-                    short[] sData = Utils.Resample16000To8000(Utils.ConvertByteArrayToShortArrayLittleEndian(bAudioData));
-                    bAudioData = Utils.ConvertShortArrayToByteArray(sData);
-                }
-                newsample = new MediaSample(bAudioData, format);
-               
+
+                /// Incoming RTP packets' audio data is in the codecs native format, we may need to resample for our host (Our windows muxer always expects 16x16, so ulaw must be resampled)
+                MediaSample currentsample = new MediaSample(bAudioData, AudioCodec.AudioFormat);
+
+                MediaSample newsample = RecvResampler.Resample(currentsample, format);
 
                 return newsample;
             }

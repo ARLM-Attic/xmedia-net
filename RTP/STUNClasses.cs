@@ -1000,6 +1000,18 @@ namespace RTP
             MagicCookie = ConstMagicCookie;
         }
 
+        public STUNAttribute FindAttribute(StunAttributeType type)
+        {
+            foreach (STUNAttributeContainer cont in Attributes)
+            {
+                if (cont.ParsedAttribute.Type == type)
+                {
+                    return cont.ParsedAttribute;
+                }
+            }
+            return null;
+        }
+
         public const uint ConstMagicCookie = 0x2112A442;
 
         private ushort m_nMessageType; // most significant 2 bits must be 0  (Network Byte order - big endian)

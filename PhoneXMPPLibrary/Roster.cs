@@ -56,6 +56,15 @@ namespace System.Net.XMPP
             }
         }
 
+
+        private bool m_bIsGoogleClient = false;
+
+        public bool IsKnownGoogleClient
+        {
+            get { return m_bIsGoogleClient; }
+            set { m_bIsGoogleClient = value; }
+        }
+
 #if !MONO
         public System.Windows.Visibility VisibilityCanClientDoAudio
         {
@@ -337,12 +346,19 @@ namespace System.Net.XMPP
             /// Hack for now to show who can do audio
             /// 
             bool bCanDoAudio = false;
+            bool IsKnownGoogleClient = false;
             if (pres.Capabilities != null)
             {
                 if (pres.Capabilities.Extensions != null)
                 {
                     if (pres.Capabilities.Extensions.IndexOf("voice-v1") >= 0)
                         bCanDoAudio = true;
+                }
+
+                if (pres.Capabilities.Node != null)
+                {
+                    if (pres.Capabilities.Node == "http://www.android.com/gtalk/client/caps2")
+                        IsKnownGoogleClient = true;
                 }
             }
 
@@ -368,6 +384,7 @@ namespace System.Net.XMPP
                     instance = new RosterItemPresenceInstance(pres.From);
                     instance.Presence = pres.PresenceStatus;
                     instance.CanClientDoAudio = bCanDoAudio;
+                    instance.IsKnownGoogleClient = IsKnownGoogleClient;
                     lock (m_lockClientInstances)
                     {
                         m_listClientInstances.Add(instance);
@@ -403,7 +420,7 @@ namespace System.Net.XMPP
             XMPPClient.FireListChanged(1);
         }
 
-        RosterItemPresenceInstance FindInstance(JID jid)
+        public RosterItemPresenceInstance FindInstance(JID jid)
         {
             lock (m_lockClientInstances)
             {

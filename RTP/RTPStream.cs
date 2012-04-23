@@ -15,32 +15,32 @@ using SocketServer;
 
 namespace RTP
 {
-    public delegate void DelegateSTUNMessage(STUN2Message smsg, IPEndPoint epfrom);
+    public delegate void DelegateSTUNMessage(STUNMessage smsg, IPEndPoint epfrom);
 
 
     public class STUNRequestResponse
     {
-        public STUNRequestResponse(STUN2Message requestmessage)
+        public STUNRequestResponse(STUNMessage requestmessage)
         {
             RequestMessage = requestmessage;
         }
 
-        private STUN2Message m_objRequestMessage = null;
+        private STUNMessage m_objRequestMessage = null;
 
-        public STUN2Message RequestMessage
+        public STUNMessage RequestMessage
         {
             get { return m_objRequestMessage; }
             set { m_objRequestMessage = value; }
         }
 
-        private STUN2Message m_objResponseMessage = null;
-        public STUN2Message ResponseMessage
+        private STUNMessage m_objResponseMessage = null;
+        public STUNMessage ResponseMessage
         {
           get { return m_objResponseMessage; }
           set { m_objResponseMessage = value; }
         }
 
-        public bool IsThisYourResponseSetIfItIs(STUN2Message msg)
+        public bool IsThisYourResponseSetIfItIs(STUNMessage msg)
         {
             bool bRet = SocketServer.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, msg.TransactionId);
             if (bRet == true)
@@ -52,7 +52,7 @@ namespace RTP
             return bRet; 
         }
 
-        public void Reset(STUN2Message requestmessage)
+        public void Reset(STUNMessage requestmessage)
         {
             RequestMessage = requestmessage;
             if (WaitHandle != null)
@@ -182,7 +182,7 @@ namespace RTP
         protected List<STUNRequestResponse> StunRequestResponses = new List<STUNRequestResponse>();
         protected object StunLock = new object();
 
-        public STUN2Message SendRecvSTUN(IPEndPoint epStun, STUN2Message msgRequest, int nTimeout)
+        public STUNMessage SendRecvSTUN(IPEndPoint epStun, STUN2Message msgRequest, int nTimeout)
         {
             STUNRequestResponse req = new STUNRequestResponse(msgRequest);
             lock (StunLock)
@@ -196,7 +196,7 @@ namespace RTP
             return req.ResponseMessage;
         }
 
-        public int SendSTUNMessage(STUN2Message msg, IPEndPoint epStun)
+        public int SendSTUNMessage(STUNMessage msg, IPEndPoint epStun)
         {
             byte[] bMessage = msg.Bytes;
             return this.RTPUDPClient.SendUDP(bMessage, bMessage.Length, epStun);
@@ -278,10 +278,18 @@ namespace RTP
                 if ((bData[4] == 0x21) && (bData[5] == 0x12) && (bData[6] == 0xA4) && (bData[7] == 0x42))
                 {
                     /// STUN message
-                    STUN2Message smsg = new STUN2Message();
+                    STUNMessage smsg = new STUN2Message();
                     byte[] bStun = new byte[nLength];
                     Array.Copy(bData, 0, bStun, 0, nLength);
-                    smsg.Bytes = bStun;
+                    try
+                    {
+                        smsg.Bytes = bStun;
+                    }
+                    catch (Exception ex)
+                    {
+                        smsg = new STUNMessage();
+                        smsg.Bytes = bStun;
+                    }
 
                     STUNRequestResponse foundreq = null;
                     lock (StunLock)
@@ -309,11 +317,14 @@ namespace RTP
             }
 
  	        RTPPacket packet = RTPPacket.BuildPacket(bData, 0, nLength);
-            if (ReceiveSSRC == 0)
-                ReceiveSSRC = packet.SSRC;
-            if ( (packet.PayloadType == this.Payload) && (packet.SSRC == this.ReceiveSSRC) )
+            if (packet != null) /// Seems we get some TURN channel data messages from google talk
             {
-                IncomingRTPPacketBuffer.AddPacket(packet);
+                if (ReceiveSSRC == 0)
+                    ReceiveSSRC = packet.SSRC;
+                if ((packet.PayloadType == this.Payload) && (packet.SSRC == this.ReceiveSSRC))
+                {
+                    IncomingRTPPacketBuffer.AddPacket(packet);
+                }
             }
         }
 

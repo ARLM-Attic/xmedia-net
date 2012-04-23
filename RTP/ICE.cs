@@ -176,7 +176,47 @@ namespace RTP
 
             foreach (int nNextTimeout in Timeouts)
             {
-                STUN2Message ResponseMessage = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgRequest, nNextTimeout);
+                STUNMessage ResponseMessage = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgRequest, nNextTimeout);
+
+                ResponseEndpoint = null;
+                if (ResponseMessage != null)
+                {
+                    foreach (STUNAttributeContainer cont in ResponseMessage.Attributes)
+                    {
+                        if (cont.ParsedAttribute.Type == StunAttributeType.MappedAddress)
+                        {
+
+                            MappedAddressAttribute attrib = cont.ParsedAttribute as MappedAddressAttribute;
+                            ResponseEndpoint = new IPEndPoint(attrib.IPAddress, attrib.Port);
+                        }
+                    }
+                    this.CandidatePairState = RTP.CandidatePairState.Succeeded;
+                    break;
+                }
+                else
+                {
+                    this.CandidatePairState = RTP.CandidatePairState.Failed;
+                }
+            }
+        }
+
+        public void PerformOutgoingSTUNCheckGoogle(RTPStream stream, string strUsername, string strPassword)
+        {
+            STUN2Message msgRequest = new STUN2Message();
+            msgRequest.Method = StunMethod.Binding;
+            msgRequest.Class = StunClass.Request;
+
+
+            if (strUsername != null)
+            {
+                UserNameAttribute unameattr = new UserNameAttribute();
+                unameattr.UserName = strUsername;
+                msgRequest.AddAttribute(unameattr);
+            }
+
+            foreach (int nNextTimeout in Timeouts)
+            {
+                STUNMessage ResponseMessage = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgRequest, nNextTimeout);
 
                 ResponseEndpoint = null;
                 if (ResponseMessage != null)
@@ -243,12 +283,67 @@ namespace RTP
 
             foreach (int nNextTimeout in Timeouts)
             {
-                STUN2Message ResponseMessage = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgRequest, nNextTimeout);
+                STUNMessage ResponseMessage = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgRequest, nNextTimeout);
                 if (ResponseMessage != null)
                     break;
             }
 
+        }
 
+        int m_nSendTimeout = 3000;
+        bool m_bThreadRunning = false;
+        bool m_bGoogle = false;
+        RTPStream RTPStream = null;
+        System.Threading.Thread ThreadIndication = null;
+
+        /// <summary>
+        /// Start the thread that sends STUN requests periodically.  Must clients will still work without this, but google talk will kill incoming audio if
+        /// stun binding requests aren't sent periodically.  
+        /// (Google clients appear to send these every 500 ms, but we'll do every 3 s)
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="bGoogle"></param>
+        public void StartIndicationThread(RTPStream stream, bool bGoogle)
+        {
+            if (m_bThreadRunning == true)
+                return;
+            m_bThreadRunning = true;
+            m_bGoogle = bGoogle;
+            RTPStream = stream;
+
+            ThreadIndication = new System.Threading.Thread(new System.Threading.ThreadStart(IndicationThread));
+            ThreadIndication.IsBackground = true;
+            ThreadIndication.Priority = System.Threading.ThreadPriority.BelowNormal;
+            ThreadIndication.Start();
+        }
+
+        public void StopIndicationThread()
+        {
+            m_bThreadRunning = false;
+        }
+
+        void IndicationThread()
+        {
+            while (m_bThreadRunning == true)
+            {
+                try
+                {
+                    if (m_bGoogle)
+                        SendIndicationGoogle(RTPStream, string.Format("{0}{1}", this.RemoteCandidate.username, this.LocalCandidate.username));
+                    else
+                        SendIndication(RTPStream);
+                }
+                catch (Exception ex)
+                {
+                    return;
+                }
+
+                System.Threading.Thread.Sleep(m_nSendTimeout);
+            }
+        }
+
+        public void SendIndication(RTPStream stream)
+        {
             /// Need to send a binding indication every 3 s from now on?
             STUN2Message msgBindingIndication = new STUN2Message();
             msgBindingIndication.Method = StunMethod.Binding;
@@ -257,11 +352,29 @@ namespace RTP
 
             /// Add fingerprint
             /// 
-            nLengthWithoutFingerPrint = msgBindingIndication.Bytes.Length;
-            fattr = new FingerPrintAttribute();
+            int nLengthWithoutFingerPrint = msgBindingIndication.Bytes.Length;
+            FingerPrintAttribute fattr = new FingerPrintAttribute();
             msgBindingIndication.AddAttribute(fattr);
             fattr.ComputeCRC(msgBindingIndication, nLengthWithoutFingerPrint);
-            STUN2Message ResponseMessage2 = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgBindingIndication, 100);
+            stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgBindingIndication, 0);
+        }
+
+        public void SendIndicationGoogle(RTPStream stream, string strUsername)
+        {
+            /// Google talk appears to send a full stun binding request every 500 ms instead of a binding indication
+            STUN2Message msgRequest = new STUN2Message();
+            msgRequest.Method = StunMethod.Binding;
+            msgRequest.Class = StunClass.Request;
+
+
+            if (strUsername != null)
+            {
+                UserNameAttribute unameattr = new UserNameAttribute();
+                unameattr.UserName = strUsername;
+                msgRequest.AddAttribute(unameattr);
+            }
+
+            STUNMessage ResponseMessage = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgRequest, 0);
         }
         public int[] Timeouts = new int[] { 200, 500, 800, 1200 };
 

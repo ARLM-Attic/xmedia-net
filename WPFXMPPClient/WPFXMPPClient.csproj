@@ -33,7 +33,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>59</ApplicationRevision>
+    <ApplicationRevision>61</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -114,6 +114,7 @@
     <Compile Include="AudioMuxerWindow.xaml.cs">
       <DependentUpon>AudioMuxerWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BetterAudioResampler.cs" />
     <Compile Include="FileTransferWindow.xaml.cs">
       <DependentUpon>FileTransferWindow.xaml</DependentUpon>
     </Compile>
