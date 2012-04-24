@@ -441,7 +441,7 @@ namespace WPFXMPPClient
 
 
             IncomingCallWindow IncomingCall = new IncomingCallWindow();
-            IncomingCall.IncomingCallFrom = iq.From;
+            IncomingCall.IncomingCallFrom = XMPPClient.FindRosterItem(iq.From);
             IncomingCallWindows.Add(strSession, IncomingCall);
             IncomingCall.ShowDialog();
             if (IncomingCallWindows.ContainsKey(strSession) == true)

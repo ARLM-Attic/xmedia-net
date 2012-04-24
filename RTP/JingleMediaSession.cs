@@ -62,16 +62,24 @@ namespace RTP
             Bind();
         }
 
+        private RosterItem m_objRosterItem = null;
+
+        public RosterItem RosterItem
+        {
+            get { return m_objRosterItem; }
+            set { m_objRosterItem = value; }
+        }
+
         /// <summary>
         /// See if this specific instance is running a client we know uses google talk protocl
         /// TODO... see if this a instance running standard jingle as well
         /// </summary>
         void CheckGoogleTalk()
         {
-            RosterItem item = XMPPClient.FindRosterItem(RemoteJID);
-            if (item != null)
+            RosterItem = XMPPClient.FindRosterItem(RemoteJID);
+            if (RosterItem != null)
             {
-                RosterItemPresenceInstance specificinstance = item.FindInstance(RemoteJID);
+                RosterItemPresenceInstance specificinstance = RosterItem.FindInstance(RemoteJID);
                 if (specificinstance != null)
                 {
                     UseGoogleTalkProtocol = specificinstance.IsKnownGoogleClient;
@@ -113,6 +121,7 @@ namespace RTP
             Session = strSession;
             XMPPClient = client;
             RemoteJID = intialJingle.From;
+            RosterItem = XMPPClient.FindRosterItem(RemoteJID);
             SessionState = SessionState.Incoming;
         }
 
@@ -120,6 +129,7 @@ namespace RTP
         public IQ InitialJingle = null;
         public void StartIncoming(IQ initialJingle)
         {
+
             InitialJingle = initialJingle;
 
             Bind();

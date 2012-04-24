@@ -11,6 +11,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
+using System.Net.XMPP;
+
 namespace WPFXMPPClient
 {
     /// <summary>
@@ -23,14 +25,15 @@ namespace WPFXMPPClient
             InitializeComponent();
         }
 
-        public string IncomingCallFrom = "Unknown";
+        public RosterItem IncomingCallFrom = null;
         public bool Accepted = false;
         public delegate void DelegateCallAccept(bool bAccept);
         public event DelegateCallAccept OnAcceptOrDeclineCall = null;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.LabelIncomingCall.Content = string.Format("Incoming Call From {0}", IncomingCallFrom);
+            this.DataContext = IncomingCallFrom;
+            this.LabelIncomingCall.Content = string.Format("Incoming Call From {0}", IncomingCallFrom.Name);
 
         }
 

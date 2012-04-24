@@ -122,7 +122,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Image Source="Avatars/darkavatar.png" />
+                                    <Image Source="{Binding RosterItem.Avatar}" Width="64" Height="64" />
                                     <Label VerticalAlignment="Center" FontWeight="Bold" Content="{Binding RemoteJID}" />
                                 </StackPanel>
                             </DataTemplate>
