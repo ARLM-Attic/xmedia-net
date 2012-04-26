@@ -50,6 +50,7 @@ namespace XMPPClient
             // Phone-specific initialization
             InitializePhoneApplication();
 
+            ApplicationLifetimeObjects.Add(new XNAAsyncDispatcher(TimeSpan.FromMilliseconds(40)));
 
             DeviceNetworkInformation.NetworkAvailabilityChanged += new EventHandler<NetworkNotificationEventArgs>(DeviceNetworkInformation_NetworkAvailabilityChanged);
             /// Load our options
@@ -650,5 +651,31 @@ namespace XMPPClient
         }
 
         #endregion
+    }
+
+    public class XNAAsyncDispatcher : IApplicationService
+    {
+        private System.Windows.Threading.DispatcherTimer frameworkDispatcherTimer; 
+        public XNAAsyncDispatcher(TimeSpan dispatchInterval) 
+        {
+            this.frameworkDispatcherTimer = new System.Windows.Threading.DispatcherTimer(); 
+            this.frameworkDispatcherTimer.Tick += new EventHandler(frameworkDispatcherTimer_Tick); 
+            this.frameworkDispatcherTimer.Interval = dispatchInterval; 
+        }     
+        
+        void IApplicationService.StartService(ApplicationServiceContext context) 
+        { 
+            this.frameworkDispatcherTimer.Start(); 
+        }     
+        void IApplicationService.StopService() 
+        { 
+            this.frameworkDispatcherTimer.Stop(); 
+        }     
+        
+        void frameworkDispatcherTimer_Tick(object sender, EventArgs e) 
+        { 
+            FrameworkDispatcher.Update(); 
+        }
+
     }
 }

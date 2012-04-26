@@ -75,7 +75,10 @@ namespace RTP
                 UDPClient = new SocketServer.UDPSocketClient(LocalEndpoint);
                 UDPClient.Bind();
 
+#if !WINDOWS_PHONE
                 LocalEndpoint = UDPClient.s.LocalEndPoint as IPEndPoint;
+#else
+#endif
                 IsBound = true;
                 UDPClient.OnReceiveMessage += new SocketServer.UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
                 UDPClient.StartReceiving();

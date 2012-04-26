@@ -373,6 +373,7 @@ namespace RTP
             set { m_bBytes = value; }
         }
 
+#if !WINDOWS_PHONE
         public void ComputeHMACLongTermCredentials(STUNMessage msgWithoutHMAC, int nLengthWithoutMessageIntegrity, string strUserName, string strRealm, string strPassword)
         {
             string strKey = string.Format("{0}:{1}:{2}", strUserName, strRealm, strPassword);
@@ -385,6 +386,7 @@ namespace RTP
             System.Security.Cryptography.HMACSHA1 sha1 = new System.Security.Cryptography.HMACSHA1(bKey);
             HMAC = sha1.ComputeHash(bBytes, 0, nLengthWithoutMessageIntegrity);
         }
+#endif
 
         public void ComputeHMACShortTermCredentials(STUNMessage msgWithoutHMAC, int nLengthWithoutMessageIntegrity, string strPassword)
         {

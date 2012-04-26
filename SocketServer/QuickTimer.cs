@@ -343,7 +343,9 @@ namespace SocketServer
       {
          WorkerThread = new Thread(new ThreadStart(CheckTimerThread));
          WorkerThread.IsBackground = true;
-         WorkerThread.Priority = ThreadPriority.AboveNormal;
+#if !WINDOWS_PHONE
+          WorkerThread.Priority = ThreadPriority.AboveNormal;
+#endif
          WorkerThread.Start();
       }
 
@@ -366,7 +368,9 @@ namespace SocketServer
          watch.Start();
          long nNextDueTimeInMs = 0;
 
-         System.Threading.Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Highest;
+#if !WINDOWS_PHONE
+          System.Threading.Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Highest;
+#endif
 
          while (true)
          {
@@ -381,21 +385,27 @@ namespace SocketServer
 
             //Thread.SpinWait(
             if (nNextDueTimeInMs > (PeriodicTimerWatch.AccuracyAndLag + SystemTimerInaccuracyTimeMs))
-               nHandle = WaitHandle.WaitAny(new WaitHandle[] { EventNewTimer }, (int)(nNextDueTimeInMs - SystemTimerInaccuracyTimeMs), true);
+            {
+#if !WINDOWS_PHONE
+                nHandle = WaitHandle.WaitAny(new WaitHandle[] { EventNewTimer }, (int)(nNextDueTimeInMs - SystemTimerInaccuracyTimeMs), true);
+#else
+                nHandle = WaitHandle.WaitAny(new WaitHandle[] { EventNewTimer }, (int)(nNextDueTimeInMs - SystemTimerInaccuracyTimeMs));
+#endif
+            }
             else if (nNextDueTimeInMs > 0)
             {
-               /// Loop instead of waiting at this point until our next time out
-               while (watch.ElapsedMilliseconds < nNextDueTimeInMs)
-               {
-                  /// Do nothing but take up CPU
-                  /// 
-                  /// Changed by B.B. 10-28-2009
-                  /// We don't really need this to be super accurate, so we'll sleep a little here and see if it has
-                  /// any negative affects
-                  /// 
-                  Thread.Sleep(1);
+                /// Loop instead of waiting at this point until our next time out
+                while (watch.ElapsedMilliseconds < nNextDueTimeInMs)
+                {
+                    /// Do nothing but take up CPU
+                    /// 
+                    /// Changed by B.B. 10-28-2009
+                    /// We don't really need this to be super accurate, so we'll sleep a little here and see if it has
+                    /// any negative affects
+                    /// 
+                    Thread.Sleep(1);
 
-               }
+                }
             }
 
             try

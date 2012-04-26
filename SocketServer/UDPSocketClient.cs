@@ -372,7 +372,7 @@ namespace SocketServer
             DiffSvcCP = nDSCP;
         }
 
-        public int SendUDP(byte[] bData, int nLength, System.Net.IPEndPoint ep)
+        public int SendUDP(byte[] bData, int nLength, System.Net.EndPoint ep)
         {
             lock (SyncRoot)
             {
@@ -396,7 +396,7 @@ namespace SocketServer
         /// <param name="nLength"></param>
         /// <param name="ep"></param>
         /// <returns></returns>
-        public virtual int SendMessage(byte[] bData, int nLength, System.Net.IPEndPoint ep)
+        public virtual int SendMessage(byte[] bData, int nLength, System.Net.EndPoint ep)
         {
             lock (SyncRoot)
             {

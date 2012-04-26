@@ -190,11 +190,13 @@ namespace RTP
                             ResponseEndpoint = new IPEndPoint(attrib.IPAddress, attrib.Port);
                         }
                     }
+                    System.Diagnostics.Debug.WriteLine("STUN check for remote candidate {0} succeeded", this.RemoteCandidate.IPEndPoint);
                     this.CandidatePairState = RTP.CandidatePairState.Succeeded;
                     break;
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine("STUN check for remote candidate {0} failed", this.RemoteCandidate.IPEndPoint);
                     this.CandidatePairState = RTP.CandidatePairState.Failed;
                 }
             }
@@ -313,7 +315,9 @@ namespace RTP
 
             ThreadIndication = new System.Threading.Thread(new System.Threading.ThreadStart(IndicationThread));
             ThreadIndication.IsBackground = true;
+#if !WINDOWS_PHONE
             ThreadIndication.Priority = System.Threading.ThreadPriority.BelowNormal;
+#endif
             ThreadIndication.Start();
         }
 

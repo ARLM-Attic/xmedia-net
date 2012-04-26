@@ -50,7 +50,7 @@ namespace RTP
         {
             ResponseMessage = null;
             WaitHandle.Reset();
-            IPEndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(StunServer, StunPort);
+            EndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(StunServer, StunPort);
 
             STUNMessage msgRequest = new STUNMessage();
             msgRequest.Method = StunMethod.Binding;
@@ -66,7 +66,11 @@ namespace RTP
 
             SocketServer.UDPSocketClient client = new SocketServer.UDPSocketClient(LocalEndpoint);
             client.OnReceivePacket += new SocketServer.UDPSocketClient.DelegateReceivePacket(client_OnReceivePacket3);
+#if !WINDOWS_PHONE
             client.StartReceiving(true);
+#else
+            client.StartReceiving();
+#endif
 
             byte [] bMessage = msgRequest.Bytes;
             client.SendUDP(bMessage, bMessage.Length, epStun);

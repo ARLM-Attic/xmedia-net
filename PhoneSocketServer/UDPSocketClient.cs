@@ -10,6 +10,22 @@ using System.Collections;
 
 namespace SocketServer
 {
+    public class ConnectMgr
+    {
+
+        public static EndPoint GetIPEndpoint(string ipaddr, int nport)
+        {
+            try
+            {
+                return new DnsEndPoint(ipaddr, nport, AddressFamily.InterNetwork);
+            }
+            catch (Exception e) /// could not resolve host name
+            {
+            }
+            return null;
+        }
+    }
+
    public class BufferSocketRef
    {
       public BufferSocketRef(UDPSocketClient client)
@@ -49,29 +65,12 @@ namespace SocketServer
 	{
 		public UDPSocketClient(IPEndPoint ep) // : base(ep)
 		{
-         m_ipEp = ep;
+            m_ipEp = ep;
 
-         if (ep.AddressFamily == AddressFamily.InterNetworkV6)
-         {
-            s = new System.Net.Sockets.Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-         }
-         else
-         {
+            /// no ipv6 support in windows phone 7
             s = new System.Net.Sockets.Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-         }
-
-         if (ep.AddressFamily == AddressFamily.InterNetworkV6)
-         {
-             IPEndPoint sender = new IPEndPoint(IPAddress.IPv6Any, 0);
-             m_tempRemoteEP = (System.Net.IPEndPoint)sender;
-         }
-         else
-         {
-             IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
-             m_tempRemoteEP = (System.Net.IPEndPoint)sender;
-         }
-         //asyncb = new AsyncCallback(OnReceiveUDP);
-
+            IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
+            m_tempRemoteEP = (System.Net.IPEndPoint)sender;
       }
 
       //public DateTimePrecise DateTimePrecise = new DateTimePrecise();
@@ -110,13 +109,10 @@ namespace SocketServer
       public readonly IPEndPoint m_ipEp;         /// our endpoint
       public System.Net.Sockets.Socket s = null;
 
-      public delegate void DelegateReceivePacket(byte [] bData, int nLength, IPEndPoint epfrom);
-      public delegate void DelegateReceivePacket2(byte [] bData, int nLength, IPEndPoint epfrom, IPEndPoint epthis);
-      public delegate void DelegateReceivePacket3(byte[] bData, int nLength, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived);
+      public delegate void DelegateReceivePacket(byte[] bData, int nLength, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived);
       public event DelegateReceivePacket OnReceivePacket = null;
-      public event DelegateReceivePacket2 OnReceivePacket2 = null;
-      public event DelegateReceivePacket3 OnReceivePacket3 = null;
-      public static readonly int m_nBufferSize = 16 * 1024;
+      public event DelegateReceivePacket OnReceiveMessage = null;
+      public static readonly int m_nBufferSize = 2048; /// Max udp buffer size for windows phone
       
       protected IPEndPoint m_tempRemoteEP = null;  /// temp endpoint for receivefrom
       //protected System.AsyncCallback asyncb;
@@ -148,31 +144,6 @@ namespace SocketServer
           /// Doesn't appear to be a bind option in windows phone 7
           /// 
 
-
-         //lock (SyncRoot)
-         //{
-         //   m_bReceive = true;
-         //   System.Net.EndPoint epBind = (EndPoint)m_ipEp;
-         //   try
-         //   {
-         //      s.Bind(epBind);
-         //   }
-         //   catch (SocketException e3) /// winso
-         //   {
-         //      string strError = string.Format("{0} - {1}", e3.ErrorCode, e3.ToString());
-         //      LogError(MessageImportance.High, "EXCEPTION", strError);
-         //      return false;
-         //   }
-         //   catch (ObjectDisposedException e4) // socket was closed
-         //   {
-         //      string strError = e4.ToString();
-         //      LogError(MessageImportance.High, "EXCEPTION", strError);
-         //      return false;
-         //   }
-
-         //   m_bIsBound = true;
-         //}
-
          return true;
       }
 
@@ -192,25 +163,9 @@ namespace SocketServer
          lock (SyncRoot)
          {
             m_bReceive = true;
-
-            s.ReceiveBufferSize = 128000;
-            //s.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveBuffer, 128000);
-            /// have 8 pending receives in the queue at all times
             this.NumberOfReceivingThreads = 1;
-
             DoReceive();
-            if (System.Environment.OSVersion.Version.Major >= 6)
-            {
-               DoReceive();
-               DoReceive();
-            }
-            //DoReceive();
-            //DoReceive();
-            //DoReceive();
-            //DoReceive();
-            //DoReceive();
-            //DoReceive();
-            //DoReceive();
+           
          }
          return true;
       }
@@ -228,8 +183,6 @@ namespace SocketServer
             ThreadNameShutdown = System.Threading.Thread.CurrentThread.Name;
             LogMessage(MessageImportance.Lowest, this.OurGuid, string.Format("Called StopReceiving for {0}", s));
             m_bReceive = false;
-            // Shutdown not recommended on UDP
-            //s.Shutdown(System.Net.Sockets.SocketShutdown.Both);
             s.Close();
          }
       }
@@ -243,22 +196,17 @@ namespace SocketServer
                this.LogError(MessageImportance.Highest, "error", string.Format("Can't call DoReceive, socket has been disposed by thread {0} or closed by {1}", this.ThreadNameDispose, this.ThreadNameShutdown));
                return;
             }
-
             
-            System.Net.EndPoint ep = (System.Net.EndPoint)m_tempRemoteEP;
             try
             {
-               LogMessage(MessageImportance.Lowest, this.OurGuid, string.Format("Called DoReceive"));
-               BufferSocketRef objRef = new BufferSocketRef(this);
+                LogMessage(MessageImportance.Lowest, this.OurGuid, string.Format("Called DoReceive"));
 
                 SocketAsyncEventArgs args = new SocketAsyncEventArgs();
-                args.UserToken = objRef;
-                args.SetBuffer(objRef.bRecv, 0, m_nBufferSize);
-                args.RemoteEndPoint = m_tempRemoteEP;
+                args.RemoteEndPoint = m_ipEp; // new IPEndPoint(IPAddress.Any, this.m_ipEp.Port);
+                byte [] bBuffer = new byte[2048];
+                args.SetBuffer(bBuffer, 0, bBuffer.Length);
                 args.Completed += new EventHandler<SocketAsyncEventArgs>(OnReceiveUDP);
                 s.ReceiveFromAsync(args);
-
-                //s.BeginReceiveFrom(objRef.bRecv, 0, m_nBufferSize, System.Net.Sockets.SocketFlags.None, ref ep, asyncb, objRef);
             }
             catch (SocketException e3) /// winso
             {
@@ -296,19 +244,13 @@ namespace SocketServer
       {
           DateTime dtReceive = DateTime.Now; // DateTimePrecise.Now;
 
-         BufferSocketRef objRef = e.UserToken as BufferSocketRef;
-         System.Net.EndPoint ep = (System.Net.EndPoint)m_tempRemoteEP;
          int nRecv = 0;
-
          try
          {
              nRecv = e.BytesTransferred;
-            //nRecv = s.EndReceiveFrom(ar, ref ep);
-            objRef.CheckInCopy(nRecv);
          }
          catch (SocketException e3) /// winso
          {
-            objRef.CheckInCopy(nRecv);
             string strError = string.Format("{0} - {1}", e3.ErrorCode, e3.ToString());
             LogError(MessageImportance.High, "EXCEPTION", strError);
             --(this.NumberOfReceivingThreads);
@@ -324,7 +266,6 @@ namespace SocketServer
          }
          catch (ObjectDisposedException e4) // socket was closed
          {
-            objRef.CheckInCopy(nRecv);
             string strError = e4.ToString();
             this.LogWarning(MessageImportance.Low, "EXCEPTION", strError);
             --(this.NumberOfReceivingThreads);
@@ -334,7 +275,6 @@ namespace SocketServer
          }
          catch (Exception e5)
          {
-            objRef.CheckInCopy(nRecv);
             string strError = string.Format("{0}", e5.ToString());
             LogError(MessageImportance.High, "EXCEPTION", strError);
             --(this.NumberOfReceivingThreads);
@@ -344,9 +284,7 @@ namespace SocketServer
          }
 
 
-         System.Net.IPEndPoint ipep = (System.Net.IPEndPoint) ep;
-
-         OnRecv(objRef.bRecv, nRecv, ipep, dtReceive);
+         OnRecv(e.Buffer, nRecv, e.RemoteEndPoint as IPEndPoint, dtReceive);
       }
 
       private void OnRecv(byte[] bRecv, int nRecv, IPEndPoint ipep, DateTime dtReceive)
@@ -354,41 +292,34 @@ namespace SocketServer
 
          if (nRecv > 0)
          {
-            if (OnReceivePacket != null)
-            {
-               OnReceivePacket(bRecv, nRecv, ipep);
-            }
-            if (OnReceivePacket2 != null)
-            {
-               OnReceivePacket2(bRecv, nRecv, ipep, this.m_ipEp);
-            }
-            if (OnReceivePacket3 != null)
-            {
-               OnReceivePacket3(bRecv, nRecv, ipep, this.m_ipEp, dtReceive);
-            }
-            
+             if (OnReceivePacket != null)
+             {
+                 OnReceivePacket(bRecv, nRecv, ipep, this.m_ipEp, dtReceive);
+             }
+
+             if (OnReceiveMessage != null)
+             {
+                 byte[] bMessage = new byte[nRecv];
+                 Array.Copy(bRecv, 0, bMessage, 0, nRecv);
+                 OnReceiveMessage(bMessage, bMessage.Length, ipep, this.m_ipEp, dtReceive);
+             }
+
+             if (m_bReceive == true)
+                 DoReceive();
          }
 
-			if (m_bReceive == true)
-				DoReceive();
-			else
-			{
-				--(this.NumberOfReceivingThreads);
-//				if(this.NumberOfReceivingThreads==0&&this.OnReceivingStopped!=null)
-//					this.OnReceivingStopped(strError);
-			}
       }
 
      
 
-      public bool SendUDP(byte[] bData, int nLength, System.Net.IPEndPoint ep)
+      public int SendUDP(byte[] bData, int nLength, System.Net.EndPoint ep)
       {
          lock (SyncRoot)
          {
             if (m_bReceive == false)
             {
                this.LogError(MessageImportance.Highest, "error", string.Format("Can't call SendUDP, socket not valid or closed"));
-               return false;
+               return 0;
             }
 
             LogMessage(MessageImportance.Lowest, this.OurGuid, string.Format("SendUDP to {0}", ep));
@@ -397,13 +328,18 @@ namespace SocketServer
             args.RemoteEndPoint = ep;
             args.SetBuffer(bData, 0, nLength);
             args.Completed += new EventHandler<SocketAsyncEventArgs>(SendUDP_Completed);
-            return s.SendToAsync(args);
+            s.SendToAsync(args);
+            return nLength;
          }
       }
 
       void SendUDP_Completed(object sender, SocketAsyncEventArgs e)
       {
-          
+          /// Windows phone 7 can only receive after sending???? fucked up
+          /// 
+            /// http://stackoverflow.com/questions/7501495/windows-phone-udp
+          /// http://stackoverflow.com/questions/6551477/issues-with-async-receiving-udp-unicast-packets-in-windows-phone-7/
+          DoReceive();
       }
 
       #region ReStarting DoReceive()

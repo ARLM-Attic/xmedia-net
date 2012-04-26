@@ -74,6 +74,8 @@
                 <TextBlock Text="-" />
                 <TextBlock Text="" x:Name="TextBlockConversationTitle" Style="{StaticResource PhoneTextNormalStyle}"/>
             </StackPanel>
+            <Button x:Name="ButtonStartVoice" Click="ButtonStartVoice_Click">Start Voice Call</Button>
+            <MediaElement x:Name="AudioStream" Stretch="Uniform" />
         </StackPanel>
 
 

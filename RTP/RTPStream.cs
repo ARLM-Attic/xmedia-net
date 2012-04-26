@@ -169,7 +169,9 @@ namespace RTP
                 RTPUDPClient = new SocketServer.UDPSocketClient(LocalEndpoint);
                 RTPUDPClient.Bind();
 
+#if !WINDOWS_PHONE
                 LocalEndpoint = RTPUDPClient.s.LocalEndPoint as IPEndPoint;
+#endif
                 IsBound = true;
                 RTPUDPClient.OnReceiveMessage += new SocketServer.UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
                 RTPUDPClient.StartReceiving();
@@ -182,7 +184,7 @@ namespace RTP
         protected List<STUNRequestResponse> StunRequestResponses = new List<STUNRequestResponse>();
         protected object StunLock = new object();
 
-        public STUNMessage SendRecvSTUN(IPEndPoint epStun, STUN2Message msgRequest, int nTimeout)
+        public STUNMessage SendRecvSTUN(EndPoint epStun, STUN2Message msgRequest, int nTimeout)
         {
             STUNRequestResponse req = new STUNRequestResponse(msgRequest);
             lock (StunLock)
@@ -196,7 +198,7 @@ namespace RTP
             return req.ResponseMessage;
         }
 
-        public int SendSTUNMessage(STUNMessage msg, IPEndPoint epStun)
+        public int SendSTUNMessage(STUNMessage msg, EndPoint epStun)
         {
             byte[] bMessage = msg.Bytes;
             return this.RTPUDPClient.SendUDP(bMessage, bMessage.Length, epStun);

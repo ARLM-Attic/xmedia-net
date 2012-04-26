@@ -543,18 +543,25 @@ namespace RTP
 
         protected virtual void BuildLocalCandidates()
         {
+            //#if WINDOWS_PHONE
+            //if (this.AudioRTPStream.LocalEndpoint.Address.Address != 0)
+            //{
+            //    this.PerformSTUNRequest(new IPEndPoint(IPAddress.Parse("0.0.0.0"), this.AudioRTPStream.LocalEndpoint.Port), 100);
+            //}
+            //#endif
+            IPEndPoint PublicIPEndpoint = null;
             LocalCandidates.Clear();
             if (UseStun == true)
             {
                 try
                 {
-                    IPEndPoint publicep = this.PerformSTUNRequest(STUNServer, 1000);
-                    if (publicep != null)
+                    PublicIPEndpoint = this.PerformSTUNRequest(STUNServer, 4000);
+                    if (PublicIPEndpoint != null)
                     {
 
-                        //Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "stun", component = 1 };
-                        Candidate stuncand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port, type = "srflx", component = 1, relport = this.AudioRTPStream.LocalEndpoint.Port.ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
-                        stuncand.IPEndPoint = publicep;
+                        //Candidate stuncand = new Candidate() { ipaddress = PublicIPEndpoint.Address.ToString(), port = PublicIPEndpoint.Port, type = "stun", component = 1 };
+                        Candidate stuncand = new Candidate() { ipaddress = PublicIPEndpoint.Address.ToString(), port = PublicIPEndpoint.Port, type = "srflx", component = 1, relport = this.AudioRTPStream.LocalEndpoint.Port.ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
+                        stuncand.IPEndPoint = PublicIPEndpoint;
                         if (UseGoogleTalkProtocol == true)
                         {
                             stuncand.username = UserName;
@@ -576,8 +583,8 @@ namespace RTP
                         if (UseGoogleTalkProtocol == false)
                         {
                             /// RTCP candidate
-                            Candidate stunrtcpcand = new Candidate() { ipaddress = publicep.Address.ToString(), port = publicep.Port + 1, type = "srflx", component = 2, relport = (this.AudioRTPStream.LocalEndpoint.Port + 1).ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
-                            stunrtcpcand.IPEndPoint = new IPEndPoint(publicep.Address, publicep.Port + 1);
+                            Candidate stunrtcpcand = new Candidate() { ipaddress = PublicIPEndpoint.Address.ToString(), port = PublicIPEndpoint.Port + 1, type = "srflx", component = 2, relport = (this.AudioRTPStream.LocalEndpoint.Port + 1).ToString(), reladdr = this.AudioRTPStream.LocalEndpoint.Address.ToString() };
+                            stunrtcpcand.IPEndPoint = new IPEndPoint(PublicIPEndpoint.Address, PublicIPEndpoint.Port + 1);
                             stunrtcpcand.foundation = "2";
                             stunrtcpcand.id = "4";
                             stunrtcpcand.preference = null;
@@ -594,26 +601,34 @@ namespace RTP
                 }
             }
 
-            Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "host", component=1 };
-            cand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port );
-            //Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "local", component = 1 };
-            if (UseGoogleTalkProtocol == true)
+            /// Windows phone can't always give us an address, so we have to rely on the stun address alone
+            if (this.AudioRTPStream.LocalEndpoint.Address.Address != 0)
             {
-                cand.username = UserName;
-                cand.password = Password;
-                cand.foundation = null;
-                cand.preference = "1.0";
-            }
-            else
-            {
-                cand.foundation = "1";
-                cand.id = "1";
-                cand.preference = null;
-                cand.name = null;
+#if WINDOWS_PHONE
+//                if (PublicIPEndpoint != null)
+//                    this.AudioRTPStream.LocalEndpoint.Port = PublicIPEndpoint.Port; /// Windows phone won't let us bind to a port, so we have to figure out what it is here if we can
+#endif
+                Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "host", component = 1 };
+                cand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port);
+                //Candidate cand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "local", component = 1 };
+                if (UseGoogleTalkProtocol == true)
+                {
+                    cand.username = UserName;
+                    cand.password = Password;
+                    cand.foundation = null;
+                    cand.preference = "1.0";
+                }
+                else
+                {
+                    cand.foundation = "1";
+                    cand.id = "1";
+                    cand.preference = null;
+                    cand.name = null;
 
+                }
+                CalculatePriority(126, 40, cand);
+                LocalCandidates.Add(cand);
             }
-            CalculatePriority(126, 40, cand); 
-            LocalCandidates.Add(cand);
 
             if (UseGoogleTalkProtocol == false)
             {
@@ -644,7 +659,11 @@ namespace RTP
             {
                 foreach (Payload localpayload in LocalPayloads)
                 {
+#if !WINDOWS_PHONE
                     if ( (string.Compare(remotepayload.Name, localpayload.Name, true) == 0) && (remotepayload.ClockRate == localpayload.ClockRate))
+#else
+                    if ((string.Compare(remotepayload.Name, localpayload.Name, StringComparison.CurrentCultureIgnoreCase) == 0) && (remotepayload.ClockRate == localpayload.ClockRate))
+#endif
                     {
                         bFoundAgreeableCodec = true;
                         AgreedPayload = remotepayload;
@@ -692,10 +711,12 @@ namespace RTP
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
                 else if (m_objAgreedPayload.Name == "G722_40")
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
+#if !WINDOWS_PHONE
                 else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "16000"))
                    AudioRTPStream.AudioCodec = new SpeexCodec(NSpeex.BandMode.Wide);
                 else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "8000") )
                    AudioRTPStream.AudioCodec = new SpeexCodec(NSpeex.BandMode.Narrow);
+#endif
                 else if ((m_objAgreedPayload.Name == "PCMU") && (m_objAgreedPayload.ClockRate == "8000"))
                    AudioRTPStream.AudioCodec = new G711Codec();
             }
@@ -741,6 +762,7 @@ namespace RTP
         }
 
         List<CandidatePair> CandidatePairs = new List<CandidatePair>();
+        object CandidatePairsLock = new object();
         CandidatePair SelectedPair = null;
         protected bool IceDone = false;
         System.Threading.ManualResetEvent EventWaitForInitiatedToRespond = new System.Threading.ManualResetEvent(false);
@@ -752,39 +774,111 @@ namespace RTP
 
         void BuildCandidatePairs()
         {
-            foreach (Candidate nextlocalcand in this.LocalCandidates)
+            lock (CandidatePairsLock)
             {
                 // Now perform ICE tests to each of our candidates, see which one we get a response from.
                 foreach (Candidate nextcand in this.RemoteCandidates)
                 {
-                    if (nextcand.name == "rtcp")
-                        continue;
-
-                    //if ((nextcand.type == "stun") || (nextcand.type == "local"))
-                    if (nextcand.component == 1)
-                    {
-                        if (nextcand.IPEndPoint.Address.AddressFamily != AddressFamily.InterNetwork)
-                            continue; //only support IPV4 for now, should be easy to add 6 support once we bind to it as well
-
-                        CandidatePairs.Add(new CandidatePair(nextlocalcand, nextcand, this.Initiator));
-                    }
+                    AddLocalPairsForRemoteCandidate(nextcand);
                 }
+            }
+        }
+
+        // must be locked before calling
+        void AddLocalPairsForRemoteCandidate(Candidate nextcand)
+        {
+            if (nextcand.name == "rtcp")
+                return;
+
+            if (nextcand.component != 1)
+                return;
+
+            if (nextcand.IPEndPoint.Address.AddressFamily != AddressFamily.InterNetwork)
+                return;
+
+            foreach (Candidate nextlocalcand in this.LocalCandidates)
+            {
+                if (nextlocalcand.component == 1)  // May need stun checks on rtcp
+                    CandidatePairs.Add(new CandidatePair(nextlocalcand, nextcand, this.Initiator));
             }
         }
 
         void DoICEStunProcedures(object obj)
         {
             IceDone = false;
-
-
-            IPEndPoint epDefault = null;
-
+            epDefault = null;
 
             string strUserName = string.Format("{0}:{1}", this.RemoteUserName, this.UserName);
             string strPassword = this.RemotePassword;
 
 
-            CandidatePair[] pairs = CandidatePairs.ToArray();
+            while (true)
+            {
+                CandidatePair pairchecked = CheckNextPair();
+                if (pairchecked != null)
+                {
+
+                    /// See if we have any successful candidates yet if we are the controlling agent
+                    if (Initiator == true)
+                    {
+                        CandidatePair[] pairs = new CandidatePair[] { };
+                        lock (CandidatePairsLock) 
+                            pairs = CandidatePairs.ToArray();
+                        foreach (CandidatePair nextpair2 in pairs)
+                        {
+                            if ((nextpair2.HasReceivedSuccessfulIncomingSTUNCheck == true) && (nextpair2.CandidatePairState == CandidatePairState.Succeeded))
+                            {
+                                /// Tell the other end we will be using this candidate pair
+                                /// 
+                                nextpair2.TellRemoteEndToUseThisPair(this.AudioRTPStream, strUserName, strPassword);
+
+                                /// Finished
+                                this.RemoteEndpoint = nextpair2.RemoteCandidate.IPEndPoint;
+                                SelectedPair = nextpair2;
+                                ICEDoneStartRTP();
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        /// See if the the other end (the initiator) has told us to use candidates
+                        if (IceDone == true)
+                            return;
+                    }
+
+                    if (pairchecked.CandidatePairState == CandidatePairState.Succeeded)
+                    {
+                        this.RemoteEndpoint = pairchecked.RemoteCandidate.IPEndPoint;
+                        /// Succeeded here, may not succeed the other way though.  Still, store this as a last resort
+                    }
+                }
+                else
+                    break;
+            }
+           
+              
+        
+            if (this.RemoteEndpoint == null)
+                this.RemoteEndpoint = epDefault;
+
+            ICEDoneStartRTP();
+        }
+
+
+        IPEndPoint epDefault = null;
+
+
+        CandidatePair CheckNextPair()
+        {
+
+            string strUserName = string.Format("{0}:{1}", this.RemoteUserName, this.UserName);
+            string strPassword = this.RemotePassword;
+
+            CandidatePair[] pairs = new CandidatePair[] { };
+            lock (CandidatePairsLock)
+                pairs = CandidatePairs.ToArray();
+
             foreach (CandidatePair nextpair in pairs)
             {
                 if (UseGoogleTalkProtocol == true)
@@ -792,56 +886,22 @@ namespace RTP
                     strUserName = string.Format("{0}{1}", nextpair.RemoteCandidate.username, this.UserName);
                     strPassword = nextpair.RemoteCandidate.password;
                 }
-
+               
                 if (epDefault == null)
                     epDefault = nextpair.RemoteCandidate.IPEndPoint;
 
-
-                if (UseGoogleTalkProtocol == false)
-                    nextpair.PerformOutgoingSTUNCheck(this.AudioRTPStream, strUserName, strPassword);
-                else
-                    nextpair.PerformOutgoingSTUNCheckGoogle(this.AudioRTPStream, strUserName, strPassword);
-
-                if (nextpair.CandidatePairState == CandidatePairState.Succeeded)
+                if (!((nextpair.CandidatePairState == CandidatePairState.Succeeded) || (nextpair.CandidatePairState == CandidatePairState.Failed)))
                 {
-                    this.RemoteEndpoint = nextpair.RemoteCandidate.IPEndPoint;
-                    /// Succeeded here, may not succeed the other way though.  Still, store this as a last resort
-                }
+                    if (UseGoogleTalkProtocol == false)
+                        nextpair.PerformOutgoingSTUNCheck(this.AudioRTPStream, strUserName, strPassword);
+                    else
+                        nextpair.PerformOutgoingSTUNCheckGoogle(this.AudioRTPStream, strUserName, strPassword);
 
-                /// See if we have any successful candidates yet if we are the controlling agent
-                if (Initiator == true)
-                {
-                    foreach (CandidatePair nextpair2 in pairs)
-                    {
-                        if ((nextpair2.HasReceivedSuccessfulIncomingSTUNCheck == true) && (nextpair2.CandidatePairState == CandidatePairState.Succeeded))
-                        {
-                            /// Tell the other end we will be using this candidate pair
-                            /// 
-                            nextpair2.TellRemoteEndToUseThisPair(this.AudioRTPStream, strUserName, strPassword);
-
-                            /// Finished
-                            this.RemoteEndpoint = nextpair2.RemoteCandidate.IPEndPoint;
-                            SelectedPair = nextpair2;
-                            ICEDoneStartRTP();
-                            return;
-                        }
-                    }
+                    return nextpair;
                 }
-                else
-                {
-                    /// See if the the other end (the initiator) has told us to use candidates
-                    if (IceDone == true)
-                        return;
-                }
-
             }
 
-
-        
-            if (this.RemoteEndpoint == null)
-                this.RemoteEndpoint = epDefault;
-
-            ICEDoneStartRTP();
+            return null;
         }
 
         
@@ -858,27 +918,41 @@ namespace RTP
 
                     CandidatePair PairReferenced = null;
 
-                    if (UseGoogleTalkProtocol == false)
+                    lock (CandidatePairsLock)
                     {
-                        foreach (CandidatePair nextpair in this.CandidatePairs)
+                        if (UseGoogleTalkProtocol == false)
                         {
-                            if ((epfrom.Address.Equals(nextpair.RemoteCandidate.IPEndPoint.Address) == true) && (epfrom.Port == nextpair.RemoteCandidate.IPEndPoint.Port))
+                            foreach (CandidatePair nextpair in this.CandidatePairs)
                             {
-                                PairReferenced = nextpair;
-                                nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
-                                break;
+                                if ((epfrom.Address.Equals(nextpair.RemoteCandidate.IPEndPoint.Address) == true) && (epfrom.Port == nextpair.RemoteCandidate.IPEndPoint.Port))
+                                {
+                                    PairReferenced = nextpair;
+                                    nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
+                                    break;
+                                }
+                            }
+
+                            if (PairReferenced == null)
+                            {
+                                /// We're receiving a binding request from an unknown candidate.  If the credentials match we should add it to our stun check list
+                                /// 
+
+                                Candidate newcand = new Candidate();
+                                newcand.IPEndPoint = epfrom;
+                                newcand.priority = (int)CalculatePriority(110, 10, 1);
+                                AddLocalPairsForRemoteCandidate(newcand);
                             }
                         }
-                    }
-                    else if (IncomingUserNameAttribute != null)
-                    {
-                        foreach (CandidatePair nextpair in this.CandidatePairs)
+                        else if (IncomingUserNameAttribute != null)
                         {
-                            if (IncomingUserNameAttribute.UserName.IndexOf(nextpair.RemoteCandidate.username) >= 0)
+                            foreach (CandidatePair nextpair in this.CandidatePairs)
                             {
-                                PairReferenced = nextpair;
-                                nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
-                                break;
+                                if (IncomingUserNameAttribute.UserName.IndexOf(nextpair.RemoteCandidate.username) >= 0)
+                                {
+                                    PairReferenced = nextpair;
+                                    nextpair.HasReceivedSuccessfulIncomingSTUNCheck = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -1033,16 +1107,13 @@ namespace RTP
         }
 
         public const ushort StunPort = 3478;
-        public IPEndPoint PublicIPEndpoint = null;
-
         public IPEndPoint PerformSTUNRequest(string strStunServer, int nTimeout)
         {
-            IPEndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(strStunServer, StunPort);
-
+            EndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(strStunServer, StunPort);
             return PerformSTUNRequest(epStun, nTimeout);
         }
 
-        public IPEndPoint PerformSTUNRequest(IPEndPoint epStun, int nTimeout)
+        public IPEndPoint PerformSTUNRequest(EndPoint epStun, int nTimeout)
         {
             return PerformSTUNRequest(epStun, nTimeout, false, false, 0, null, null);
         }
@@ -1052,7 +1123,7 @@ namespace RTP
         /// </summary>
         /// <param name="strStunServer"></param>
         /// <returns></returns>
-        public IPEndPoint PerformSTUNRequest(IPEndPoint epStun, int nTimeout, bool bICE, bool bIsControlling, int nPriority, string strUsername, string strPassword)
+        public IPEndPoint PerformSTUNRequest(EndPoint epStun, int nTimeout, bool bICE, bool bIsControlling, int nPriority, string strUsername, string strPassword)
         {
             STUN2Message msgRequest = new STUN2Message();
             msgRequest.Method = StunMethod.Binding;

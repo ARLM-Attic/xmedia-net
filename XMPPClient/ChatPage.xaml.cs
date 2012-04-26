@@ -24,6 +24,13 @@ using System.Text.RegularExpressions;
 
 using System.Windows.Navigation;
 
+using System.Net.NetworkInformation;
+using RTP;
+using System.Net.XMPP.Jingle;
+using AudioClasses;
+using System.Threading;
+using Microsoft.Xna.Framework.Audio;
+
 namespace XMPPClient
 {
     public partial class ChatPage : PhoneApplicationPage
@@ -33,6 +40,7 @@ namespace XMPPClient
             InitializeComponent();
             photoChooserTask = new PhotoChooserTask();
             photoChooserTask.Completed += new EventHandler<PhotoResult>(photoChooserTask_Completed);
+
         }
 
         PhotoChooserTask photoChooserTask = null;
@@ -74,6 +82,8 @@ namespace XMPPClient
             catch (Exception)
             {
             }
+
+            RegisterXMPPClient();
 
             OurRosterItem = App.XMPPClient.FindRosterItem(new JID(strJID));
 
@@ -272,10 +282,29 @@ namespace XMPPClient
 
         }
 
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            if (this.m_bCallActive == true)
+            {
+                if (MessageBox.Show("A call is active, if you navigate away from this page the call will be stopped?", "Leave Page and End Call?", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
+                {
+                }
+                else
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
+            base.OnNavigatingFrom(e);
+        }
 
         protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
         {
             base.OnNavigatedFrom(e);
+            StopCall();
+            Dispose();
+
             App.XMPPClient.OnNewConversationItem -= new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
             if (OurRosterItem != null)
                SaveConversation(OurRosterItem);
@@ -446,6 +475,411 @@ namespace XMPPClient
                 SendMessage(strText);
                 //this.ListBoxConversation.Focus();
             }
+        }
+
+
+
+        public void RegisterXMPPClient()
+        {
+            addresses = FindAddresses();
+
+
+            App.XMPPClient.JingleSessionManager.OnNewSession += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnNewSession);
+            App.XMPPClient.JingleSessionManager.OnNewSessionAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnNewSessionAckReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionAcceptedAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionAcceptedAckReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionAcceptedReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionAcceptedReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionTerminated += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEvent(JingleSessionManager_OnSessionTerminated);
+            App.XMPPClient.JingleSessionManager.OnSessionTransportInfoReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionTransportInfoReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionTransportInfoAckReceived += new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionTransportInfoAckReceived);
+        }
+
+        public void Dispose()
+        {
+            App.XMPPClient.JingleSessionManager.OnNewSession -= new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnNewSession);
+            App.XMPPClient.JingleSessionManager.OnNewSessionAckReceived -= new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnNewSessionAckReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionAcceptedAckReceived -= new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionAcceptedAckReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionAcceptedReceived -= new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionAcceptedReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionTerminated -= new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEvent(JingleSessionManager_OnSessionTerminated);
+            App.XMPPClient.JingleSessionManager.OnSessionTransportInfoReceived -= new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventWithInfo(JingleSessionManager_OnSessionTransportInfoReceived);
+            App.XMPPClient.JingleSessionManager.OnSessionTransportInfoAckReceived -= new System.Net.XMPP.Jingle.JingleSessionManager.DelegateJingleSessionEventBool(JingleSessionManager_OnSessionTransportInfoAckReceived);
+       }
+
+        AudioStreamSource source = new AudioStreamSource();
+        IPAddress[] addresses = null;
+        RTP.JingleMediaSession MediaSession = null;
+        bool m_bCallActive = false;
+        Thread MicrophoneThread = null;
+        Thread SpeakerThread = null;
+        AudioClasses.ByteBuffer MicrophoneQueue = new ByteBuffer();
+
+
+        public void StartCall(string strRemoteJID)
+        {
+            /// Start up our mic and speaker, start up our mixer
+            /// 
+            if (m_bCallActive == true)
+                return;
+
+
+            if (addresses.Length <= 0)
+                throw new Exception("No IP addresses on System");
+
+            int nPort = GetNextPort();
+            IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
+
+            /// may need a lock here to make sure we have this session added to our list before the xmpp response gets back, though this should be many times faster than network traffic
+            MediaSession = new JingleMediaSession(strRemoteJID, ep, App.XMPPClient);
+            MediaSession.UseStun = true;
+            MediaSession.AudioRTPStream.UseInternalTimersForPacketPushPull = false;
+            MediaSession.ClearAllPayloads();
+
+            MediaSession.AddKnownAudioPayload(KnownAudioPayload.G722_40); // Only g711, speex can't be encoded real time on the xoom (oops, this is the windows phone, we'll have to try that later)
+
+            MediaSession.SendInitiateSession();
+        }
+
+        void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.JingleIQ iq, System.Net.XMPP.XMPPClient client)
+        {
+            App.XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.Decline);
+            //bool bAcceptNewCall = (bool)this.Dispatcher.Invoke(new DelegateAcceptSession(ShouldAcceptSession), strSession, jingle);
+
+            //if (bAcceptNewCall == true)
+            //{
+            //    int nPort = GetNextPort();
+            //    IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
+
+            //    JingleMediaSession session = new JingleMediaSession(strSession, jingle, ep, client);
+            //    session.UseStun = UseStun;
+            //    session.SendAcceptSession();
+            //    SessionList.Add(strSession, session);
+            //    ObservSessionList.Add(session);
+            //}
+            //else
+            //{
+            //    XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.Decline);
+            //}
+
+        }
+
+        void JingleSessionManager_OnNewSessionAckReceived(string strSession, System.Net.XMPP.Jingle.IQResponseAction response, System.Net.XMPP.XMPPClient client)
+        {
+            if ((MediaSession != null) && (MediaSession.Session == strSession))
+            {
+                MediaSession.GotNewSessionAck();
+            }
+        }
+
+        void JingleSessionManager_OnSessionTransportInfoReceived(string strSession, System.Net.XMPP.Jingle.JingleIQ jingle, System.Net.XMPP.XMPPClient client)
+        {
+            if ((MediaSession != null) && (MediaSession.Session == strSession))
+            {
+                MediaSession.GotTransportInfo(jingle);
+
+            }
+        }
+
+        void JingleSessionManager_OnSessionTransportInfoAckReceived(string strSession, IQResponseAction response, System.Net.XMPP.XMPPClient client)
+        {
+            if ((MediaSession != null) && (MediaSession.Session == strSession))
+            {
+                MediaSession.GotSendTransportInfoAck();
+            }
+        }
+
+
+
+        void JingleSessionManager_OnSessionTerminated(string strSession, System.Net.XMPP.XMPPClient client)
+        {
+            if ((MediaSession != null) && (MediaSession.Session == strSession))
+            {
+                MediaSession.StopMedia(null);
+                StopCall();
+            }
+        }
+
+        void JingleSessionManager_OnSessionAcceptedReceived(string strSession, System.Net.XMPP.Jingle.JingleIQ jingle, System.Net.XMPP.XMPPClient client)
+        {
+            Console.WriteLine("Session {0} has accepted our invitation", strSession);
+            if ((MediaSession != null) && (MediaSession.Session == strSession))
+            {
+                MediaSession.SessionAccepted(jingle, null);
+                StartMedia();
+            }
+        }
+
+        void JingleSessionManager_OnSessionAcceptedAckReceived(string strSession, System.Net.XMPP.Jingle.IQResponseAction response, System.Net.XMPP.XMPPClient client)
+        {
+            if (response.AcceptIQ == true)
+            {
+                Console.WriteLine("Session {0} has said OK to our Accept invitation", strSession);
+                if ((MediaSession != null) && (MediaSession.Session == strSession))
+                {
+                    MediaSession.GotAcceptSessionAck(null);
+                }
+            }
+
+        }
+
+
+
+        delegate bool DelegateAcceptSession(string strSession, System.Net.XMPP.Jingle.Jingle jingle);
+
+        bool ShouldAcceptSession(string strSession, System.Net.XMPP.Jingle.Jingle jingle)
+        {
+            ///TODO.. for now only allow outgoing calls
+            //StartMicrophoneAndSpeaker();
+
+            //if (AutoAnswer == true)
+            //    return true;
+
+            //if (MessageBox.Show(string.Format("Accept new Call from {0}", jingle.Initiator), "New Call", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            //    return true;
+            return false;
+        }
+
+
+        private bool m_bAutoAnswer = false;
+
+        public bool AutoAnswer
+        {
+            get { return m_bAutoAnswer; }
+            set
+            {
+                if (m_bAutoAnswer != value)
+                {
+                    m_bAutoAnswer = value;
+                }
+            }
+        }
+
+        void StartMedia()
+        {
+            m_bCallActive = true;
+
+            // Don't really need to use the mixer in android since we won't be conferencing people... go directly to the RTP buffer
+            //PushPullObject thismember = AudioMixer.AddInputOutputSource(this, this);
+            
+
+            /// Start our speaker play thread
+            SpeakerThread = new Thread(new ThreadStart(SpeakerThreadFunction));
+            SpeakerThread.IsBackground = true;
+            SpeakerThread.Name = "Speaker Write Thread";
+            SpeakerThread.Start();
+
+
+            /// Start our microphone read thread
+            MicrophoneThread = new Thread(new ThreadStart(MicrophoneThreadFunction));
+            MicrophoneThread.IsBackground = true;
+            MicrophoneThread.Name = "Microphone Read Thread";
+            MicrophoneThread.Start();
+
+        }
+
+        public void StopCall()
+        {
+            StopCall(true);
+        }
+
+        void StopCall(bool bSendTerminate)
+        {
+            m_bCallActive = false;
+            if (MediaSession != null)
+            {
+                App.XMPPClient.JingleSessionManager.TerminateSession(MediaSession.Session, TerminateReason.Gone);
+                MediaSession = null;
+            }
+
+            this.Dispatcher.BeginInvoke(new EventHandler(SafeStopCall), null, null);
+
+        }
+
+        void SafeStopCall(object obj, EventArgs args)
+        {
+            ButtonStartVoice.Content = "Start Voice Call";
+        }
+
+
+        void SafeStartMediaElement(object obj, EventArgs args)
+        {
+            if (AudioStream.CurrentState != MediaElementState.Playing)
+            {
+                AudioStream.BufferingTime = new TimeSpan(0, 0, 0);
+
+                AudioStream.SetSource(source);
+                AudioStream.Play();
+            }
+        }
+        void SafeStopMediaElement(object obj, EventArgs args)
+        {
+            AudioStream.Stop();
+        }
+        public void SpeakerThreadFunction()
+        {
+            /// Send the data to our AudioStreamSource
+            /// 
+            TimeSpan tsPTime = TimeSpan.FromMilliseconds(MediaSession.AudioRTPStream.PTimeReceive);
+            int nSamplesPerPacket = MediaSession.AudioRTPStream.AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(tsPTime);
+            int nBytesPerPacket = nSamplesPerPacket * MediaSession.AudioRTPStream.AudioCodec.AudioFormat.BytesPerSample;
+
+            JingleMediaSession session = MediaSession;
+            if (session == null)
+                return;
+
+            DateTime dtNextPacketExpected = DateTime.Now + tsPTime;
+            byte[] bDummySample = new byte[nBytesPerPacket];
+
+            this.Dispatcher.BeginInvoke(new EventHandler(SafeStartMediaElement), null, null);
+
+
+            /// Write a buffer to give us some play
+            /// 
+            source.Write(bDummySample);
+
+            while (m_bCallActive == true)
+            {
+                dtNextPacketExpected = DateTime.Now + tsPTime;
+                byte[] bData = session.AudioRTPStream.GetNextPacketSample();
+                if ((bData != null) && (bData.Length > 0))
+                    source.Write(bData);
+
+                TimeSpan tsRemaining = dtNextPacketExpected - DateTime.Now;
+                int nMsRemaining = (int)tsRemaining.TotalMilliseconds;
+                if (nMsRemaining > 0)
+                    System.Threading.Thread.Sleep(nMsRemaining);
+            }
+
+            this.Dispatcher.BeginInvoke(new EventHandler(SafeStopMediaElement), null, null);
+
+        }
+
+        bool UseEchoCanceller = false;
+
+        public void MicrophoneThreadFunction()
+        {
+            StartMic();
+
+            JingleMediaSession session = MediaSession;
+            if (session == null)
+                return;
+
+            int nSamplesPerPacket = MediaSession.AudioRTPStream.AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(MediaSession.AudioRTPStream.PTimeTransmit));
+            int nBytesPerPacket = nSamplesPerPacket * MediaSession.AudioRTPStream.AudioCodec.AudioFormat.BytesPerSample;
+
+
+            // Min size in ICS was 1280 or 40 ms
+
+
+            TimeSpan tsPTime = TimeSpan.FromMilliseconds(MediaSession.AudioRTPStream.PTimeTransmit);
+            DateTime dtNextPacketExpected = DateTime.Now + tsPTime;
+
+            int nUnavailableAudioPackets = 0;
+            while (m_bCallActive == true)
+            {
+                dtNextPacketExpected = DateTime.Now + tsPTime;
+                if (MicrophoneQueue.Size >= nBytesPerPacket)
+                {
+                    byte[] buffer = MicrophoneQueue.GetNSamples(nBytesPerPacket);
+                    session.AudioRTPStream.SendNextSample(buffer);
+                }
+                else
+                {
+                    nUnavailableAudioPackets++;
+                }
+
+                if (MicrophoneQueue.Size > nBytesPerPacket * 6)
+                    MicrophoneQueue.GetNSamples(MicrophoneQueue.Size - nBytesPerPacket * 5);
+
+                TimeSpan tsRemaining = dtNextPacketExpected - DateTime.Now;
+                int nMsRemaining = (int)tsRemaining.TotalMilliseconds;
+                if (nMsRemaining > 0)
+                    System.Threading.Thread.Sleep(nMsRemaining);
+            }
+
+            StopMic();
+        }
+
+        byte[] buffer = new byte[16 * 40];
+        void StartMic()
+        {
+            /// wnidows phone can only get mic at 100 ms intervals, not to good for speech
+            Microphone mic = Microphone.Default;
+            buffer = new byte[mic.GetSampleSizeInBytes(TimeSpan.FromMilliseconds(100)) * 4];
+            mic.BufferDuration = TimeSpan.FromMilliseconds(100);
+            mic.BufferReady += new EventHandler<EventArgs>(mic_BufferReady);
+            mic.Start();
+        }
+
+        void StopMic()
+        {
+            Microphone mic = Microphone.Default;
+            mic.BufferReady -= new EventHandler<EventArgs>(mic_BufferReady);
+            mic.Stop();
+        }
+
+        void mic_BufferReady(object sender, EventArgs e)
+        {
+            Microphone mic = Microphone.Default;
+
+            int nSize = mic.GetData(buffer);
+            MicrophoneQueue.AppendData(buffer, 0, nSize);
+        }
+
+        
+        static int FirstPort = 30000;
+        static int LastPort = 30100;
+
+        static int PortOn = 30000;
+
+        static ChatPage()
+        {
+            Random rand = new Random();
+            PortOn = rand.Next(80) + FirstPort;
+            if (PortOn % 2 != 0)
+                PortOn++;
+        }
+
+
+        public static int GetNextPort()
+        {
+            int nRet = PortOn;
+            PortOn += 2;
+            if (PortOn > LastPort)
+                PortOn = FirstPort;
+            return nRet;
+        }
+
+
+        public IPAddress[] FindAddresses()
+        {
+            List<IPAddress> IPs = new List<IPAddress>();
+       
+            FindMyIP.MyIPAddress finder = new FindMyIP.MyIPAddress();
+            IPAddress localaddress = finder.Find();
+            if (localaddress != null)
+                IPs.Add(localaddress);
+            else
+                IPs.Add(IPAddress.Parse("0.0.0.0"));
+
+            /// We get a stun address later on, so just live with the local address here
+
+            return IPs.ToArray();
+        }
+
+          
+
+
+        private void ButtonStartVoice_Click(object sender, RoutedEventArgs e)
+        {
+            if (ButtonStartVoice.Content.ToString() == "Start Voice Call")
+            {
+                this.StartCall(OurRosterItem.LastFullJIDToGetMessageFrom);
+                ButtonStartVoice.Content = "Stop Call";
+            }
+            else
+            {
+                this.StopCall();
+            }
+           
         }
 
     }

@@ -182,7 +182,9 @@ namespace SocketServer
          WorkerThread = new Thread(new ThreadStart(CheckTimerThread));
          WorkerThread.IsBackground = true;
          WorkerThread.Name = "Script Timer";
-         WorkerThread.Priority = ThreadPriority.AboveNormal;
+#if !WINDOWS_PHONE
+          WorkerThread.Priority = ThreadPriority.AboveNormal;
+#endif
          WorkerThread.Start();
       }
 
@@ -218,7 +220,9 @@ namespace SocketServer
          //if (m_logmgr != null)
          // m_logmgr.LogError("GENERAL", "TIMER", LogInterfaces.MessageImportance.Highest, 0, string.Format("Starting Timer Thread: Id {0}", AppDomain.GetCurrentThreadId()));
 
-         System.Threading.Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Highest;
+#if !WINDOWS_PHONE
+          System.Threading.Thread.CurrentThread.Priority = System.Threading.ThreadPriority.Highest;
+#endif
          System.DateTime dtNextDue = DateTime.Now.AddMilliseconds(Convert.ToDouble(TimerCheck));
          while (true)
          {
@@ -234,14 +238,19 @@ namespace SocketServer
             }
 
             if (nNextTimeOut > AccuracyAndLag)
-               nHandle = WaitHandle.WaitAny(new WaitHandle[] { EventNewTimer }, nNextTimeOut, true);
-
+            {
+#if !WINDOWS_PHONE
+                nHandle = WaitHandle.WaitAny(new WaitHandle[] { EventNewTimer }, nNextTimeOut, true);
+#else
+                nHandle = WaitHandle.WaitAny(new WaitHandle[] { EventNewTimer }, nNextTimeOut);
+#endif
+            }
             try
             {
 
                if (nHandle == WaitHandle.WaitTimeout)  // Timer elapsed
                {
-                  ArrayList alTimersRemoveAndFire = new ArrayList();
+                   List<MediaTimer> alTimersRemoveAndFire = new List<MediaTimer>();
                   lock (TimerLock)
                   {
                      if (SortedTimers.Count == 0)  /// no timers, no need to check until we get signaled
