@@ -47,6 +47,7 @@ namespace WPFXMPPClient
 
         PrivacyService PrivService = null;
         AudioMuxerWindow AudioMuxerWindow = new AudioMuxerWindow();
+        MapWindow MapWindow = new MapWindow();
 
         private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -603,6 +604,32 @@ namespace WPFXMPPClient
                 AudioMuxerWindow.Visibility = System.Windows.Visibility.Visible;
             }
         }
+
+        private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
+        {
+            MapWindow.XMPPClient = this.XMPPClient;
+            ShowMapWindow();
+        }
+
+        public void ShowMapWindow()
+        {
+            if (MapWindow.IsLoaded == false)
+            {
+                MapWindow = new MapWindow();
+                MapWindow.XMPPClient = this.XMPPClient;
+                MapWindow.Show();
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
+                FlashWindow(windowHandle, true);
+            }
+            else
+            {
+                MapWindow.Activate();
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
+                FlashWindow(windowHandle, true);
+            }
+        }
+
+
 
 
     }
