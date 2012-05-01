@@ -40,6 +40,11 @@ namespace RTP
           set { m_objResponseMessage = value; }
         }
 
+        public bool IsThisYou(byte [] bTransactionId)
+        {
+            return SocketServer.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, bTransactionId);
+        }
+
         public bool IsThisYourResponseSetIfItIs(STUNMessage msg)
         {
             bool bRet = SocketServer.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, msg.TransactionId);
@@ -194,7 +199,12 @@ namespace RTP
 
             SendSTUNMessage(msgRequest, epStun);
 
-            req.WaitForResponse(nTimeout);
+            bool bResponse = req.WaitForResponse(nTimeout);
+            lock (StunLock)
+            {
+                if (StunRequestResponses.Contains(req) == true)
+                    StunRequestResponses.Remove(req);
+            }
             return req.ResponseMessage;
         }
 

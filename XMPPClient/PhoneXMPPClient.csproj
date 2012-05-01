@@ -101,6 +101,7 @@
       <DependentUpon>OptionsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VoiceCall.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -210,6 +211,10 @@
     <ProjectReference Include="..\PhoneSocketServer\phone.socketserver.csproj">
       <Project>{CCDE1A18-482A-469C-9115-3C51723026B7}</Project>
       <Name>phone.socketserver</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PhoneSoundEffectsAudioPlaybackAgent\PhoneSoundEffectsAudioPlaybackAgent.csproj">
+      <Project>{741BC747-C5AF-4558-8E83-2E214F2EEF47}</Project>
+      <Name>PhoneSoundEffectsAudioPlaybackAgent</Name>
     </ProjectReference>
     <ProjectReference Include="..\PhoneXMPPLibrary\phone.xmpp.csproj">
       <Project>{08CA3C52-B65B-43F1-B60E-9A0F53021959}</Project>

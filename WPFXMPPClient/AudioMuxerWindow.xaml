@@ -83,9 +83,23 @@
                 </Image>
             </ToggleButton>
 
-            <Button Background="#AACCFFCC" Margin="2,2" BorderBrush="{x:Null}" x:Name="ButtonPlaySong" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                <Image Width="30" Height="32" Source="Images/play.png" />
+            <Button Background="#AACCFFCC" Margin="2,2" BorderBrush="{x:Null}" x:Name="ButtonPlaySong" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="ButtonPlaySong_Click">
+                <Image Width="32" Height="32" >
+                    <Image.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding AudioFileReader.IsPlaying}" Value="True">
+                                    <Setter Property="Image.Source" Value="Images/Stop.png" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding AudioFileReader.IsPlaying}" Value="False">
+                                    <Setter Property="Image.Source" Value="Images/play.png" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
             </Button>
+            <Slider x:Name="SliderSongVolume" Orientation="Vertical" Minimum="0" Maximum="2" Value="{Binding Path=AudioFileReader.SourceAmplitudeMultiplier,Mode=TwoWay}" Width="24" Height="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
 
         </StackPanel>
         <StackPanel Height="40" Orientation="Horizontal" Grid.Row="2" Margin="2">

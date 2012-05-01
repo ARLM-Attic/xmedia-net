@@ -23,6 +23,7 @@ using AudioClasses;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.ComponentModel;
+using ImageAquisition;
 
 namespace WPFXMPPClient
 {
@@ -49,6 +50,14 @@ namespace WPFXMPPClient
         /// Currently only supports HD voice because that's all the dmo's can echo cancel, but may add support for AAC if that becomes available
         /// </summary>
         AudioConferenceMixer AudioMixer = new AudioConferenceMixer(AudioFormat.SixteenBySixteenThousandMono);
+
+        AudioFileReader m_objAudioFileReader = new AudioFileReader(AudioFormat.SixteenBySixteenThousandMono);
+
+        public AudioFileReader AudioFileReader
+        {
+            get { return m_objAudioFileReader; }
+        }
+
 
         ObservableCollectionEx<MediaSession> ObservSessionList = new ObservableCollectionEx<MediaSession>();
         Dictionary<string, MediaSession> SessionList = new Dictionary<string, MediaSession>();
@@ -146,6 +155,11 @@ namespace WPFXMPPClient
         private void ButtonClose_Click(object sender, RoutedEventArgs e)
         {
             /// Stop all calls
+            /// 
+            MediaSession[] sessions = this.ObservSessionList.ToArray();
+            foreach (MediaSession session in sessions)
+                CloseSession(session);
+
             this.Close();
         }
 
@@ -169,6 +183,8 @@ namespace WPFXMPPClient
                 return;
 
             PushPullObject thismember = AudioMixer.AddInputOutputSource(this, this);
+            PushPullObject FileMixer = AudioMixer.AddInputOutputSource(AudioFileReader, null);
+            
             PushPullObject tonemember = AudioMixer.AddInputOutputSource(OurToneGenerator, OurToneGenerator);
             OurToneGenerator.IsSourceActive = false;
             //thismember.SourceExcludeList.Clear();  // clear so we can hear our mic
@@ -257,14 +273,18 @@ namespace WPFXMPPClient
 
             /// Determine if we are calling via jingle, or google voice
             /// (For now only make outgoing calls via jingle, accept incomgin google voice)
-            
+
+
             /// may need a lock here to make sure we have this session added to our list before the xmpp response gets back, though this should be many times faster than network traffic
             jinglesession = new JingleMediaSession(jidto, ep, XMPPClient);
             jinglesession.AudioRTPStream.RecvResampler = new BetterAudioResampler();
             jinglesession.AudioRTPStream.SendResampler = new BetterAudioResampler();
 
+
             try
             {
+                if (jinglesession.RosterItem != null)
+                    jinglesession.RosterItem.PropertyChanged += new PropertyChangedEventHandler(RosterItem_PropertyChanged);
                 string strSession = jinglesession.SendInitiateSession();
                 ObservSessionList.Add(jinglesession);
                 SessionList.Add(strSession, jinglesession);
@@ -272,6 +292,35 @@ namespace WPFXMPPClient
             catch (Exception ex)
             {
                 /// Should never happen
+            }
+        }
+
+        void RosterItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            /// See if this roster item goes off line, if it does, Terminate it's media session
+            /// 
+            RosterItem item = sender as RosterItem;
+            if (item != null)
+            {
+                if (item.Presence.PresenceShow != PresenceShow.chat)
+                {
+                    /// Find this session and remove it
+                    /// 
+                    JingleMediaSession foundsession = null;
+                    foreach (JingleMediaSession session in ObservSessionList)
+                    {
+                        if (session.RosterItem == item)
+                        {
+                            foundsession = session;
+                            break;
+                        }
+                    }
+
+                    if (foundsession != null)
+                    {
+                        CloseSession(foundsession);
+                    }
+                }
             }
         }
 
@@ -292,6 +341,9 @@ namespace WPFXMPPClient
             session.AudioRTPStream.RecvResampler = new BetterAudioResampler();
             session.AudioRTPStream.SendResampler = new BetterAudioResampler();
 
+            if (session.RosterItem != null)
+                session.RosterItem.PropertyChanged += new PropertyChangedEventHandler(RosterItem_PropertyChanged);
+
             try
             {
                 SessionList.Add(strSession, session);
@@ -303,6 +355,9 @@ namespace WPFXMPPClient
             {
                 SessionList.Remove(strSession);
                 ObservSessionList.Remove(session);
+
+                if (session.RosterItem != null)
+                    session.RosterItem.PropertyChanged -= new PropertyChangedEventHandler(RosterItem_PropertyChanged);
 
                 /// No compatible codecs probably
                 XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.MediaError);
@@ -325,6 +380,9 @@ namespace WPFXMPPClient
             {
                 SessionList.Remove(session.Session);
                 ObservSessionList.Remove(session);
+
+                if (session.RosterItem != null)
+                    session.RosterItem.PropertyChanged -= new PropertyChangedEventHandler(RosterItem_PropertyChanged);
 
                 XMPPClient.JingleSessionManager.TerminateSession(session.Session, TerminateReason.Decline);
             }
@@ -383,6 +441,10 @@ namespace WPFXMPPClient
                 session.StopMedia(AudioMixer);
                 SessionList.Remove(strSession);
                 ObservSessionList.Remove(session);
+
+                if (session.RosterItem != null)
+                    session.RosterItem.PropertyChanged -= new PropertyChangedEventHandler(RosterItem_PropertyChanged);
+
                 this.Dispatcher.Invoke(new DelegateAcceptSession(SessionEnded), strSession, null);
 
             }
@@ -669,12 +731,20 @@ namespace WPFXMPPClient
         private void ButtonClose_Click_1(object sender, RoutedEventArgs e)
         {
             MediaSession session = ((FrameworkElement)sender).DataContext as MediaSession;
+            CloseSession(session);
+        }
+        
+        void CloseSession(MediaSession session)
+        {
             if (session != null)
             {
                 session.StopMedia(AudioMixer);
                 XMPPClient.JingleSessionManager.TerminateSession(session.Session, TerminateReason.Gone);
                 SessionList.Remove(session.Session);
                 ObservSessionList.Remove(session);
+
+                if (session.RosterItem != null)
+                    session.RosterItem.PropertyChanged -= new PropertyChangedEventHandler(RosterItem_PropertyChanged);
 
             }
         }
@@ -811,6 +881,28 @@ namespace WPFXMPPClient
             if (currsess == null)
                 return;
             currsess.AudioRTPStream.IncomingRTPPacketBuffer.Reset();
+        }
+
+        private void ButtonPlaySong_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.AudioFileReader.IsPlaying == false)
+            {
+                /// Let the user choose a song, then enqueue it
+                /// 
+                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+                dlg.InitialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyMusic);
+                dlg.Filter = "Audio Files (*.mp3;*.wma)|*.mp3;*.wma|All Files (*.*)|*.*";
+                if (dlg.ShowDialog() == true)
+                {
+                    AudioFileReader.ClearAudioData();
+                    AudioFileReader.EnqueueFile(dlg.FileName);
+                }
+            }
+            else
+            {
+                AudioFileReader.ClearPlayQueue();
+                AudioFileReader.ClearAudioData();
+            }
         }
     }
 

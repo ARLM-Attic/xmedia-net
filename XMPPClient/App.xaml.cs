@@ -25,6 +25,8 @@ using Microsoft.Phone.Net.NetworkInformation;
 using System.Device.Location;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using System.Windows.Resources;
+using Microsoft.Phone.BackgroundAudio;
 
 namespace XMPPClient
 {
@@ -62,6 +64,7 @@ namespace XMPPClient
             if (Options.RunWithScreenLocked == true)
                PhoneApplicationService.Current.ApplicationIdleDetectionMode = IdleDetectionMode.Disabled;
 
+            CopyToIsolatedStorage();
              XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
              XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
 
@@ -116,6 +119,8 @@ namespace XMPPClient
                 gpswatcher.Start();
             }
         }
+
+        
 
         void XMPPClient_OnServerDisconnect(object sender, EventArgs e)
         {
@@ -216,6 +221,38 @@ namespace XMPPClient
           //  Dispatcher.BeginInvoke(new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(DoOnNewConversationItem), item, bReceived, msg);
         //}
 
+        private void CopyToIsolatedStorage()
+        {
+            using (IsolatedStorageFile storage = IsolatedStorageFile.GetUserStoreForApplication())
+            {
+                string[] files = new string[] { "ding.wav"};
+
+                foreach (var _fileName in files)
+                {
+                    if (!storage.FileExists(_fileName))
+                    {
+                        string _filePath = "sounds/" + _fileName;
+                        StreamResourceInfo resource = Application.GetResourceStream(new Uri(_filePath, UriKind.Relative));
+
+                        using (IsolatedStorageFileStream file = storage.CreateFile(_fileName))
+                        {
+                            int chunkSize = 4096;
+                            byte[] bytes = new byte[chunkSize];
+                            int byteCount;
+
+                            while ((byteCount = resource.Stream.Read(bytes, 0, chunkSize)) > 0)
+                            {
+                                file.Write(bytes, 0, byteCount);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        AudioTrack newmessagetrack = new AudioTrack(new Uri("ding.wav", UriKind.Relative), "New Message", "xmedianet", "none", null);
+
+
         //void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
@@ -235,11 +272,15 @@ namespace XMPPClient
 
                     if (App.Options.PlaySoundOnNewMessage == true)
                     {
-                        System.IO.Stream stream = TitleContainer.OpenStream("sounds/ding.wav");
-                        SoundEffect effect = SoundEffect.FromStream(stream);
-                        FrameworkDispatcher.Update();
-                        effect.Play();
-                        stream.Close();
+
+                        Microsoft.Phone.BackgroundAudio.BackgroundAudioPlayer.Instance.Track = newmessagetrack;
+                        Microsoft.Phone.BackgroundAudio.BackgroundAudioPlayer.Instance.Play();
+
+                        //System.IO.Stream stream = TitleContainer.OpenStream("sounds/ding.wav");
+                        //SoundEffect effect = SoundEffect.FromStream(stream);
+                        //FrameworkDispatcher.Update();
+                        //effect.Play();
+                        //stream.Close();
                     }
                     if (App.Options.VibrateOnNewMessage == true)
                         Microsoft.Devices.VibrateController.Default.Start(TimeSpan.FromMilliseconds(200));
@@ -265,8 +306,9 @@ namespace XMPPClient
                     LogMessage("Network", SocketServer.MessageImportance.Medium, "Network was Disconnected at {0}\r\n", DateTime.Now);
                     if ((XMPPClient != null) && (XMPPClient.XMPPState != XMPPState.Unknown))
                     {
-                        MessageBox.Show("Network connection lost");
                         XMPPClient.Disconnect();
+                        XMPPClient.Connect(this);
+                        //MessageBox.Show("Network connection lost");
                     }
                     break;
                 case NetworkNotificationType.CharacteristicUpdate:
@@ -592,7 +634,6 @@ namespace XMPPClient
 
         void RootFrame_Obscured(object sender, ObscuredEventArgs e)
         {
-            
         }
 
         // Do not add any additional code to this method

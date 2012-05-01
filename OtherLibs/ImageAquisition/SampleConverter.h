@@ -1,7 +1,6 @@
 
 #pragma once
 using namespace System;
-using namespace AudioClasses;
 
 #ifdef USE_IPP
 

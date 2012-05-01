@@ -20,6 +20,9 @@
     </Capabilities>
     <Tasks>
       <DefaultTask Name="_default" NavigationPage="ConnectPage.xaml" />
+      <ExtendedTask Name="BackgroundTask">
+        <BackgroundServiceAgent Specifier="AudioPlayerAgent" Name="PhoneSoundEffectsAudioPlaybackAgent" Source="PhoneSoundEffectsAudioPlaybackAgent" Type="PhoneSoundEffectsAudioPlaybackAgent.AudioPlayer" />
+      </ExtendedTask>
     </Tasks>
     <Tokens>
       <PrimaryToken TokenID="XMPPClientToken" TaskName="_default">

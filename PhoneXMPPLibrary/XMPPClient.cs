@@ -250,11 +250,13 @@ namespace System.Net.XMPP
 
             if (XMPPState == System.Net.XMPP.XMPPState.CanBind)
             {
+                Ready = false;
                 // We can now bind to our resource
                 GenericIQLogic.Start();
             }
             else if (XMPPState == System.Net.XMPP.XMPPState.Bound)
             {
+                Ready = false;
                 if (RetrieveRoster == true)
                    RosterLogic.Start();
 
@@ -268,7 +270,7 @@ namespace System.Net.XMPP
             }
             else if (XMPPState == System.Net.XMPP.XMPPState.Unknown)  // We be logged out
             {
-                
+                Ready = false;
                 this.StreamNegotiationLogic.Reset();
                 this.ServerServiceDiscoveryFeatureList.Features.Clear();
                 if (this.XMPPAccount.LastPrescence == null)
@@ -285,10 +287,15 @@ namespace System.Net.XMPP
             }
             else if (XMPPState == System.Net.XMPP.XMPPState.Ready)
             {
+                Ready = true;
                 XMPPAccount.HaveSuccessfullyConnectedAndAuthenticated = true;
                 ConnectHandle.Set();
                 if (this.AutomaticallyDownloadAvatars == true)
                     PresenceLogic.RequestOurVCARD();
+            }
+            else
+            {
+                Ready = false;
             }
 
             if (XMPPState == System.Net.XMPP.XMPPState.Ready)
@@ -571,6 +578,21 @@ namespace System.Net.XMPP
             }
         }
 
+        public bool Ready
+        {
+            get
+            {
+                if (this.XMPPState == XMPP.XMPPState.Ready)
+                    return true;
+
+                return false;
+            }
+            set
+            {
+                FirePropertyChanged("Ready");
+            }
+        }
+
         public bool Connected
         {
             get
@@ -580,7 +602,7 @@ namespace System.Net.XMPP
                 return XMPPConnection.Connected;
             }
             set
-            {
+            { 
             }
         }
 

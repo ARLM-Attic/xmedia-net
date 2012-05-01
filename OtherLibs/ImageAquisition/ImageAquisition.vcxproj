@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioDeviceVolume.h" />
+    <ClInclude Include="AudioFileReader.h" />
     <ClInclude Include="DirectShowFilters.h" />
     <ClInclude Include="ImageAquisition.h" />
     <ClInclude Include="NarrowBandMic.h" />
@@ -158,6 +159,7 @@
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="AudioDeviceVolume.cpp" />
+    <ClCompile Include="AudioFileReader.cpp" />
     <ClCompile Include="DirectShowFilters.cpp" />
     <ClCompile Include="ImageAquisition.cpp" />
     <ClCompile Include="NarrowBandMic.cpp" />

@@ -402,7 +402,9 @@ array<short>^ ImageAquisition::Utils::Resample(array<short>^ SourcePCM, int nSou
    pin_ptr<short> pinnedSource = &SourcePCM[0];
    short *pSource = (short *) pinnedSource;
 	
-	array<short>^saRet = gcnew array<short>(nSourceLen*UpSample/DownSample);
+   double fRatio = (double)UpSample/(double)DownSample;
+   int nRetLen = Math::Ceiling(nSourceLen*fRatio);
+	array<short>^saRet = gcnew array<short>(nRetLen);
    pin_ptr<short> pinnedRet = &saRet[0];
    short *pDest = (short *) pinnedRet;
 
@@ -420,7 +422,7 @@ array<short>^ ImageAquisition::Utils::Resample(array<short>^ SourcePCM, int nSou
 	Ipp16s *pDelayLine = new Ipp16s[delayLen];
 	IPPCALL(ippsZero_16s(pDelayLine, delayLen));
 
-	IPPCALL(ippsFIRMR32f_Direct_16s_Sfs(pSource, pDest, SourcePCM->Length/DownSample, taps, filterLen, UpSample, 1, DownSample, 0, pDelayLine, 0));
+	IppStatus status = IPPCALL(ippsFIRMR32f_Direct_16s_Sfs(pSource, pDest, SourcePCM->Length/DownSample, taps, filterLen, UpSample, 1, DownSample, 0, pDelayLine, 0));
 
 
 	delete [] taps;

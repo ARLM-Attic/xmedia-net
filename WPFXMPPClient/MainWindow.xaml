@@ -41,7 +41,7 @@
                             </LinearGradientBrush>
                         </Button.Background>
                         
-                        <Image  Source="Images/mail.png" Width="20" Height="20" />
+                        <Image  Source="Images/chat.png" Width="32" Height="32" />
                     </Button>
 
                     <!--<s:ElementMenu>
@@ -98,17 +98,13 @@
             <TextBlock Margin="10,0" x:Name="ApplicationTitle" FontWeight="Bold"  Text="{Binding XMPPState}" VerticalAlignment="Center" Grid.Column="1"  />
 
             <TextBlock Margin="10,0" x:Name="JID" Text="{Binding JID}" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" VerticalAlignment="Center" />
-           <TextBox x:Name="TextBoxStatus" Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding Path='PresenceStatus.Status', Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="4"/>
+           <TextBox x:Name="TextBoxStatus" Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding Path='PresenceStatus.Status', Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="5"/>
 
-           <s:SurfaceButton ToolTip="Update Presence" Grid.Row="2" Grid.Column="5" x:Name="ButtonSetStatus" IsEnabled="True" Click="ButtonSetStatus_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+           <s:SurfaceButton ToolTip="Update Presence" Grid.Row="2" Grid.Column="6" x:Name="ButtonSetStatus" IsEnabled="True" Click="ButtonSetStatus_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/check.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
            </s:SurfaceButton>
-            
-                <s:SurfaceButton ToolTip="View Map" Grid.Row="2" Grid.Column="6" x:Name="ButtonViewMap" IsEnabled="True" Click="ButtonViewMap_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
-                    <Image Source="Images/globe.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </s:SurfaceButton>
-            
-            <ComboBox Background="{x:Null}" Grid.Row="3" Grid.Column="0" x:Name="ComboBoxPresence" IsEnabled="False" Foreground="{Binding PresenceStatus.PresenceBrush}"
+
+                <ComboBox Background="{x:Null}" Grid.Row="3" Grid.Column="0" x:Name="ComboBoxPresence" IsEnabled="False" Foreground="{Binding PresenceStatus.PresenceBrush}"
                               Text="{Binding Path='PresenceStatus.PresenceType', Mode=TwoWay, NotifyOnTargetUpdated=True}" VerticalAlignment="Center"
                               TargetUpdated="TextBox_TargetUpdated" FontSize="10">
                     <ComboBoxItem>
@@ -158,8 +154,21 @@
             <Rectangle x:Name="RectangleConnect" Fill="{Binding ConnectedStateBrush}" Width="30" Height="30" Grid.Column="2" Margin="5,6" Grid.RowSpan="2" />
             
             <s:SurfaceButton ToolTip="Connect to Server" Grid.Column="2" x:Name="HyperlinkConnect" Click="HyperlinkConnect_Click" Padding="0" HorizontalAlignment="Center"  VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
-                    <Image Source="Images/connect.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </s:SurfaceButton>
+                    <Image x:Name="ImageConnect" Width="32" Height="32">
+                        <Image.Style>
+                            <Style>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Ready}" Value="False">
+                                        <Setter Property="Image.Source" Value="Images/connect.png" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Ready}" Value="True">
+                                        <Setter Property="Image.Source" Value="Images/connected.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                </s:SurfaceButton>
             <s:SurfaceButton ToolTip="Add a Buddy" Grid.Column="3" x:Name="ButtonAddBuddy" IsEnabled="False" Click="ButtonAddBuddy_Click" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/add.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </s:SurfaceButton>
