@@ -2,9 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:s="http://schemas.microsoft.com/surface/2008"
-        AllowsTransparency="True" WindowStyle="None"
+        xmlns:local="clr-namespace:WPFXMPPClient"
+        AllowsTransparency="False" WindowStyle="None"
         MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded"
-        Title="Buddy Map" Height="383" Width="387">
+        Title="MapWindow" Height="900" Width="900">
 
     <Window.Background>
         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -37,16 +38,16 @@
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Margin="10,0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold"> Buddy Map</TextBlock>
-                <s:SurfaceButton ToolTip="Refresh" Grid.Column="1" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <TextBlock Margin="10,0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
+                <!--<s:SurfaceButton ToolTip="Refresh" Grid.Column="1" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/refresh.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
+                </s:SurfaceButton>-->
                 <s:SurfaceButton ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
             </Grid>
 
-            <s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+            <!--<s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                  DataContext="{Binding Conversation}" Background="Beige" x:Name="ListBoxConversation">
                 <s:SurfaceListBox.ItemTemplate>
                     <DataTemplate>
@@ -67,14 +68,13 @@
                             <TextBlock Grid.Column="1" Grid.Row="0"  Text="{Binding StringValue}" FontSize="12" TextWrapping="Wrap" />
                             <ProgressBar Grid.Column="1" Grid.Row="1" Height="20"  Value="{Binding PercentTransferred}" Maximum="100" />
 
-                            <!--Accept or Cancel, only visible for incoming request-->
                             <StackPanel Grid.Column="1" Visibility="{Binding IsVisibleSendCancel, Mode=OneWay}" Grid.Row="2"  Orientation="Horizontal">
                                 <Button x:Name="ButtonCancelSend" Click="ButtonCancelSend_Click">Cancel</Button>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Grid.Row="2"  Orientation="Horizontal">
                                 <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonAcceptTransfer" Click="ButtonAcceptTransfer_Click">Accept</s:SurfaceButton>
                                 <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonDeclineTransfer" Click="ButtonDeclineTransfer_Click">Decline</s:SurfaceButton>
-                                <!--<s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonSaveFile" Click="ButtonSaveFile_Click" Content="Save" />-->
+                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonSaveFile" Click="ButtonSaveFile_Click" Content="Save" />
                                 <s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonOpenFile" Click="ButtonOpenFile_Click"  Content="Open" />
                             </StackPanel>
 
@@ -83,12 +83,40 @@
                     </DataTemplate>
                 </s:SurfaceListBox.ItemTemplate>
 
-            </s:SurfaceListBox>
+            </s:SurfaceListBox>-->
+            <!--<Image x:Name="ImageMap" Grid.Row="1" Margin="3,0" Source="/WPFXMPPClient;component/Images/add.png">
+                
+                
+            </Image>-->
+            <local:MapUserControl Visibility="Visible" Grid.Row="1" Margin="3,0" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>
+            <!--<DockPanel Grid.Row="1" Margin="3,0">-->
 
-           
+            <!--<Grid DockPanel.Dock="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>-->
+
+
+            <!--<TextBox Grid.Row="0" Grid.Column="0" FontSize="14" x:Name="TextBoxURL" Text="http://www.yahoo.com"></TextBox>
+
+                    <s:SurfaceButton ToolTip="Refresh" Grid.Column="1" x:Name="ButtonLoadURL" Click="ButtonLoadURL_Click" MinHeight="10" MinWidth="10" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="1">
+                        <Image Source="Images/refresh.png" Width="20" Height="10" VerticalAlignment="Center" Margin="0" />
+                    </s:SurfaceButton>-->
+
+            <!--</Grid>-->
+
+            <!--<WebBrowser DockPanel.Dock="Bottom"  x:Name="WebBrowserMap">
+                
+                </WebBrowser>-->
+            <!--</DockPanel>-->
+
 
         </Grid>
 
     </Border>
-    
+
 </Window>
