@@ -32,8 +32,8 @@
                     <Button.ContextMenu>
                         <ContextMenu >
                             <MenuItem Header="Options">
-                                <MenuItem x:Name="MenuItemSubscribe" Click="MenuItemSubscribe_Click">Subscribe</MenuItem>
-                                <MenuItem x:Name="MenuItemUnsubscribe" Click="MenuItemUnsubscribe_Click">Unsubscribe</MenuItem>
+                                <MenuItem x:Name="MenuItemSubscribe" Click="MenuItemSubscribe_Click" Header="Subscribe" />
+                                <MenuItem x:Name="MenuItemUnsubscribe" Click="MenuItemUnsubscribe_Click" Header="Unsubscribe" />
                             </MenuItem>
                         </ContextMenu>
                     </Button.ContextMenu>
