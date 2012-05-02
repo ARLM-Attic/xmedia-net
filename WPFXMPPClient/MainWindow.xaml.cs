@@ -605,6 +605,32 @@ namespace WPFXMPPClient
             }
         }
 
+        private void MenuItemSubscribe_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            if (XMPPClient.XMPPState != XMPPState.Ready)
+                return;
+
+            XMPPClient.PresenceLogic.SubscribeToPresence(item.JID);
+
+        }
+
+        private void MenuItemUnsubscribe_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            if (XMPPClient.XMPPState != XMPPState.Ready)
+                return;
+
+            XMPPClient.PresenceLogic.UnsubscribeToPresence(item.JID);
+
+        }
+
         private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
         {
             MapWindow.XMPPClient = this.XMPPClient;

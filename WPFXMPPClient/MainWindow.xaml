@@ -29,7 +29,15 @@
                              HorizontalAlignment="Stretch" VerticalContentAlignment="Center" 
                              x:Name="HyperlinkRosterItem" Click="HyperlinkRosterItem_Click" 
                              FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Stretch" Content="{Binding Name}">
-                    </Button>
+                    <Button.ContextMenu>
+                        <ContextMenu >
+                            <MenuItem Header="Options">
+                                <MenuItem x:Name="MenuItemSubscribe" Click="MenuItemSubscribe_Click">Subscribe</MenuItem>
+                                <MenuItem x:Name="MenuItemUnsubscribe" Click="MenuItemUnsubscribe_Click">Unsubscribe</MenuItem>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </Button>
 
 
                     <Button BorderThickness="0" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="View New Messages" Grid.Row="0" Grid.Column="2" x:Name="ButtonViewMessages" Click="ButtonViewMessages_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="{Binding NewMessagesVisible}" >

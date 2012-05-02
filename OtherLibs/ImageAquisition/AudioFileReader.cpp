@@ -120,6 +120,7 @@ void AudioFileReader::QueueFileThread(Object ^objAudioFileReader)
     UINT32 cbBytesPerSecond = MFGetAttributeUINT32(pUncompressedAudioType, MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 0);
 	UINT32 cbSamplesPerSecond = MFGetAttributeUINT32(pUncompressedAudioType, MF_MT_AUDIO_SAMPLES_PER_SECOND, 0);
 	UINT32 cbBitsPerSample = MFGetAttributeUINT32(pUncompressedAudioType, MF_MT_AUDIO_BITS_PER_SAMPLE, 0);
+	UINT32 cbChannels = MFGetAttributeUINT32(pUncompressedAudioType, MF_MT_AUDIO_NUM_CHANNELS, 0);
 
 
 
@@ -195,17 +196,34 @@ void AudioFileReader::QueueFileThread(Object ^objAudioFileReader)
 
 		/// Convert from stereo to mono
 		short *pShortAudioData = (short *)pAudioData;
-		int nShortLength = cbBuffer/2; /// convert from byte length to short length
 
-		array<short> ^PCMShorts = gcnew array<short>(nShortLength/2); /// half the size for stereo to mon
-
-		int i=0;
-		for (i=0; i<PCMShorts->Length; i++)  /// Average left and right
+		array<short> ^PCMShorts = nullptr;
+		if (cbChannels == 2)
 		{
-			int nValue = ((int)pShortAudioData[i*2] + (int)pShortAudioData[i*2+1])/2;
-			PCMShorts[i] = (short)nValue;
-		}
+			int nShortLength = cbBuffer/2; /// convert from byte length to short length
 
+			PCMShorts = gcnew array<short>(nShortLength/2); /// half the size for stereo to mon
+
+			int i=0;
+			for (i=0; i<PCMShorts->Length; i++)  /// Average left and right
+			{
+				int nValue = ((int)pShortAudioData[i*2] + (int)pShortAudioData[i*2+1])/2;
+				PCMShorts[i] = (short)nValue;
+			}
+		}
+		else if (cbChannels == 1)
+		{
+			int nShortLength = cbBuffer/2; /// convert from byte length to short length
+
+			PCMShorts = gcnew array<short>(nShortLength); /// 1 channel, same length
+			pin_ptr<short> ppPCM = &PCMShorts[0];
+			void *pPCM = (void *) ppPCM;
+			CopyMemory(pPCM, pAudioData, cbBuffer);
+		}
+		else
+		{
+			break;
+		}
 		/// Resample if needed, then add to our outgoing array
 		if (cbSamplesPerSecond != (int)This->OutputAudioFormat->AudioSamplingRate)
 		{	

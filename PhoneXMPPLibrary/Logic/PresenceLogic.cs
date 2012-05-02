@@ -256,7 +256,7 @@ namespace System.Net.XMPP
             pres.To = null;
             pres.PresenceStatus = status;
             pres.Capabilities = caps;
-
+            
             if ((strImageHash != null) && (strImageHash.Length > 0))
             {
                 pres.VCardUpdate = new VCardUpdate();
@@ -273,7 +273,21 @@ namespace System.Net.XMPP
             pres.To = jidto;
             pres.From = null;
             pres.Type = "subscribe";
+            pres.Show = null;
+            pres.Status = null;
             pres.PresenceStatus.PresenceType = PresenceType.subscribe;
+            XMPPClient.SendObject(pres);
+        }
+
+        public void UnsubscribeToPresence(JID jidto)
+        {
+            PresenceMessage pres = new PresenceMessage(null);
+            pres.To = jidto;
+            pres.From = null;
+            pres.Type = "unsubscribe";
+            pres.Show = null;
+            pres.Status = null;
+            pres.PresenceStatus.PresenceType = PresenceType.unsubscribe;
             XMPPClient.SendObject(pres);
         }
 

@@ -101,6 +101,7 @@
             </Button>
             <Slider x:Name="SliderSongVolume" Orientation="Vertical" Minimum="0" Maximum="2" Value="{Binding Path=AudioFileReader.SourceAmplitudeMultiplier,Mode=TwoWay}" Width="24" Height="40" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
 
+            <Button x:Name="ButtonRandom" Click="ButtonRandom_Click">Random</Button>
         </StackPanel>
         <StackPanel Height="40" Orientation="Horizontal" Grid.Row="2" Margin="2">
             <Label Width="125">Microphone Device</Label>
