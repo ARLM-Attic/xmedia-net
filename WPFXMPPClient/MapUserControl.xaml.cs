@@ -192,7 +192,7 @@ namespace WPFXMPPClient
 
             strGoogleMapsApiURL += String.Format("&size=800x800");
             strGoogleMapsApiURL += String.Format("&sensor=false");
-            string strMyLatLon = String.Format("{0},{1}", this.XMPPClient.GeoLoc.lat, this.XMPPClient.GeoLoc.lon);
+            string strMyLatLon = String.Format("{0},{1}", this.XMPPClient.GeoLocation.lat, this.XMPPClient.GeoLocation.lon);
             string strMyColor = "red";
             string strMyLabel = "A";
             if (this.XMPPClient.JID != null && this.XMPPClient.JID.User != null && this.XMPPClient.JID.User.Length >= 1)

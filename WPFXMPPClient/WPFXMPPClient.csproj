@@ -290,6 +290,7 @@
     <Content Include="Images\chat-hollow.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Images\globe.png" />
     <Content Include="Sounds\enter.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
