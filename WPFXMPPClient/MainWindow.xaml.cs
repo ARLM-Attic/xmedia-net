@@ -643,12 +643,25 @@ namespace WPFXMPPClient
             {
                 MapWindow = new MapWindow();
                 MapWindow.XMPPClient = this.XMPPClient;
+
+                // if a buddy is highlighted, center the map on them (or only show them),
+                // or you are going to track/create KML for them
+                if (ListBoxRoster.SelectedItems.Count >= 0) 
+                {
+                    // can't multi-select
+                    MapWindow.OurRosterItem = ListBoxRoster.SelectedItem as RosterItem;
+                }
                 MapWindow.Show();
                 IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
                 FlashWindow(windowHandle, true);
             }
             else
             {
+                if (ListBoxRoster.SelectedItems.Count >= 0)
+                {
+                    // can't multi-select
+                    MapWindow.OurRosterItem = ListBoxRoster.SelectedItem as RosterItem;
+                }
                 MapWindow.Activate();
                 IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
                 FlashWindow(windowHandle, true);
