@@ -43,9 +43,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "phone.AudioClasses", "Other
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhoneSoundEffectsAudioPlaybackAgent", "PhoneSoundEffectsAudioPlaybackAgent\PhoneSoundEffectsAudioPlaybackAgent.csproj", "{741BC747-C5AF-4558-8E83-2E214F2EEF47}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationClasses", "OtherLibs\LocationClasses\LocationClasses.csproj", "{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 20
+		SccNumberOfProjects = 21
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs26
 		SccLocalPath0 = .
@@ -115,6 +117,10 @@ Global
 		SccProjectUniqueName19 = PhoneSoundEffectsAudioPlaybackAgent\\PhoneSoundEffectsAudioPlaybackAgent.csproj
 		SccProjectName19 = PhoneSoundEffectsAudioPlaybackAgent
 		SccLocalPath19 = PhoneSoundEffectsAudioPlaybackAgent
+		SccProjectUniqueName20 = OtherLibs\\LocationClasses\\LocationClasses.csproj
+		SccProjectTopLevelParentUniqueName20 = xmedianet.sln
+		SccProjectName20 = OtherLibs/LocationClasses
+		SccLocalPath20 = OtherLibs\\LocationClasses
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -409,6 +415,20 @@ Global
 		{741BC747-C5AF-4558-8E83-2E214F2EEF47}.Release|Win32.ActiveCfg = Release|Any CPU
 		{741BC747-C5AF-4558-8E83-2E214F2EEF47}.Release|x64.ActiveCfg = Release|Any CPU
 		{741BC747-C5AF-4558-8E83-2E214F2EEF47}.Release|x86.ActiveCfg = Release|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|Win32.ActiveCfg = Release|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|x64.ActiveCfg = Release|Any CPU
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -423,5 +443,6 @@ Global
 		{CB219B28-DC51-4E22-BC61-80B97D8A39C0} = {10512982-5268-4102-A137-C334F3ABF856}
 		{6D3414FC-4336-426A-BED4-814AB331FDF0} = {10512982-5268-4102-A137-C334F3ABF856}
 		{AA9373BE-5A3F-4DA0-86D8-448D2AA9BBAD} = {10512982-5268-4102-A137-C334F3ABF856}
+		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4} = {10512982-5268-4102-A137-C334F3ABF856}
 	EndGlobalSection
 EndGlobal
