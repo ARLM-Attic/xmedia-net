@@ -311,6 +311,15 @@ namespace WPFXMPPClient
 
                 SendRawXMLWindow.Activate();
             }
+            else if ((e.Key == Key.M) && ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control))
+            {
+                if (MapWindow.IsLoaded == false)
+                    SendRawXMLWindow.Show();
+                else if (this.SendRawXMLWindow.Visibility == System.Windows.Visibility.Hidden)
+                    this.SendRawXMLWindow.Visibility = System.Windows.Visibility.Visible;
+
+                SendRawXMLWindow.Activate();
+            }
             base.OnPreviewKeyDown(e);
         }
 
@@ -796,14 +805,14 @@ namespace WPFXMPPClient
 
                 // if a buddy is highlighted, center the map on them (or only show them),
                 // or you are going to track/create KML for them
-                if (ListBoxRoster.SelectedItems.Count >= 0) 
+                if (ListBoxRoster.SelectedItems.Count >= 0)
                 {
-                    // can't multi-select
+                    // can't multi-select so we will only be able to select one buddy at a time
                     MapWindow.OurRosterItem = ListBoxRoster.SelectedItem as RosterItem;
                 }
+             
                 MapWindow.Show();
-                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
-                FlashWindow(windowHandle, true);
+                
             }
             else
             {
