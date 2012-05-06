@@ -265,21 +265,25 @@ namespace WPFXMPPClient
         void SaveAccounts()
         {
 
-            using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
-            {
-                // Load from storage
-                IsolatedStorageFileStream location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Create, storage);
-                DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
+            string strPath = Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+            string strFileName = string.Format("{0}\\{1}", strPath, "xmppcred.item");
+            FileStream location = null;
 
-                try
-                {
-                    ser.WriteObject(location, AllAccounts);
-                }
-                catch (Exception)
-                {
-                }
-                location.Close();
+            try
+            {
+                location = new FileStream(strFileName, System.IO.FileMode.Create);
+                DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
+                ser.WriteObject(location, AllAccounts);
             }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                if (location != null)
+                    location.Close();
+            }
+            
         }
 
         public Brush ConnectedStateBrush
@@ -410,29 +414,31 @@ namespace WPFXMPPClient
                     item.HasLoadedConversation = true;
 
                     string strFilename = string.Format("{0}_conversation.item", item.JID.BareJID);
-                    using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
+
+                    string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                    if (System.IO.Directory.Exists(strPath) == false)
+                        System.IO.Directory.CreateDirectory(strPath);
+
+                    string strFullFileName = string.Format("{0}\\{1}", strPath, strFilename);
+                    FileStream location = null;
+                    if (File.Exists(strFullFileName) == true)
                     {
-                        if (storage.FileExists(strFilename) == true)
+                        try
                         {
-                            // Load from storage
-                            IsolatedStorageFileStream location = null;
-                            try
-                            {
-                                location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
-                                DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
-                                item.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
-                            }
-                            catch (Exception)
-                            {
-                            }
-                            finally
-                            {
-                                if (location != null)
-                                    location.Close();
-                            }
+                            location = new FileStream(strFullFileName, System.IO.FileMode.Open);
+                            DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
+
+                            item.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
                         }
-
+                        catch (Exception)
+                        {
+                        }
+                        finally
+                        {
+                            if (location != null)
+                                location.Close();
+                        }
                     }
                 }
             }

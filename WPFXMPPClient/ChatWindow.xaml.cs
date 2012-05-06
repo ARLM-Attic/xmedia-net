@@ -55,16 +55,19 @@ namespace WPFXMPPClient
             {
                 OurRosterItem.HasLoadedConversation = true;
 
-
                 string strFilename = string.Format("{0}_conversation.item", OurRosterItem.JID.BareJID);
 
-                using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User|IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
+                string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                if (System.IO.Directory.Exists(strPath) == false)
+                    System.IO.Directory.CreateDirectory(strPath);
+
+                string strFullFileName = string.Format("{0}\\{1}", strPath, strFilename);
+                FileStream location = null;
+                if (File.Exists(strFullFileName) == true)
                 {
-                    // Load from storage
-                    IsolatedStorageFileStream location = null;
                     try
                     {
-                        location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Open, storage);
+                        location = new FileStream(strFullFileName, System.IO.FileMode.Open);
                         DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
 
                         OurRosterItem.Conversation = ser.ReadObject(location) as System.Net.XMPP.Conversation;
@@ -79,7 +82,6 @@ namespace WPFXMPPClient
                     }
 
                 }
-
             }
 
 
@@ -192,26 +194,30 @@ namespace WPFXMPPClient
         public static void SaveConversation(RosterItem item)
         {
             /// Save this conversation so it can be restored later... save it under the JID name
-
             string strFilename = string.Format("{0}_conversation.item", item.JID.BareJID);
 
+            string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+            if (System.IO.Directory.Exists(strPath) == false)
+                System.IO.Directory.CreateDirectory(strPath);
 
-
-            using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
+            string strFullFileName = string.Format("{0}\\{1}", strPath, strFilename);
+            FileStream location = null;
+            try
             {
-                // Load from storage
-                IsolatedStorageFileStream location = new IsolatedStorageFileStream(strFilename, System.IO.FileMode.Create, storage);
-                DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
+                location = new FileStream(strFullFileName, System.IO.FileMode.Create);
 
-                try
-                {
-                    ser.WriteObject(location, item.Conversation);
-                }
-                catch (Exception)
-                {
-                }
-                location.Close();
+                DataContractSerializer ser = new DataContractSerializer(typeof(System.Net.XMPP.Conversation));
+                ser.WriteObject(location, item.Conversation);
             }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                if (location != null)
+                    location.Close();
+            }
+                
 
         }
 

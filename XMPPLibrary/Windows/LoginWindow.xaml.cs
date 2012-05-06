@@ -22,6 +22,7 @@ using Microsoft.Surface.Presentation.Input;
 
 using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
+using System.IO;
 
 namespace System.Net.XMPP
 {
@@ -88,26 +89,24 @@ namespace System.Net.XMPP
         {
             if (AllAccounts == null)
             {
-                using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
-                {
                     // Load from storage
-                    IsolatedStorageFileStream location = null;
-                    try
-                    {
-                        location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Open, storage);
-                        DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
+                string strPath = Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+                string strFileName = string.Format("{0}\\{1}", strPath, "xmppcred.item");
+                FileStream location = null;
+                try
+                {
+                    location = new FileStream(strFileName, System.IO.FileMode.Open);
+                    DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
 
-                        AllAccounts = ser.ReadObject(location) as List<XMPPAccount>;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    finally
-                    {
-                        if (location != null)
-                            location.Close();
-                    }
-
+                    AllAccounts = ser.ReadObject(location) as List<XMPPAccount>;
+                }
+                catch (Exception)
+                {
+                }
+                finally
+                {
+                    if (location != null)
+                        location.Close();
                 }
             }
 
@@ -130,21 +129,25 @@ namespace System.Net.XMPP
         void SaveAccounts()
         {
 
-            using (IsolatedStorageFile storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Domain | IsolatedStorageScope.Assembly, null, null))
-            {
-                // Load from storage
-                IsolatedStorageFileStream location = new IsolatedStorageFileStream("xmppcred.item", System.IO.FileMode.Create, storage);
-                DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
+               string strPath = Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+                string strFileName = string.Format("{0}\\{1}", strPath, "xmppcred.item");
+                FileStream location = null;
 
                 try
                 {
+                    location = new FileStream(strFileName, System.IO.FileMode.Create);
+                    DataContractSerializer ser = new DataContractSerializer(typeof(List<XMPPAccount>));
                     ser.WriteObject(location, AllAccounts);
                 }
                 catch (Exception)
                 {
                 }
-                location.Close();
-            }
+                finally
+                {
+                    if (location != null)
+                        location.Close();
+                }
+            
         }
 
         bool bLoading = false;

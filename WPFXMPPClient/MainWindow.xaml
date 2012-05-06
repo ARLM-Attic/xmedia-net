@@ -16,8 +16,7 @@
                 <Grid Background="{x:Null}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="74" />
-                        <ColumnDefinition Width="300" />
-                        <ColumnDefinition Width="33" />
+                        <ColumnDefinition Width="300*" />
                     </Grid.ColumnDefinitions>
                     
                     <Grid.RowDefinitions>
@@ -29,26 +28,28 @@
                     <Image Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Width="66" Height="66" Source="{Binding Avatar}" />
 
 
-                    <Button Background="#AAEEFFEE" BorderBrush="{x:Null}" Margin="10,0" Grid.Column="1" Grid.Row="0" 
+                <Grid Grid.Row="0" Grid.Column="1" Margin="10,0">
+                        <Button Background="#AAEEFFEE" BorderBrush="{x:Null}"  
                              HorizontalAlignment="Stretch" VerticalContentAlignment="Center" 
                              x:Name="HyperlinkRosterItem" Click="HyperlinkRosterItem_Click" 
                              FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Stretch" Content="{Binding Name}">
-                    <Button.ContextMenu>
-                        <ContextMenu >
-                            <MenuItem Header="Options">
-                                <MenuItem x:Name="MenuItemSubscribe" Click="MenuItemSubscribe_Click" Header="Subscribe" />
-                                <MenuItem x:Name="MenuItemUnsubscribe" Click="MenuItemUnsubscribe_Click" Header="Unsubscribe" />
-                            </MenuItem>
-                        </ContextMenu>
-                    </Button.ContextMenu>
-                </Button>
+                            <Button.ContextMenu>
+                                <ContextMenu >
+                                    <MenuItem Header="Options">
+                                        <MenuItem x:Name="MenuItemSubscribe" Click="MenuItemSubscribe_Click" Header="Subscribe" />
+                                        <MenuItem x:Name="MenuItemUnsubscribe" Click="MenuItemUnsubscribe_Click" Header="Unsubscribe" />
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                    
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Image  Source="Images/chat.png" Width="32" Height="32" Visibility="{Binding NewMessagesVisible}" />
+                    </StackPanel>
+                </Grid>
 
 
-                    <Button BorderThickness="0" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="View New Messages" Grid.Row="0" Grid.Column="2" x:Name="ButtonViewMessages" Click="ButtonViewMessages_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="{Binding NewMessagesVisible}" >
-                        <Image  Source="Images/chat.png" Width="32" Height="32" />
-                    </Button>
-
-                    <!--<s:ElementMenu>
+                <!--<s:ElementMenu>
                         <s:ElementMenuItem x:Name="MenuItemQuery" Click="MenuItemQuery_Click">Query</s:ElementMenuItem>
                     </s:ElementMenu>-->
                     <StackPanel Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="2" Orientation="Horizontal">
