@@ -362,6 +362,8 @@ namespace System.Net.XMPP
                 {
                     if (pres.Capabilities.Node == "http://www.android.com/gtalk/client/caps2")
                         IsKnownGoogleClient = true;
+                    else if (pres.Capabilities.Node == "http://talkgadget.google.com/client/caps")
+                        IsKnownGoogleClient = true;
                 }
             }
 

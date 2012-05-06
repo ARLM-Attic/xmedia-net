@@ -65,7 +65,7 @@ namespace System.Net.XMPP
                 RosterItem item = XMPPClient.FindRosterItem(chatmsg.From);
                 if (item != null)
                 {
-                    if (chatmsg.ConversationState == ConversationState.none)
+                    if (chatmsg.Body != null)
                     {
                         TextMessage txtmsg = new TextMessage();
                         txtmsg.From = chatmsg.From;
@@ -81,7 +81,7 @@ namespace System.Net.XMPP
                         // Notify XMPPClient that a new conversation item has been added
                         XMPPClient.FireNewConversationItem(item, true, txtmsg);
                     }
-                    else // A conversation message
+                    if (chatmsg.ConversationState != ConversationState.none)// A conversation message
                     {
                         item.Conversation.ConversationState = chatmsg.ConversationState;
                         XMPPClient.FireNewConversationState(item, item.Conversation.ConversationState);

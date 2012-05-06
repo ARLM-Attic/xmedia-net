@@ -55,9 +55,11 @@ namespace System.Net.XMPP
         {
             get
             {
-                if (m_ePresenceShow == System.Net.XMPP.PresenceShow.unknown)
+                if (m_ePresence == XMPP.PresenceType.available)
+                    return true;
+                else if (m_ePresence == XMPP.PresenceType.unavailable)
                     return false;
-                
+
                 return true;
             }
             set

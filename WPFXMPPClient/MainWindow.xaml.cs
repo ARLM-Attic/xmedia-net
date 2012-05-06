@@ -57,7 +57,7 @@ namespace WPFXMPPClient
             PrivService.OnMustClearUserHistory += new DelegateRosterItemAction(PrivService_OnMustClearUserHistory);
             PrivService.OnMustHideMyChatWindow += new DelegateRosterItemAction(PrivService_OnMustHideMyChatWindow);
 
-            this.RectangleConnect.DataContext = this;
+            //this.RectangleConnect.DataContext = this;
             this.DataContext = XMPPClient;
             this.ListBoxRoster.DataContext = this;
             this.CheckBoxSHowAll.DataContext = this;

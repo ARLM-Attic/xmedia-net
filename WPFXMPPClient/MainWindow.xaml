@@ -43,8 +43,51 @@
                             </Button.ContextMenu>
                         </Button>
                     
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                        <Image  Source="Images/chat.png" Width="32" Height="32" Visibility="{Binding NewMessagesVisible}" />
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,10,0">
+                        
+                        <Border Width="40" Height="40" Visibility="{Binding NewMessagesVisible}" >
+                            <Border.Background>
+                                <DrawingBrush Stretch="UniformToFill">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup.Children>
+                                                <GeometryDrawing Geometry="F1 M 64,8C 94.9279,8 120,33.0721 120,64C 120,94.9279 94.9279,120 64,120C 33.0721,120 8,94.9279 8,64C 8,33.0721 33.0721,8 64,8 Z ">
+                                                    <GeometryDrawing.Brush>
+                                                        <RadialGradientBrush RadiusX="0.5" RadiusY="0.5" Center="0.551282,0.448718" GradientOrigin="0.551282,0.448718">
+                                                            <RadialGradientBrush.GradientStops>
+                                                                <GradientStop Color="#FFA1E5FF" Offset="0"/>
+                                                                <GradientStop x:Name="GradientStop2" Color="#FF50A0D3" Offset="0.567442"/>
+                                                                <GradientStop Color="#FF005CA7" Offset="1"/>
+                                                            </RadialGradientBrush.GradientStops>
+                                                            <RadialGradientBrush.RelativeTransform>
+                                                                <TransformGroup/>
+                                                            </RadialGradientBrush.RelativeTransform>
+                                                        </RadialGradientBrush>
+                                                    </GeometryDrawing.Brush>
+
+                                                </GeometryDrawing>
+                                                <GeometryDrawing Brush="#FF000000" Geometry="F1 M 50.8335,38.3543L 77.1665,38.3543C 85.4508,38.3543 92.1665,45.0701 92.1665,53.3543L 92.1665,65.8541C 92.1665,73.1257 86.9922,79.1889 80.1247,80.5625L 83.5832,95.6457L 67.4874,80.8541L 50.8335,80.8541C 42.5492,80.8541 35.8335,74.1384 35.8335,65.8541L 35.8335,53.3543C 35.8335,45.0701 42.5492,38.3543 50.8335,38.3543 Z "/>
+                                            </DrawingGroup.Children>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Border.Background>
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="GradientStop2"
+                                                Storyboard.TargetProperty="Offset"
+                                                From="0.1" To="0.8" Duration="0:0:1.5"
+                                                AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Border.Triggers>
+                        </Border>
+                        <!--<Border BorderBrush="{x:Null}" Background="{DynamicResource chatmsg}" Width="40" Height="40" Visibility="{Binding NewMessagesVisible}" />-->
+                        <!--<Image  Source="Images/chat.png" Width="32" Height="32" Visibility="{Binding NewMessagesVisible}" />-->
                     </StackPanel>
                 </Grid>
 
@@ -93,51 +136,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!--<Rectangle x:Name="Rectangle" Stretch="Fill" Grid.RowSpan="3">
-            <Rectangle.Fill>
-                <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                    <LinearGradientBrush.RelativeTransform>
-                    	<TransformGroup>
-                    		<ScaleTransform/>
-                    		<SkewTransform AngleY="0" AngleX="0"/>
-                    		<RotateTransform Angle="0"/>
-                    		<TranslateTransform X="0" Y="0"/>
-                    	</TransformGroup>
-                    </LinearGradientBrush.RelativeTransform>
-                    <LinearGradientBrush.GradientStops>
-                        <GradientStop Color="#9532AF10" Offset="0"/>
-                        <GradientStop x:Name="GradientStop1" Color="#9E50E911" Offset="0.263"/>
-                        <GradientStop x:Name="GradientStop2" Color="#8F9477FF" Offset="0.5"/>
-                        <GradientStop x:Name="GradientStop3" Color="#9F45F11D" Offset="0.771"/>
-                        <GradientStop Color="#9E3CB109" Offset="0.995349"/>
-                    </LinearGradientBrush.GradientStops>
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-            <Rectangle.Triggers>
-                <EventTrigger RoutedEvent="Rectangle.Loaded">
-                    <BeginStoryboard>
-                        <Storyboard RepeatBehavior="Forever">
-                                <DoubleAnimation 
-                                    Storyboard.TargetName="GradientStop1"
-                                    Storyboard.TargetProperty="Offset"
-                                    From="0.3" To="0.1" Duration="0:0:5.5"
-                                    AutoReverse="True" />
-                                <DoubleAnimation 
-                                    Storyboard.TargetName="GradientStop2"
-                                    Storyboard.TargetProperty="Offset"
-                                    From="0.4" To=".6" Duration="0:0:10.5"
-                                    AutoReverse="True" />
-                            <DoubleAnimation 
-                                    Storyboard.TargetName="GradientStop3"
-                                    Storyboard.TargetProperty="Offset"
-                                    From="0.7" To=".95" Duration="0:0:5.5"
-                                    AutoReverse="True" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Rectangle.Triggers>
-
-        </Rectangle>-->
+      
 
 <Rectangle x:Name="RectangleBottomBevel" VerticalAlignment="Bottom" Grid.RowSpan="3" Height="5" HorizontalAlignment="Stretch">
 	<Rectangle.Fill>
@@ -312,10 +311,24 @@
                 </ComboBox>
             
             
-            <Rectangle x:Name="RectangleConnect" Fill="{Binding ConnectedStateBrush}" Width="30" Height="30" Grid.Column="2" Margin="5,6" Grid.RowSpan="2" />
+            <!--<Rectangle x:Name="RectangleConnect" Fill="{Binding ConnectedStateBrush}" Width="30" Height="30" Grid.Column="2" Margin="5,6" Grid.RowSpan="2" />-->
             
             <s:SurfaceButton ToolTip="Connect to Server" Grid.Column="2" x:Name="HyperlinkConnect" Click="HyperlinkConnect_Click" Padding="0" HorizontalAlignment="Center"  VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
-                    <Image x:Name="ImageConnect" Width="32" Height="32">
+                <Border Width="32" Height="32">
+                    <Border.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Ready}" Value="False">
+                                    <Setter Property="Border.Background" Value="{DynamicResource disconnected}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Ready}" Value="True">
+                                    <Setter Property="Border.Background" Value="{DynamicResource connected}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+                    <!--<Image x:Name="ImageConnect" Width="32" Height="32">
                         <Image.Style>
                             <Style>
                                 <Style.Triggers>
@@ -328,7 +341,7 @@
                                 </Style.Triggers>
                             </Style>
                         </Image.Style>
-                    </Image>
+                    </Image>-->
                 </s:SurfaceButton>
             <s:SurfaceButton ToolTip="Add a Buddy" Grid.Column="3" x:Name="ButtonAddBuddy" IsEnabled="False" Click="ButtonAddBuddy_Click" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/add.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
