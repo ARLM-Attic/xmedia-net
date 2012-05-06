@@ -3,26 +3,30 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:s="http://schemas.microsoft.com/surface/2008"
     xmlns:phone="clr-namespace:System.Net.XMPP;assembly=xmpp"
-    AllowsTransparency="True" WindowStyle="None"
+    xmlns:comp="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+    xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
+    AllowsTransparency="True" WindowStyle="None"  SizeChanged="Window_SizeChanged"
     MouseDown="Window_MouseDown" ResizeMode="CanResizeWithGrip"
-    Width="501" Height="481" Title="XMPP Chat Client" Loaded="SurfaceWindow_Loaded">
+     Title="XMPP Chat Client" Loaded="SurfaceWindow_Loaded"
+    Background="Transparent" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        Height="600" Width="452">
 
     <Window.Resources>
         <DataTemplate x:Key="ChatMessageTemplate">
                 <Grid Background="{x:Null}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="44" />
-                        <ColumnDefinition Width="300*" />
+                        <ColumnDefinition Width="74" />
+                        <ColumnDefinition Width="300" />
                         <ColumnDefinition Width="33" />
                     </Grid.ColumnDefinitions>
                     
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="44" />
+                        <RowDefinition Height="54" />
                         <RowDefinition Height="20" />
                     </Grid.RowDefinitions>
 
-                    <Rectangle Stroke="Black" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="44" Height="44" Grid.Column="0" Grid.Row="0" />
-                    <Image Grid.Column="0" Grid.Row="0" Width="36" Height="36" Source="{Binding Avatar}" />
+                    <Rectangle Stroke="{Binding Presence.PresenceColor}" Grid.RowSpan="2" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="70" Height="70" Grid.Column="0" Grid.Row="0" />
+                    <Image Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Width="66" Height="66" Source="{Binding Avatar}" />
 
 
                     <Button Background="#AAEEFFEE" BorderBrush="{x:Null}" Margin="10,0" Grid.Column="1" Grid.Row="0" 
@@ -41,21 +45,13 @@
 
 
                     <Button BorderThickness="0" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="View New Messages" Grid.Row="0" Grid.Column="2" x:Name="ButtonViewMessages" Click="ButtonViewMessages_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="{Binding NewMessagesVisible}" >
-                        <Button.Background>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="#EE4444FF" Offset="0"/>
-                                <GradientStop Color="#EECCCCFF" Offset=".5"/>
-                                <GradientStop Color="#EE4444FF" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Button.Background>
-                        
                         <Image  Source="Images/chat.png" Width="32" Height="32" />
                     </Button>
 
                     <!--<s:ElementMenu>
                         <s:ElementMenuItem x:Name="MenuItemQuery" Click="MenuItemQuery_Click">Query</s:ElementMenuItem>
                     </s:ElementMenu>-->
-                    <StackPanel Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="3" Orientation="Horizontal">
+                    <StackPanel Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="2" Orientation="Horizontal">
                         <TextBlock Margin="5,0" Text="{Binding Path=Presence.PresenceType}" />
                         <TextBlock Margin="5,0" Text="{Binding Path=Presence.Status}" />
                         <TextBlock Margin="5,0" Text="{Binding GeoString}"  />
@@ -63,28 +59,190 @@
            </Grid>
 
         </DataTemplate>
+        <Style x:Key="BorderStyle1" TargetType="{x:Type Border}">
+        	<Setter Property="BorderBrush">
+        		<Setter.Value>
+        			<RadialGradientBrush>
+        				<GradientStop Color="#FF136814" Offset="1"/>
+        				<GradientStop Color="#FFA5EBA6" Offset="0"/>
+        			</RadialGradientBrush>
+        		</Setter.Value>
+        	</Setter>
+        </Style>
+
+
+        <CollectionViewSource x:Key="SortedRosterItems" x:Name="OurSortedRosterCollection">
+            <CollectionViewSource.SortDescriptions>
+                <comp:SortDescription PropertyName="Name" />
+            </CollectionViewSource.SortDescriptions>
+            <CollectionViewSource.GroupDescriptions>
+                <dat:PropertyGroupDescription PropertyName="Group" />
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+
 
     </Window.Resources>
-	<Window.Background>
-		<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-			<GradientStop Color="#FFBBFF81" Offset="0"/>
-			<GradientStop Color="#FFEEFFDF" Offset="1"/>
-		</LinearGradientBrush>
-	</Window.Background>
 
 
-    <Border BorderBrush="Black" BorderThickness="1" CornerRadius="2" >
-     
-        
-    <Grid x:Name="LayoutRoot" Background="Transparent">
+    <Grid x:Name="LayoutRoot">
+				
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!--<Rectangle x:Name="Rectangle" Stretch="Fill" Grid.RowSpan="3">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                    <LinearGradientBrush.RelativeTransform>
+                    	<TransformGroup>
+                    		<ScaleTransform/>
+                    		<SkewTransform AngleY="0" AngleX="0"/>
+                    		<RotateTransform Angle="0"/>
+                    		<TranslateTransform X="0" Y="0"/>
+                    	</TransformGroup>
+                    </LinearGradientBrush.RelativeTransform>
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStop Color="#9532AF10" Offset="0"/>
+                        <GradientStop x:Name="GradientStop1" Color="#9E50E911" Offset="0.263"/>
+                        <GradientStop x:Name="GradientStop2" Color="#8F9477FF" Offset="0.5"/>
+                        <GradientStop x:Name="GradientStop3" Color="#9F45F11D" Offset="0.771"/>
+                        <GradientStop Color="#9E3CB109" Offset="0.995349"/>
+                    </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+            <Rectangle.Triggers>
+                <EventTrigger RoutedEvent="Rectangle.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation 
+                                    Storyboard.TargetName="GradientStop1"
+                                    Storyboard.TargetProperty="Offset"
+                                    From="0.3" To="0.1" Duration="0:0:5.5"
+                                    AutoReverse="True" />
+                                <DoubleAnimation 
+                                    Storyboard.TargetName="GradientStop2"
+                                    Storyboard.TargetProperty="Offset"
+                                    From="0.4" To=".6" Duration="0:0:10.5"
+                                    AutoReverse="True" />
+                            <DoubleAnimation 
+                                    Storyboard.TargetName="GradientStop3"
+                                    Storyboard.TargetProperty="Offset"
+                                    From="0.7" To=".95" Duration="0:0:5.5"
+                                    AutoReverse="True" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Rectangle.Triggers>
+
+        </Rectangle>-->
+
+<Rectangle x:Name="RectangleBottomBevel" VerticalAlignment="Bottom" Grid.RowSpan="3" Height="5" HorizontalAlignment="Stretch">
+	<Rectangle.Fill>
+		<DrawingBrush >
+			<DrawingBrush.Drawing>
+				<DrawingGroup>
+					<DrawingGroup.Children>
+						<GeometryDrawing Geometry="F1 M 0,10L 300,10L 296.563,5.95959L 4.68778,5.96855L 0,10 Z ">
+							<GeometryDrawing.Brush>
+								<LinearGradientBrush StartPoint="0.431511,-0.0609483" EndPoint="0.431511,1.01155">
+									<LinearGradientBrush.GradientStops>
+										<GradientStop Color="#00141414" Offset="0"/>
+										<GradientStop Color="#55898989" Offset="0.8"/>
+										<GradientStop Color="#A6008800" Offset="1"/>
+									</LinearGradientBrush.GradientStops>
+								</LinearGradientBrush>
+							</GeometryDrawing.Brush>
+						</GeometryDrawing>
+					</DrawingGroup.Children>
+				</DrawingGroup>
+			</DrawingBrush.Drawing>
+		</DrawingBrush>
+	</Rectangle.Fill>
+	</Rectangle>
+	
+<Rectangle x:Name="RectangleRightBevel" VerticalAlignment="Stretch" Grid.RowSpan="3" Width="5" HorizontalAlignment="Right" RenderTransformOrigin="0.5,0.5">
+	<Rectangle.Fill>
+		<DrawingBrush >
+			<DrawingBrush.Drawing>
+				<DrawingGroup>
+					<DrawingGroup.Children>
+						<GeometryDrawing Geometry="F1 M 10,300L 10,0L 5.95959,3.43726L 5.96855,295.312L 10,300 Z ">
+							<GeometryDrawing.Brush>
+								<LinearGradientBrush StartPoint="-0.0609482,0.568489" EndPoint="1.01155,0.568489">
+									<LinearGradientBrush.GradientStops>
+										<GradientStop Color="#00141414" Offset="0"/>
+										<GradientStop Color="#55898989" Offset="0.8"/>
+										<GradientStop Color="#A6008800" Offset="1"/>										
+									</LinearGradientBrush.GradientStops>
+								</LinearGradientBrush>
+							</GeometryDrawing.Brush>
+						</GeometryDrawing>
+					</DrawingGroup.Children>
+				</DrawingGroup>
+			</DrawingBrush.Drawing>
+		</DrawingBrush>
+	</Rectangle.Fill>
+	</Rectangle>	
+        <Rectangle x:Name="RectangleGreen" Stretch="Fill" Grid.RowSpan="3" StrokeThickness="2" >
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint=".5,0" EndPoint=".5,1">
+                	<GradientStop Color="#88AAFF88" Offset="0"/>
+                	<GradientStop Color="#88DDFF66" Offset="1"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+       
+        <Label Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="96" OpacityMask="#08000000" FontWeight="Bold" Content="XMPP"/>
+        
+        <Rectangle x:Name="Rectangle" Stretch="Fill" Grid.RowSpan="3">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                    <LinearGradientBrush.RelativeTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform AngleY="0" AngleX="0"/>
+                            <RotateTransform Angle="0"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </LinearGradientBrush.RelativeTransform>
+                	<GradientStop Color="#2532AF10" Offset="0"/>
+                	<GradientStop x:Name="GradientStop1" Color="#3E50E911" Offset="0.263"/>
+                	<GradientStop x:Name="GradientStop2" Color="#4F9477FF" Offset="0.5"/>
+                	<GradientStop x:Name="GradientStop3" Color="#3F45F11D" Offset="0.771"/>
+                	<GradientStop Color="#2E3CB109" Offset="0.995349"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+            <Rectangle.Triggers>
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimation 
+                                    Storyboard.TargetName="GradientStop1"
+                                    Storyboard.TargetProperty="Offset"
+                                    From="0.3" To="0.1" Duration="0:0:5.5"
+                                    AutoReverse="True" />
+                            <DoubleAnimation 
+                                    Storyboard.TargetName="GradientStop2"
+                                    Storyboard.TargetProperty="Offset"
+                                    From="0.4" To=".6" Duration="0:0:10.5"
+                                    AutoReverse="True" />
+                            <DoubleAnimation 
+                                    Storyboard.TargetName="GradientStop3"
+                                    Storyboard.TargetProperty="Offset"
+                                    From="0.7" To=".95" Duration="0:0:5.5"
+                                    AutoReverse="True" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Rectangle.Triggers>
+          
+        </Rectangle>
+
         <!--TitlePanel contains the name of the application and page title-->
-        <Grid  Margin="5"  Grid.Row="0">
+        <Grid  Margin="10"  Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="84" />
                     <ColumnDefinition Width="107*" />
@@ -106,16 +264,16 @@
             <TextBlock Margin="10,0" x:Name="ApplicationTitle" FontWeight="Bold"  Text="{Binding XMPPState}" VerticalAlignment="Center" Grid.Column="1"  />
 
             <TextBlock Margin="10,0" x:Name="JID" Text="{Binding JID}" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1" VerticalAlignment="Center" />
-           <TextBox x:Name="TextBoxStatus" Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding Path='PresenceStatus.Status', Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="5"/>
+           <TextBox x:Name="TextBoxStatus" Margin="10,0" Grid.Row="2" Background="{x:Null}" Grid.Column="1" Text="{Binding PresenceStatus.Status, Mode=TwoWay, NotifyOnTargetUpdated=True}" TargetUpdated="TextBox_TargetUpdated" Grid.ColumnSpan="5"/>
 
            <s:SurfaceButton ToolTip="Update Presence" Grid.Row="2" Grid.Column="6" x:Name="ButtonSetStatus" IsEnabled="True" Click="ButtonSetStatus_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/check.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
            </s:SurfaceButton>
 
                 <ComboBox Background="{x:Null}" Grid.Row="3" Grid.Column="0" x:Name="ComboBoxPresence" IsEnabled="False" Foreground="{Binding PresenceStatus.PresenceBrush}"
-                              Text="{Binding Path='PresenceStatus.PresenceType', Mode=TwoWay, NotifyOnTargetUpdated=True}" VerticalAlignment="Center"
+                              Text="{Binding PresenceStatus.PresenceType, Mode=TwoWay, NotifyOnTargetUpdated=True}" VerticalAlignment="Center"
                               TargetUpdated="TextBox_TargetUpdated" FontSize="10">
-                    <ComboBoxItem>
+                    <ComboBoxItem Content="{x:Static phone:PresenceType.available}">
                         <ComboBoxItem.ContentTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -127,16 +285,13 @@
                                             </LinearGradientBrush>
                                         </Ellipse.Fill>
                                     </Ellipse>
-                                    <Label>Available</Label>
+                                    <Label Content="Available"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBoxItem.ContentTemplate>
-                        <ComboBoxItem.Content>
-                            <x:Static Member="phone:PresenceType.available" />
-                        </ComboBoxItem.Content>
                     </ComboBoxItem>
 
-                    <ComboBoxItem >
+                    <ComboBoxItem Content="{x:Static phone:PresenceType.unavailable}" >
                         <ComboBoxItem.ContentTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -148,13 +303,10 @@
                                             </LinearGradientBrush>
                                         </Ellipse.Fill>
                                     </Ellipse>
-                                    <Label>Unavailable</Label>
+                                    <Label Content="Unavailable"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBoxItem.ContentTemplate>
-                        <ComboBoxItem.Content>
-                            <x:Static Member="phone:PresenceType.unavailable" />
-                        </ComboBoxItem.Content>
                     </ComboBoxItem>
                 </ComboBox>
             
@@ -192,18 +344,74 @@
 
 
         </Grid>
-            
 
-        <TextBlock Margin="5,10,5,0" Grid.Row="1" FontWeight="Bold" FontSize="14"><Run Text="Roster"/></TextBlock>
-            
 
-        <ListBox Grid.Row="2" Grid.ColumnSpan="5" x:Name="ListBoxRoster" 
+        <Grid Margin="5,10,5,0" Grid.Row="1" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock FontWeight="Bold" FontSize="14"><Run Text="Roster"/></TextBlock>
+            <CheckBox Grid.Column="1" Margin="10,0" x:Name="CheckBoxSHowAll" IsChecked="{Binding ShowAll}">Show All</CheckBox>
+        </Grid>
+
+
+
+
+
+        <!--<ListBox Grid.Row="2" Grid.ColumnSpan="5" x:Name="ListBoxRoster" 
                     BorderBrush="{x:Null}" Background="{x:Null}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                      ItemsSource="{Binding RosterItems}" 
-                     ItemTemplate="{StaticResource ChatMessageTemplate}" />
+                     ItemTemplate="{StaticResource ChatMessageTemplate}" />-->
 
+        <ListBox x:Name="ListBoxRoster" 
+                 Grid.Row="2" Grid.ColumnSpan="5"
+                 BorderBrush="{x:Null}" Background="{x:Null}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                 ItemsSource="{Binding Source={StaticResource SortedRosterItems}}"
+                 ItemTemplate="{StaticResource ChatMessageTemplate}" >
 
-        
+       
+            <ListBox.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Rectangle x:Name="Rectangle" Stretch="Fill" >
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,.5" EndPoint="1,.5">
+                                            <GradientStop Color="#00FF00FF" Offset="0"/>
+                                            <GradientStop Color="#44FF00FF" Offset=".5"/>
+                                            <GradientStop Color="#00FF00FF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                                <TextBlock HorizontalAlignment="Center"  FontWeight="Bold" FontSize="12" Text="{Binding Path=Name}" />
+                            </Grid>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+                <!--<x:Static Member="GroupStyle.Default"/>-->
+            </ListBox.GroupStyle>
+
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Presence.IsOnline}" Value="False"  />
+                                <Condition Binding="{Binding DataContext.ShowAll, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"  Value="False"  />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </MultiDataTrigger>
+
+                        <DataTrigger Binding="{Binding DataContext.ShowAll, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListBox}}}"  Value="True"  >
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListBox.ItemContainerStyle>
+
+        </ListBox>
+
     </Grid>
-</Border>
 </Window>

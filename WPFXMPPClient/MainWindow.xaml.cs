@@ -26,6 +26,8 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
 
+using System.Windows.Interop;
+
 namespace WPFXMPPClient
 {
     /// <summary>
@@ -57,7 +59,13 @@ namespace WPFXMPPClient
 
             this.RectangleConnect.DataContext = this;
             this.DataContext = XMPPClient;
-            this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
+            this.ListBoxRoster.DataContext = this;
+            this.CheckBoxSHowAll.DataContext = this;
+
+            CollectionViewSource source = FindResource("SortedRosterItems") as CollectionViewSource;
+            source.Source = XMPPClient.RosterItems;
+
+            //this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
             XMPPClient.OnRetrievedRoster += new EventHandler(RetrievedRoster);
             XMPPClient.OnRosterItemsChanged += new EventHandler(RosterChanged);
             XMPPClient.OnStateChanged += new EventHandler(XMPPStateChanged);
@@ -70,6 +78,110 @@ namespace WPFXMPPClient
             AudioMuxerWindow.RegisterXMPPClient(XMPPClient);
       
             SendRawXMLWindow.SetXMPPClient(XMPPClient);
+
+            //AppBarFunctions.SetAppBar(this, ABEdge.Right);
+            SetDesktopBackgroundEffects();
+        }
+
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+         //   SetDesktopBackgroundEffects();
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MARGINS
+        {
+            public int cxLeftWidth;      // width of left border that retains its size
+            public int cxRightWidth;     // width of right border that retains its size
+            public int cyTopHeight;      // height of top border that retains its size
+            public int cyBottomHeight;   // height of bottom border that retains its size
+        };
+
+     
+        [DllImport("DwmApi.dll")]
+        public static extern int DwmExtendFrameIntoClientArea(
+            IntPtr hwnd,
+            ref MARGINS pMarInset);
+
+        [Flags]
+        private enum DwmBlurBehindFlags : uint
+        {
+            /// <summary>
+            /// Indicates a value for fEnable has been specified.
+            /// </summary>
+            DWM_BB_ENABLE = 0x00000001,
+
+            /// <summary>
+            /// Indicates a value for hRgnBlur has been specified.
+            /// </summary>
+            DWM_BB_BLURREGION = 0x00000002,
+
+            /// <summary>
+            /// Indicates a value for fTransitionOnMaximized has been specified.
+            /// </summary>
+            DWM_BB_TRANSITIONONMAXIMIZED = 0x00000004
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct DWM_BLURBEHIND
+        {
+            public DwmBlurBehindFlags dwFlags;
+            public bool fEnable;
+            public IntPtr hRgnBlur;
+            public bool fTransitionOnMaximized;
+        }
+
+        [DllImport("dwmapi.dll")]
+        private static extern IntPtr DwmEnableBlurBehindWindow(IntPtr hWnd, ref DWM_BLURBEHIND pBlurBehind);
+
+   
+        void SetDesktopBackgroundEffects()
+        {
+            try
+            {
+                
+                // Obtain the window handle for WPF application
+                IntPtr mainWindowPtr = new WindowInteropHelper(this).Handle;
+                HwndSource mainWindowSrc = HwndSource.FromHwnd(mainWindowPtr);
+                mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
+
+                // Get System Dpi
+                System.Drawing.Graphics desktop = System.Drawing.Graphics.FromHwnd(mainWindowPtr);
+                float DesktopDpiX = desktop.DpiX;
+                float DesktopDpiY = desktop.DpiY;
+
+                DWM_BLURBEHIND blur = new DWM_BLURBEHIND();
+                blur.fEnable = true;
+                blur.dwFlags = DwmBlurBehindFlags.DWM_BB_ENABLE;
+                blur.hRgnBlur = IntPtr.Zero;
+                blur.fTransitionOnMaximized = false;
+                DwmEnableBlurBehindWindow(mainWindowSrc.Handle, ref blur);
+
+                //// Set Margins
+                //MARGINS margins = new MARGINS();
+
+                //// Extend glass frame into client area
+                //// Note that the default desktop Dpi is 96dpi. The  margins are
+                //// adjusted for the system Dpi.
+                //margins.cxLeftWidth = 0; //Convert.ToInt32(5 * (DesktopDpiX / 96));
+                //margins.cxRightWidth = 0; //Convert.ToInt32(5 * (DesktopDpiX / 96));
+                //margins.cyTopHeight = 0;// Convert.ToInt32(((int)ActualHeight + 5) * (DesktopDpiX / 96));
+                //margins.cyBottomHeight = 25; // Convert.ToInt32(5 * (DesktopDpiX / 96));
+
+                //int hr = DwmExtendFrameIntoClientArea(mainWindowSrc.Handle, ref margins);
+                ////
+                //if (hr < 0)
+                //{
+                //    //DwmExtendFrameIntoClientArea Failed
+                //}
+            }
+            // If not Vista, paint background white.
+            catch (DllNotFoundException)
+            {
+               // Application.Current.MainWindow.Background = Brushes.White;
+            }
+
         }
 
         void PrivService_OnMustHideMyChatWindow(RosterItem item, XMPPClient client)
@@ -328,14 +440,46 @@ namespace WPFXMPPClient
             this.Dispatcher.Invoke(new DelegateVoid(SetRoster));
         }
 
-        void SetRoster()
-        { 
-            this.ListBoxRoster.ItemsSource = null;
-            this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
+        private bool m_bShowAll = false;
+        /// <summary>
+        /// Used in GUI's to show all roster items, even those not online
+        /// </summary>
+        public bool ShowAll
+        {
+            get 
+            { 
+                return m_bShowAll; 
+            }
+            set
+            {
+                if (m_bShowAll != value)
+                {
+                    m_bShowAll = value;
+                    FirePropertyChanged("ShowAll");
+                }
+            }
+        }
 
-           
+
+        void SetRoster()
+        {
+            //this.ListBoxRoster.ItemsSource = null;
+            CollectionViewSource source = FindResource("SortedRosterItems") as CollectionViewSource;
+            source.View.Refresh();
+            //source.Source = null;
+            //source.Source = XMPPClient.RosterItems;
+            //source.DeferRefresh();
+
+            //this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
 
             
+            //var source = new CollectionViewSource();
+            //source.SortDescriptions.Add(new System.ComponentModel.SortDescription("Name", System.ComponentModel.ListSortDirection.Ascending));
+            //source.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription("Group"));
+
+            //source.Source = XMPPClient.RosterItems;
+            ////var selected = from c in XMPPClient.RosterItems group c by c.Group into n select new GroupingLayer<string, RosterItem>(n);
+            //this.ListBoxRoster.ItemsSource = source;
         }
 
         public void XMPPStateChanged(object obj, EventArgs arg)
@@ -669,7 +813,7 @@ namespace WPFXMPPClient
         }
 
 
-
-
     }
+
 }
+

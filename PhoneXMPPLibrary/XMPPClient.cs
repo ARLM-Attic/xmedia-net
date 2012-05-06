@@ -306,6 +306,7 @@ namespace System.Net.XMPP
             FirePropertyChanged("XMPPState");
         }
 
+       
         public event EventHandler OnRetrievedRoster = null;
 
         internal void FireGotRoster()
@@ -339,29 +340,17 @@ namespace System.Net.XMPP
 
         public RosterItem FindRosterItem(JID jid)
         {
-            foreach (RosterItem item in RosterItems)
-            {
-                if (jid.BareJID == item.JID.BareJID)
-                    return item;
-            }
-
-            return null;
+            return RosterItems.FindRosterItem(jid);
         }
 
         public RosterItem FindRosterItemHandle(string strHandle)
         {
-            foreach (RosterItem item in RosterItems)
-            {
-                if (strHandle == item.Name)
-                    return item;
-            }
-
-            return null;
+            return RosterItems.FindRosterItemHandle(strHandle);
         }
 
 
-        private List<RosterItem> m_listRosterItems = new List<RosterItem>();
-        public List<RosterItem> RosterItems
+        private RosterItemList m_listRosterItems = new RosterItemList();
+        public RosterItemList RosterItems
         {
             get { return m_listRosterItems; }
             protected set { m_listRosterItems = value; }
@@ -777,7 +766,7 @@ namespace System.Net.XMPP
             get { return m_objXMPPMessageFactory; }
         }
 
-        void XMPPConnection_OnStanzaReceived(XMPPStanza stanza, object objFrom)
+        protected virtual void XMPPConnection_OnStanzaReceived(XMPPStanza stanza, object objFrom)
         {
             bool bHandled = false;
             /// See if any of our handlers 
@@ -825,37 +814,12 @@ namespace System.Net.XMPP
                    /// 
                 if (msg != null)
                 {
-                   Logic[] LogicList = null;
-                   lock (LogicLock)
-                   {
-                       LogicList = ActiveServices.ToArray();
-                   }
-
-                   foreach (Logic log in LogicList)
-                   {
-                        if (msg is IQ)
-                            bHandled = log.NewIQ(msg as IQ);
-                        else if (msg is Message)
-                            bHandled = log.NewMessage(msg as Message);
-                        else if (msg is PresenceMessage)
-                            bHandled = log.NewPresence(msg as PresenceMessage);
-
-                        if (log.IsCompleted == true)
-                            RemoveList.Add(log);
-                        if (bHandled == true)
-                            break;
-
-                    }
-
-                   lock (LogicLock)
-                   {
-                       foreach (Logic log in RemoveList)
-                       {
-                           if (ActiveServices.Contains(log) == true)
-                              ActiveServices.Remove(log);
-                       }
-                   }
-                   
+                    if (msg is IQ)
+                        bHandled = OnIQ(msg as IQ);
+                    else if (msg is Message)
+                        bHandled = OnMessage(msg as Message);
+                    else if (msg is PresenceMessage)
+                        bHandled = OnPresence(msg as PresenceMessage);
                }
             }
             catch(Exception  ex)
@@ -867,6 +831,104 @@ namespace System.Net.XMPP
                 return;
 
             
+        }
+
+        protected virtual bool OnIQ(IQ iq)
+        {
+            bool bHandled = false;
+            Logic[] LogicList = null;
+            List<Logic> RemoveList = new List<Logic>();
+
+            lock (LogicLock)
+            {
+                LogicList = ActiveServices.ToArray();
+            }
+
+            foreach (Logic log in LogicList)
+            {
+                bHandled = log.NewIQ(iq);
+
+                if (log.IsCompleted == true)
+                    RemoveList.Add(log);
+                if (bHandled == true)
+                    break;
+
+            }
+
+            lock (LogicLock)
+            {
+                foreach (Logic log in RemoveList)
+                {
+                    if (ActiveServices.Contains(log) == true)
+                        ActiveServices.Remove(log);
+                }
+            }
+            return bHandled;
+        }
+
+        protected virtual bool OnMessage(Message msg)
+        {
+            bool bHandled = false;
+            Logic[] LogicList = null;
+            List<Logic> RemoveList = new List<Logic>();
+
+            lock (LogicLock)
+            {
+                LogicList = ActiveServices.ToArray();
+            }
+
+            foreach (Logic log in LogicList)
+            {
+                bHandled = log.NewMessage(msg);
+
+                if (log.IsCompleted == true)
+                    RemoveList.Add(log);
+                if (bHandled == true)
+                    break;
+
+            }
+
+            lock (LogicLock)
+            {
+                foreach (Logic log in RemoveList)
+                {
+                    if (ActiveServices.Contains(log) == true)
+                        ActiveServices.Remove(log);
+                }
+            }
+            return bHandled;
+        }
+
+        protected virtual bool OnPresence(PresenceMessage pres)
+        {
+            bool bHandled = false;
+            Logic[] LogicList = null;
+            List<Logic> RemoveList = new List<Logic>();
+
+            lock (LogicLock)
+            {
+                LogicList = ActiveServices.ToArray();
+            }
+
+            foreach (Logic log in LogicList)
+            {
+                bHandled = log.NewPresence(pres);
+
+                if (log.IsCompleted == true)
+                    RemoveList.Add(log);
+                if (bHandled == true)
+                    break;
+            }
+
+            lock (LogicLock)
+            {
+                foreach (Logic log in RemoveList)
+                {
+                    if (ActiveServices.Contains(log) == true)
+                        ActiveServices.Remove(log);
+                }
+            }
+            return bHandled;
         }
 
         protected List<Logic> ActiveServices = new List<Logic>();
@@ -900,7 +962,7 @@ namespace System.Net.XMPP
         public event DelegateString OnXMLSent = null;
         public event DelegateString OnXMLReceived = null;
 
-        internal void FireXMLSent(string strXML)
+        internal virtual void FireXMLSent(string strXML)
         {
             System.Diagnostics.Debug.WriteLine("-->" + strXML);
 
@@ -908,7 +970,7 @@ namespace System.Net.XMPP
                 OnXMLSent(this, strXML);
         }
 
-        internal void FireXMLReceived(string strXML)
+        internal virtual void FireXMLReceived(string strXML)
         {
             System.Diagnostics.Debug.WriteLine("<--" + strXML);
 

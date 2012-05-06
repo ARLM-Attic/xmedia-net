@@ -51,8 +51,18 @@ namespace RTP
             if (bRet == true)
             {
                 ResponseMessage = msg;
-                if (WaitHandle != null)
-                    WaitHandle.Set();
+                try
+                {
+                    if (WaitHandle != null)
+                        WaitHandle.Set();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    WaitHandle = null;
+                }
             }
             return bRet; 
         }
@@ -60,9 +70,16 @@ namespace RTP
         public void Reset(STUNMessage requestmessage)
         {
             RequestMessage = requestmessage;
-            if (WaitHandle != null)
+            try
             {
-                WaitHandle.Close();
+                if (WaitHandle != null)
+                    WaitHandle.Close();
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
                 WaitHandle = null;
             }
             WaitHandle = new System.Threading.ManualResetEvent(false);
@@ -75,8 +92,18 @@ namespace RTP
             if (WaitHandle != null)
             {
                 bRet = WaitHandle.WaitOne(nTimeOut);
-                WaitHandle.Close();
-                WaitHandle = null;
+                try
+                {
+                    WaitHandle.Close();
+                }
+                catch (Exception ex)
+                {
+                }
+                finally
+                {
+                    WaitHandle = null;
+                }
+
             }
 
             return bRet;

@@ -8,6 +8,9 @@ using System.Net;
 using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
+using System.Windows.Threading;
+using System.Runtime.Serialization;
 
 namespace System.Net.XMPP
 {
@@ -592,12 +595,162 @@ namespace System.Net.XMPP
 #elif MONO
                 PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
-                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.ComponentModel.PropertyChangedEventArgs args = new System.ComponentModel.PropertyChangedEventArgs(strName);
+                System.ComponentModel.PropertyChangedEventHandler eventHandler = PropertyChanged;
+                if (eventHandler == null)
+                    return;
+
+                Delegate[] delegates = eventHandler.GetInvocationList();
+                // Walk thru invocation list
+                foreach (System.ComponentModel.PropertyChangedEventHandler handler in delegates)
+                {
+                    DispatcherObject dispatcherObject = handler.Target as DispatcherObject;
+                    // If the subscriber is a DispatcherObject and different thread
+                    if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
+                    {
+                        // Invoke handler in the target dispatcher's thread
+                        dispatcherObject.Dispatcher.Invoke(DispatcherPriority.DataBind, handler, this, args);
+                    }
+                    else // Execute handler as is
+                        handler(this, args);
+                }
+                //System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif
             }
         }
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged = null;
 
         #endregion
+    }
+
+    public class RosterItemList : System.Collections.Specialized.INotifyCollectionChanged, IEnumerable<RosterItem>
+    {
+        public RosterItemList()
+            : base()
+        {
+        }
+
+        protected List<RosterItem> items = new List<RosterItem>();
+
+        public void Add(RosterItem item)
+        {
+            items.Add(item);
+#if WINDOWS_PHONE
+            FireCollectionChanged(this, new Collections.Specialized.NotifyCollectionChangedEventArgs(Collections.Specialized.NotifyCollectionChangedAction.Add, item, -1));
+#else
+            FireCollectionChanged(this, new Collections.Specialized.NotifyCollectionChangedEventArgs(Collections.Specialized.NotifyCollectionChangedAction.Add, item));
+#endif
+        }
+
+        public void Clear()
+        {
+            if (items.Count > 0)
+            {
+                items.Clear();
+                FireCollectionChanged(this, new Collections.Specialized.NotifyCollectionChangedEventArgs(Collections.Specialized.NotifyCollectionChangedAction.Reset));
+            }
+        }
+
+        public void Remove(RosterItem item)
+        {
+            int nPos = items.IndexOf(item);
+            items.Remove(item);
+            FireCollectionChanged(this, new Collections.Specialized.NotifyCollectionChangedEventArgs(Collections.Specialized.NotifyCollectionChangedAction.Remove, item, nPos));
+        }
+
+        void FireCollectionChanged(object obj, Collections.Specialized.NotifyCollectionChangedEventArgs args)
+        {
+            if (CollectionChanged != null)
+            {
+
+#if WINDOWS_PHONE
+                System.Windows.Deployment.Current.Dispatcher.BeginInvoke(new System.Collections.Specialized.NotifyCollectionChangedEventHandler(SafeFireCollectionChanged), this, args); 
+#elif MONO
+                CollectionChanged(obj, args);
+#else
+
+                System.Collections.Specialized.NotifyCollectionChangedEventHandler eventHandler = CollectionChanged;
+                if (eventHandler == null)
+                    return;
+
+                Delegate[] delegates = eventHandler.GetInvocationList();
+                // Walk thru invocation list
+                foreach (System.Collections.Specialized.NotifyCollectionChangedEventHandler handler in delegates)
+                {
+                    DispatcherObject dispatcherObject = handler.Target as DispatcherObject;
+                    // If the subscriber is a DispatcherObject and different thread
+                    if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
+                    {
+                        // Invoke handler in the target dispatcher's thread
+                        dispatcherObject.Dispatcher.Invoke(DispatcherPriority.DataBind, handler, this, args);
+                    }
+                    else // Execute handler as is
+                        handler(this, args);
+                }
+                //System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(new System.Collections.Specialized.NotifyCollectionChangedEventHandler(SafeFireCollectionChanged),
+                //    this, args); 
+#endif
+
+            }
+        }
+
+    
+        void SafeFireCollectionChanged(object obj, Collections.Specialized.NotifyCollectionChangedEventArgs args)
+        {
+            CollectionChanged(obj, args);
+        }
+
+        public RosterItem FindRosterItemHandle(string strHandle)
+        {
+            foreach (RosterItem item in items)
+            {
+                if (strHandle == item.Name)
+                    return item;
+            }
+
+            return null;
+        }
+
+        public RosterItem FindRosterItem(JID jid)
+        {
+            foreach (RosterItem item in items)
+            {
+                if (jid.BareJID == item.JID.BareJID)
+                    return item;
+            }
+
+            return null;
+        }
+
+        public RosterItem[] ToArray()
+        {
+            return items.ToArray();
+        }
+
+
+        #region INotifyCollectionChanged Members
+
+        public event Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged = null;
+
+        #endregion
+
+        #region IEnumerable<RosterItem> Members
+
+        public IEnumerator<RosterItem> GetEnumerator()
+        {
+            return items.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        Collections.IEnumerator Collections.IEnumerable.GetEnumerator()
+        {
+            return items.GetEnumerator();
+        }
+
+        #endregion
+
     }
 }

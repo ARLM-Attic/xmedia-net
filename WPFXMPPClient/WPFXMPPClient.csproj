@@ -21,6 +21,8 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <Utf8Output>true</Utf8Output>
+    <ExpressionBlendVersion>4.0.30816.0</ExpressionBlendVersion>
     <PublishUrl>C:\inetpub\wwwroot\apps\WPFXMPPClient\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
@@ -33,7 +35,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>67</ApplicationRevision>
+    <ApplicationRevision>69</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -74,6 +76,7 @@
     <ApplicationIcon>Icon1.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Expression.Drawing" />
     <Reference Include="Microsoft.Surface, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Surface.Presentation, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Surface.Presentation.Generic, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
@@ -83,6 +86,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Speech" />
     <Reference Include="System.Xml" />
@@ -115,6 +119,7 @@
       <DependentUpon>AudioMuxerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="BetterAudioResampler.cs" />
+    <Compile Include="DockStuff.cs" />
     <Compile Include="FileTransferWindow.xaml.cs">
       <DependentUpon>FileTransferWindow.xaml</DependentUpon>
     </Compile>

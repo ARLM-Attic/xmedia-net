@@ -6,6 +6,7 @@ using System;
 using System.Net;
 
 using System.Runtime.Serialization;
+using System.Windows.Threading;
 
 namespace System.Net.XMPP
 {
@@ -50,6 +51,20 @@ namespace System.Net.XMPP
             set { m_bIsDirty = value; }
         }
 
+        public bool IsOnline
+        {
+            get
+            {
+                if (m_ePresenceShow == System.Net.XMPP.PresenceShow.unknown)
+                    return false;
+                
+                return true;
+            }
+            set
+            {
+            }
+        }
+
         private PresenceType m_ePresence = PresenceType.unavailable;
         [DataMember]
         public PresenceType PresenceType
@@ -64,6 +79,7 @@ namespace System.Net.XMPP
                     FirePropertyChanged("Presence");
                     FirePropertyChanged("PresenceColor");
                     FirePropertyChanged("PresenceBrush");
+                    FirePropertyChanged("IsOnline");
                     IsDirty = true;
                 }
             }
@@ -134,6 +150,7 @@ namespace System.Net.XMPP
                     FirePropertyChanged("PresenceShow");
                     FirePropertyChanged("PresenceColor");
                     FirePropertyChanged("PresenceBrush");
+                    FirePropertyChanged("IsOnline");
                     IsDirty = true;
                 }
             }
@@ -153,6 +170,7 @@ namespace System.Net.XMPP
                     FirePropertyChanged("Status");
                     FirePropertyChanged("PresenceColor");
                     FirePropertyChanged("PresenceBrush");
+                    FirePropertyChanged("IsOnline");
                     IsDirty = true;
                 }
             }
@@ -186,7 +204,25 @@ namespace System.Net.XMPP
 #elif MONO
                 PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
-                System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+   System.ComponentModel.PropertyChangedEventArgs args = new System.ComponentModel.PropertyChangedEventArgs(strName);
+                System.ComponentModel.PropertyChangedEventHandler eventHandler = PropertyChanged;
+                if (eventHandler == null)
+                    return;
+
+                Delegate[] delegates = eventHandler.GetInvocationList();
+                // Walk thru invocation list
+                foreach (System.ComponentModel.PropertyChangedEventHandler handler in delegates)
+                {
+                    DispatcherObject dispatcherObject = handler.Target as DispatcherObject;
+                    // If the subscriber is a DispatcherObject and different thread
+                    if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
+                    {
+                        // Invoke handler in the target dispatcher's thread
+                        dispatcherObject.Dispatcher.Invoke(DispatcherPriority.DataBind, handler, this, args);
+                    }
+                    else // Execute handler as is
+                        handler(this, args);
+                }
 #endif
             }
             
