@@ -51,11 +51,9 @@ namespace WPFXMPPClient
         /// </summary>
         AudioConferenceMixer AudioMixer = new AudioConferenceMixer(AudioFormat.SixteenBySixteenThousandMono);
 
-        AudioFileReader m_objAudioFileReader = new AudioFileReader(AudioFormat.SixteenBySixteenThousandMono);
-
         public AudioFileReader AudioFileReader
         {
-            get { return m_objAudioFileReader; }
+            get { return this.AudioPlayer.AudioFileReader; }
         }
 
 
@@ -85,9 +83,10 @@ namespace WPFXMPPClient
             /// 
             MicrophoneDevices = ImageAquisition.NarrowBandMic.GetMicrophoneDevices();
             SpeakerDevices = ImageAquisition.NarrowBandMic.GetSpeakerDevices();
-             
+
         }
 
+       
 
         AudioClasses.AudioDevice[] MicrophoneDevices = null;
         AudioClasses.AudioDevice[] SpeakerDevices = null;
@@ -131,6 +130,7 @@ namespace WPFXMPPClient
             AnswerTypeInformation conference = new AnswerTypeInformation() { AnswerType = AnswerType.AcceptToConference, Description = "Auto Add to Conference" };
 
 
+            AudioPlayer.XMPPClient = this.XMPPClient;
 
             this.DataContext = this;
         }
@@ -302,7 +302,7 @@ namespace WPFXMPPClient
             RosterItem item = sender as RosterItem;
             if (item != null)
             {
-                if (item.Presence.PresenceShow != PresenceShow.chat)
+                if (item.Presence.PresenceType != PresenceType.available)
                 {
                     /// Find this session and remove it
                     /// 
@@ -885,43 +885,12 @@ namespace WPFXMPPClient
 
         private void ButtonPlaySong_Click(object sender, RoutedEventArgs e)
         {
-            if (this.AudioFileReader.IsPlaying == false)
-            {
-                /// Let the user choose a song, then enqueue it
-                /// 
-                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-                dlg.InitialDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyMusic);
-                dlg.Filter = "Audio Files (*.mp3;*.wma)|*.mp3;*.wma|All Files (*.*)|*.*";
-                if (dlg.ShowDialog() == true)
-                {
-                    AudioFileReader.ClearAudioData();
-                    AudioFileReader.EnqueueFile(dlg.FileName);
-                }
-            }
-            else
-            {
-                AudioFileReader.ClearPlayQueue();
-                AudioFileReader.ClearAudioData();
-            }
+         
         }
 
         private void ButtonRandom_Click(object sender, RoutedEventArgs e)
         {
-            string[] MusicFiles = new string[] { };
-            Random MusicRand = new Random();
-
-            AudioFileReader.ClearPlayQueue();
-            AudioFileReader.ClearAudioData();
-            string strDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyMusic);
-            MusicFiles = System.IO.Directory.GetFiles(strDir, "*.mp3", System.IO.SearchOption.AllDirectories);
-
-            int nNumbSongs = (MusicFiles.Length>100)?100:MusicFiles.Length;
-            // Queue up 100 random songs
-            for (int i = 0; i < 100; i++)
-            {
-                int nIndex = MusicRand.Next(MusicFiles.Length);
-                AudioFileReader.EnqueueFile(MusicFiles[nIndex]);
-            }
+           
         }
     }
 

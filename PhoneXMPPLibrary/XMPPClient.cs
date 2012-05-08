@@ -17,6 +17,11 @@ using System.Xml.Serialization;
 using System.Runtime.Serialization;
 using System.Collections.ObjectModel;
 
+#if !MONO
+using System.Windows.Threading;
+#endif
+
+
 namespace System.Net.XMPP
 {
     public enum XMPPState
@@ -147,6 +152,10 @@ namespace System.Net.XMPP
             { 
                 m_objXMPPAccount = value;
                 m_objXMPPAccount.HaveSuccessfullyConnectedAndAuthenticated = false;
+
+
+                AvatarStorage.AccountFolder = this.JID.BareJID.Replace("@", "").Replace(" ", "").Replace("/", "_").Replace("\\", ""); ;
+                this.AvatarImagePath = this.AvatarStorage.GetLastHashForJID(this.JID);
 
                 FirePropertyChanged("XMPPAccount");
             }
@@ -946,12 +955,28 @@ namespace System.Net.XMPP
 #elif MONO
                 PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
-                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.ComponentModel.PropertyChangedEventArgs args = new System.ComponentModel.PropertyChangedEventArgs(strName);
+                System.ComponentModel.PropertyChangedEventHandler eventHandler = PropertyChanged;
+                if (eventHandler == null)
+                    return;
+
+                Delegate[] delegates = eventHandler.GetInvocationList();
+                // Walk thru invocation list
+                foreach (System.ComponentModel.PropertyChangedEventHandler handler in delegates)
+                {
+                    DispatcherObject dispatcherObject = handler.Target as DispatcherObject;
+                    // If the subscriber is a DispatcherObject and different thread
+                    if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
+                    {
+                        // Invoke handler in the target dispatcher's thread
+                        dispatcherObject.Dispatcher.Invoke(DispatcherPriority.DataBind, handler, this, args);
+                    }
+                    else // Execute handler as is
+                        handler(this, args);
+                }
+                //System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif
             }
-
-            //if (PropertyChanged != null)
-            //    PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
         }
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged = null;
 
@@ -1018,11 +1043,51 @@ namespace System.Net.XMPP
             this.PersonalEventingLogic.PublishGeoInfo(m_objGeoLocation);
         }
 
+        private TuneItem m_objTune = new TuneItem();
+        /// <summary>
+        /// The tune this roster item is listening to
+        /// </summary>
+        public TuneItem Tune
+        {
+            get { return m_objTune; }
+            set
+            {
+                m_objTune = value;
+                FirePropertyChanged("Tune");
+                FirePropertyChanged("TuneString");
+            }
+        }
+
+        public string TuneString
+        {
+            get
+            {
+                return m_objTune.ToString();
+            }
+            set
+            {
+
+            }
+        }
+
+        public void SetTune(string strTitle, string strArtist)
+        {
+            this.m_objTune.Title = strTitle;
+            this.m_objTune.Artist = strArtist;
+
+            FirePropertyChanged("Tune");
+            FirePropertyChanged("TuneString");
+
+            this.PersonalEventingLogic.PublishTuneInfo(this.m_objTune);
+        }
+
+
         public AvatarStorage AvatarStorage = new AvatarStorage("default");
 
         public void SetAvatar(byte[] bImageData, int nWidth, int nHeight, string strContentType)
         {
             this.AvatarImagePath = AvatarStorage.WriteAvatar(bImageData);
+            this.AvatarStorage.SetJIDHash(this.JID, this.AvatarImagePath);
             /// Need to update our presence with our avatar has
             /// 
             this.PresenceStatus.IsDirty = true; // set manually because only gets dirty on type and status, not hash
@@ -1043,6 +1108,7 @@ namespace System.Net.XMPP
             if (this.vCard.Photo != null)
             {
                 this.AvatarImagePath = AvatarStorage.WriteAvatar(this.vCard.Photo.Bytes);
+                this.AvatarStorage.SetJIDHash(this.JID, this.AvatarImagePath);
                 this.PresenceStatus.IsDirty = true; // set manually because only gets dirty on type and status, not hash
                 UpdatePresence();
             }
@@ -1075,6 +1141,7 @@ namespace System.Net.XMPP
                 {
                     string strHash = AvatarStorage.WriteAvatar(m_objvCard.Photo.Bytes);
                     AvatarImagePath = strHash;
+                    this.AvatarStorage.SetJIDHash(this.JID, this.AvatarImagePath);
                 }
             }
         }
@@ -1087,7 +1154,8 @@ namespace System.Net.XMPP
                 if (m_objXMPPAccount.AvatarHash != value)
                 {
                     m_objXMPPAccount.AvatarHash = value;
-                    FirePropertyChanged("Avatar");
+                    if (m_objXMPPAccount.AvatarHash  != null)
+                        FirePropertyChanged("Avatar");
                 }
                 else
                 {

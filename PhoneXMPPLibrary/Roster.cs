@@ -9,7 +9,11 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
+
+#if !MONO
 using System.Windows.Threading;
+#endif
+
 using System.Runtime.Serialization;
 
 namespace System.Net.XMPP
@@ -81,6 +85,7 @@ namespace System.Net.XMPP
 #endif
 
 
+
         #region INotifyPropertyChanged Members
 
         void FirePropertyChanged(string strName)
@@ -92,7 +97,26 @@ namespace System.Net.XMPP
 #elif MONO
                 PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #else
-                System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+                System.ComponentModel.PropertyChangedEventArgs args = new System.ComponentModel.PropertyChangedEventArgs(strName);
+                System.ComponentModel.PropertyChangedEventHandler eventHandler = PropertyChanged;
+                if (eventHandler == null)
+                    return;
+
+                Delegate[] delegates = eventHandler.GetInvocationList();
+                // Walk thru invocation list
+                foreach (System.ComponentModel.PropertyChangedEventHandler handler in delegates)
+                {
+                    DispatcherObject dispatcherObject = handler.Target as DispatcherObject;
+                    // If the subscriber is a DispatcherObject and different thread
+                    if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
+                    {
+                        // Invoke handler in the target dispatcher's thread
+                        dispatcherObject.Dispatcher.Invoke(DispatcherPriority.DataBind, handler, this, args);
+                    }
+                    else // Execute handler as is
+                        handler(this, args);
+                }
+                //System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(PropertyChanged, this, new System.ComponentModel.PropertyChangedEventArgs(strName));
 #endif
             }
         }
@@ -110,9 +134,14 @@ namespace System.Net.XMPP
 
     public class RosterItem : System.ComponentModel.INotifyPropertyChanged
     {
-        public RosterItem(XMPPClient client)
+        public RosterItem(XMPPClient client, JID jid)
         {
             XMPPClient = client;
+            this.JID = jid;
+            
+            /// Set our avatar to our last known avatar
+            /// 
+            this.AvatarImagePath = XMPPClient.AvatarStorage.GetLastHashForJID(this.JID);
         }
 
         public RosterItem()
@@ -212,7 +241,24 @@ namespace System.Net.XMPP
         public TuneItem Tune
         {
             get { return m_objTune; }
-            set { m_objTune = value; }
+            set 
+            { 
+                m_objTune = value;
+                FirePropertyChanged("Tune");
+                FirePropertyChanged("TuneString");
+            }
+        }
+
+        public string TuneString
+        {
+            get
+            {
+                return m_objTune.ToString();
+            }
+            set
+            {
+
+            }
         }
 
 
@@ -233,6 +279,7 @@ namespace System.Net.XMPP
                     /// 
                     string strHash = XMPPClient.AvatarStorage.WriteAvatar(m_objvCard.Photo.Bytes);
                     this.AvatarImagePath = strHash;
+                    XMPPClient.AvatarStorage.SetJIDHash(this.JID, strHash);
                 }
             }
         }
@@ -548,7 +595,11 @@ namespace System.Net.XMPP
                 if (m_strImagePath != value)
                 {
                     m_strImagePath = value;
-                    FirePropertyChanged("Avatar");
+                    if (m_strImagePath != null)
+                    {
+                        XMPPClient.AvatarStorage.SetJIDHash(this.JID, m_strImagePath);
+                        FirePropertyChanged("Avatar");
+                    }
                 }
                 else
                 {
@@ -729,6 +780,26 @@ namespace System.Net.XMPP
             return items.ToArray();
         }
 
+
+        public int Count
+        {
+            get
+            {
+                return items.Count;
+            }
+        }
+
+        public RosterItem this[int nIndex]
+        {
+            get
+            {
+                return items[nIndex];
+            }
+            set
+            {
+                items[nIndex] = value;
+            }
+        }
 
         #region INotifyCollectionChanged Members
 

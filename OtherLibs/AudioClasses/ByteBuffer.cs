@@ -164,6 +164,29 @@ namespace AudioClasses
                 if ((OutgoingBuffer != null) && (OutgoingBuffer.Length > 0))
                 {
                     int nCopyLength = (nSamples > this.m_nSize) ? this.m_nSize : nSamples;
+#if DEBUG
+                    if (m_nSize < nSamples)
+                        System.Diagnostics.Debug.WriteLine("*********Asking for {0} samples but can only give {1}", nSamples, this.m_nSize);
+#endif
+                    Array.Copy(OutgoingBuffer, 0, Samples, 0, nCopyLength);
+
+                    CompactBuffer(nCopyLength);
+                    return nCopyLength;
+                }
+                return 0;
+            }
+        }
+
+        public int GetNSamplesIntoBufferOrNone(byte[] Samples, int nSamples)
+        {
+            lock (BufferLock)
+            {
+                if ((OutgoingBuffer != null) && (OutgoingBuffer.Length > 0))
+                {
+                    if (m_nSize < nSamples)
+                        return 0;
+
+                    int nCopyLength = (nSamples > this.m_nSize) ? this.m_nSize : nSamples;
                     Array.Copy(OutgoingBuffer, 0, Samples, 0, nCopyLength);
 
                     CompactBuffer(nCopyLength);

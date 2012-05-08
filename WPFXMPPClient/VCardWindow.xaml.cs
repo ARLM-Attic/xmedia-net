@@ -45,6 +45,8 @@ namespace WPFXMPPClient
         {
             /// Select a new avatar
             /// 
+            this.ImagePicture.Source = null;
+
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
             dlg.Filter = "Image files|*.png;*.jpg|All Files|*.*";
             if (dlg.ShowDialog() == true)
@@ -70,23 +72,20 @@ namespace WPFXMPPClient
                 stream.Read(bData, 0, bData.Length);
                 stream.Close();
 
-                MemoryStream ms = new MemoryStream(bData);
+                //MemoryStream ms = new MemoryStream(bData);
                 Image i = new Image();
                 
 
                 BitmapImageSrc.BeginInit();
                 BitmapImageSrc.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
                 BitmapImageSrc.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
-
-                BitmapImageSrc.StreamSource = stream;
+                BitmapImageSrc.UriSource = new Uri(dlg.FileName);
+                //BitmapImageSrc.StreamSource = stream;
                 BitmapImageSrc.EndInit();
                 
-                this.ImagePicture.Source = BitmapImageSrc;
-
-
                 int nWidth = (int)BitmapImageSrc.Width;
                 int nHeight = (int)BitmapImageSrc.Height;
-                ms.Close();
+                //ms.Close();
 
                 
                 if ((nWidth > 100) || (nHeight > 0))
@@ -99,7 +98,8 @@ namespace WPFXMPPClient
                 vcard.Photo = new Photo();
                 vcard.Photo.Bytes = bData;
                 vcard.Photo.Type = strContentType;
-                
+                this.ImagePicture.Source = BitmapImageSrc;
+
                 //XMPPClient.SetAvatar(bData, nWidth, nHeight, strContentType);
             }
                
@@ -114,6 +114,17 @@ namespace WPFXMPPClient
         {
             this.DialogResult = true;
             this.Close();
+        }
+
+        private void ButtonClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if ((e.ChangedButton == MouseButton.Left) && (e.ButtonState == MouseButtonState.Pressed))
+                this.DragMove();
         }
 
 

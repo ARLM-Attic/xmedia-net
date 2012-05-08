@@ -27,6 +27,13 @@ namespace System.Net.XMPP
         {
         }
 
+        public override string ToString()
+        {
+            if (Title == null)
+                return "";
+            return string.Format("{0} - {1}", Title, Artist);
+        }
+
         private string m_strArtist = null;
         [XmlElement(ElementName = "artist")]
         [DataMember]

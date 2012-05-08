@@ -290,13 +290,16 @@ void SpeakerFilter::PlayThreadFunction()
 				nLengthToTrim = ByteQueue->Size;
 			if (nLengthToTrim > 0)
 			{
+#ifdef DEBUG
+				System::Diagnostics::Debug::WriteLine("Removing {0} bytes from our speaker queue of size {1}", nLengthToTrim, ByteQueue->Size);
+#endif
 				ByteQueue->GetNSamples(nLengthToTrim);  // Flush this many samples
 			}
 		}
 
 
 
-		int nSamplesGot = ByteQueue->GetNSamplesIntoBuffer(NextData, nThirdSize);
+		int nSamplesGot = ByteQueue->GetNSamplesIntoBufferOrNone(NextData, nThirdSize);
 		if (nSamplesGot < nThirdSize)  /// Didn't get enought data, clear noise from the buffer
 			System::Array::Clear(NextData, nSamplesGot, nThirdSize-nSamplesGot);
 

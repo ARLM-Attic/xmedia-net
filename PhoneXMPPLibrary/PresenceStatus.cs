@@ -6,7 +6,10 @@ using System;
 using System.Net;
 
 using System.Runtime.Serialization;
+
+#if !MONO
 using System.Windows.Threading;
+#endif
 
 namespace System.Net.XMPP
 {

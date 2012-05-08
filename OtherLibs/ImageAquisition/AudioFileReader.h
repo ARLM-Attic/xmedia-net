@@ -5,7 +5,7 @@ using namespace System;
 namespace ImageAquisition 
 {
 
-	delegate void DelegateSong(String ^strSong, Object ^objSender);
+	public delegate void DelegateSong(String ^strSong, Object ^objSender);
 
 	public ref class AudioFileReader : AudioClasses::IAudioSource, System::ComponentModel::INotifyPropertyChanged
 	{
@@ -32,6 +32,7 @@ namespace ImageAquisition
 				{
 					m_bActive = bValue;
 					StartNextFileQueue();
+					FirePropertyChanged("IsSourceActive");
 				}
 			}
 
@@ -76,8 +77,20 @@ namespace ImageAquisition
 					{
 						m_strCurrentSong = strValue;
 						FirePropertyChanged("CurrentTrack");
+						FirePropertyChanged("CurrentTrackFileOnly");
 						FirePlayStarted(m_strCurrentSong);
 					}
+				}
+			}
+
+			property String ^CurrentTrackFileOnly
+			{ 
+				String ^get()
+				{
+					return System::IO::Path::GetFileName(m_strCurrentSong);
+				}
+				void set(String ^strValue)
+				{
 				}
 			}
 			

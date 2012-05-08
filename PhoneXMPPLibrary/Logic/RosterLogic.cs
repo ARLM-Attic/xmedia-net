@@ -226,15 +226,13 @@ namespace System.Net.XMPP
                     {
                         foreach (rosteritem item in rostiq.Query.RosterItems)
                         {
-                            RosterItem ros = new RosterItem(XMPPClient);
+                            RosterItem ros = new RosterItem(XMPPClient, item.JID);
 
                             if (item.Ask == "subscribe")
                             {
                                 /// Need to do subscribe to this user's presence some how
                                 /// 
                             }
-
-                            ros.JID = item.JID;
 
                             /// See if we already have this roster item
                             /// 
@@ -292,10 +290,9 @@ namespace System.Net.XMPP
                 {
                     foreach (rosteritem item in rostiq.Query.RosterItems)
                     {
-                        RosterItem ros = new RosterItem(XMPPClient)
+                        RosterItem ros = new RosterItem(XMPPClient, item.JID)
                         {
                             XMPPClient = XMPPClient,
-                            JID = item.JID,
                             Name = item.Name,
                             Subscription = item.Subscription,
                             Node = item,

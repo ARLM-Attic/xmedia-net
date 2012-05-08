@@ -13,7 +13,7 @@
 
     <Window.Resources>
         <DataTemplate x:Key="ChatMessageTemplate">
-                <Grid Background="{x:Null}">
+            <Grid Background="{x:Null}" HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="74" />
                         <ColumnDefinition Width="300*" />
@@ -95,12 +95,15 @@
                 <!--<s:ElementMenu>
                         <s:ElementMenuItem x:Name="MenuItemQuery" Click="MenuItemQuery_Click">Query</s:ElementMenuItem>
                     </s:ElementMenu>-->
-                    <StackPanel Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="2" Orientation="Horizontal">
-                        <TextBlock Margin="5,0" Text="{Binding Path=Presence.PresenceType}" />
-                        <TextBlock Margin="5,0" Text="{Binding Path=Presence.Status}" />
-                        <TextBlock Margin="5,0" Text="{Binding GeoString}"  />
-                </StackPanel>
-           </Grid>
+                <TextBlock Grid.Row="1" HorizontalAlignment="Stretch" Grid.Column="1"  Grid.ColumnSpan="2" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Inlines>
+                        <Run Text="{Binding Path=Presence.PresenceType}" />
+                        <Run Text="{Binding Path=Presence.Status}" />
+                        <Run Text="{Binding GeoString}"  />
+                        <Run Text="{Binding TuneString}"  />
+                    </TextBlock.Inlines>
+                </TextBlock>
+            </Grid>
 
         </DataTemplate>
         <Style x:Key="BorderStyle1" TargetType="{x:Type Border}">
@@ -381,6 +384,7 @@
         <ListBox x:Name="ListBoxRoster" 
                  Grid.Row="2" Grid.ColumnSpan="5"
                  BorderBrush="{x:Null}" Background="{x:Null}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  ItemsSource="{Binding Source={StaticResource SortedRosterItems}}"
                  ItemTemplate="{StaticResource ChatMessageTemplate}" >
 
