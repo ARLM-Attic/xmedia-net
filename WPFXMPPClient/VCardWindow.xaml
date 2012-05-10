@@ -44,10 +44,6 @@
 			<Label Width="120" Content="Nick Name"/>
 			<TextBox Width="120" Text="{Binding NickName}" />
 		</StackPanel>
-		<StackPanel Orientation="Horizontal" VerticalAlignment="Top" Grid.Row="3">
-			<Label Width="120" Content="Group"/>
-			<TextBox Width="120" x:Name="TextBoxGroup" Text="{Binding Group}" />
-		</StackPanel>
 		<StackPanel Orientation="Horizontal" d:LayoutOverrides="Height" Grid.Row="4" >
 			<Label Width="120" Content="Picture"/>
 			<Border BorderBrush="Red">

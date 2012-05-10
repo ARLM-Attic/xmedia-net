@@ -15,7 +15,7 @@ namespace ImageAquisition
 
 			/// Loads an audio file to our outgoing buffer queue (First converts it to the correct output format)
 			void EnqueueFile(String ^strFilename);
-			void ClearAudioData();
+			void AbortCurrentSong();
 			void ClearPlayQueue();
 
 			event DelegateSong ^OnPlayStarted;
@@ -78,8 +78,20 @@ namespace ImageAquisition
 						m_strCurrentSong = strValue;
 						FirePropertyChanged("CurrentTrack");
 						FirePropertyChanged("CurrentTrackFileOnly");
+						FirePropertyChanged("NextTrack");
 						FirePlayStarted(m_strCurrentSong);
 					}
+				}
+			}
+
+			property String ^NextTrack
+			{ 
+				String ^get()
+				{
+					if (FileQueue->Count <= 0)
+						return "none";
+					String ^strFileName = FileQueue->Peek();
+					return System::IO::Path::GetFileName(strFileName);
 				}
 			}
 
@@ -91,6 +103,18 @@ namespace ImageAquisition
 				}
 				void set(String ^strValue)
 				{
+				}
+			}
+
+			property bool LoopQueue
+			{ 
+				bool get()
+				{
+					return m_bLoopQueue;
+				}
+				void set(bool value)
+				{
+					m_bLoopQueue = value;
 				}
 			}
 			
@@ -130,14 +154,19 @@ namespace ImageAquisition
 
 			void StartNextFileQueue();
 			static void QueueFileThread(Object ^objFileName);
+			void FinishCurrentSong();
 
 			AudioClasses::ByteBuffer ^EnqueuedAudioData;
 			
 			System::Collections::Generic::Queue<String ^> ^FileQueue;
 		
+			System::Threading::ManualResetEvent ^ThreadFinishedEvent;
+
 			double m_fAmplitude;
 			bool m_bActive;
 			bool m_bIsPlaying;
+			bool m_bAbortRead;
+			bool m_bLoopQueue;
 			bool m_bFileProcessing;
 			String ^m_strCurrentSong;
 			int m_nBytesInCurrentSong;

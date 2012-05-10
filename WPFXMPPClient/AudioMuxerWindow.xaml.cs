@@ -211,7 +211,7 @@ namespace WPFXMPPClient
             this.SliderSpeakerVolume.DataContext = SpeakerVolume;
 
             Microphone = new ImageAquisition.NarrowBandMic(micdevice, speakdevice.Guid, helper.Handle);
-            Microphone.AGC = true;
+            Microphone.AGC = UseAEC; // don't use gain control when AEC is disabled, so we can hear mics better
             Microphone.UseKinectArray = false;
             Speaker = new DirectShowFilters.SpeakerFilter(speakdevice.Guid, 20, format, helper.Handle);
             Speaker.Start();
@@ -809,9 +809,9 @@ namespace WPFXMPPClient
                     Speaker = null;
 
 
-                    Speaker = new DirectShowFilters.SpeakerFilter(speakdevice.Guid, 20, AudioFormat.SixteenBySixteenThousandMono, helper.Handle);
+                    Speaker = new DirectShowFilters.SpeakerFilter(speakdevice.Guid, 30, AudioFormat.SixteenBySixteenThousandMono, helper.Handle);
                     Microphone = new ImageAquisition.NarrowBandMic(micdevice, speakdevice.Guid, helper.Handle);
-                    Microphone.AGC = true;
+                    Microphone.AGC = UseAEC;
                     Microphone.UseKinectArray = false;
                     Speaker.Start();
                     if (UseAEC == true)

@@ -65,7 +65,7 @@ namespace WPFXMPPClient
 
         private void ButtonNext_Click(object sender, RoutedEventArgs e)
         {
-            AudioFileReader.ClearAudioData();
+            AudioFileReader.AbortCurrentSong();
         }
 
         private void ButtonPause_Click(object sender, RoutedEventArgs e)
@@ -113,7 +113,7 @@ namespace WPFXMPPClient
         private void ButtonDeleteQueue_Click(object sender, RoutedEventArgs e)
         {
             AudioFileReader.ClearPlayQueue();
-            AudioFileReader.ClearAudioData();
+            AudioFileReader.AbortCurrentSong();
         }
 
       

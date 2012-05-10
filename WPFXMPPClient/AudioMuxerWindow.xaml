@@ -52,10 +52,13 @@
         		<RowDefinition Height="0.5*"/>
         	</Grid.RowDefinitions>
 
-        	<local:AudioPlayerUserControl x:Name="AudioPlayer" Grid.Column="1" Grid.RowSpan="2"/>
+            <StackPanel Grid.Column="1" Grid.RowSpan="2">
+                <Label HorizontalAlignment="Center" FontSize="10" FontWeight="Bold">Music Controls</Label>
+        	    <local:AudioPlayerUserControl x:Name="AudioPlayer"/>
+            </StackPanel>
 
-            
-        	<Grid Height="40" Margin="0,0,0,4" Grid.Row="0" Grid.ColumnSpan="2" >
+
+            <Grid Height="40" Margin="0,0,0,4" Grid.Row="0" Grid.ColumnSpan="2" >
         		<Label Width="125" Content="Speaker Device" HorizontalAlignment="Left"/>
         		<ComboBox Width="200" Background="#AAEEFFEE" x:Name="ComboBoxSpeakerDevices" SelectionChanged="ComboBoxSpeakerDevices_SelectionChanged" HorizontalAlignment="Left" Margin="125,0,0,0" />
         		<!--<s:SurfaceCheckBox Margin="5,0" x:Name="CheckBoxAutoAnswer" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Auto Answer</s:SurfaceCheckBox>-->
@@ -135,15 +138,16 @@
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="{Binding RosterItem.Avatar}" Width="64" Height="64" />
-                                    <Label VerticalAlignment="Center" FontWeight="Bold" Content="{Binding RemoteJID}" />
+                                    <StackPanel Orientation="Vertical">
+                                        <Label FontSize="10" VerticalAlignment="Center" FontWeight="Bold" Content="{Binding RemoteJID}" />
+                                        <Label FontSize="8" VerticalAlignment="Center" Content="{Binding CallDuration}" />
+                                        <Label FontSize="8" VerticalAlignment="Center" Content="{Binding RemoteEndpoint}" />
+                                    </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Session" Width="100" DisplayMemberBinding="{Binding Session}" />
                     <GridViewColumn Header="State" Width="100" DisplayMemberBinding="{Binding SessionState}" />
-                    <GridViewColumn Header="Remote Address" Width="120" DisplayMemberBinding="{Binding RemoteEndpoint}" />
-                    <GridViewColumn Header="Duration" Width="120" DisplayMemberBinding="{Binding CallDuration}" />
                     <GridViewColumn Header="Audio" Width="120"  >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
@@ -193,7 +197,20 @@
                                     </StackPanel>
                                     <StackPanel Orientation="Vertical">
                                         <ToggleButton Height="32" Width="32" Background="#AACCFFCC" BorderBrush="{x:Null}" x:Name="ButtonDeafen" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding AudioRTPStream.Deafened}">
-                                            <Image x:Name="ImageDeafen" Width="28" Height="28" Source="Images/deafen.jpg"/>
+                                            <Border Width="28" Height="28" >
+                                                <Border.Style>
+                                                    <Style>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding AudioRTPStream.Deafened}" Value="True">
+                                                                <Setter Property="Border.Background" Value="{DynamicResource earmuffs}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding AudioRTPStream.Deafened}" Value="False">
+                                                                <Setter Property="Border.Background" Value="{DynamicResource noearmuffs}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
                                         </ToggleButton>
                                         <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top">
                                             <Label.Style>
@@ -232,7 +249,7 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Vertical">
-                                    <Label Content="{Binding Statistics}" />
+                                    <Label Content="{Binding Statistics}" FontSize="8"  />
                                     <Button Style="{DynamicResource ButtonLink}" x:Name="ButtonResetStats" Content="Reset" Click="ButtonResetStats_Click"  />
                                 </StackPanel>
                             </DataTemplate>

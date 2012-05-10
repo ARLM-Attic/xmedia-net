@@ -215,7 +215,7 @@ bool SpeakerFilter::Start()
 	PlayThread = gcnew Thread(gcnew ThreadStart(this, &SpeakerFilter::PlayThreadFunction));
 	PlayThread->IsBackground = true;
 	PlayThread->Name = String::Format("Audio play thread on device {0}", SpeakerGuid);
-	PlayThread->Priority = System::Threading::ThreadPriority::AboveNormal;
+	PlayThread->Priority = System::Threading::ThreadPriority::Highest;
 	EventThreadExit->Reset();
 	PlayThread->Start();
 

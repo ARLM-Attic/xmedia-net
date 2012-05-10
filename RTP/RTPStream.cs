@@ -58,9 +58,6 @@ namespace RTP
                 }
                 catch (Exception ex)
                 {
-                }
-                finally
-                {
                     WaitHandle = null;
                 }
             }

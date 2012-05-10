@@ -35,7 +35,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>76</ApplicationRevision>
+    <ApplicationRevision>77</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -311,7 +311,6 @@
     </Content>
     <Resource Include="Images\speaker.png" />
     <Resource Include="Images\speakermute.png" />
-    <Resource Include="Images\deafen.jpg" />
     <Resource Include="Images\play.png" />
     <Resource Include="Images\Stop.png" />
     <Resource Include="Images\offhook.png">

@@ -24,7 +24,7 @@
                         <RowDefinition Height="20" />
                     </Grid.RowDefinitions>
 
-                    <Rectangle Stroke="{Binding Presence.PresenceColor}" Grid.RowSpan="2" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="70" Height="70" Grid.Column="0" Grid.Row="0" />
+                <Rectangle Stroke="{Binding Presence.PresenceBrush}" Grid.RowSpan="2" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="70" Height="70" Grid.Column="0" Grid.Row="0" />
                     <Image Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Width="66" Height="66" Source="{Binding Avatar}" />
 
 
