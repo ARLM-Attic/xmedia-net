@@ -44,8 +44,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="BuddyPosition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="xsd\MyKML.cs" />
+    <Compile Include="xsd\ogckml22_atom-author-link_xAL.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\XMPPLibrary\xmpp.csproj">
+      <Project>{8DE3A173-A7A8-447F-846E-16C95F9C22AE}</Project>
+      <Name>xmpp</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="xsd\atom-author-link.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="xsd\ogckml22.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="xsd\xAL.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
