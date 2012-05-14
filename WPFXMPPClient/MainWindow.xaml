@@ -5,6 +5,8 @@
     xmlns:phone="clr-namespace:System.Net.XMPP;assembly=xmpp"
     xmlns:comp="clr-namespace:System.ComponentModel;assembly=WindowsBase"
     xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
+    xmlns:extra="clr-namespace:WPFImageWindows;assembly=WPFImageWindows"
+    xmlns:local="clr-namespace:WPFXMPPClient"
     AllowsTransparency="True" WindowStyle="None"  SizeChanged="Window_SizeChanged"
     MouseDown="Window_MouseDown" ResizeMode="CanResizeWithGrip"
      Title="XMPP Chat Client" Loaded="SurfaceWindow_Loaded"
@@ -13,26 +15,24 @@
 
     <Window.Resources>
         <DataTemplate x:Key="ChatMessageTemplate">
-            <Grid Background="{x:Null}" HorizontalAlignment="Stretch">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="74" />
-                        <ColumnDefinition Width="300*" />
-                    </Grid.ColumnDefinitions>
+            <Grid Background="{x:Null}"  HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="74" />
+                    <ColumnDefinition Width="300*" />
+                </Grid.ColumnDefinitions>
                     
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="54" />
-                        <RowDefinition Height="20" />
-                    </Grid.RowDefinitions>
-
-                <Rectangle Stroke="{Binding Presence.PresenceBrush}" Grid.RowSpan="2" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="70" Height="70" Grid.Column="0" Grid.Row="0" />
-                    <Image Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Width="66" Height="66" Source="{Binding Avatar}" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
 
-                <Grid Grid.Row="0" Grid.Column="1" Margin="10,0">
-                        <Button Background="#AAEEFFEE" BorderBrush="{x:Null}"  
-                             HorizontalAlignment="Stretch" VerticalContentAlignment="Center" 
-                             x:Name="HyperlinkRosterItem" Click="HyperlinkRosterItem_Click" 
-                             FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Stretch" Content="{Binding Name}">
+                <Rectangle VerticalAlignment="Top" Stroke="{Binding Presence.PresenceBrush}" Grid.RowSpan="1" StrokeThickness="1" Stretch="Uniform"  Fill="{Binding Presence.PresenceBrush}" Grid.Column="0" Grid.Row="0" />
+                <Image VerticalAlignment="Top" Grid.Column="0" Grid.Row="0" Grid.RowSpan="1" Margin="4" Source="{Binding Avatar}" Stretch="Uniform" />
+
+
+                        <!--<Button Style="{DynamicResource ButtonSurface}"  
+                             VerticalContentAlignment="Stretch" x:Name="HyperlinkRosterItem" Click="HyperlinkRosterItem_Click" >
                             <Button.ContextMenu>
                                 <ContextMenu >
                                     <MenuItem Header="Options">
@@ -41,13 +41,37 @@
                                     </MenuItem>
                                 </ContextMenu>
                             </Button.ContextMenu>
-                        </Button>
-                    
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,10,0">
-                        
-                        <Border Width="40" Height="40" Visibility="{Binding NewMessagesVisible}" >
-                            <Border.Background>
-                                <DrawingBrush Stretch="UniformToFill">
+
+                        <Button.Content>-->
+                    <Grid Grid.Row="0" Grid.Column="1" Margin="10,0" Background="{DynamicResource ButtonBrush}" MouseDown="Grid_MouseDown" MouseUp="Grid_MouseUp">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="70*" />
+                                </Grid.RowDefinitions>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="300*" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="30" />
+                                    <ColumnDefinition Width="30" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" Height="50"></local:DialogControl>
+                                
+                                <TextBlock FontSize="16" TextAlignment="Center" Grid.Row="0" FontWeight="Bold" Text="{Binding Name}" Background="{x:Null}" VerticalAlignment="Center" HorizontalAlignment="Stretch"  />
+
+                                <!--<ToggleButton Grid.Column="1" x:Name="ButtonExpandChat" Padding="0" Margin="2" Checked="ButtonExpandChat_Checked" Unchecked="ButtonExpandChat_Unchecked" >
+                                	<Grid  Background="{DynamicResource expandcontract}"></Grid>                        
+								</ToggleButton>-->
+
+                    <Button Grid.Column="2" HorizontalAlignment="Stretch" Visibility="{Binding AudioVisible}" Click="ButtonStartAudio_Click" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonStartAudio" ToolTip="Start an Audio Call with this chap" >
+                        <Rectangle Stretch="Fill" Fill="{DynamicResource speaker}" Width="20" Height="20" />
+                    </Button>
+
+                        <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Visibility="{Binding NewMessagesVisible}" Grid.Column="3" x:Name="ToggleButtonChat" Click="HyperlinkRosterItem_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" >
+                        <Rectangle Stretch="Fill" Width="20" Height="20">
+                            <Rectangle.Fill>
+                                <DrawingBrush Stretch="Fill">
                                     <DrawingBrush.Drawing>
                                         <DrawingGroup>
                                             <DrawingGroup.Children>
@@ -71,40 +95,111 @@
                                         </DrawingGroup>
                                     </DrawingBrush.Drawing>
                                 </DrawingBrush>
-                            </Border.Background>
-                            <Border.Triggers>
+                            </Rectangle.Fill>
+                            <Rectangle.Triggers>
                                 <EventTrigger RoutedEvent="Loaded">
                                     <BeginStoryboard>
                                         <Storyboard RepeatBehavior="Forever">
                                             <DoubleAnimation 
-                                                Storyboard.TargetName="GradientStop2"
-                                                Storyboard.TargetProperty="Offset"
-                                                From="0.1" To="0.8" Duration="0:0:1.5"
-                                                AutoReverse="True" />
+                                                        Storyboard.TargetName="GradientStop2"
+                                                        Storyboard.TargetProperty="Offset"
+                                                        From="0.1" To="0.8" Duration="0:0:1.5"
+                                                        AutoReverse="True" />
                                         </Storyboard>
                                     </BeginStoryboard>
                                 </EventTrigger>
-                            </Border.Triggers>
-                        </Border>
-                        <!--<Border BorderBrush="{x:Null}" Background="{DynamicResource chatmsg}" Width="40" Height="40" Visibility="{Binding NewMessagesVisible}" />-->
-                        <!--<Image  Source="Images/chat.png" Width="32" Height="32" Visibility="{Binding NewMessagesVisible}" />-->
-                    </StackPanel>
+                            </Rectangle.Triggers>
+                        </Rectangle>
+                    </Button>
+
                 </Grid>
+                        <!--</Button.Content>
+
+                    </Button>-->
+
+                    
 
 
                 <!--<s:ElementMenu>
                         <s:ElementMenuItem x:Name="MenuItemQuery" Click="MenuItemQuery_Click">Query</s:ElementMenuItem>
                     </s:ElementMenu>-->
-                <TextBlock Grid.Row="1" HorizontalAlignment="Stretch" Grid.Column="1"  Grid.ColumnSpan="2" TextTrimming="CharacterEllipsis">
+              
+                
+                <Grid Grid.Row="1" Grid.ColumnSpan="3" x:Name="GridMoreUserOptions"  Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="74" />
+                        <ColumnDefinition Width="300*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <Grid.RenderTransform>
+                        <TranslateTransform X="0" Y="0" />
+                    </Grid.RenderTransform>
+
+                    <Grid Grid.Row="0" Grid.Column="1" Margin="10,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80*" />
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="24" />
+                        </Grid.ColumnDefinitions>
+                        <s:SurfaceTextBox Grid.Column="0"  x:Name="TextBoxChatToSend" PreviewKeyDown="TextBoxChatToSend_PreviewKeyDown"></s:SurfaceTextBox>
+                        <Button Style="{DynamicResource ButtonSurface}"  ToolTip="Send Message" Grid.Column="1"  x:Name="ButtonSend" Click="ButtonSend_Click" >
+                            <Image Width="20" Height="20" Source="Images/mail.png" />
+                        </Button>
+                        <Button Style="{DynamicResource ButtonSurface}" ToolTip="Clear" Grid.Column="2" x:Name="ButtonClearMessages" Click="ButtonClearMessages_Click" >
+                            <Image Source="Images/trash.png" Width="20" Height="20" />
+                        </Button>
+
+                    </Grid>
+                    
+                    <StackPanel Grid.Row="0" Grid.Column="0"   Orientation="Horizontal">
+                        <!--<Button Margin="5,0" Style="{DynamicResource ButtonSurface}" x:Name="ButtonDisconnectAudio" ToolTip="disconnect call" >
+                            <Image Source="Images\disconnect.png" />
+                        </Button>-->
+                    </StackPanel>
+
+
+                   <!-- <extra:AudioViewerControl Grid.Row="1" Grid.Column="0"/> -->
+
+                    <TextBlock Grid.Row="1" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Stretch" TextTrimming="CharacterEllipsis">
                     <TextBlock.Inlines>
-                        <Run Text="{Binding Path=Presence.PresenceType}" />
                         <Run Text="{Binding Path=Presence.Status}" />
                         <Run Text="{Binding GeoString}"  />
                         <Run Text="{Binding TuneString}"  />
                     </TextBlock.Inlines>
-                </TextBlock>
+                    </TextBlock>
+                </Grid>
+                <!--<Rectangle x:Name="RectangleDarken" Grid.RowSpan="2" Grid.ColumnSpan="4" Fill="Black" Visibility="Visible" Opacity=".35" />-->
+
+
+
             </Grid>
 
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}, AncestorLevel=1}, Path=IsSelected}" Value="True">
+                    <!--<DataTrigger Binding="{Binding ElementName=ButtonExpandChat, Path=IsChecked}" Value="True">-->
+                        <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="GridMoreUserOptions" Storyboard.TargetProperty="(Grid.RenderTransform).(TranslateTransform.Y)"  From="-48" To="0" DecelerationRatio="0.5" Duration="0:0:0.8"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <Setter Property="Visibility" Value="Visible" TargetName="GridMoreUserOptions" />
+                    <Setter Property="Height" Value="120" TargetName="DialogControlLastMessage" />
+                    <!--<Setter Property="Visibility" Value="Collapsed" TargetName="RectangleDarken" />-->
+                </DataTrigger>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}, AncestorLevel=1}, Path=IsSelected}" Value="False">
+                    <Setter Property="Visibility" Value="Collapsed" TargetName="GridMoreUserOptions" />
+                    <Setter Property="Height" Value="50" TargetName="DialogControlLastMessage" />
+                    <!--<Setter Property="Visibility" Value="Visible" TargetName="RectangleDarken" />-->
+                </DataTrigger>
+            </DataTemplate.Triggers>
+            
         </DataTemplate>
         <Style x:Key="BorderStyle1" TargetType="{x:Type Border}">
         	<Setter Property="BorderBrush">
@@ -218,7 +313,7 @@
                 	<GradientStop Color="#2E3CB109" Offset="0.995349"/>
                 </LinearGradientBrush>
             </Rectangle.Fill>
-            <Rectangle.Triggers>
+            <!--<Rectangle.Triggers>
                 <EventTrigger RoutedEvent="FrameworkElement.Loaded">
                     <BeginStoryboard>
                         <Storyboard RepeatBehavior="Forever">
@@ -240,7 +335,7 @@
                         </Storyboard>
                     </BeginStoryboard>
                 </EventTrigger>
-            </Rectangle.Triggers>
+            </Rectangle.Triggers>-->
           
         </Rectangle>
 
@@ -413,6 +508,27 @@
 
             <ListBox.ItemContainerStyle>
                 <Style TargetType="{x:Type ListBoxItem}">
+                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <Border Name="Border" Padding="2"  SnapsToDevicePixels="true">
+                                    <ContentPresenter />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="true">
+                                        <Setter TargetName="Border" Property="Background" Value="{x:Null}"/>
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="Blue"/>
+                                        <Setter TargetName="Border" Property="BorderThickness" Value="1,1,1,1"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="false">
+                                        <Setter TargetName="Border" Property="Background" Value="#66000000"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    
                     <Style.Triggers>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>

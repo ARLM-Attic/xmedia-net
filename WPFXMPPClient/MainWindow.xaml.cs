@@ -516,6 +516,9 @@ namespace WPFXMPPClient
                 ComboBoxPresence.IsEnabled = false;
                 ButtonAddBuddy.IsEnabled = false;
                 SaveAccounts();
+
+                if (AudioMuxerWindow.IsLoaded == true)
+                    AudioMuxerWindow.CloseAllSessions();
             }
             else if (XMPPClient.XMPPState == XMPPState.Ready)
             {
@@ -825,6 +828,98 @@ namespace WPFXMPPClient
                 IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
                 FlashWindow(windowHandle, true);
             }
+        }
+
+        private void ButtonSend_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            /// Find our chat text box
+            /// 
+            Grid g = VisualTreeHelper.GetParent( ((FrameworkElement)sender)) as Grid;
+            if (g == null)
+                return;
+            foreach (UIElement elem in g.Children)
+            {
+                if (elem is TextBox)
+                {
+                    TextBox text = elem as TextBox;
+                    XMPPClient.SendChatMessage(text.Text, item.LastFullJIDToGetMessageFrom);
+                    text.Text = "";
+                    return;
+                }
+            }
+
+            
+        }
+
+        private void TextBoxChatToSend_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+                if (item == null)
+                    return;
+
+                TextBox text = sender as TextBox;
+                XMPPClient.SendChatMessage(text.Text, item.LastFullJIDToGetMessageFrom);
+                text.Text = "";
+            }
+
+        }
+
+        private void ButtonExpandChat_Checked(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            this.ListBoxRoster.SelectedItem = item;
+        }
+
+        private void ButtonExpandChat_Unchecked(object sender, RoutedEventArgs e)
+        {
+            this.ListBoxRoster.SelectedItem = null;
+
+        }
+
+        private void ButtonClearMessages_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            item.Conversation.Clear();
+
+        }
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+        }
+
+        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            HyperlinkRosterItem_Click(sender, new RoutedEventArgs());
+        }
+
+        private void ButtonStartAudio_Click(object sender, RoutedEventArgs e)
+        {
+            /// Start audio on this resource... First find the resource that can do audio.
+            /// If there are multiple instances that can do audio, prompt the user for which one
+            /// 
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            RosterItemPresenceInstance inst = item.FindAudioPresenceInstance();
+            if (inst != null)
+            {
+                ShowAudioMuxer();
+                AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
+            }
+
         }
 
 

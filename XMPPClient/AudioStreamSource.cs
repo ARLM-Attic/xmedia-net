@@ -168,7 +168,7 @@ namespace XMPPClient
             WaveFormat.AvgBytesPerSec = (ushort)(WaveFormat.SamplesPerSec * WaveFormat.Channels * (WaveFormat.BitsPerSample / 8));
             WaveFormat.Size = 0; // must be zero
 
-            AudioBufferLength = 40;
+            AudioBufferLength = 80;
             sourceAttributes = new Dictionary<MediaSourceAttributesKeys, string>();
             availableStreams = new List<MediaStreamDescription>();
 
@@ -201,7 +201,8 @@ namespace XMPPClient
                 ReportOpenMediaCompleted(sourceAttributes, availableStreams);
             }
 
-            ReportAudioSample(); /// in case there are any async operations waiting on data
+            if (HostWaitingCount > 0)
+                GetAudioSample(false); /// in case there are any async operations waiting on data
         }
 
         void client_OnAsyncConnectFinished(SocketClient client, bool bSuccess, string strErrors)
@@ -214,8 +215,7 @@ namespace XMPPClient
         {
             if (mediaStreamType == MediaStreamType.Audio)
             {
-                System.Threading.Interlocked.Increment(ref HostWaitingCount);
-                ReportAudioSample();
+                GetAudioSample(true);
             }
             else if (mediaStreamType == MediaStreamType.Video)
             {
@@ -227,39 +227,55 @@ namespace XMPPClient
 
         Dictionary<MediaSampleAttributeKeys, string> EmptyDictionary = new Dictionary<MediaSampleAttributeKeys, string>();
 
+        public int PacketSize = 640;
         int HostWaitingCount = 0;
-        private void ReportAudioSample()
+        object GetAudioSampleFunctionLock = new object();
+        private void GetAudioSample(bool bDirect)
         {
-
-            byte [] bData = null;
-            if (HostWaitingCount > 0)
+            lock (GetAudioSampleFunctionLock)
             {
+                if ( (bDirect == false) && (HostWaitingCount <= 0))
+                    return;
+
+                int nPackets = 1;
+                MemoryStream ReceivedAudioStream = new MemoryStream();
 
                 lock (AudioPacketLock)
                 {
-                    if (AudioPackets.Count > 0)
+                    while (AudioPackets.Count > 0)
                     {
-                        bData = AudioPackets.Dequeue();
-                        System.Threading.Interlocked.Decrement(ref HostWaitingCount);
+                        byte[] bPacket = AudioPackets.Dequeue();
+                        ReceivedAudioStream.Write(bPacket, 0, bPacket.Length);
+                        nPackets++;
                     }
+
+
                 }
 
-                if (bData == null)
-                    return;
 
-                MemoryStream ReceivedAudioStream = new MemoryStream(bData);
+                if (ReceivedAudioStream.Length <= 0) // nothing available, have to call when the next sample is available
+                {
+                    if (bDirect == true)
+                        HostWaitingCount++;
+                    return;
+                }
+
+                if (bDirect == false)
+                    HostWaitingCount--;
+
+                ReceivedAudioStream.Seek(0, SeekOrigin.Begin);
+
 
                 // Send out the next sample
                 MediaStreamSample msSamp = new MediaStreamSample(
                     MediaStreamDescription,
                     ReceivedAudioStream,
                     0,
-                    bData.Length,
+                    ReceivedAudioStream.Length,
                     m_nTimeStamp,
                     EmptyDictionary);
 
-                m_nTimeStamp += 200000; // render time in in 100 nanosecond units
-
+                m_nTimeStamp += 400000 * nPackets; // render time in in 100 nanosecond units
                 ReportGetSampleCompleted(msSamp);
             }
         }

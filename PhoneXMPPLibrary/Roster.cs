@@ -472,6 +472,43 @@ namespace System.Net.XMPP
             XMPPClient.FireListChanged(1);
         }
 
+#if !MONO
+        public System.Windows.Visibility AudioVisible
+        {
+            get 
+            {
+                lock (m_lockClientInstances)
+                {
+                    foreach (RosterItemPresenceInstance instance in m_listClientInstances)
+                    {
+                        if (instance.CanClientDoAudio == true)
+                            return Windows.Visibility.Visible;
+                    }
+                    return Windows.Visibility.Collapsed;
+                }
+            }
+            set { }
+         
+        }
+#endif
+
+        /// <summary>
+        /// TODO, make this a generic feature search
+        /// </summary>
+        /// <returns></returns>
+        public RosterItemPresenceInstance FindAudioPresenceInstance()
+        {
+            lock (m_lockClientInstances)
+            {
+                foreach (RosterItemPresenceInstance instance in m_listClientInstances)
+                {
+                    if (instance.CanClientDoAudio == true)
+                        return instance;
+                }
+            }
+            return null;
+        }
+
         public RosterItemPresenceInstance FindInstance(JID jid)
         {
             lock (m_lockClientInstances)

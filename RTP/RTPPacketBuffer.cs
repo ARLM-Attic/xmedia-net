@@ -11,10 +11,9 @@ namespace RTP
       public RTPPacketBuffer()
       {
       }
-      public RTPPacketBuffer(int nPacketQueueMinimumSize, int nMaxQueueSize)
+      public RTPPacketBuffer(int nPacketQueueMinimumSize)
       {
          InitialPacketQueueMinimumSize = nPacketQueueMinimumSize;
-         InitialMaxQueueSize = nMaxQueueSize;
          if (InitialPacketQueueMinimumSize < 0)
             throw new Exception("Packet queue size must be greater than zero");
       }
@@ -28,27 +27,21 @@ namespace RTP
       public int InitialPacketQueueMinimumSize
       {
           get { return m_nInitialPacketQueueMinimumSize; }
-          set { m_nInitialPacketQueueMinimumSize = value; }
+          set { m_nInitialPacketQueueMinimumSize = value; CurrentPacketQueueMinimumSize = value; }
       }
 
       private int m_nPacketQueueMinimumSize = 2;
       public int CurrentPacketQueueMinimumSize
       {
         get { return m_nPacketQueueMinimumSize; }
-        set { m_nPacketQueueMinimumSize = value; }
+        set { m_nPacketQueueMinimumSize = value; CurrentMaxQueueSize = (value * 3);  }
       }
 
       public int PacketSizeShiftMax = 4; // allow the PacketQueueMinimumSize and MaxQueueSize to grow by 4 if needed
 
-      private int m_nInitialMaxQueueSize = 4;
-      public int InitialMaxQueueSize
-      {
-          get { return m_nInitialMaxQueueSize; }
-          set { m_nInitialMaxQueueSize = value; }
-      }
-
+    
       private int m_nMaxQueueSize = 4;
-      public int CurrentMaxQueueSize
+      protected int CurrentMaxQueueSize
       {
         get { return m_nMaxQueueSize; }
         set { m_nMaxQueueSize = value; }
@@ -114,7 +107,6 @@ namespace RTP
           m_nNextExpectedSequence = 0xFFFF;
           m_nLastReceivedSequence = 0xFFFF;
           CurrentPacketQueueMinimumSize = InitialPacketQueueMinimumSize;
-          CurrentMaxQueueSize = InitialMaxQueueSize;
           m_nTotalPackets = 0;
           FirstPacketTime = DateTime.Now;
           lock (PacketLock)
@@ -171,10 +163,14 @@ namespace RTP
                   return "none";
 
               double fPercent = ((double)(DiscardedPackets*100.0f)) / (double)m_nTotalPackets;
-              return string.Format("Loss: {0}, Total: {1}, Discarded: {2}, NA: {3}, Size: {4}", fPercent.ToString("N2"), m_nTotalPackets, DiscardedPackets, UnavailablePackets, CurrentQueueSize);
+              return string.Format("Loss: {0}, Total: {1}, Discarded: {2}, NA: {3}, Size: {4} in {5}-{6}", fPercent.ToString("N2"), m_nTotalPackets, DiscardedPackets, UnavailablePackets, Packets.Count, this.CurrentPacketQueueMinimumSize, this.CurrentMaxQueueSize);
 
           }
       }
+
+      protected System.Threading.ManualResetEvent NewPacketEvent = new System.Threading.ManualResetEvent(false);
+
+      DateTime dtLastAdded = DateTime.Now;
       /// <summary>
       /// Adds a packet to our buffer
       /// </summary>
@@ -197,75 +193,200 @@ namespace RTP
             int nSequenceCompare = CompareSequence(packet.SequenceNumber, m_nNextExpectedSequence);
             if (nSequenceCompare < 0)
             {
+               System.Diagnostics.Debug.WriteLine("Discarding packet with seq {0}, because it's less than {1}", packet.SequenceNumber, m_nNextExpectedSequence);
                DiscardedPackets++;
                return;
             }
 
             Packets.Add(packet);
+
+            //DateTime dtNow = DateTime.Now;
+            //TimeSpan tsDif = dtNow - dtLastAdded;
+            //dtLastAdded = dtNow;
+            //System.Diagnostics.Debug.WriteLine("Adding packet {0}, dif is {1} ms", packet, tsDif.TotalMilliseconds);
             Packets.Sort(this);
 
-            while (Packets.Count > CurrentMaxQueueSize)
+            if (Packets.Count > CurrentMaxQueueSize)
             {
-               Packets.RemoveAt(0);
-               DiscardedPackets++;
+                while (Packets.Count > CurrentPacketQueueMinimumSize)
+                {
+                    RTPPacket firstpacket = Packets[0];
+                    Packets.RemoveAt(0);
+                    System.Diagnostics.Debug.WriteLine("Discarding overflow packet {0}, QueueCount is {1} (over {2})", firstpacket, Packets.Count+1, CurrentMaxQueueSize);
+                    DiscardedPackets++;
+                }
             }
 
             nNewSize = Packets.Count;
+            NewPacketEvent.Set();
          }
          CurrentQueueSize = nNewSize;
+         
       }
-      
+
+      System.Diagnostics.Stopwatch WaitPacketWatch = new System.Diagnostics.Stopwatch();
+      /// <summary>
+      ///  Wait for the next packet in our sequence for the specified number of ms;
+      /// </summary>
+      /// <param name="nMsWait"></param>
+      /// <returns></returns>
+      public RTPPacket WaitPacket(int nMsWait, out int nMsTook)
+      {
+#if WINDOWS_PHONE
+          WaitPacketWatch.Reset();
+          WaitPacketWatch.Start();
+#else
+          WaitPacketWatch.Restart();
+#endif
+          while (true)
+          {
+              RTPPacket packet = GetPacketInternal();
+              if (packet != null)
+              {
+                  nMsTook = (int) WaitPacketWatch.ElapsedMilliseconds;
+                  return packet;
+              }
+
+              int nWait = nMsWait - (int)WaitPacketWatch.ElapsedMilliseconds;
+              if (nWait <= 0)
+              {
+                  SetPacketUnavailable();
+                  nMsTook = (int)WaitPacketWatch.ElapsedMilliseconds;
+                  return null;
+              }
+
+              if (NewPacketEvent.WaitOne(nWait) == false)
+              {
+                  SetPacketUnavailable();
+                  nMsTook = (int)WaitPacketWatch.ElapsedMilliseconds;
+                  return null;
+              }
+          }
+          
+      }
+
+       /// <summary>
+       /// A packet was unavaible when it should have been.  If we are below our minimum queue size, we won't return any packets
+       /// until we get to it - also, increase the queue size
+       /// </summary>
+      void SetPacketUnavailable()
+      {
+          if (this.m_nTotalPackets <= 0)
+              return;
+          if (m_bHaveSetInitialSequence == false)
+              return;
+
+          m_nCorrectOrientedPackets = 0;
+          UnavailablePackets++;
+
+          if (m_bWaitingForQueueToGrow == true) // we are still waiting for our queue to reach the initial size, so don't resize yet
+              return;
+
+
+          m_bWaitingForQueueToGrow = true;
+
+          if (Packets.Count < CurrentPacketQueueMinimumSize) // don't resize the min packet queue unless we were at that size and couldn't find the right packet
+          {
+              System.Diagnostics.Debug.WriteLine("***RTPPacket not available (Not increasing size) Size is {0}, sequence expected is {1}, Queue size is {2}", CurrentQueueSize, m_nNextExpectedSequence, Packets.Count);
+              return;
+          }
+
+          if (CurrentPacketQueueMinimumSize < (this.InitialPacketQueueMinimumSize + this.PacketSizeShiftMax))
+          {
+              CurrentPacketQueueMinimumSize++;
+              System.Diagnostics.Debug.WriteLine("**********Increasing jitter buffer size to {0}=>{1}", CurrentPacketQueueMinimumSize, CurrentMaxQueueSize);
+          }
+
+          
+      }
+
+      protected int m_nCorrectOrientedPackets = 0;
+      protected bool m_bWaitingForQueueToGrow = false;
+      protected bool IsQueueLargeEnough()
+      {
+          if (m_bWaitingForQueueToGrow == false)
+              return true;
+          else if (Packets.Count >= CurrentPacketQueueMinimumSize)
+          {
+              m_bWaitingForQueueToGrow = false;
+              return true;
+          }
+          return false;
+      }
+
+      public RTPPacket GetPacket()
+      {
+          RTPPacket packet = GetPacketInternal();
+          if (packet == null)
+              SetPacketUnavailable();
+          return packet;
+      }
+
       /// <summary>
       /// Gets the next ordered packet from our buffer, or null if none are available
       /// </summary>
       /// <returns></returns>
-      public RTPPacket GetPacket()
+      protected RTPPacket GetPacketInternal()
       {
           RTPPacket packetret = null;
           int nNewSize = 0;
 
           lock (PacketLock)
           {
-              if (Packets.Count < CurrentPacketQueueMinimumSize)  /// If packet unavailability becomes common, grow our queue so it stops happenning
-              {
-                  UnavailablePackets++;
-                  if (UnavailablePackets > 10)
-                  {
-                      if (CurrentPacketQueueMinimumSize < (InitialPacketQueueMinimumSize+PacketSizeShiftMax) )
-                      {
-                        UnavailablePackets = 0;
-                        CurrentPacketQueueMinimumSize++;
-                        CurrentMaxQueueSize++;
-                      }
-                  }
+              NewPacketEvent.Reset();
+
+              if (Packets.Count <= 0)
                   return null;
+
+              if (IsQueueLargeEnough() == false) ///we may be growing our queue because of unavailable packets, take the audio hit all at once
+                  return null;
+
+              if ((m_nCorrectOrientedPackets > 500) && (this.CurrentPacketQueueMinimumSize > InitialPacketQueueMinimumSize) && (Packets.Count > 1))
+              {
+                  // we can move our packet queue buffer back down because we've received enough packets in the correct order to have faith in the network connnection
+                  // do this to decrease audio latency
+                  m_nCorrectOrientedPackets = 0;
+                  CurrentPacketQueueMinimumSize--;
+                  System.Diagnostics.Debug.WriteLine("**********Decreasing jitter buffer size to {0}=>{1}", CurrentPacketQueueMinimumSize, CurrentMaxQueueSize);
+
+                  Packets.RemoveAt(0);
+                  m_nNextExpectedSequence = Packets[0].SequenceNumber;
               }
+
 
               packetret = Packets[0];
               int nSequenceCompare = CompareSequence(packetret.SequenceNumber, m_nNextExpectedSequence);
 
+
               if (nSequenceCompare > 0) //(packetret.SequenceNumber > m_nNextExpectedSequence)
               {
-                  if (Packets.Count >= CurrentMaxQueueSize)
+                  m_nCorrectOrientedPackets = 0;
+                  Packets.RemoveAt(0);
+                  m_nNextExpectedSequence = RTPPacket.GetNextSequence(packetret.SequenceNumber);
+
+                  /// Increase our minimum size because our buffer is not big enough to handle the jitter if we can't find the right packet within it
+                  /// 
+                  if (CurrentPacketQueueMinimumSize < (this.InitialPacketQueueMinimumSize + this.PacketSizeShiftMax))
                   {
-                      // May have lost the desired packet.  We've waited all we can, get the lowest packet number
-                      Packets.RemoveAt(0);
-                      m_nNextExpectedSequence = RTPPacket.GetNextSequence(packetret.SequenceNumber);
+                      CurrentPacketQueueMinimumSize++;
+                      System.Diagnostics.Debug.WriteLine("**********Increasing jitter buffer size to {0}=>{1}", CurrentPacketQueueMinimumSize, CurrentMaxQueueSize);
+                      m_bWaitingForQueueToGrow = true;
                   }
-                  else
-                  {
-                      /// we haven't filled our queue, so we can wait a little longer
-                      packetret = null;
-                  }
+
               }
               else if (nSequenceCompare == 0) //(packetret.SequenceNumber == m_nNextExpectedSequence)
               {
+                  m_nCorrectOrientedPackets++;
                   Packets.RemoveAt(0);
                   m_nNextExpectedSequence = RTPPacket.GetNextSequence(packetret.SequenceNumber);
+                  //System.Diagnostics.Debug.WriteLine("MATCH - retrieving packet {0}", packetret);
               }
               else
               {
                   /// packet sequence is before the expected value... should never happen
+                  /// 
+                  Packets.RemoveAt(0);
+                  System.Diagnostics.Debug.Assert(true);
                   packetret = null;
               }
 
@@ -286,6 +407,8 @@ namespace RTP
           return packetret;
       }
 
+
+      
 
       #region IComparer<RTPPacket> Members
 

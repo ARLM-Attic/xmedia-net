@@ -542,9 +542,10 @@ namespace AudioClasses
                 int nLengthRemaining = m_nSize - nIndexFrom;
                 if (nLengthRemaining > 0)
                 {
-                    short[] NewBuffer = new short[nLengthRemaining];
-                    Array.Copy(OutgoingBuffer, nIndexFrom, NewBuffer, 0, nLengthRemaining);
-                    Array.Copy(NewBuffer, 0, OutgoingBuffer, 0, nLengthRemaining);
+                    //short[] NewBuffer = new short[nLengthRemaining];
+                    //Array.Copy(OutgoingBuffer, nIndexFrom, NewBuffer, 0, nLengthRemaining);
+                    //Array.Copy(NewBuffer, 0, OutgoingBuffer, 0, nLengthRemaining);
+                    Array.Copy(OutgoingBuffer, nIndexFrom, OutgoingBuffer, 0, nLengthRemaining);
                 }
 
                 Size = nLengthRemaining;

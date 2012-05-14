@@ -37,12 +37,6 @@ namespace WPFXMPPClient
             InitializeComponent();
         }
 
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
-        {
-            e.Cancel = true;
-            this.Visibility = System.Windows.Visibility.Hidden;
-        }
-
 
         /// <summary>
         /// Our audio muxer.  Takes our microphone device and each incoming RTP stream as input, outputs
@@ -152,15 +146,30 @@ namespace WPFXMPPClient
 
         }
 
-        private void ButtonClose_Click(object sender, RoutedEventArgs e)
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        public void CloseAllSessions()
         {
             /// Stop all calls
             /// 
             MediaSession[] sessions = this.ObservSessionList.ToArray();
             foreach (MediaSession session in sessions)
                 CloseSession(session);
+        }
 
-            this.Close();
+        protected override void OnClosed(EventArgs e)
+        {
+            CloseAllSessions();
+            base.OnClosed(e);
+        }
+
+        private void ButtonClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = System.Windows.Visibility.Hidden;
         }
 
         ToneGenerator OurToneGenerator = new ToneGenerator(350, 440);

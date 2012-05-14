@@ -282,28 +282,58 @@ namespace XMPPClient
             if (session == null)
                 return;
 
-            DateTime dtNextPacketExpected = DateTime.Now + tsPTime;
             byte[] bDummySample = new byte[nBytesPerPacket];
 
-            
+            source.PacketSize = nBytesPerPacket;
+
+            session.AudioRTPStream.IncomingRTPPacketBuffer.InitialPacketQueueMinimumSize = 4;
+            session.AudioRTPStream.IncomingRTPPacketBuffer.PacketSizeShiftMax = 10;
+
             Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStartMediaElement), null, null);
 
+            int nMsTook = 0;
+            /// Get first packet... have to wait for our rtp buffer to fill
+            byte[] bData = session.AudioRTPStream.WaitNextPacketSample(true, MediaSession.AudioRTPStream.PTimeReceive*5, out nMsTook);
+            if ((bData != null) && (bData.Length > 0))
+                source.Write(bData);
 
-            /// Write a buffer to give us some play
-            /// 
-            source.Write(bDummySample);
+            DateTime dtNextPacketExpected = DateTime.Now + tsPTime;
 
+            System.Diagnostics.Stopwatch WaitPacketWatch = new System.Diagnostics.Stopwatch();
+            int nDeficit = 0;
             while (m_bCallActive == true)
             {
-                dtNextPacketExpected = DateTime.Now + tsPTime;
-                byte[] bData = session.AudioRTPStream.GetNextPacketSample();
+                bData = session.AudioRTPStream.WaitNextPacketSample(true, MediaSession.AudioRTPStream.PTimeReceive, out nMsTook);
                 if ((bData != null) && (bData.Length > 0))
                     source.Write(bData);
+
+                //int nRemaining = MediaSession.AudioRTPStream.PTimeReceive - nMsTook;
+                //if (nRemaining > 0)
+                //    System.Threading.Thread.Sleep(nRemaining);
+
+                //dtNextPacketExpected = dtLastPacket + tsPTime;
+                //byte[] bData = session.AudioRTPStream.GetNextPacketSample(false);
+                //if ((bData != null) && (bData.Length > 0))
+                //    source.Write(bData);
+                //else
+                //    source.Write(bDummySample);
 
                 TimeSpan tsRemaining = dtNextPacketExpected - DateTime.Now;
                 int nMsRemaining = (int)tsRemaining.TotalMilliseconds;
                 if (nMsRemaining > 0)
-                    System.Threading.Thread.Sleep(nMsRemaining);
+                {
+                    nMsRemaining += nDeficit;
+                    if (nMsRemaining > 0)
+                        System.Threading.Thread.Sleep(nMsRemaining);
+                    else
+                    {
+                        nDeficit = nMsRemaining;
+                    }
+                }
+                else
+                    nDeficit += nMsRemaining;
+
+                dtNextPacketExpected += tsPTime;
             }
 
             Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStopMediaElement), null, null);

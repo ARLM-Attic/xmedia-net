@@ -125,7 +125,7 @@ namespace RTP
             }
         }
 
-        public override byte[] GetNextPacketSample()
+        public override byte[] GetNextPacketSample(bool bReturnArrayOnNA)
         {
             if (AudioCodec == null)
                 return null;
@@ -134,11 +134,28 @@ namespace RTP
             int nSizeBytes = nSamples * AudioCodec.AudioFormat.BytesPerSample;
 
             RTPPacket packet = IncomingRTPPacketBuffer.GetPacket();
-            if (packet == null)
+            if ( (packet == null) && (bReturnArrayOnNA == true) )
                 return new byte[nSizeBytes];
 
             return AudioCodec.DecodeToBytes(packet);
         }
+
+        public byte[] WaitNextPacketSample(bool bReturnArrayOnNA, int nTimeOut, out int nMsTook)
+        {
+            nMsTook = 0;
+            if (AudioCodec == null)
+                return null;
+
+            int nSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(AudioCodec.ReceivePTime));
+            int nSizeBytes = nSamples * AudioCodec.AudioFormat.BytesPerSample;
+
+            RTPPacket packet = IncomingRTPPacketBuffer.WaitPacket(nTimeOut, out nMsTook);
+            if ( (packet == null) && (bReturnArrayOnNA == true))
+                return new byte[nSizeBytes];
+
+            return AudioCodec.DecodeToBytes(packet);
+        }
+
 
 
         public IAudioSink RenderSink = null;

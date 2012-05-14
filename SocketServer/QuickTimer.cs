@@ -106,14 +106,24 @@ namespace SocketServer
          return nTime;
       }
 
+       /// <summary>
+       ///  Must call before sorting so we don't get inconsistent times when the thread is switched
+       /// </summary>
+      public void LockTimeForSort()
+      {
+          LockedTimeToNextFire = GetTimeToNextFireMs();
+      }
+
+      public long LockedTimeToNextFire = 0;
     
       #region IComparable<PeriodicTimerWatch> Members
 
       public int CompareTo(PeriodicTimerWatch other)
       {
-         long nMsTimer2 = other.GetTimeToNextFireMs();
-         long nMsTimer = GetTimeToNextFireMs();
-         return nMsTimer.CompareTo(nMsTimer2);
+         //long nMsTimer2 = other.GetTimeToNextFireMs();
+         //long nMsTimer = GetTimeToNextFireMs();
+         //return nMsTimer.CompareTo(nMsTimer2);
+          return LockedTimeToNextFire.CompareTo(other.LockedTimeToNextFire);
       }
 
       #endregion
@@ -287,7 +297,11 @@ namespace SocketServer
                watch = new PeriodicTimerWatch(nMilliseconds);
                GlobalWatches.Add(nMilliseconds, watch);
                GlobalWatchesSorted.Add(watch);
+
+               foreach (PeriodicTimerWatch nextwatch in GlobalWatchesSorted)
+                   nextwatch.LockTimeForSort();
                GlobalWatchesSorted.Sort();
+
                EventNewTimer.Set();
             }
             else
@@ -321,7 +335,11 @@ namespace SocketServer
                watch = new PeriodicTimerWatch(nMilliseconds);
                GlobalWatches.Add(nMilliseconds, watch);
                GlobalWatchesSorted.Add(watch);
+
+               foreach (PeriodicTimerWatch nextwatch in GlobalWatchesSorted)
+                   nextwatch.LockTimeForSort();
                GlobalWatchesSorted.Sort();
+
                EventNewTimer.Set();
             }
             else
@@ -446,7 +464,10 @@ namespace SocketServer
 
                         lock (GlobalWatchesLock)
                         {
+                           foreach (PeriodicTimerWatch nextwatch in GlobalWatchesSorted)
+                               nextwatch.LockTimeForSort();
                            GlobalWatchesSorted.Sort();  /// Resort
+                                                         /// 
                            if (GlobalWatchesSorted.Count > 0)
                            {
                               nNextDueTimeInMs = GlobalWatchesSorted[0].GetTimeToNextFireMs();

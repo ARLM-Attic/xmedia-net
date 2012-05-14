@@ -364,7 +364,7 @@ namespace RTP
             }
         }
 
-        public RTPPacketBuffer IncomingRTPPacketBuffer = new RTPPacketBuffer(2, 4);
+        public RTPPacketBuffer IncomingRTPPacketBuffer = new RTPPacketBuffer(2);
 
         protected virtual void SendNextPacket()
         {
@@ -383,7 +383,7 @@ namespace RTP
         {
         }
 
-        public virtual byte[] GetNextPacketSample()
+        public virtual byte[] GetNextPacketSample(bool bReturnArrayOnNA)
         {
             return null;
         }
