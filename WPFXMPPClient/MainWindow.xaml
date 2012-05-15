@@ -14,6 +14,25 @@
         Height="600" Width="452">
 
     <Window.Resources>
+
+        <Storyboard x:Key="StoryBoardMakeBigGlobe">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="ButtonGlobe">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1.6"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" Storyboard.TargetName="ButtonGlobe">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1.6"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="StoryBoardMakeBigSpeaker">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="ButtonStartAudio">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1.6"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" Storyboard.TargetName="ButtonStartAudio">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1.6"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
         <DataTemplate x:Key="ChatMessageTemplate">
             <Grid Background="{x:Null}"  HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -27,6 +46,21 @@
                 </Grid.RowDefinitions>
 
 
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="Mouse.MouseEnter" SourceName="ButtonGlobe">
+                        <BeginStoryboard x:Name="StoryBoardMakeBigGlobe_BeginStoryboard" Storyboard="{StaticResource StoryBoardMakeBigGlobe}"/>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="Mouse.MouseLeave" SourceName="ButtonGlobe">
+                        <StopStoryboard BeginStoryboardName="StoryBoardMakeBigGlobe_BeginStoryboard"/>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="Mouse.MouseEnter" SourceName="ButtonStartAudio">
+                        <BeginStoryboard x:Name="StoryBoardMakeBigSpeaker_BeginStoryboard" Storyboard="{StaticResource StoryBoardMakeBigSpeaker}"/>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="Mouse.MouseLeave" SourceName="ButtonStartAudio">
+                        <StopStoryboard BeginStoryboardName="StoryBoardMakeBigSpeaker_BeginStoryboard"/>
+                    </EventTrigger>
+                </Grid.Triggers>
+                
                 <Rectangle VerticalAlignment="Top" Stroke="{Binding Presence.PresenceBrush}" Grid.RowSpan="1" StrokeThickness="1" Stretch="Uniform"  Fill="{Binding Presence.PresenceBrush}" Grid.Column="0" Grid.Row="0" />
                 <Image VerticalAlignment="Top" Grid.Column="0" Grid.Row="0" Grid.RowSpan="1" Margin="4" Source="{Binding Avatar}" Stretch="Uniform" />
 
@@ -45,15 +79,15 @@
                         <Button.Content>-->
                     <Grid Grid.Row="0" Grid.Column="1" Margin="10,0" Background="{DynamicResource ButtonBrush}" MouseDown="Grid_MouseDown" MouseUp="Grid_MouseUp">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="35" />
                                     <RowDefinition Height="70*" />
                                 </Grid.RowDefinitions>
 
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="300*" />
-                                    <ColumnDefinition Width="20" />
-                                    <ColumnDefinition Width="30" />
-                                    <ColumnDefinition Width="30" />
+                                    <ColumnDefinition Width="35" />
+                                    <ColumnDefinition Width="35" />
+                                    <ColumnDefinition Width="35" />
                                 </Grid.ColumnDefinitions>
                                 
                                 <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" Height="50"></local:DialogControl>
@@ -62,13 +96,34 @@
 
                                 <!--<ToggleButton Grid.Column="1" x:Name="ButtonExpandChat" Padding="0" Margin="2" Checked="ButtonExpandChat_Checked" Unchecked="ButtonExpandChat_Unchecked" >
                                 	<Grid  Background="{DynamicResource expandcontract}"></Grid>                        
-								</ToggleButton>-->
 
-                    <Button Grid.Column="2" HorizontalAlignment="Stretch" Visibility="{Binding AudioVisible}" Click="ButtonStartAudio_Click" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonStartAudio" ToolTip="Start an Audio Call with this chap" >
+                        </ToggleButton>-->
+
+                    <Button Grid.Column="1" HorizontalAlignment="Stretch" Click="ButtonViewMap_Click" Width="30" Height="30"  RenderTransformOrigin=".5,.5" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonGlobe" ToolTip="Show location" >
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Rectangle Stretch="Fill" Fill="{DynamicResource globe}" Width="20" Height="20" />
+                    </Button>
+
+                    <Button Width="30" Height="30" Grid.Column="2" HorizontalAlignment="Stretch" Visibility="{Binding AudioVisible}" RenderTransformOrigin=".5,.5" Click="ButtonStartAudio_Click" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonStartAudio" ToolTip="Start an Audio Call with this chap" >
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
                         <Rectangle Stretch="Fill" Fill="{DynamicResource speaker}" Width="20" Height="20" />
                     </Button>
 
-                        <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Visibility="{Binding NewMessagesVisible}" Grid.Column="3" x:Name="ToggleButtonChat" Click="HyperlinkRosterItem_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" >
+                    <Button Width="30" Height="30"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Visibility="{Binding NewMessagesVisible}" Grid.Column="3" x:Name="ToggleButtonChat" Click="HyperlinkRosterItem_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" >
                         <Rectangle Stretch="Fill" Width="20" Height="20">
                             <Rectangle.Fill>
                                 <DrawingBrush Stretch="Fill">
