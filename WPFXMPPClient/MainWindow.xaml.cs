@@ -867,6 +867,13 @@ namespace WPFXMPPClient
                 XMPPClient.SendChatMessage(text.Text, item.LastFullJIDToGetMessageFrom);
                 text.Text = "";
             }
+            else
+            {
+                RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+                if (item == null)
+                    return;
+                item.HasNewMessages = false;
+            }
 
         }
 
@@ -920,6 +927,39 @@ namespace WPFXMPPClient
                 AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
             }
 
+        }
+
+        private void ListBoxRoster_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            RosterItem item = this.ListBoxRoster.SelectedItem as RosterItem;
+            if (item == null)
+                return;
+
+            item.HasNewMessages = false;
+        }
+
+        private void Window_GotFocus(object sender, RoutedEventArgs e)
+        {
+            foreach (RosterItem item in this.ListBoxRoster.SelectedItems)
+            {
+                item.HasNewMessages = false;
+            }
+        }
+
+        private void TextBoxChatToSend_GotFocus(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+            item.HasNewMessages = false;
+        }
+
+        private void DialogControlLastMessage_GotFocus(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+            item.HasNewMessages = false;
         }
 
 

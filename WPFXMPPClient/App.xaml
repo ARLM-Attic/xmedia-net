@@ -213,7 +213,7 @@
     		</DrawingBrush.Drawing>
     	</DrawingBrush>
 
-        <DrawingBrush x:Key="speaker" Stretch="Fill">
+        <DrawingBrush x:Key="speaker" Stretch="UniformToFill">
             <DrawingBrush.Drawing>
                 <DrawingGroup>
                     <DrawingGroup.Children>
@@ -247,8 +247,8 @@
                 </DrawingGroup>
             </DrawingBrush.Drawing>
         </DrawingBrush>
-        
-        <DrawingBrush x:Key="globe" Stretch="Fill">
+
+        <DrawingBrush x:Key="globe" Stretch="UniformToFill">
             <DrawingBrush.Drawing>
                 <DrawingGroup>
                     <DrawingGroup.Children>

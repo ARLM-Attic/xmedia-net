@@ -10,6 +10,7 @@
     AllowsTransparency="True" WindowStyle="None"  SizeChanged="Window_SizeChanged"
     MouseDown="Window_MouseDown" ResizeMode="CanResizeWithGrip"
      Title="XMPP Chat Client" Loaded="SurfaceWindow_Loaded"
+        GotFocus="Window_GotFocus"
     Background="Transparent" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         Height="600" Width="452">
 
@@ -33,6 +34,15 @@
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
 
+        <Storyboard x:Key="StoryBoardMakeBigChat">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="ToggleButtonChat">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1.6"/>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" Storyboard.TargetName="ToggleButtonChat">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1.6"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        
         <DataTemplate x:Key="ChatMessageTemplate">
             <Grid Background="{x:Null}"  HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -53,11 +63,19 @@
                     <EventTrigger RoutedEvent="Mouse.MouseLeave" SourceName="ButtonGlobe">
                         <StopStoryboard BeginStoryboardName="StoryBoardMakeBigGlobe_BeginStoryboard"/>
                     </EventTrigger>
+                    
                     <EventTrigger RoutedEvent="Mouse.MouseEnter" SourceName="ButtonStartAudio">
                         <BeginStoryboard x:Name="StoryBoardMakeBigSpeaker_BeginStoryboard" Storyboard="{StaticResource StoryBoardMakeBigSpeaker}"/>
                     </EventTrigger>
                     <EventTrigger RoutedEvent="Mouse.MouseLeave" SourceName="ButtonStartAudio">
                         <StopStoryboard BeginStoryboardName="StoryBoardMakeBigSpeaker_BeginStoryboard"/>
+                    </EventTrigger>
+
+                    <EventTrigger RoutedEvent="Mouse.MouseEnter" SourceName="ToggleButtonChat">
+                        <BeginStoryboard x:Name="StoryBoardMakeBigChat_BeginStoryboard" Storyboard="{StaticResource StoryBoardMakeBigChat}"/>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="Mouse.MouseLeave" SourceName="ToggleButtonChat">
+                        <StopStoryboard BeginStoryboardName="StoryBoardMakeBigChat_BeginStoryboard"/>
                     </EventTrigger>
                 </Grid.Triggers>
                 
@@ -90,16 +108,21 @@
                                     <ColumnDefinition Width="35" />
                                 </Grid.ColumnDefinitions>
                                 
-                                <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" Height="50"></local:DialogControl>
-                                
-                                <TextBlock FontSize="16" TextAlignment="Center" Grid.Row="0" FontWeight="Bold" Text="{Binding Name}" Background="{x:Null}" VerticalAlignment="Center" HorizontalAlignment="Stretch"  />
+                                <local:DialogControl Grid.Row="1" GotFocus="DialogControlLastMessage_GotFocus" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" Height="50"></local:DialogControl>
 
-                                <!--<ToggleButton Grid.Column="1" x:Name="ButtonExpandChat" Padding="0" Margin="2" Checked="ButtonExpandChat_Checked" Unchecked="ButtonExpandChat_Unchecked" >
-                                	<Grid  Background="{DynamicResource expandcontract}"></Grid>                        
 
-                        </ToggleButton>-->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Margin="10,0,0,0" HorizontalAlignment="Stretch" TextTrimming="CharacterEllipsis">
+                    <TextBlock.Inlines>
+                        <Run Text="{Binding Path=Name}" FontSize="16" FontWeight="Bold"/>
+                        <Run Text="-" />
+                        <Run Text="{Binding Path=Presence.Status}" />
+                        <LineBreak />
+                        <Run Text="{Binding TuneString}" FontSize="10"  />
+                    </TextBlock.Inlines>
+                    </TextBlock>
+                        
 
-                    <Button Grid.Column="1" HorizontalAlignment="Stretch" Click="ButtonViewMap_Click" Width="30" Height="30"  RenderTransformOrigin=".5,.5" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonGlobe" ToolTip="Show location" >
+                    <Button Grid.Column="1" Visibility="{Binding GeoVisible}" HorizontalAlignment="Stretch" Click="ButtonViewMap_Click" Width="30" Height="30"  RenderTransformOrigin=".5,.5" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonGlobe" ToolTip="Show location" >
                         <Button.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -108,7 +131,7 @@
                                 <TranslateTransform/>
                             </TransformGroup>
                         </Button.RenderTransform>
-                        <Rectangle Stretch="Fill" Fill="{DynamicResource globe}" Width="20" Height="20" />
+                        <Rectangle Stretch="UniformToFill" Fill="{DynamicResource globe}" Width="24" Height="24" />
                     </Button>
 
                     <Button Width="30" Height="30" Grid.Column="2" HorizontalAlignment="Stretch" Visibility="{Binding AudioVisible}" RenderTransformOrigin=".5,.5" Click="ButtonStartAudio_Click" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonStartAudio" ToolTip="Start an Audio Call with this chap" >
@@ -120,11 +143,19 @@
                                 <TranslateTransform/>
                             </TransformGroup>
                         </Button.RenderTransform>
-                        <Rectangle Stretch="Fill" Fill="{DynamicResource speaker}" Width="20" Height="20" />
+                        <Rectangle Stretch="UniformToFill" Fill="{DynamicResource speaker}" Width="24" Height="24" />
                     </Button>
 
-                    <Button Width="30" Height="30"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Visibility="{Binding NewMessagesVisible}" Grid.Column="3" x:Name="ToggleButtonChat" Click="HyperlinkRosterItem_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" >
-                        <Rectangle Stretch="Fill" Width="20" Height="20">
+                    <Button Width="30" Height="30"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"  RenderTransformOrigin=".5,.5" Visibility="{Binding NewMessagesVisible}" Grid.Column="3" x:Name="ToggleButtonChat" Click="HyperlinkRosterItem_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" >
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Rectangle Stretch="UniformToFill"  Width="24" Height="24">
                             <Rectangle.Fill>
                                 <DrawingBrush Stretch="Fill">
                                     <DrawingBrush.Drawing>
@@ -183,7 +214,6 @@
                 <Grid Grid.Row="1" Grid.ColumnSpan="3" x:Name="GridMoreUserOptions"  Visibility="Collapsed">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
                     </Grid.RowDefinitions>
 
                     <Grid.ColumnDefinitions>
@@ -201,7 +231,7 @@
                             <ColumnDefinition Width="24" />
                             <ColumnDefinition Width="24" />
                         </Grid.ColumnDefinitions>
-                        <s:SurfaceTextBox Grid.Column="0"  x:Name="TextBoxChatToSend" PreviewKeyDown="TextBoxChatToSend_PreviewKeyDown"></s:SurfaceTextBox>
+                        <s:SurfaceTextBox Grid.Column="0"  x:Name="TextBoxChatToSend" GotFocus="TextBoxChatToSend_GotFocus" PreviewKeyDown="TextBoxChatToSend_PreviewKeyDown"></s:SurfaceTextBox>
                         <Button Style="{DynamicResource ButtonSurface}"  ToolTip="Send Message" Grid.Column="1"  x:Name="ButtonSend" Click="ButtonSend_Click" >
                             <Image Width="20" Height="20" Source="Images/mail.png" />
                         </Button>
@@ -211,22 +241,9 @@
 
                     </Grid>
                     
-                    <StackPanel Grid.Row="0" Grid.Column="0"   Orientation="Horizontal">
-                        <!--<Button Margin="5,0" Style="{DynamicResource ButtonSurface}" x:Name="ButtonDisconnectAudio" ToolTip="disconnect call" >
-                            <Image Source="Images\disconnect.png" />
-                        </Button>-->
-                    </StackPanel>
-
-
                    <!-- <extra:AudioViewerControl Grid.Row="1" Grid.Column="0"/> -->
 
-                    <TextBlock Grid.Row="1" Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Stretch" TextTrimming="CharacterEllipsis">
-                    <TextBlock.Inlines>
-                        <Run Text="{Binding Path=Presence.Status}" />
-                        <Run Text="{Binding GeoString}"  />
-                        <Run Text="{Binding TuneString}"  />
-                    </TextBlock.Inlines>
-                    </TextBlock>
+                  
                 </Grid>
                 <!--<Rectangle x:Name="RectangleDarken" Grid.RowSpan="2" Grid.ColumnSpan="4" Fill="Black" Visibility="Visible" Opacity=".35" />-->
 
@@ -535,6 +552,8 @@
                  Grid.Row="2" Grid.ColumnSpan="5"
                  BorderBrush="{x:Null}" Background="{x:Null}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 SelectionChanged="ListBoxRoster_SelectionChanged"
+                 SelectionMode="Multiple"
                  ItemsSource="{Binding Source={StaticResource SortedRosterItems}}"
                  ItemTemplate="{StaticResource ChatMessageTemplate}" >
 

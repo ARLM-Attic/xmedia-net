@@ -215,6 +215,7 @@ namespace System.Net.XMPP
                     m_objGeoLoc = value;
                     FirePropertyChanged("GeoLoc");
                     FirePropertyChanged("GeoString");
+                    FirePropertyChanged("GeoVisible");
                 }
             }
         }
@@ -233,6 +234,25 @@ namespace System.Net.XMPP
                 
             }
         }
+
+#if !MONO
+        public System.Windows.Visibility GeoVisible
+        {
+            get
+            {
+                lock (m_lockClientInstances)
+                {
+                    if ((m_objGeoLoc.lat == 0) && (m_objGeoLoc.lon == 0))
+                        return Windows.Visibility.Collapsed;
+                    else
+                        return Windows.Visibility.Visible;
+                    
+                }
+            }
+            set { }
+
+        }
+#endif
 
         private TuneItem m_objTune = new TuneItem();
         /// <summary>
