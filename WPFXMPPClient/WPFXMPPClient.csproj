@@ -23,7 +23,7 @@
     <SccProvider>SAK</SccProvider>
     <Utf8Output>true</Utf8Output>
     <ExpressionBlendVersion>4.0.30816.0</ExpressionBlendVersion>
-    <PublishUrl>C:\inetpub\wwwroot\apps\WPFXMPPClient\</PublishUrl>
+    <PublishUrl>C:\inetpub\wwwroot\apps\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
