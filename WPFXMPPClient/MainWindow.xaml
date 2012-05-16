@@ -95,7 +95,7 @@
                             </Button.ContextMenu>
 
                         <Button.Content>-->
-                    <Grid Grid.Row="0" Grid.Column="1" Margin="10,0" Background="{DynamicResource ButtonBrush}" MouseDown="Grid_MouseDown" MouseUp="Grid_MouseUp">
+                    <Grid Grid.Row="0" Grid.Column="1" Margin="0,0" Background="{DynamicResource ButtonBrush}" MouseDown="Grid_MouseDown" MouseUp="Grid_MouseUp">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="35" />
                                     <RowDefinition Height="70*" />
@@ -263,6 +263,7 @@
                     </DataTrigger.EnterActions>
                     <Setter Property="Visibility" Value="Visible" TargetName="GridMoreUserOptions" />
                     <Setter Property="Height" Value="120" TargetName="DialogControlLastMessage" />
+                    <Setter Property="Background" Value="White" TargetName="DialogControlLastMessage" />
                     <!--<Setter Property="Visibility" Value="Collapsed" TargetName="RectangleDarken" />-->
                 </DataTrigger>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}, AncestorLevel=1}, Path=IsSelected}" Value="False">
@@ -296,6 +297,10 @@
 
 
     </Window.Resources>
+	<!--<Window.Effect>
+        <BlurEffect RenderingBias="Quality" Radius="3" />
+		<DropShadowEffect/>
+	</Window.Effect>-->
 
 
     <Grid x:Name="LayoutRoot">
@@ -356,6 +361,9 @@
 	</Rectangle.Fill>
 	</Rectangle>	
         <Rectangle x:Name="RectangleGreen" Stretch="Fill" Grid.RowSpan="3" StrokeThickness="2" >
+        	<Rectangle.Effect>
+        		<BlurEffect/>
+        	</Rectangle.Effect>
             <Rectangle.Fill>
                 <LinearGradientBrush StartPoint=".5,0" EndPoint=".5,1">
                 	<GradientStop Color="#88AAFF88" Offset="0"/>

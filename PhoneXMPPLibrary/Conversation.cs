@@ -132,7 +132,7 @@ namespace System.Net.XMPP
                 if (Sent == true)
                     return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Purple);
                 else
-                    return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Orange);
+                    return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 0xDF, 0x85, 0));
             }
             set
             {

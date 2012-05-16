@@ -155,7 +155,7 @@ namespace WPFXMPPClient
                 blur.fEnable = true;
                 blur.dwFlags = DwmBlurBehindFlags.DWM_BB_ENABLE;
                 blur.hRgnBlur = IntPtr.Zero;
-                blur.fTransitionOnMaximized = false;
+                blur.fTransitionOnMaximized = true;
                 DwmEnableBlurBehindWindow(mainWindowSrc.Handle, ref blur);
 
                 //// Set Margins
@@ -899,7 +899,7 @@ namespace WPFXMPPClient
                 return;
 
             item.Conversation.Clear();
-
+            ChatWindow.SaveConversation(item);
         }
 
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
@@ -926,7 +926,6 @@ namespace WPFXMPPClient
                 ShowAudioMuxer();
                 AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
             }
-
         }
 
         private void ListBoxRoster_SelectionChanged(object sender, SelectionChangedEventArgs e)
