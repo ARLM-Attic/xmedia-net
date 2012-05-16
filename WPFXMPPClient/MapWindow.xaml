@@ -39,9 +39,9 @@
                     <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Margin="10,0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
-                <!--<s:SurfaceButton ToolTip="Refresh" Grid.Column="1" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton ToolTip="Refresh" Grid.Column="1" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/refresh.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>-->
+                </s:SurfaceButton>
                 <s:SurfaceButton ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
@@ -88,7 +88,10 @@
                 
                 
             </Image>-->
-            <local:MapUserControl Visibility="Visible" Grid.Row="1" Margin="3,0" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>
+            <!--<Grid Grid.Row="1" Background="Beige" Margin="3,0">
+                <Image x:Name="MapImage" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"> </Image>
+            </Grid>-->
+            <local:MapUserControl Background="Beige" Visibility="Visible" Grid.Row="1" Margin="3,0" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>
             <!--<DockPanel Grid.Row="1" Margin="3,0">-->
 
             <!--<Grid DockPanel.Dock="Top">

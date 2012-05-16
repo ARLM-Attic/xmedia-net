@@ -52,8 +52,9 @@ namespace WPFXMPPClient
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            InitializeValues();
             ComboBoxZoom.ItemsSource = ZoomLevels;
-            ComboBoxZoom.SelectedIndex = 0;
+            ComboBoxZoom.SelectedIndex = 15;
             ComboBoxMapType.ItemsSource = Enum.GetValues(typeof(MapType));
             ComboBoxMapType.SelectedIndex = 0;
 
@@ -112,6 +113,18 @@ namespace WPFXMPPClient
             {
                 rosterItem.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(rosterItem_PropertyChanged);
             }
+        }
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            if ((e.Key == Key.F5))
+            {
+//                BuildURL();
+//                LoadURL();
+                ButtonLoadLocation_Click(null, null);
+            }
+           
+            base.OnPreviewKeyDown(e);
         }
 
         void rosterItem_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -174,14 +187,28 @@ namespace WPFXMPPClient
 
         private void LoadURL()
         {
+            //LoadImageFromURL();
             this.Dispatcher.Invoke(new Action(() =>
             {
-                WebBrowserMap.Navigate(strURL);
+                LoadImageFromURL();
+                // WebBrowserMap.Navigate(strURL);
             })
             );
 
-            // 
+             
         }
+
+        private void LoadImageFromURL()
+        {
+            BitmapImage bmpImage = new BitmapImage();
+            //string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
+            bmpImage.BeginInit();
+            bmpImage.UriSource = new Uri(strURL);
+            bmpImage.EndInit();
+
+            MapImage.Source = bmpImage;
+        }
+
 
         private string BuildURLForAllRosterItems()
         {
@@ -197,9 +224,11 @@ namespace WPFXMPPClient
             string strMyLabel = "A";
             if (this.XMPPClient.JID != null && this.XMPPClient.JID.User != null && this.XMPPClient.JID.User.Length >= 1)
                 strMyLabel = this.XMPPClient.JID.User[0].ToString();
-
-            strGoogleMapsApiURL += String.Format("&center={0}", strMyLatLon);
-            strGoogleMapsApiURL += String.Format("&markers=color:{0}%7Clabel:{1}%7C{2}", strMyColor, strMyLabel, strMyLatLon);
+            
+            if (strMyLatLon != "0,0")
+                strGoogleMapsApiURL += String.Format("&center={0}", strMyLatLon);
+            if (strMyLatLon != "0,0")
+                strGoogleMapsApiURL += String.Format("&markers=color:{0}%7Clabel:{1}%7C{2}", strMyColor, strMyLabel, strMyLatLon);
 
                 // BuildMarkerForRosterItem(rosterItem, strColor, strLabel);
 
@@ -274,7 +303,12 @@ namespace WPFXMPPClient
             }
             return strGoogleMapsApiURL;
         }
-     
+
+        public void Refresh()
+        {
+            ButtonLoadLocation_Click(null, null);
+        }
+
         private void BuildURL()
         {
             string strGoogleMapsApiURL = "http://maps.googleapis.com/maps/api/staticmap?";
@@ -317,6 +351,8 @@ namespace WPFXMPPClient
 
         private void ButtonLoadLocation_Click(object sender, RoutedEventArgs e)
         {
+           // ButtonLoadLocationAll_Click(sender, e);
+
             BuildURL();
             LoadURL();
         }
@@ -568,6 +604,10 @@ namespace WPFXMPPClient
         jpg_baseline
     }
 
+    public enum MarkerSize
+    {
+
+    }
     public class SizeParameters
     {
         private int m_Horizontal = 400;

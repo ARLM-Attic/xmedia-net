@@ -163,7 +163,16 @@ namespace WPFXMPPClient
         }
 
         public XMPPClient XMPPClient = null;
-        public RosterItem OurRosterItem = null;
+        private RosterItem m_OurRosterItem = null;
+
+        public RosterItem OurRosterItem
+        {
+            get { return m_OurRosterItem; }
+            set { m_OurRosterItem = value;
+            MapUserControl1.OurRosterItem = value;
+            }
+        }
+
         private bool m_SingleRosterItemMap = true;
 
         public bool SingleRosterItemMap
@@ -187,6 +196,7 @@ namespace WPFXMPPClient
             /// 
             this.DataContext = XMPPClient;
             MapUserControl1.XMPPClient = XMPPClient;
+            MapUserControl1.OurRosterItem = this.OurRosterItem;
          //   this.ListBoxConversation.ItemsSource = XMPPClient.FileTransferManager.FileTransfers;
 
             
@@ -261,10 +271,12 @@ namespace WPFXMPPClient
 
         }
 
-        //private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
-        //{
-        //    ButtonLoadURL_Click(null, e);
-        //}
+
+        private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            MapUserControl1.Refresh();
+            //ButtonLoadURL_Click(null, e);
+        }
 
         //private void LoadMap()
         //{

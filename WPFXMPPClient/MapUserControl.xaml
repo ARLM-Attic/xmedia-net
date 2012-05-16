@@ -63,18 +63,20 @@
         </DataTemplate>
     </UserControl.Resources>
     
-    <Grid>
+    <Grid Background="Beige">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Visibility="Collapsed"
+           Orientation="Horizontal">
             <TextBox x:Name="TextBoxURL" Text="http://www.yahoo.com"></TextBox>
             <Button Click="ButtonLoadURL_Click" x:Name="ButtonLoadURL" Width="Auto">Load URL</Button>         
         </StackPanel>
-        <Grid Grid.Row="1" >
+        <Grid  Visibility="Collapsed" Grid.Row="1" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
@@ -94,7 +96,7 @@
             <Button Grid.Column="2" HorizontalAlignment="Right" x:Name="ButtonLoadLocation" Click="ButtonLoadLocation_Click" Width="Auto">Refresh</Button>
             <Button Grid.Column="3" HorizontalAlignment="Right" x:Name="ButtonLoadLocationAll" Click="ButtonLoadLocationAll_Click" Width="Auto">Load All</Button>
         </Grid>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
+        <StackPanel  Visibility="Collapsed" Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Right">
             <Label>Map Type</Label>
             <ComboBox x:Name="ComboBoxMapType">
                 <!--<ComboBoxItem IsSelected="True">roadmap</ComboBoxItem>
@@ -109,6 +111,7 @@
             <ComboBox x:Name="ComboBoxZoom" ItemsSource="{Binding}" />
             <Button x:Name="ButtonUpdate" HorizontalAlignment="Right" Click="ButtonUpdate_Click">Update</Button>
         </StackPanel>
-        <WebBrowser Grid.Row="3" x:Name="WebBrowserMap" Margin="0,0,0,0"></WebBrowser>
+        <WebBrowser  Visibility="Collapsed" Grid.Row="3" x:Name="WebBrowserMap" Margin="0,0,0,0"></WebBrowser>
+        <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="MapImage" Margin="3,0"></Image>
     </Grid>
 </UserControl>
