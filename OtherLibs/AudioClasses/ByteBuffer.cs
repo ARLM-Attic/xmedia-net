@@ -93,6 +93,55 @@ namespace AudioClasses
             return false;
         }
 
+        public bool WaitForShrinkingSize(int nSizeInBuffer, int nTimeout, System.Threading.WaitHandle otherhandletowaiton)
+        {
+            lock (BufferLock)
+            {
+                if (m_nSize <= nSizeInBuffer)
+                    return true;
+                SizeEvent.Reset();
+            }
+
+            TimeSpan tsElapsed;
+            DateTime dtStart = DateTime.Now;
+            WaitHandle[] handles = new WaitHandle[] { SizeEvent, otherhandletowaiton };
+            if (otherhandletowaiton == null)
+                handles = new WaitHandle[] { SizeEvent };
+            do
+            {
+                int nWait = WaitHandle.WaitAny(handles, nTimeout);
+                if (nWait == 1)
+                {
+                    return false;
+                }
+                else if (nWait == 0)
+                {
+                    lock (BufferLock)
+                    {
+                        SizeEvent.Reset();
+                        if (m_nSize <= nSizeInBuffer)
+                            return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+
+                tsElapsed = DateTime.Now - dtStart;
+                if (nTimeout != Timeout.Infinite)
+                {
+                    nTimeout = (int)tsElapsed.TotalMilliseconds;
+                    if (nTimeout <= 0)
+                        break;
+                }
+
+            }
+            while (true);
+
+            return false;
+        }
+
         AutoResetEvent SizeEvent = new AutoResetEvent(false);
         object BufferLock = new object();
 
@@ -425,6 +474,55 @@ namespace AudioClasses
                     {
                         SizeEvent.Reset();
                         if (m_nSize >= nSizeInBuffer)
+                            return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+
+                tsElapsed = DateTime.Now - dtStart;
+                if (nTimeout != Timeout.Infinite)
+                {
+                    nTimeout = (int)tsElapsed.TotalMilliseconds;
+                    if (nTimeout <= 0)
+                        break;
+                }
+
+            }
+            while (true);
+
+            return false;
+        }
+
+        public bool WaitForShrinkingSize(int nSizeInBuffer, int nTimeout, System.Threading.WaitHandle otherhandletowaiton)
+        {
+            lock (BufferLock)
+            {
+                if (m_nSize <= nSizeInBuffer)
+                    return true;
+                SizeEvent.Reset();
+            }
+
+            TimeSpan tsElapsed;
+            DateTime dtStart = DateTime.Now;
+            WaitHandle[] handles = new WaitHandle[] { SizeEvent, otherhandletowaiton };
+            if (otherhandletowaiton == null)
+                handles = new WaitHandle[] { SizeEvent };
+            do
+            {
+                int nWait = WaitHandle.WaitAny(handles, nTimeout);
+                if (nWait == 1)
+                {
+                    return false;
+                }
+                else if (nWait == 0)
+                {
+                    lock (BufferLock)
+                    {
+                        SizeEvent.Reset();
+                        if (m_nSize <= nSizeInBuffer)
                             return true;
                     }
                 }
