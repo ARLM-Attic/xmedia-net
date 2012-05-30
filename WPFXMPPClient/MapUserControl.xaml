@@ -112,6 +112,6 @@
             <Button x:Name="ButtonUpdate" HorizontalAlignment="Right" Click="ButtonUpdate_Click">Update</Button>
         </StackPanel>
         <WebBrowser  Visibility="Collapsed" Grid.Row="3" x:Name="WebBrowserMap" Margin="0,0,0,0"></WebBrowser>
-        <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="MapImage" Margin="3,0"></Image>
+        <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="MapImage" Margin="3,0" MouseWheel="MapImage_MouseWheel"></Image>
     </Grid>
 </UserControl>

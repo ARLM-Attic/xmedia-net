@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Net.XMPP;
+using System.Net.Cache;
 
 namespace WPFXMPPClient
 {
@@ -23,7 +24,8 @@ namespace WPFXMPPClient
         {
             InitializeComponent();
         }
-       
+        bool bLoaded = false;
+
         public string strURL  = "http://maps.googleapis.com/maps/api/staticmap?";
 
         public RosterItem OurRosterItem = null;
@@ -200,13 +202,38 @@ namespace WPFXMPPClient
 
         private void LoadImageFromURL()
         {
-            BitmapImage bmpImage = new BitmapImage();
-            //string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
-            bmpImage.BeginInit();
-            bmpImage.UriSource = new Uri(strURL);
-            bmpImage.EndInit();
+            BitmapImage _image = new BitmapImage();
+            _image.BeginInit();
+            //if (bLoaded == false)
+            {
+                _image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                _image.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
+                
+                //_image.CacheOption = BitmapCacheOption.None;
+                //_image.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+                //_image.CacheOption = BitmapCacheOption.OnLoad;
+                //_image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            }
 
-            MapImage.Source = bmpImage;
+            _image.UriSource = new Uri(strURL, UriKind.RelativeOrAbsolute);
+            _image.EndInit();
+            MapImage.Source = _image;
+
+            if (bLoaded == false)
+            {
+                bLoaded = true;
+                LoadImageFromURL();
+            }
+
+          
+
+            //BitmapImage bmpImage = new BitmapImage();
+            ////string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
+            //bmpImage.BeginInit();
+            //bmpImage.UriSource = new Uri(strURL);
+            //bmpImage.EndInit();
+
+            //MapImage.Source = bmpImage;
         }
 
 
@@ -325,7 +352,8 @@ namespace WPFXMPPClient
                 strGoogleMapsApiURL += String.Format("&zoom={0}", MapProperties.LocationParameters.Zoom);
                 strGoogleMapsApiURL += String.Format("&maptype={0}", MapProperties.MapParameters.MapType);
                 strGoogleMapsApiURL += String.Format("&size=800x800");
-                strGoogleMapsApiURL += String.Format("&markers=color:blue%7Clabel:B%7C{0}", strLatLon);
+                strGoogleMapsApiURL += BuildMarkerForRosterItem(OurRosterItem, "red", "");
+                    // += String.Format("&markers=color:blue%7Clabel:B%7C{0}", strLatLon);
                 strGoogleMapsApiURL += String.Format("&sensor=false");
 
                 strURL = strGoogleMapsApiURL;
@@ -415,6 +443,42 @@ namespace WPFXMPPClient
             MapProperties.MapParameters.MapType = (MapType)ComboBoxMapType.SelectedValue;
 
             ButtonLoadLocation_Click(sender, e);
+        }
+
+        public void ZoomIn(int delta)
+        {
+            MapProperties.LocationParameters.Zoom += delta;
+
+            if (MapProperties.LocationParameters.Zoom < 0)
+                MapProperties.LocationParameters.Zoom = 0;
+            if (MapProperties.LocationParameters.Zoom > 21)
+                MapProperties.LocationParameters.Zoom = 21;
+
+            Refresh();
+        }
+
+        public void ZoomOut(int delta)
+        {
+            MapProperties.LocationParameters.Zoom -= delta;
+
+            if (MapProperties.LocationParameters.Zoom < 0)
+                MapProperties.LocationParameters.Zoom = 0;
+            if (MapProperties.LocationParameters.Zoom > 21)
+                MapProperties.LocationParameters.Zoom = 21;
+
+            Refresh();
+        }
+
+        private void MapImage_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            //MapProperties.LocationParameters.Zoom = Convert.ToInt32(Math.Max(MapProperties.LocationParameters.Zoom + (0.1F * e.Delta / 120.0F), 0.01F));
+
+            //if (MapProperties.LocationParameters.Zoom < 0)
+            //    MapProperties.LocationParameters.Zoom = 0;
+            //if (MapProperties.LocationParameters.Zoom > 21)
+            //    MapProperties.LocationParameters.Zoom = 21;
+
+            //Refresh();
         }
                    
     }

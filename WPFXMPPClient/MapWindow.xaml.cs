@@ -268,7 +268,7 @@ namespace WPFXMPPClient
 
         private void MapUserControl1_Loaded(object sender, RoutedEventArgs e)
         {
-
+            MapUserControl1.Refresh();
         }
 
 
@@ -277,6 +277,17 @@ namespace WPFXMPPClient
             MapUserControl1.Refresh();
             //ButtonLoadURL_Click(null, e);
         }
+
+        private void ButtonZoomIn_Click(object sender, RoutedEventArgs e)
+        {
+            MapUserControl1.ZoomIn(1);
+        }
+
+        private void ButtonZoomOut_Click(object sender, RoutedEventArgs e)
+        {
+            MapUserControl1.ZoomOut(1);
+        }
+
 
         //private void LoadMap()
         //{

@@ -37,12 +37,20 @@
                     <ColumnDefinition Width="357*" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Margin="10,0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
-                <s:SurfaceButton ToolTip="Refresh" Grid.Column="1" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton ToolTip="Zoom In" Grid.Column="1" x:Name="ButtonZoomIn" Click="ButtonZoomIn_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                    <Image Source="Images/calculator - addition.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
+                </s:SurfaceButton>
+                <s:SurfaceButton ToolTip="Zoom Out" Grid.Column="2" x:Name="ButtonZoomOut" Click="ButtonZoomOut_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                    <Image Source="Images/calculator - minus.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
+                </s:SurfaceButton>
+                <s:SurfaceButton ToolTip="Refresh" Grid.Column="3" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/refresh.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
-                <s:SurfaceButton ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton ToolTip="Close" Grid.Column="4" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
             </Grid>
