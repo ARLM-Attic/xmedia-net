@@ -19,6 +19,7 @@ namespace AudioClasses
 		RGB32, // RGB32 frames
         RGB24,
 		MJPEG, /// motion jpeg frames (each frame a jpeg)
+        MPNG, /// motion png
         MP4, // H.264 in mp4 container
         WMV9, // windows media 9 in asf container
         WMVSCREEN, /// windows media screen in asf container
@@ -116,13 +117,13 @@ namespace AudioClasses
             return false;
         }
 
-        private VideoDataFormat m_eVideoDataFormat = VideoDataFormat.RGB32;
-        [DataMember]
-        public VideoDataFormat VideoDataFormat
-        {
-            get { return m_eVideoDataFormat; }
-            set { m_eVideoDataFormat = value; }
-        }
+        //private VideoDataFormat m_eVideoDataFormat = VideoDataFormat.RGB32;
+        //[DataMember]
+        //public VideoDataFormat VideoDataFormat
+        //{
+        //    get { return m_eVideoDataFormat; }
+        //    set { m_eVideoDataFormat = value; }
+        //}
 
         private string m_strVideoFormatString = "";
 
@@ -130,6 +131,23 @@ namespace AudioClasses
         {
             get { return m_strVideoFormatString; }
             set { m_strVideoFormatString = value; }
+        }
+
+
+        protected VideoDataFormat m_objUncompressedFormat = VideoDataFormat.RGB32;
+        [DataMember]
+        public virtual VideoDataFormat UncompressedFormat
+        {
+            get { return m_objUncompressedFormat; }
+            set { m_objUncompressedFormat = value; }
+        }
+
+        protected VideoDataFormat m_objCompressedFormat = VideoDataFormat.Unknown;
+        [DataMember]
+        public virtual VideoDataFormat CompressedFormat
+        {
+            get { return m_objCompressedFormat; }
+            set { m_objCompressedFormat = value; }
         }
 
 
@@ -175,5 +193,17 @@ namespace AudioClasses
         string Name { get; set; }
     }
 
+    public interface IVideoSink
+    {
+        string Name { get; set; }
+        void NewRawFrame(byte[] bVideoData);
+    }
+
+    public interface IVideoCompressor
+    {
+        byte[] CompressFrame(byte[] bUncompressedFrame);
+        byte[] DecompressFrame(byte[] bCompressedFrame);
+        
+    }
    
 }

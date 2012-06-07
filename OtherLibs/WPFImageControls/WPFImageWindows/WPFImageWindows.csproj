@@ -69,6 +69,7 @@
       <DependentUpon>CameraWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="DirectShowStuff.cs" />
+    <Compile Include="InterFrameCompressor.cs" />
     <Compile Include="OverlayWindow.xaml.cs">
       <DependentUpon>OverlayWindow.xaml</DependentUpon>
     </Compile>

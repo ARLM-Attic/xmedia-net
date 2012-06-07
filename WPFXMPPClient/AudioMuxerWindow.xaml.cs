@@ -901,6 +901,11 @@ namespace WPFXMPPClient
         {
            
         }
+
+        private void ButtonStartStopVideo_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 
     public enum AnswerType

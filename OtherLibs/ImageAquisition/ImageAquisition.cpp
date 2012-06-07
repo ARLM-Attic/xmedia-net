@@ -710,7 +710,7 @@ void MFVideoCaptureDevice::Load()
 					format->VideoFormatString = gcnew System::String(GetGUIDNameConst(type->subtype));
 					if (type->subtype == MFVideoFormat_MJPG)
 					{
-						format->VideoDataFormat = VideoDataFormat::MJPEG;
+						format->CompressedFormat = VideoDataFormat::MJPEG;
 						bool bHas = false;
 						for (int i=0; i<VideoFormats->Count; i++)
 						{
@@ -726,7 +726,7 @@ void MFVideoCaptureDevice::Load()
 					}
 					else if ( (type->subtype == MFVideoFormat_YUY2) || (type->subtype == MFVideoFormat_RGB24) || (type->subtype == MFVideoFormat_RGB32))
 					{
-						format->VideoDataFormat = VideoDataFormat::RGB32;
+						format->CompressedFormat = VideoDataFormat::RGB32;
 						bool bHas = false;
 						for (int i=0; i<VideoFormats->Count; i++)
 						{
@@ -742,12 +742,12 @@ void MFVideoCaptureDevice::Load()
 					}
 					else if (type->subtype == MFVideoFormat_H264)
 					{
-						format->VideoDataFormat = VideoDataFormat::H264;
+						format->CompressedFormat = VideoDataFormat::H264;
 	 				   VideoFormats->Add(format);
 					}
 					else
 					{
-						format->VideoDataFormat = VideoDataFormat::Unknown;
+						format->CompressedFormat = VideoDataFormat::Unknown;
 						VideoFormats->Add(format);
 					}
 
@@ -940,7 +940,7 @@ void MFVideoCaptureDevice::OurCaptureThread()
 					 (vf->videoInfo.FramesPerSecond.Numerator == ActiveVideoFormat->FrameRate))
 
 				{
-					if ((type->subtype == MFVideoFormat_MJPG) && (ActiveVideoFormat->VideoDataFormat == VideoDataFormat::MJPEG) )
+					if ((type->subtype == MFVideoFormat_MJPG) && (ActiveVideoFormat->CompressedFormat == VideoDataFormat::MJPEG) )
 					{
 						LogMediaType(pNativeType);
 					
@@ -966,7 +966,7 @@ void MFVideoCaptureDevice::OurCaptureThread()
 
 						break;
 					}
-					else if (  ((type->subtype == MFVideoFormat_YUY2) || (type->subtype == MFVideoFormat_RGB24) || (type->subtype == MFVideoFormat_RGB32))  && (ActiveVideoFormat->VideoDataFormat == VideoDataFormat::RGB32) )
+					else if (  ((type->subtype == MFVideoFormat_YUY2) || (type->subtype == MFVideoFormat_RGB24) || (type->subtype == MFVideoFormat_RGB32))  && (ActiveVideoFormat->CompressedFormat == VideoDataFormat::RGB32) )
 					{
 						GUID majorType, subtype;
 						LogMediaType(pNativeType);
@@ -1240,9 +1240,9 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 	
 	IMFAttributes *pAttribute;
 	hr = MFCreateAttributes(&pAttribute, 1);
-	if (videoformat->VideoDataFormat == VideoDataFormat::MP4)
+	if (videoformat->CompressedFormat == VideoDataFormat::MP4)
 	   hr = pAttribute->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_MPEG4);
-	else if ((videoformat->VideoDataFormat == VideoDataFormat::WMV9) || (videoformat->VideoDataFormat == VideoDataFormat::WMVSCREEN) || (videoformat->VideoDataFormat == VideoDataFormat::VC1) )
+	else if ((videoformat->CompressedFormat == VideoDataFormat::WMV9) || (videoformat->CompressedFormat == VideoDataFormat::WMVSCREEN) || (videoformat->CompressedFormat == VideoDataFormat::VC1) )
 	   hr = pAttribute->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_ASF);
 
 	hr = pAttribute->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
@@ -1271,13 +1271,13 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 	if (bSupplyVideo == true)
 	{
 		hr = pMediaTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);     
-		if (videoformat->VideoDataFormat == VideoDataFormat::MP4)
+		if (videoformat->CompressedFormat == VideoDataFormat::MP4)
 			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);   
-		else if (videoformat->VideoDataFormat == VideoDataFormat::WMV9)
+		else if (videoformat->CompressedFormat == VideoDataFormat::WMV9)
 			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_WMV3);   
-		else if (videoformat->VideoDataFormat == VideoDataFormat::WMVSCREEN)
+		else if (videoformat->CompressedFormat == VideoDataFormat::WMVSCREEN)
 			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_MSS2);   
-		else if (videoformat->VideoDataFormat == VideoDataFormat::VC1)
+		else if (videoformat->CompressedFormat == VideoDataFormat::VC1)
 			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_WVC1);   
 		else
 			hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);   
@@ -1288,7 +1288,7 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 		hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_FRAME_RATE, videoformat->FrameRate, 1);   
 		hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);   
 
-		if (videoformat->VideoDataFormat == VideoDataFormat::WMVSCREEN)
+		if (videoformat->CompressedFormat == VideoDataFormat::WMVSCREEN)
 		{
 			//hr = pMediaTypeOut->SetUINT32(MFPKEY_ASFOVERHEADPERFRAME, MFVideoInterlace_Progressive);   
 		
@@ -1315,7 +1315,7 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 	{
 			/// Add an audio output stream
 
-		if (videoformat->VideoDataFormat == VideoDataFormat::MP4)
+		if (videoformat->CompressedFormat == VideoDataFormat::MP4)
 		{
 			hr = MFCreateMediaType(&pAudioMediaTypeOut);   
 			hr = pAudioMediaTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);     

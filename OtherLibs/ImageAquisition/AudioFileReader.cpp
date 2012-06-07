@@ -163,7 +163,7 @@ void AudioFileReader::QueueFileThread(Object ^objAudioFileReader)
 	This->IsPlaying = true;
 
 	int nConvertSampleSize = 32000;
-	Converter = gcnew SampleConvertor(cbSamplesPerSecond/100, ((int)This->OutputAudioFormat->AudioSamplingRate)/100, nConvertSampleSize);
+	Converter = gcnew SampleConvertor(cbSamplesPerSecond/1000, ((int)This->OutputAudioFormat->AudioSamplingRate)/1000, nConvertSampleSize);
 	AudioClasses::ShortBuffer ^AudioDataWaitingToBeResampled = gcnew AudioClasses::ShortBuffer();
 
 	int nMinSizeBuffer = This->OutputAudioFormat->CalculateNumberOfSamplesForDuration(TimeSpan::FromSeconds(10))*This->OutputAudioFormat->BytesPerSample;

@@ -359,9 +359,14 @@ namespace RTP
                     ReceiveSSRC = packet.SSRC;
                 if ((packet.PayloadType == this.Payload) && (packet.SSRC == this.ReceiveSSRC))
                 {
-                    IncomingRTPPacketBuffer.AddPacket(packet);
+                    HandleIncomingRTPPacket(packet);
                 }
             }
+        }
+
+        protected virtual void HandleIncomingRTPPacket(RTPPacket packet)
+        {
+            IncomingRTPPacketBuffer.AddPacket(packet);
         }
 
         public RTPPacketBuffer IncomingRTPPacketBuffer = new RTPPacketBuffer(2);

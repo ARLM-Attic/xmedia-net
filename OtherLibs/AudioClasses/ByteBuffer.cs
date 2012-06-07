@@ -260,9 +260,17 @@ namespace AudioClasses
                 int nLengthRemaining = m_nSize - nIndexFrom;
                 if (nLengthRemaining > 0)
                 {
-                    byte[] NewBuffer = new byte[nLengthRemaining];
-                    Array.Copy(OutgoingBuffer, nIndexFrom, NewBuffer, 0, nLengthRemaining);
-                    Array.Copy(NewBuffer, 0, OutgoingBuffer, 0, nLengthRemaining);
+                    //byte[] NewBuffer = new byte[nLengthRemaining];
+                    //Array.Copy(OutgoingBuffer, nIndexFrom, NewBuffer, 0, nLengthRemaining);
+                    //Array.Copy(NewBuffer, 0, OutgoingBuffer, 0, nLengthRemaining);
+                    
+                    //Array.Copy(OutgoingBuffer, nIndexFrom, OutgoingBufferTemp, 0, nLengthRemaining);
+                    //byte[] TempBuffer = OutgoingBuffer;
+                    //OutgoingBuffer = OutgoingBufferTemp;
+                    //OutgoingBufferTemp = TempBuffer;
+
+                    Array.Copy(OutgoingBuffer, nIndexFrom, OutgoingBuffer, 0, nLengthRemaining);
+
                 }
 
                 Size = nLengthRemaining;
@@ -276,6 +284,7 @@ namespace AudioClasses
             if (this.OutgoingBuffer == null)
             {
                 this.OutgoingBuffer = new byte[nNewLength];
+                //this.OutgoingBufferTemp = new byte[nNewLength];
                 return;
             }
 
@@ -284,6 +293,7 @@ namespace AudioClasses
             {
                 int nOldLength = this.OutgoingBuffer.Length;
                 Array.Resize(ref OutgoingBuffer, nNewLength);
+                //Array.Resize(ref OutgoingBufferTemp, nNewLength);
             }
         }
 
@@ -408,6 +418,7 @@ namespace AudioClasses
 
         protected object OutgoingBufferLock = new object();
         protected byte[] OutgoingBuffer = null;
+        //protected byte[] OutgoingBufferTemp = null;
 
         /// <summary>
         ///  Where the data ends in our outgoing buffer

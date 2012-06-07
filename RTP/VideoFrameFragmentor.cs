@@ -9,6 +9,10 @@ using System.Text;
 
 namespace RTP
 {
+    /// <summary>
+    /// Reassembles fragment RTP packets by looking for the marker field
+    /// TODO, make sure the sequence is ordered right
+    /// </summary>
     public class VideoFrameFragmentor
     {
         public VideoFrameFragmentor(IVideoPacketReceiver rec)
@@ -29,17 +33,17 @@ namespace RTP
         
         List<byte[]> LastPacketFrames = new List<byte[]>();
 
-        public void NewFragmentReceived(RTPPacket packet)
+        public byte [] NewFragmentReceived(RTPPacket packet)
         {
             byte[] bPayload = packet.PayloadData;
-            if (packet.Marker == true) /// This should be a header fragment, extract the width, height, and total frame size
+            if (packet.Marker == true) 
             {
                 AssembleLastPackets();
                 LastPacketFrames.Add(bPayload);
                 m_nSequence = packet.SequenceNumber;
                 CurrentFrameTimeStamp = packet.TimeStamp;
                 if (bPayload.Length < 60000)
-                    AssembleLastPackets();
+                    return AssembleLastPackets();
 
             }
             else
@@ -52,10 +56,11 @@ namespace RTP
                     LastPacketFrames.Add(bPayload);
 
                     if (bPayload.Length < 60000)
-                        AssembleLastPackets();
+                        return AssembleLastPackets();
                     
                 }
             }
+            return null;
         }
 
         byte [] AssembleLastPackets()
@@ -78,7 +83,8 @@ namespace RTP
                 nAt += bNextpacket.Length;
             }
 
-            Receiver.OnNewPacket(bFrame);
+            if (Receiver != null)
+                Receiver.OnNewPacket(bFrame);
 
             LastPacketFrames.Clear();
 

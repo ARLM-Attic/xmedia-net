@@ -69,6 +69,7 @@
     <Compile Include="RTPOutgoingVideoFeed.cs" />
     <Compile Include="RTPPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RTPVideoStream.cs" />
     <Compile Include="STUN.cs" />
     <Compile Include="STUNClasses.cs" />
     <Compile Include="TCPRTPAudioStream.cs" />
