@@ -471,15 +471,13 @@ namespace System.Net.XMPP
                 RosterItemPresenceInstance[] instances = null;
                 lock (m_lockClientInstances)
                 {
-                    instances = m_listClientInstances.ToArray();
-                }
-
-                foreach (RosterItemPresenceInstance instance in instances)
-                {
-                    if (instance.Presence.PresenceType == PresenceType.available)
+                    foreach (RosterItemPresenceInstance instance in m_listClientInstances)
                     {
-                        beststatus = instance.Presence;
-                        break;
+                        if (instance.Presence.PresenceType == PresenceType.available)
+                        {
+                            beststatus = instance.Presence;
+                            break;
+                        }
                     }
                 }
             }
@@ -499,13 +497,12 @@ namespace System.Net.XMPP
                 RosterItemPresenceInstance[] instances = null;
                 lock (m_lockClientInstances)
                 {
-                    instances = m_listClientInstances.ToArray();
-                }
 
-                foreach (RosterItemPresenceInstance instance in instances)
-                {
-                    if (instance.CanClientDoAudio == true)
-                        return Windows.Visibility.Visible;
+                    foreach (RosterItemPresenceInstance instance in m_listClientInstances)
+                    {
+                        if (instance.CanClientDoAudio == true)
+                            return Windows.Visibility.Visible;
+                    }
                 }
                 return Windows.Visibility.Collapsed;
             }
@@ -523,12 +520,11 @@ namespace System.Net.XMPP
             RosterItemPresenceInstance[] instances = null;
             lock (m_lockClientInstances)
             {
-                instances = m_listClientInstances.ToArray();
-            }
-            foreach (RosterItemPresenceInstance instance in instances)
-            {
-                if (instance.CanClientDoAudio == true)
-                    return instance;
+                foreach (RosterItemPresenceInstance instance in m_listClientInstances)
+                {
+                    if (instance.CanClientDoAudio == true)
+                        return instance;
+                }
             }
             return null;
         }
@@ -538,12 +534,11 @@ namespace System.Net.XMPP
             RosterItemPresenceInstance[] instances = null;
             lock (m_lockClientInstances)
             {
-                instances = m_listClientInstances.ToArray();
-            }
-            foreach (RosterItemPresenceInstance instance in instances)
-            {
-                if (jid.Equals(instance.FullJID) == true)
-                    return instance;
+                foreach (RosterItemPresenceInstance instance in m_listClientInstances)
+                {
+                    if (jid.Equals(instance.FullJID) == true)
+                        return instance;
+                }
             }
             return null;
         }
