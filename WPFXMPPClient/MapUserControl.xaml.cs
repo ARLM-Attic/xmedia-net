@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Net.XMPP;
 using System.Net.Cache;
+using LocationClasses;
 
 namespace WPFXMPPClient
 {
@@ -26,7 +27,7 @@ namespace WPFXMPPClient
         }
         bool bLoaded = false;
 
-        public string strURL  = "http://maps.googleapis.com/maps/api/staticmap?";
+        public string strURL = "http://maps.googleapis.com/maps/api/staticmap?";
 
         public RosterItem OurRosterItem = null;
         public XMPPClient XMPPClient = null;
@@ -35,6 +36,7 @@ namespace WPFXMPPClient
         private bool m_SingleRosterItemMap = true;
 
         public List<int> ZoomLevels = new List<int>();
+        public List<int> ScaleValues = new List<int>();
 
         public bool SingleRosterItemMap
         {
@@ -49,6 +51,12 @@ namespace WPFXMPPClient
             {
                 ZoomLevels.Add(i);
             }
+
+            ScaleValues.Clear();
+            for (int i = 1; i <= 2; i++)
+            {
+                ScaleValues.Add(i);
+            }
         }
 
 
@@ -57,10 +65,22 @@ namespace WPFXMPPClient
             InitializeValues();
             ComboBoxZoom.ItemsSource = ZoomLevels;
             ComboBoxZoom.SelectedIndex = 15;
+
+            ComboBoxScale.ItemsSource = ScaleValues;
+            ComboBoxScale.SelectedIndex = 1;
+            //ComboBoxZoom.DataContext = MapProperties.LocationParameters.Zoom;
+
             ComboBoxMapType.ItemsSource = Enum.GetValues(typeof(MapType));
             ComboBoxMapType.SelectedIndex = 0;
 
-            MapProperties.MapParameters = new MapParameters() { MapType = (MapType)ComboBoxMapType.SelectedValue };
+            MapProperties.MapParameters = new MapParameters() { MapType = (MapType)ComboBoxMapType.SelectedValue, Scale = (int)ComboBoxScale.SelectedValue };
+            MapProperties.MapParameters.Size = new SizeParameters() { Horizontal = 1000, Vertical = 1000 };
+            TextBoxSizeHorizontal.Text = String.Format("{0}", 1000);
+            TextBoxSizeVertical.Text = String.Format("{0}", 1000);
+
+            MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(TextBoxSizeHorizontal.Text);
+            MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(TextBoxSizeVertical.Text);
+
             MapProperties.LocationParameters = new LocationParameters() { Zoom = (int)ComboBoxZoom.SelectedValue };
 
             //BuildURL();
@@ -70,19 +90,19 @@ namespace WPFXMPPClient
                 XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
                 XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
             }
-            SetUpRosterItemNotifications();     
+            SetUpRosterItemNotifications();
             ButtonLoadLocation_Click(null, e);
         }
 
         private geoloc ExtractGeoLoc(string strXML)
         {
             geoloc newGeoLoc = null;
-              //<geoloc xmlns=\"http://jabber.org/protocol/geoloc\">
-              //<lat>32.816849551194174</lat>
-              //<lon>-96.757696867079247</lon>
-              //<acurracy>0</acurracy>
-              //<timestamp>2012-03-20T16:47:23.379-05:00</timestamp>
-              //<geoloc>";
+            //<geoloc xmlns=\"http://jabber.org/protocol/geoloc\">
+            //<lat>32.816849551194174</lat>
+            //<lon>-96.757696867079247</lon>
+            //<acurracy>0</acurracy>
+            //<timestamp>2012-03-20T16:47:23.379-05:00</timestamp>
+            //<geoloc>";
             return newGeoLoc;
         }
 
@@ -121,11 +141,11 @@ namespace WPFXMPPClient
         {
             if ((e.Key == Key.F5))
             {
-//                BuildURL();
-//                LoadURL();
+                //                BuildURL();
+                //                LoadURL();
                 ButtonLoadLocation_Click(null, null);
             }
-           
+
             base.OnPreviewKeyDown(e);
         }
 
@@ -136,6 +156,14 @@ namespace WPFXMPPClient
                 // WebBrowserMap.Navigate(strURL);
                 if (e.PropertyName == "GeoLoc")
                 {
+                    // increment the counter. not the right way to determine when to move the map but a way for now.
+                    nMovementCounter++;
+                    // determine how many steps puts us too far, based on the size and the current location and last center, etc.
+                    if (nMovementCounter >= 10)
+                    {
+                        bCenterOnMap = true;
+                        nMovementCounter = 0;
+                    }
 
                     if (SingleRosterItemMap)
                     {
@@ -148,6 +176,9 @@ namespace WPFXMPPClient
 
                             BuildURL();
 
+                            TextBlockLastLocationTimestamp.Text = String.Format("{0} {1}", item.GeoLoc.TimeStamp.ToShortDateString(),
+                                item.GeoLoc.TimeStamp.ToShortTimeString());
+
                             //strURL = BuildURLForRosterItem(item, "blue", "B");
                             Console.WriteLine(String.Format("{0}: {1}, {2}", item.JID.User, item.GeoLoc.lat, item.GeoLoc.lon));
                             // MessageBox.Show("updating location!");
@@ -158,7 +189,7 @@ namespace WPFXMPPClient
                             TextBoxURL.Text = strURL;
                             TextBoxTimeStamp.Text = String.Format("{0}'s Location ({1}): {2}, {3}", item.JID.BareJID, item.GeoLoc.TimeStamp, item.GeoLoc.lat, item.GeoLoc.lon);
                             RosterItems.Add(item);
-                            LocationsList.ItemsSource = RosterItems;
+                           // LocationsList.ItemsSource = RosterItems;
                             LoadURL();
 
 
@@ -197,7 +228,7 @@ namespace WPFXMPPClient
             })
             );
 
-             
+
         }
 
         private void LoadImageFromURL()
@@ -208,7 +239,7 @@ namespace WPFXMPPClient
             {
                 _image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
                 _image.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
-                
+
                 //_image.CacheOption = BitmapCacheOption.None;
                 //_image.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
                 //_image.CacheOption = BitmapCacheOption.OnLoad;
@@ -224,8 +255,6 @@ namespace WPFXMPPClient
                 bLoaded = true;
                 LoadImageFromURL();
             }
-
-          
 
             //BitmapImage bmpImage = new BitmapImage();
             ////string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
@@ -251,13 +280,13 @@ namespace WPFXMPPClient
             string strMyLabel = "A";
             if (this.XMPPClient.JID != null && this.XMPPClient.JID.User != null && this.XMPPClient.JID.User.Length >= 1)
                 strMyLabel = this.XMPPClient.JID.User[0].ToString();
-            
+
             if (strMyLatLon != "0,0")
                 strGoogleMapsApiURL += String.Format("&center={0}", strMyLatLon);
             if (strMyLatLon != "0,0")
                 strGoogleMapsApiURL += String.Format("&markers=color:{0}%7Clabel:{1}%7C{2}", strMyColor, strMyLabel, strMyLatLon);
 
-                // BuildMarkerForRosterItem(rosterItem, strColor, strLabel);
+            // BuildMarkerForRosterItem(rosterItem, strColor, strLabel);
 
             string strMarkers = "";
             List<string> colors = new List<string>() { "red", "blue", "yellow", "green" };
@@ -277,7 +306,7 @@ namespace WPFXMPPClient
 
                 strColor = colors[nColorIndex];
                 strLabel = labels[nLabelIndex];
-               
+
                 //string strLabel = labels[nColorIndex];
 
                 if (rosterItem != null && rosterItem.JID != null && rosterItem.JID.User != null && rosterItem.JID.User.Length >= 1)
@@ -286,14 +315,14 @@ namespace WPFXMPPClient
                 strMarkers += BuildMarkerForRosterItem(rosterItem, strColor, strLabel);
 
 
-               
+
 
 
             }
 
             strGoogleMapsApiURL += strMarkers;
 
-           
+
             return strGoogleMapsApiURL;
         }
 
@@ -336,38 +365,97 @@ namespace WPFXMPPClient
             ButtonLoadLocation_Click(null, null);
         }
 
+        private int nMovementCounter = 0;
+        private bool bCenterOnMap = true;
+        private bool bDirty = false;
+
+        private void ComboBoxMapType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            bDirty = true;
+        }
+
+        private void TextBoxSizeHorizontal_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            bDirty = true;
+        }
+
+        private void TextBoxSizeVertical_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            bDirty = true;
+        }
         private void BuildURL()
         {
+            // validate values.
+            OperationResult result = MapProperties.MapParameters.Size.ValidateAndSaveSize(TextBoxSizeHorizontal.Text, TextBoxSizeVertical.Text);
+
+            if (result.bSuccess == false)
+            {
+                if (result.strMessage != "")
+                {
+                    MessageBox.Show(result.strMessage);
+                    return;
+                }
+            }
+
+        // was this ok? 
+
+
+
             string strGoogleMapsApiURL = "http://maps.googleapis.com/maps/api/staticmap?";
-           
+
             if (OurRosterItem != null)
             {
                 if (OurRosterItem.GeoLoc.lat == 0.0 && OurRosterItem.GeoLoc.lon == 0.0)
                     return;
 
                 string strLatLon = String.Format("{0},{1}", OurRosterItem.GeoLoc.lat, OurRosterItem.GeoLoc.lon);
-                    // OurRosterItem.GeoString;
 
+                // OurRosterItem.GeoString;
+
+                if (bCenterOnMap)
+                {
+                    MapProperties.LocationParameters.Center = strLatLon;
+                }
+             
+                // Use previous center if it's not time to recenter again.
                 strGoogleMapsApiURL += String.Format("center={0}", strLatLon);
+                
+                // if you don't send the center parameter what happens?
+
                 strGoogleMapsApiURL += String.Format("&zoom={0}", MapProperties.LocationParameters.Zoom);
                 strGoogleMapsApiURL += String.Format("&maptype={0}", MapProperties.MapParameters.MapType);
-                strGoogleMapsApiURL += String.Format("&size=800x800");
+                strGoogleMapsApiURL += String.Format("&size={0}x{1}", 
+                    MapProperties.MapParameters.Size.Horizontal, MapProperties.MapParameters.Size.Vertical);
+                    // "800", "800");
                 strGoogleMapsApiURL += BuildMarkerForRosterItem(OurRosterItem, "red", "");
-                    // += String.Format("&markers=color:blue%7Clabel:B%7C{0}", strLatLon);
-                strGoogleMapsApiURL += String.Format("&sensor=false");
+                // += String.Format("&markers=color:blue%7Clabel:B%7C{0}", strLatLon);
+                strGoogleMapsApiURL += String.Format("&sensor={0}", MapProperties.Sensor.ToString().ToLower());
+
+
+                //string strURLFromObject = MapProperties.URL;
 
                 strURL = strGoogleMapsApiURL;
-                TextBoxURL.Text = strURL;
+                if (MapProperties.URL == strURL)
+                {
 
-                TextBoxTimeStamp.Text = String.Format("Location ({0}): ", OurRosterItem.GeoLoc.TimeStamp);
+                }
+
+                // false");
+
+                TextBoxURL.Text = MapProperties.URL;
+                    //strURL;
+
+
+                TextBoxTimeStamp.Text = String.Format("Timestamp: {0} ", OurRosterItem.GeoLoc.TimeStamp);
                 TextBoxGeoLoc.Text = strLatLon;
-            // center=Williamsburg,Brooklyn,NY
-            // &zoom=13
-            // &size=800x800&
-            // markers=color:blue%7Clabel:S%7C11211%7C11206%7C11222&sensor=false";
+                
+                // center=Williamsburg,Brooklyn,NY
+                // &zoom=13
+                // &size=800x800&
+                // markers=color:blue%7Clabel:S%7C11211%7C11206%7C11222&sensor=false";
 
             }
-           
+
         }
 
         private void ButtonLoadURL_Click(object sender, RoutedEventArgs e)
@@ -379,7 +467,7 @@ namespace WPFXMPPClient
 
         private void ButtonLoadLocation_Click(object sender, RoutedEventArgs e)
         {
-           // ButtonLoadLocationAll_Click(sender, e);
+            // ButtonLoadLocationAll_Click(sender, e);
 
             BuildURL();
             LoadURL();
@@ -395,7 +483,7 @@ namespace WPFXMPPClient
             }
         }
 
-        private Dictionary<RosterItem, List<geoloc>> m_Paths = new Dictionary<RosterItem,List<geoloc>>();
+        private Dictionary<RosterItem, List<geoloc>> m_Paths = new Dictionary<RosterItem, List<geoloc>>();
 
         public Dictionary<RosterItem, List<geoloc>> Paths
         {
@@ -454,6 +542,7 @@ namespace WPFXMPPClient
             if (MapProperties.LocationParameters.Zoom > 21)
                 MapProperties.LocationParameters.Zoom = 21;
 
+            ComboBoxZoom.SelectedItem = MapProperties.LocationParameters.Zoom;
             Refresh();
         }
 
@@ -465,12 +554,17 @@ namespace WPFXMPPClient
                 MapProperties.LocationParameters.Zoom = 0;
             if (MapProperties.LocationParameters.Zoom > 21)
                 MapProperties.LocationParameters.Zoom = 21;
-
+            ComboBoxZoom.SelectedItem = MapProperties.LocationParameters.Zoom;
             Refresh();
         }
 
         private void MapImage_MouseWheel(object sender, MouseWheelEventArgs e)
         {
+            if (e.Delta > 0)
+                ZoomIn(1);
+            else if (e.Delta < 0)
+                ZoomOut(1);
+
             //MapProperties.LocationParameters.Zoom = Convert.ToInt32(Math.Max(MapProperties.LocationParameters.Zoom + (0.1F * e.Delta / 120.0F), 0.01F));
 
             //if (MapProperties.LocationParameters.Zoom < 0)
@@ -480,224 +574,234 @@ namespace WPFXMPPClient
 
             //Refresh();
         }
-                   
-    }
 
-    public class MapProperties
-    {
-        private string m_URL = "http://maps.googleapis.com/maps/api/staticmap?";
-
-        public string URL
+        private void ButtonSaveKML_Click(object sender, RoutedEventArgs e)
         {
-            get { return m_URL; }
-            set { m_URL = value; }
+
         }
 
-        private LocationParameters m_LocationParameters = new LocationParameters();
-
-        public LocationParameters LocationParameters
+        private void ButtonClearKML_Click(object sender, RoutedEventArgs e)
         {
-            get { return m_LocationParameters; }
-            set { m_LocationParameters = value; }
+
         }
-
-        private MapParameters m_MapParameters = new MapParameters();
-
-        public MapParameters MapParameters
-        {
-            get { return m_MapParameters; }
-            set { m_MapParameters = value; }
-        }
-
-        // The markers parameter takes set of value assignments (marker descriptors) of the following format:
-        // markers=markerStyles|markerLocation1| markerLocation2|... etc.
-
-        private List<string> m_Markers = new List<string>();
-
-        public List<string> Markers
-        {
-            get { return m_Markers; }
-            set { m_Markers = value; }
-        }
-
-        private bool m_Sensor = false;
-
-        public bool Sensor
-        {
-            get { return m_Sensor; }
-            set { m_Sensor = value; }
-        }
-
-     
 
     }
 
-    // Location Parameters:
+    #region Moved to LocationClasses
+    //public class MapProperties
+    //{
+    //    private string m_URL = "http://maps.googleapis.com/maps/api/staticmap?";
 
-    // center (required if markers not present) defines the center of the map, equidistant from all edges of the map. This parameter takes a location as either a comma-separated {latitude,longitude} pair (e.g. "40.714728,-73.998672") or a string address (e.g. "city hall, new york, ny") identifying a unique location on the face of the earth. For more information, see Locations below.
-    // zoom (required if markers not present) defines the zoom level of the map, which determines the magnification level of the map. This parameter takes a numerical value corresponding to the zoom level of the region desired. For more information, see zoom levels below.
-    //      Maps on Google Maps have an integer "zoom level" which defines the resolution of the current view. Zoom levels between 0 (the lowest zoom level, 
-    //      in which the entire world can be seen on one map) to 21+ (down to individual buildings) are possible within the default roadmap maps view.
-    // center=texas&size=500x300&zoom=12&sensor=false
+    //    public string URL
+    //    {
+    //        get { return m_URL; }
+    //        set { m_URL = value; }
+    //    }
 
-    public class LocationParameters
-    {
-        
-        private string m_Center = "";
+    //    private LocationParameters m_LocationParameters = new LocationParameters();
 
-        public string Center
-        {
-            get { return m_Center; }
-            set { m_Center = value; }
-        }
+    //    public LocationParameters LocationParameters
+    //    {
+    //        get { return m_LocationParameters; }
+    //        set { m_LocationParameters = value; }
+    //    }
 
-        // possible values are 0 to 21
-        private int m_Zoom = 15;
+    //    private MapParameters m_MapParameters = new MapParameters();
 
-        public int Zoom
-        {
-            get { return m_Zoom; }
-            set { m_Zoom = value; }
-        }
+    //    public MapParameters MapParameters
+    //    {
+    //        get { return m_MapParameters; }
+    //        set { m_MapParameters = value; }
+    //    }
 
-        public const int ZoomMin = 0;
-        public const int ZoomMax = 21;
+    //    // The markers parameter takes set of value assignments (marker descriptors) of the following format:
+    //    // markers=markerStyles|markerLocation1| markerLocation2|... etc.
 
-        public override string ToString()
-        {
-            // only print if value is not blank
-            string retStr = "";
-            if (Center != null && Center.Length > 0)
-                retStr += String.Format("center={0}", Center);
-            retStr += String.Format("zoom={0}", Zoom);
+    //    private List<string> m_Markers = new List<string>();
 
-            return retStr;
-        }
-    }
+    //    public List<string> Markers
+    //    {
+    //        get { return m_Markers; }
+    //        set { m_Markers = value; }
+    //    }
 
-    //Map Parameters:
+    //    private bool m_Sensor = false;
 
-    //size (required) defines the rectangular dimensions of the map image. This parameter takes a string of the form {horizontal_value}x{vertical_value}. For example, 500x400 defines a map 500 pixels wide by 400 pixels high. Maps smaller than 180 pixels in width will display a reduced-size Google logo. This parameter is affected by the scale parameter, described below; the final output size is the product of the size and scale values.
-    //scale (optional) affects the number of pixels that are returned. scale=2 returns twice as many pixels as scale=1 while retaining the same coverage area and level of detail (i.e. the contents of the map don't change). This is useful when developing for high-resolution displays, or when generating a map for printing. The default value is 1. Accepted values are 2 and 4 (4 is only available to Maps API for Business customers.) See Scale Values for more information.
-    // (Default scale value is 1; accepted values are 1, 2, and (for Maps API for Business customers only) 4).
-
-    //format (optional) defines the format of the resulting image. By default, the Static Maps API creates PNG images. There are several possible formats including GIF, JPEG and PNG types. Which format you use depends on how you intend to present the image. JPEG typically provides greater compression, while GIF and PNG provide greater detail. For more information, see Image Formats.
-    //maptype (optional) defines the type of map to construct. There are several possible maptype values, including roadmap, satellite, hybrid, and terrain. For more information, see Static Maps API Maptypes below.
-    //language (optional) defines the language to use for display of labels on map tiles. Note that this parameter is only supported for some country tiles; if the specific language requested is not supported for the tile set, then the default language for that tileset will be used.
-    //region (optional) defines the appropriate borders to display, based on geo-political sensitivities. Accepts a region code specified as a two-character ccTLD ('top-level domain') value.
-
-    //    The table below shows the maximum allowable values for the size parameter at each scale value.
-
-    //API	                        scale=1	    scale=2	                                scale=4
-    //Free	                        640x640	    640x640 (returns 1280x1280 pixels)	    Not available.
-    //Google Maps API for Business	2048x2048	1024x1024 (returns 2048x2048 pixels)	512x512 (returns 2048x2048 pixels)
+    //    public bool Sensor
+    //    {
+    //        get { return m_Sensor; }
+    //        set { m_Sensor = value; }
+    //    }
 
 
-    public class MapParameters
-    {
-        private SizeParameters m_Size = new SizeParameters();
 
-        public SizeParameters Size
-        {
-            get { return m_Size; }
-            set { m_Size = value; }
-        }
+    //}
 
-        private int m_Scale = 2;
+    //// Location Parameters:
 
-        public int Scale
-        {
-            get { return m_Scale; }
-            set { m_Scale = value; }
-        }
+    //// center (required if markers not present) defines the center of the map, equidistant from all edges of the map. This parameter takes a location as either a comma-separated {latitude,longitude} pair (e.g. "40.714728,-73.998672") or a string address (e.g. "city hall, new york, ny") identifying a unique location on the face of the earth. For more information, see Locations below.
+    //// zoom (required if markers not present) defines the zoom level of the map, which determines the magnification level of the map. This parameter takes a numerical value corresponding to the zoom level of the region desired. For more information, see zoom levels below.
+    ////      Maps on Google Maps have an integer "zoom level" which defines the resolution of the current view. Zoom levels between 0 (the lowest zoom level, 
+    ////      in which the entire world can be seen on one map) to 21+ (down to individual buildings) are possible within the default roadmap maps view.
+    //// center=texas&size=500x300&zoom=12&sensor=false
 
-        private MapFormat m_MapFormat = MapFormat.png;
+    //public class LocationParameters
+    //{
 
-        public MapFormat MapFormat
-        {
-            get { return m_MapFormat; }
-            set { m_MapFormat = value; }
-        }
+    //    private string m_Center = "";
 
-        private MapType m_MapType = MapType.roadmap;
+    //    public string Center
+    //    {
+    //        get { return m_Center; }
+    //        set { m_Center = value; }
+    //    }
 
-        public MapType MapType
-        {
-            get { return m_MapType; }
-            set { m_MapType = value; }
-        }
+    //    // possible values are 0 to 21
+    //    private int m_Zoom = 15;
 
-        public override string ToString()
-        {
-            string retStr = "";
+    //    public int Zoom
+    //    {
+    //        get { return m_Zoom; }
+    //        set { m_Zoom = value; }
+    //    }
 
-            retStr += String.Format("size={0}", Size.ToString());
-            retStr += String.Format("scale={0}", Scale);
-            if (MapFormat == WPFXMPPClient.MapFormat.jpg_baseline)
-                retStr += String.Format("format={0}", "jpg-baseline");
-            else
-                retStr += String.Format("format={0}", MapFormat.ToString());
-            retStr += String.Format("maptype={0}", MapType.ToString());
+    //    public const int ZoomMin = 0;
+    //    public const int ZoomMax = 21;
 
-            return retStr;
-        }
- 
-    }
+    //    public override string ToString()
+    //    {
+    //        // only print if value is not blank
+    //        string retStr = "";
+    //        if (Center != null && Center.Length > 0)
+    //            retStr += String.Format("center={0}", Center);
+    //        retStr += String.Format("zoom={0}", Zoom);
 
-    public enum MapType
-    {
-        roadmap, // default
-        satellite, 
-        hybrid,
-        terrain
-    }
+    //        return retStr;
+    //    }
+    //}
 
-    // png8 or png (default) specifies the 8-bit PNG format.
-    // png32 specifies the 32-bit PNG format.
-    // gif specifies the GIF format.
-    // jpg specifies the JPEG compression format.
-    // jpg-baseline specifies a non-progressive JPEG compression format.
+    ////Map Parameters:
 
-    public enum MapFormat
-    {
-        png, 
-        png32,
-        gif,
-        jpg,
-        // jpg-baseline
-        jpg_baseline
-    }
+    ////size (required) defines the rectangular dimensions of the map image. This parameter takes a string of the form {horizontal_value}x{vertical_value}. For example, 500x400 defines a map 500 pixels wide by 400 pixels high. Maps smaller than 180 pixels in width will display a reduced-size Google logo. This parameter is affected by the scale parameter, described below; the final output size is the product of the size and scale values.
+    ////scale (optional) affects the number of pixels that are returned. scale=2 returns twice as many pixels as scale=1 while retaining the same coverage area and level of detail (i.e. the contents of the map don't change). This is useful when developing for high-resolution displays, or when generating a map for printing. The default value is 1. Accepted values are 2 and 4 (4 is only available to Maps API for Business customers.) See Scale Values for more information.
+    //// (Default scale value is 1; accepted values are 1, 2, and (for Maps API for Business customers only) 4).
 
-    public enum MarkerSize
-    {
+    ////format (optional) defines the format of the resulting image. By default, the Static Maps API creates PNG images. There are several possible formats including GIF, JPEG and PNG types. Which format you use depends on how you intend to present the image. JPEG typically provides greater compression, while GIF and PNG provide greater detail. For more information, see Image Formats.
+    ////maptype (optional) defines the type of map to construct. There are several possible maptype values, including roadmap, satellite, hybrid, and terrain. For more information, see Static Maps API Maptypes below.
+    ////language (optional) defines the language to use for display of labels on map tiles. Note that this parameter is only supported for some country tiles; if the specific language requested is not supported for the tile set, then the default language for that tileset will be used.
+    ////region (optional) defines the appropriate borders to display, based on geo-political sensitivities. Accepts a region code specified as a two-character ccTLD ('top-level domain') value.
 
-    }
-    public class SizeParameters
-    {
-        private int m_Horizontal = 400;
+    ////    The table below shows the maximum allowable values for the size parameter at each scale value.
 
-        public int Horizontal
-        {
-            get { return m_Horizontal; }
-            set { m_Horizontal = value; }
-        }
-
-        private int m_Vertical = 400;
-
-        public int Vertical
-        {
-            get { return m_Vertical; }
-            set { m_Vertical = value; }
-        }
-
-        public override string ToString()
-        {
-            return String.Format("{0}x{1}", Horizontal, Vertical);
-        }
+    ////API	                        scale=1	    scale=2	                                scale=4
+    ////Free	                        640x640	    640x640 (returns 1280x1280 pixels)	    Not available.
+    ////Google Maps API for Business	2048x2048	1024x1024 (returns 2048x2048 pixels)	512x512 (returns 2048x2048 pixels)
 
 
-    }
+    //public class MapParameters
+    //{
+    //    private SizeParameters m_Size = new SizeParameters();
 
-   
+    //    public SizeParameters Size
+    //    {
+    //        get { return m_Size; }
+    //        set { m_Size = value; }
+    //    }
+
+    //    private int m_Scale = 2;
+
+    //    public int Scale
+    //    {
+    //        get { return m_Scale; }
+    //        set { m_Scale = value; }
+    //    }
+
+    //    private MapFormat m_MapFormat = MapFormat.png;
+
+    //    public MapFormat MapFormat
+    //    {
+    //        get { return m_MapFormat; }
+    //        set { m_MapFormat = value; }
+    //    }
+
+    //    private MapType m_MapType = MapType.roadmap;
+
+    //    public MapType MapType
+    //    {
+    //        get { return m_MapType; }
+    //        set { m_MapType = value; }
+    //    }
+
+    //    public override string ToString()
+    //    {
+    //        string retStr = "";
+
+    //        retStr += String.Format("size={0}", Size.ToString());
+    //        retStr += String.Format("scale={0}", Scale);
+    //        if (MapFormat == WPFXMPPClient.MapFormat.jpg_baseline)
+    //            retStr += String.Format("format={0}", "jpg-baseline");
+    //        else
+    //            retStr += String.Format("format={0}", MapFormat.ToString());
+    //        retStr += String.Format("maptype={0}", MapType.ToString());
+
+    //        return retStr;
+    //    }
+
+    //}
+
+    //public enum MapType
+    //{
+    //    roadmap, // default
+    //    satellite, 
+    //    hybrid,
+    //    terrain
+    //}
+
+    //// png8 or png (default) specifies the 8-bit PNG format.
+    //// png32 specifies the 32-bit PNG format.
+    //// gif specifies the GIF format.
+    //// jpg specifies the JPEG compression format.
+    //// jpg-baseline specifies a non-progressive JPEG compression format.
+
+    //public enum MapFormat
+    //{
+    //    png, 
+    //    png32,
+    //    gif,
+    //    jpg,
+    //    // jpg-baseline
+    //    jpg_baseline
+    //}
+
+    //public enum MarkerSize
+    //{
+
+    //}
+    //public class SizeParameters
+    //{
+    //    private int m_Horizontal = 400;
+
+    //    public int Horizontal
+    //    {
+    //        get { return m_Horizontal; }
+    //        set { m_Horizontal = value; }
+    //    }
+
+    //    private int m_Vertical = 400;
+
+    //    public int Vertical
+    //    {
+    //        get { return m_Vertical; }
+    //        set { m_Vertical = value; }
+    //    }
+
+    //    public override string ToString()
+    //    {
+    //        return String.Format("{0}x{1}", Horizontal, Vertical);
+    //    }
+
+
+    //}
+    #endregion
+
 }
-;
