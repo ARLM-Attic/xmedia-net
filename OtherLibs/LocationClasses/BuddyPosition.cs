@@ -8,9 +8,9 @@ using System.ComponentModel;
 
 namespace LocationClasses
 {
-    public class BuddyPosition : INotifyPropertyChanged
+    public class BuddyLocationPosition : INotifyPropertyChanged
     {
-        public BuddyPosition(RosterItem item)
+        public BuddyLocationPosition(RosterItem item)
         {
             RosterItem = item;
             ((INotifyPropertyChanged)item).PropertyChanged += new PropertyChangedEventHandler(BuddyPosition_PropertyChanged);
@@ -64,7 +64,6 @@ namespace LocationClasses
             {
             }
         }
-
 
 
         #region INotifyPropertyChanged Members
