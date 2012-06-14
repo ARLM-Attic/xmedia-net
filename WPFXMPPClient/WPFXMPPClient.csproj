@@ -76,6 +76,7 @@
     <ApplicationIcon>Icon1.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Expression.Drawing" />
     <Reference Include="Microsoft.Surface, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Surface.Presentation, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
@@ -123,12 +124,18 @@
       <DependentUpon>AudioPlayerUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="BetterAudioResampler.cs" />
+    <Compile Include="BlankWindow.xaml.cs">
+      <DependentUpon>BlankWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DialogControl.xaml.cs">
       <DependentUpon>DialogControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="DockStuff.cs" />
     <Compile Include="FileTransferWindow.xaml.cs">
       <DependentUpon>FileTransferWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GeoLocationWindow.xaml.cs">
+      <DependentUpon>GeoLocationWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="IncomingCallWindow.xaml.cs">
       <DependentUpon>IncomingCallWindow.xaml</DependentUpon>
@@ -188,6 +195,10 @@
       <Project>{6D3414FC-4336-426A-BED4-814AB331FDF0}</Project>
       <Name>ImageAquisition</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OtherLibs\LocationClasses\LocationClasses.csproj">
+      <Project>{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}</Project>
+      <Name>LocationClasses</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OtherLibs\WPFImageControls\WPFImageWindows\WPFImageWindows.csproj">
       <Project>{B914EE15-6A3C-4BAA-AB12-932D1325C86D}</Project>
       <Name>WPFImageWindows</Name>
@@ -222,6 +233,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="BlankWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="ChatWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -233,6 +248,10 @@
     <Page Include="FileTransferWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GeoLocationWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="IncomingCallWindow.xaml">
       <SubType>Designer</SubType>
