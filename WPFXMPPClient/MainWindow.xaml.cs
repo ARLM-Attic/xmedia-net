@@ -796,34 +796,42 @@ namespace WPFXMPPClient
         private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
         {
             MapWindow.XMPPClient = this.XMPPClient;
-            ShowMapWindow();
+
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            ShowMapWindow(item);
         }
 
-        public void ShowMapWindow()
+        public void ShowMapWindow(RosterItem item)
         {
             if (MapWindow.IsLoaded == false)
             {
                 MapWindow = new MapWindow();
                 MapWindow.XMPPClient = this.XMPPClient;
+                MapWindow.OurRosterItem = item;
 
-                // if a buddy is highlighted, center the map on them (or only show them),
-                // or you are going to track/create KML for them
-                if (ListBoxRoster.SelectedItems.Count >= 0)
-                {
-                    // can't multi-select so we will only be able to select one buddy at a time
-                    MapWindow.OurRosterItem = ListBoxRoster.SelectedItem as RosterItem;
-                }
+                //// if a buddy is highlighted, center the map on them (or only show them),
+                //// or you are going to track/create KML for them
+                //if (ListBoxRoster.SelectedItems.Count >= 0)
+                //{
+                //    // can't multi-select so we will only be able to select one buddy at a time
+                //    MapWindow.OurRosterItem = ListBoxRoster.SelectedItem as RosterItem;
+                //}
              
                 MapWindow.Show();
                 
             }
             else
             {
-                if (ListBoxRoster.SelectedItems.Count >= 0)
-                {
-                    // can't multi-select
-                    MapWindow.OurRosterItem = ListBoxRoster.SelectedItem as RosterItem;
-                }
+                //if (ListBoxRoster.SelectedItems.Count >= 0)
+                //{
+                //    // can't multi-select
+                //    MapWindow.OurRosterItem = ListBoxRoster.SelectedItem as RosterItem;
+                //}
+                MapWindow.OurRosterItem = item;
+                
                 MapWindow.Activate();
                 IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
                 FlashWindow(windowHandle, true);
