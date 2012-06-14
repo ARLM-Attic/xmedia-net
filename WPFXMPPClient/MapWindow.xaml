@@ -110,7 +110,7 @@
             <!--<Grid Grid.Row="1" Background="Beige" Margin="3,0">
                 <Image x:Name="MapImage" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"> </Image>
             </Grid>-->
-            <local:MapUserControl Background="Beige" Visibility="Visible" Grid.Row="1" Margin="3,0" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>
+            <local:MapUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Visible" Grid.Row="1" Margin="3,3,3,3" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>
         
             <Grid Grid.Row="2" Background="Beige" Visibility="Collapsed">
                 <StackPanel>

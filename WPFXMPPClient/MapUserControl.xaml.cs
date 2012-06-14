@@ -398,7 +398,8 @@ namespace WPFXMPPClient
             }
 
         // was this ok? 
-
+            MapProperties.MapParameters.Scale = (int)ComboBoxScale.SelectedValue;
+            MapProperties.LocationParameters.Zoom = (int)ComboBoxZoom.SelectedValue;
 
 
             string strGoogleMapsApiURL = "http://maps.googleapis.com/maps/api/staticmap?";

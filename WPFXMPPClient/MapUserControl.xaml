@@ -63,9 +63,9 @@
         </DataTemplate>
     </UserControl.Resources>
     
-    <Grid Background="Beige" x:Name="GridMain" Height="800" Width="600" >
+    <Grid Background="Transparent" x:Name="GridMain" >
         <Grid.RowDefinitions>
-            <RowDefinition Height="400*" /> <!-- Row 0: Options -->
+            <RowDefinition Height="*" /> <!-- Row 0: Options -->
             <RowDefinition Height="Auto" />    <!-- Row 1: Real-time Stats  -->
            
         </Grid.RowDefinitions>
@@ -74,8 +74,9 @@
             <TextBox x:Name="TextBoxURL" Text="http://www.yahoo.com"></TextBox>
             <Button Click="ButtonLoadURL_Click" x:Name="ButtonLoadURL" Width="Auto">Load URL</Button>         
         </StackPanel>
-              
-        <Grid Visibility="Visible" Grid.Row="1" Margin="5,5,5,5" x:Name="GridOptions"> <!-- Options Grid -->
+
+            
+         <Grid Visibility="Visible" Margin="5,5,5,5" Grid.Row="1" x:Name="GridOptions" > <!-- Options Grid -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition> <!-- Map Type-->
                 <RowDefinition Height="Auto"></RowDefinition> <!-- Zoom -->
@@ -89,7 +90,7 @@
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
-               
+                <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             
                 <!--<Expander Header="Location History">
@@ -102,45 +103,48 @@
           
             
                 <Button Visibility="Collapsed" Grid.Column="2" HorizontalAlignment="Right" x:Name="ButtonLoadLocation" Click="ButtonLoadLocation_Click" Width="Auto">Refresh</Button>
-                <Button Visibility="Collapsed" Grid.Column="3" HorizontalAlignment="Right" x:Name="ButtonLoadLocationAll" Click="ButtonLoadLocationAll_Click" Width="Auto">Load All</Button>
-       
+                <Button Visibility="Collapsed" Grid.Column="3" HorizontalAlignment="Right" x:Name="ButtonLoadLocationAll" Click="ButtonLoadLocationAll_Click" Width="Auto" Margin="0,0,65,0">Load All</Button>
 
-            <!--<StackPanel Margin="5,5,5,5"  Visibility="Visible" Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">-->
-            <Label Margin="3,3,3,3" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Map Type</Label>
-            <ComboBox Margin="3,3,3,3" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxMapType" Width="100" Height="25" />
+           
+           
+                     <!--<StackPanel Margin="5,5,5,5"  Visibility="Visible" Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">-->
+                    <Label Margin="3,3,3,3" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Map Type</Label>
+                    <ComboBox Margin="3,3,3,3" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxMapType" Width="100" Height="25" />
 
-            <Label Margin="3,3,3,3" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold"  VerticalAlignment="Center">Zoom</Label>
-            <ComboBox Margin="3,3,3,3" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxZoom" ItemsSource="{Binding}" Width="50" Height="25"/>
+                    <Label Margin="3,3,3,3" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" FontWeight="Bold"  VerticalAlignment="Center">Zoom</Label>
+                    <ComboBox Margin="3,3,0,3" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxZoom" ItemsSource="{Binding}" Width="50" Height="25"/>
 
-            <Label VerticalAlignment="Center" Margin="3,3,3,3" HorizontalAlignment="Left" Grid.Row="2" Grid.Column="0" FontWeight="Bold">Size</Label>
-            <StackPanel Margin="3,3,3,3" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Orientation="Horizontal">
-                <TextBox  Width="70" x:Name="TextBoxSizeHorizontal" ></TextBox>
-                <Label FontWeight="Bold" >x</Label>
-                <TextBox Width="70" x:Name="TextBoxSizeVertical" ></TextBox>
-                <Label FontWeight="Regular" >Pixels</Label>
-            </StackPanel>
+                    <Label VerticalAlignment="Center" Margin="3,3,3,3" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" FontWeight="Bold">Size</Label>
+                    <StackPanel Margin="3,3,3,3" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Orientation="Horizontal">
+                        <TextBox  Width="70" x:Name="TextBoxSizeHorizontal" ></TextBox>
+                        <Label FontWeight="Bold" >x</Label>
+                        <TextBox Width="70" x:Name="TextBoxSizeVertical" ></TextBox>
+                        <Label FontWeight="Regular" >Pixels</Label>
+                    </StackPanel>
 
-            <Label Margin="3,3,3,3" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold"  VerticalAlignment="Center">Scale</Label>
-            <ComboBox Margin="3,3,3,3" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxScale" ItemsSource="{Binding}" Width="50" Height="25"/>
+                    <Label Margin="3,3,3,3" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" FontWeight="Bold"  VerticalAlignment="Center">Scale</Label>
+                    <ComboBox Margin="3,3,0,3" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxScale" ItemsSource="{Binding}" Width="50" Height="25"/>
 
 
-            <!--<StackPanel Grid.Row="1" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Stretch">-->
+                    <!--<StackPanel Grid.Row="1" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Stretch">-->
 
  
-            <!--</StackPanel>-->
+                    <!--</StackPanel>-->
 
-            <Label Margin="3,3,3,3" Grid.Column="0" Grid.Row="4" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center">Timestamp</Label>
-            <TextBlock Margin="3,3,3,3" Grid.Column="1" Grid.Row="4" x:Name="TextBoxTimeStamp" HorizontalAlignment="Left" VerticalAlignment="Center"></TextBlock>
-            <Label Margin="3,3,3,3" Grid.Column="0" Grid.Row="5" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center">Coordinates</Label>
-            <TextBlock Margin="3,3,3,3" Grid.Column="1" Grid.Row="5" x:Name="TextBoxGeoLoc" HorizontalAlignment="Left" VerticalAlignment="Center"></TextBlock>
+                    <Label Margin="3,3,3,3" Grid.Column="0" Grid.Row="2" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center">Timestamp</Label>
+                    <TextBlock Margin="3,3,3,3" Grid.Column="1" Grid.Row="2" x:Name="TextBoxTimeStamp" HorizontalAlignment="Left" VerticalAlignment="Center"></TextBlock>
+                    <Label Margin="3,3,3,3" Grid.Column="2" Grid.Row="2" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center">Coordinates</Label>
+                    <TextBlock Margin="3,3,0,3" Grid.Column="3" Grid.Row="2" x:Name="TextBoxGeoLoc" HorizontalAlignment="Left" VerticalAlignment="Center"></TextBlock>
 
-            <Button Grid.Row="6" Grid.Column="3" Margin="3,3,3,3" VerticalAlignment="Center" x:Name="ButtonUpdate" HorizontalAlignment="Right" Click="ButtonUpdate_Click" Height="25">Update</Button>
-
+                    <Button Grid.Row="3" Grid.Column="4" Margin="0,0,6,6" VerticalAlignment="Center" x:Name="ButtonUpdate" HorizontalAlignment="Right" Click="ButtonUpdate_Click" Height="25">Update</Button>
+                       
             <!--</StackPanel>-->
         </Grid>
 
-        <Image Grid.Row="0" x:Name="MapImage" Margin="3,3,3,3" />
-
+        <Grid Grid.Row="0" Background="Beige" Margin="3,3,3,3" >
+            <Image x:Name="MapImage" Margin="3,3,3,3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        </Grid>
+        
         <Grid Visibility="Collapsed" Grid.Row="2" Margin="5,5,5,5">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
