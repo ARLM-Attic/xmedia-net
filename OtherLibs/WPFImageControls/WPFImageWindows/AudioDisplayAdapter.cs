@@ -148,7 +148,7 @@ namespace WPFImageWindows
 
         private System.Windows.Media.Color m_cForeColor = Colors.Red;
 
-        internal System.Windows.Media.Color ForeColor
+        public System.Windows.Media.Color ForeColor
         {
             get { return m_cForeColor; }
             set { m_cForeColor = value; }
@@ -172,8 +172,22 @@ namespace WPFImageWindows
         }
 
         // New data was received, update our display buffer
-        internal void NewData(MediaSample sample)
+        public void NewData(MediaSample sample)
         {
+            if (sample == null)
+            {
+                lock (LockSample)
+                {
+
+                    if (DrawBuffer != null)
+                        Array.Clear(DrawBuffer, 0, DrawBuffer.Length);
+                }
+                return;
+            }
+            if (sample.NumberSamples <= 0)
+                return;
+
+
             if (m_bIsInitialized == false)
             {
                 AudioFormat = sample.AudioFormat;

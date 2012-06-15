@@ -164,7 +164,7 @@ namespace AudioClasses
     /// <summary>
     /// Our main WCF interface for controlling network cameras
     /// </summary>
-    public delegate void DelegateRawFrame(byte[] bRawData, VideoDataFormat format, int nWidth, int nHeight);
+    public delegate void DelegateRawFrame(byte[] bRawData, VideoCaptureRate format);
 
     public interface ICameraControl
     {
@@ -184,13 +184,14 @@ namespace AudioClasses
 
     public interface IVideoSource
     {
-        VideoCaptureRate[] GetSupportedCaptureRates();
+        List<VideoCaptureRate> VideoFormats { get; }
 
-        event DelegateRawFrame NewFrame;
+        event DelegateRawFrame OnNewFrame;
 
-        VideoCaptureRate ActiveVideoCaptureRate { get; set; }
+        VideoCaptureRate ActiveVideoCaptureRate { get; }
 
-        string Name { get; set; }
+        string Name { get; }
+
     }
 
     public interface IVideoSink

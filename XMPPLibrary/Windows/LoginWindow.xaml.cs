@@ -179,7 +179,6 @@ namespace System.Net.XMPP
             XMPPAccount newaccount = new XMPPAccount();
             newaccount.AccountName = "New Account";
             this.AllAccounts.Add(newaccount);
-            this.DataContext = newaccount;
             this.ComboBoxAccounts.ItemsSource = null;
             this.ComboBoxAccounts.ItemsSource = this.AllAccounts;
             this.ComboBoxAccounts.SelectedItem = newaccount;
@@ -204,7 +203,7 @@ namespace System.Net.XMPP
 
         private void TextBoxPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            ActiveAccount = this.ComboBoxAccounts.SelectedItem as XMPPAccount;
+            //ActiveAccount = this.ComboBoxAccounts.SelectedItem as XMPPAccount;
             if (ActiveAccount == null)
                 return;
 

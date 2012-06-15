@@ -105,6 +105,9 @@
     <Compile Include="..\RTP\RTPStream.cs">
       <Link>RTPStream.cs</Link>
     </Compile>
+    <Compile Include="..\RTP\RTPVideoStream.cs">
+      <Link>RTPVideoStream.cs</Link>
+    </Compile>
     <Compile Include="..\RTP\STUN.cs">
       <Link>STUN.cs</Link>
     </Compile>

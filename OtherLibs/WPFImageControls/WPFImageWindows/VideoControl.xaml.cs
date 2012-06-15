@@ -54,13 +54,13 @@ namespace WPFImageWindows
             {
                 if (m_objCamera != null)
                 {
-                    m_objCamera.NewFrame -= new DelegateRawFrame(m_objCamera_NewRawFrame);
+                    m_objCamera.OnNewFrame -= new DelegateRawFrame(m_objCamera_NewRawFrame);
                 }
 
                 if (value != null)
                 {
                     m_objCamera = value;
-                    m_objCamera.NewFrame += new DelegateRawFrame(m_objCamera_NewRawFrame);
+                    m_objCamera.OnNewFrame += new DelegateRawFrame(m_objCamera_NewRawFrame);
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace WPFImageWindows
 
         WriteableBitmap videobmp = new WriteableBitmap(352, 240, 96, 96, PixelFormats.Bgr32, null);
 
-        private bool m_bShowOnlyCleanFrame = false;
+        private bool m_bShowOnlyCleanFrame = true;
 
         public bool ShowOnlyCleanFrame
         {
@@ -157,14 +157,14 @@ namespace WPFImageWindows
 
      
 
-        void m_objCamera_NewRawFrame(byte[] bRawData, VideoDataFormat format, int nWidth, int nHeight)
+        void m_objCamera_NewRawFrame(byte[] bRawData, VideoCaptureRate format)
         {
             if (m_bDisplay == false)
                 return;
             if (ShowOnlyCleanFrame == false)
                 return;
 
-            NewImage(bRawData, nWidth, nHeight);
+            NewImage(bRawData, format.Width, format.Height);
         }
 
         /// <summary>

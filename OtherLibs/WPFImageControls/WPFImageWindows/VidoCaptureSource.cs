@@ -20,9 +20,9 @@ using System.IO;
 namespace WPFImageWindows
 {
 
-    public partial class VidoCaptureSource : System.ComponentModel.INotifyPropertyChanged, IVideoSource
+    public partial class VideoCaptureSource : System.ComponentModel.INotifyPropertyChanged, IVideoSource
     {
-        public VidoCaptureSource(ImageAquisition.MFVideoCaptureDevice dev)
+        public VideoCaptureSource(ImageAquisition.MFVideoCaptureDevice dev)
         {
             VideoCaptureDevice = dev;
             Name = VideoCaptureDevice.DisplayName;
@@ -45,14 +45,14 @@ namespace WPFImageWindows
         }
 
 
-        public static VidoCaptureSource[] GetVideoCaptureDevices()
+        public static VideoCaptureSource[] GetVideoCaptureDevices()
         {
-            List<VidoCaptureSource> caps = new List<VidoCaptureSource>();
+            List<VideoCaptureSource> caps = new List<VideoCaptureSource>();
 
             ImageAquisition.MFVideoCaptureDevice[] capdev = ImageAquisition.MFVideoCaptureDevice.GetCaptureDevices();
             foreach (ImageAquisition.MFVideoCaptureDevice dev in capdev)
             {
-                VidoCaptureSource cam = new VidoCaptureSource(dev);
+                VideoCaptureSource cam = new VideoCaptureSource(dev);
                 caps.Add(cam);
             }
             return caps.ToArray();
@@ -160,7 +160,7 @@ namespace WPFImageWindows
             m_nNumberFramesProcessed = 0;
             StartTime = DateTime.Now;
 
-            VideoCaptureDevice.OnNewFrame += new ImageAquisition.MFVideoCaptureDevice.DelegateNewFrame(VideoCaptureDevice_OnNewFrame);
+            VideoCaptureDevice.OnNewFrame += new AudioClasses.DelegateRawFrame(VideoCaptureDevice_OnNewFrame);
             VideoCaptureDevice.OnFailStartCapture += new ImageAquisition.MFVideoCaptureDevice.DelegateError(VideoCaptureDevice_OnFailStartCapture);
 
             VideoCaptureDevice.Start(ActiveVideoCaptureRate);
@@ -191,7 +191,7 @@ namespace WPFImageWindows
 
             if (VideoCaptureDevice != null)
             {
-                VideoCaptureDevice.OnNewFrame -= new ImageAquisition.MFVideoCaptureDevice.DelegateNewFrame(VideoCaptureDevice_OnNewFrame);
+                VideoCaptureDevice.OnNewFrame -= new AudioClasses.DelegateRawFrame(VideoCaptureDevice_OnNewFrame);
                 VideoCaptureDevice.OnFailStartCapture -= new ImageAquisition.MFVideoCaptureDevice.DelegateError(VideoCaptureDevice_OnFailStartCapture);
                 VideoCaptureDevice.Stop();
             }
@@ -201,7 +201,6 @@ namespace WPFImageWindows
             return true;
         }
 
-        public event DelegateRawFrame NewRawFrame = null;
         
         bool m_bNeedTakePicture = false;
         bool m_bNeedReturnPicture = false;
@@ -272,13 +271,13 @@ namespace WPFImageWindows
 
         void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat)
         {
-            //m_nNumberFramesCaptures++;
+            m_nNumberFramesCaptures++;
 
 
-            //if (ActualFramesProcessedPerSecond > DesiredFramesPerSecond) // User wants to analyze less than what the camera is providing
-            //    return;
+            if (ActualFramesProcessedPerSecond > DesiredFramesPerSecond) // User wants to analyze less than what the camera is providing
+                return;
 
-            //m_nNumberFramesProcessed++;
+            m_nNumberFramesProcessed++;
 
 
             //if (m_bNeedTakePicture == true)
@@ -304,8 +303,8 @@ namespace WPFImageWindows
             //}
 
 
-            //if (NewRawFrame != null)
-            //    NewRawFrame(pFrame, videoformat.Width, videoformat.Height);
+            if (OnNewFrame != null)
+                OnNewFrame(pFrame, videoformat);
 
         }
 
@@ -530,8 +529,17 @@ namespace WPFImageWindows
         #region IVideoSource Members
 
 
-        public event DelegateRawFrame NewFrame;
+        public List<VideoCaptureRate> VideoFormats
+        {
+            get 
+            {
+                return VideoCaptureDevice.VideoFormats;
+            }
+        }
 
+        public event DelegateRawFrame OnNewFrame = null;
+
+      
         #endregion
     }
 

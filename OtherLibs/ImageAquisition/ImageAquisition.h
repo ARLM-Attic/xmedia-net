@@ -12,7 +12,7 @@ namespace ImageAquisition
 {
 
 
-	public ref class MFVideoCaptureDevice
+	public ref class MFVideoCaptureDevice : public AudioClasses::IVideoSource
 	{
 	public:
 		MFVideoCaptureDevice(IntPtr MFActivate);
@@ -20,16 +20,55 @@ namespace ImageAquisition
 
 		static array<MFVideoCaptureDevice ^> ^GetCaptureDevices();
 
-		bool Start(VideoCaptureRate ^videoformat);
-		void Stop();
+		virtual bool Start(VideoCaptureRate ^videoformat);
+		virtual void Stop();
 
-		delegate void DelegateNewFrame(array<unsigned char> ^pFrame, VideoCaptureRate ^videoformat);
-		event DelegateNewFrame ^OnNewFrame;
+		event AudioClasses::DelegateRawFrame ^OnNewFrame
+		{
+		public :
+			virtual void add(AudioClasses::DelegateRawFrame ^del)
+			{
+				delNewFrame += del;
+			}
+			virtual void remove(AudioClasses::DelegateRawFrame ^del)
+			{
+				delNewFrame -= del;
+			} 
+			void raise(array<unsigned char> ^data, AudioClasses::VideoCaptureRate ^videoformat)
+			{
+				delNewFrame(data, videoformat);
+			}
+		}
+
+
 
 		delegate void DelegateError(String ^strError);
 		event DelegateError ^OnFailStartCapture;
 
-		System::Collections::Generic::List<VideoCaptureRate  ^> ^VideoFormats;
+		property System::Collections::Generic::List<VideoCaptureRate  ^> ^VideoFormats
+		{
+			virtual System::Collections::Generic::List<VideoCaptureRate  ^> ^get()
+			{
+				return m_listVideoFormats;
+			}
+		}
+
+		property VideoCaptureRate  ^ActiveVideoCaptureRate
+		{
+			virtual VideoCaptureRate  ^get() 
+			{
+				return ActiveVideoFormat;
+			}
+		}
+
+		property String ^Name
+		{
+			virtual String ^get()
+			{
+				return DisplayName;
+			}
+
+		}
 
 		String ^DisplayName;
 
@@ -39,6 +78,9 @@ namespace ImageAquisition
 
 	protected:
 
+		event AudioClasses::DelegateRawFrame ^delNewFrame;
+
+		System::Collections::Generic::List<VideoCaptureRate  ^> ^m_listVideoFormats;
 
 		VideoCaptureRate ^ActiveVideoFormat;
 

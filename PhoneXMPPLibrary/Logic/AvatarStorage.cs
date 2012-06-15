@@ -138,20 +138,25 @@ namespace System.Net.XMPP
             if (storage.DirectoryExists(AccountFolder) == false)
                 storage.CreateDirectory(AccountFolder);
 
+
             // Load from storage
             IsolatedStorageFileStream location = null;
             try
             {
-                location = new IsolatedStorageFileStream(strFileName, System.IO.FileMode.Open, storage);
-
-                
-                DataContractSerializer ser = new DataContractSerializer(typeof(JIDtoHash[]));
-                JIDtoHash[] hashes = (JIDtoHash[] ) ser.ReadObject(location);
-                DicJidHash.Clear();
-
-                foreach (JIDtoHash jh in hashes)
+                if (storage.FileExists(strFileName) == true)
                 {
-                    DicJidHash.Add(jh.JID, jh);
+
+                    location = new IsolatedStorageFileStream(strFileName, System.IO.FileMode.Open, storage);
+
+
+                    DataContractSerializer ser = new DataContractSerializer(typeof(JIDtoHash[]));
+                    JIDtoHash[] hashes = (JIDtoHash[])ser.ReadObject(location);
+                    DicJidHash.Clear();
+
+                    foreach (JIDtoHash jh in hashes)
+                    {
+                        DicJidHash.Add(jh.JID, jh);
+                    }
                 }
 
             }

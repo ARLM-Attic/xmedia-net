@@ -35,6 +35,8 @@ namespace WPFXMPPClient
         public AudioMuxerWindow()
         {
             InitializeComponent();
+            AudioFileReaderSpy = new AudioSourceSpy(AudioFileReader);
+            AudioFileReaderSpy.OnPullSample += new DelegatePullSample(AudioFileReaderSpy_OnPullSample);
         }
 
 
@@ -44,7 +46,7 @@ namespace WPFXMPPClient
         /// Currently only supports HD voice because that's all the dmo's can echo cancel, but may add support for AAC if that becomes available
         /// </summary>
         AudioConferenceMixer AudioMixer = new AudioConferenceMixer(AudioFormat.SixteenBySixteenThousandMono);
-
+        AudioSourceSpy AudioFileReaderSpy = null;
         public AudioFileReader AudioFileReader
         {
             get { return this.AudioPlayer.AudioFileReader; }
@@ -80,7 +82,11 @@ namespace WPFXMPPClient
 
         }
 
-       
+        void AudioFileReaderSpy_OnPullSample(MediaSample sample)
+        {
+            SoundAudioSource.NewData(sample);
+        }
+
 
         AudioClasses.AudioDevice[] MicrophoneDevices = null;
         AudioClasses.AudioDevice[] SpeakerDevices = null;
@@ -91,7 +97,10 @@ namespace WPFXMPPClient
         bool m_bAudioActive = false;
 
 
-        // TODO.. need speaker play object/method
+        // TODO.. need speaker play object/method           
+        WPFImageWindows.AudioSource MicrophoneAudioSource = null;
+        WPFImageWindows.AudioSource SoundAudioSource = null;
+
         ImageAquisition.AudioDeviceVolume MicrophoneVolume = null;
         ImageAquisition.AudioDeviceVolume SpeakerVolume = null;
 
@@ -99,6 +108,19 @@ namespace WPFXMPPClient
         System.Windows.Threading.DispatcherTimer UpdateTimer = null;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            /// Set up our audio source for drawing mic output
+            MicrophoneAudioSource = new WPFImageWindows.AudioSource(this);
+            MicrophoneAudioSource.ForeColor = Colors.Blue;
+            OurAudioViewer.Sources.Add(MicrophoneAudioSource);
+            OurAudioViewer.AudioDisplayFilter.AddSource(MicrophoneAudioSource);
+
+            SoundAudioSource = new WPFImageWindows.AudioSource(this.AudioFileReaderSpy);
+            SoundAudioSource.ForeColor = Colors.BlueViolet;
+            OurAudioViewer.Sources.Add(SoundAudioSource);
+            OurAudioViewer.AudioDisplayFilter.AddSource(SoundAudioSource);
+
+
+
             UpdateTimer = new System.Windows.Threading.DispatcherTimer(TimeSpan.FromSeconds(1), System.Windows.Threading.DispatcherPriority.Normal, new EventHandler(UpdateGuiTimer), this.Dispatcher);
             UpdateTimer.Start();
 
@@ -126,6 +148,12 @@ namespace WPFXMPPClient
 
             AudioPlayer.XMPPClient = this.XMPPClient;
 
+
+            /// Setup video sources
+            /// 
+            ImageAquisition.MFVideoCaptureDevice [] devices = ImageAquisition.MFVideoCaptureDevice.GetCaptureDevices();
+            this.ComboBoxVideoSources.ItemsSource = devices;
+            
             this.DataContext = this;
         }
 
@@ -175,6 +203,9 @@ namespace WPFXMPPClient
         ToneGenerator OurToneGenerator = new ToneGenerator(350, 440);
         //TonGenerator noise2 = new TonGenerator(1004, 1004);
 
+        PushPullObject thismember = null;
+        PushPullObject FileMixer = null;
+
         void StartMicrophoneAndSpeaker(AudioFormat format)
         {
             if (this.IsLoaded == false)
@@ -191,13 +222,18 @@ namespace WPFXMPPClient
             if ((micdevice == null) || (speakdevice == null))
                 return;
 
-            PushPullObject thismember = AudioMixer.AddInputOutputSource(this, this);
-            PushPullObject FileMixer = AudioMixer.AddInputOutputSource(AudioFileReader, null);
+            thismember = AudioMixer.AddInputOutputSource(this, this);
+            FileMixer = AudioMixer.AddInputOutputSource(AudioFileReaderSpy, null);
             
             PushPullObject tonemember = AudioMixer.AddInputOutputSource(OurToneGenerator, OurToneGenerator);
             OurToneGenerator.IsSourceActive = false;
             //thismember.SourceExcludeList.Clear();  // clear so we can hear our mic
             thismember.SourceExcludeList.Add(tonemember.AudioSource); /// we don't want to hear the tone we're sending
+
+            if (CheckBoxCancelOutMusic.IsChecked == true)
+            {
+                thismember.SourceExcludeList.Add(AudioFileReaderSpy);
+            }
 
             System.Windows.Interop.WindowInteropHelper helper = new System.Windows.Interop.WindowInteropHelper(Window.GetWindow(this));
 
@@ -224,7 +260,10 @@ namespace WPFXMPPClient
             Microphone.UseKinectArray = false;
             Speaker = new DirectShowFilters.SpeakerFilter(speakdevice.Guid, 20, format, helper.Handle);
             Speaker.Start();
- 
+
+
+
+
             if (UseAEC == true)
             {
                 Microphone.Start();
@@ -606,15 +645,18 @@ namespace WPFXMPPClient
         //Pull a sample from our mic to send to the conference
         public MediaSample PullSample(AudioFormat format, TimeSpan tsDuration)
         {
+            MediaSample sample = null;
             lock (MicLock)
             {
                 if (Microphone != null)
                 {
-                    return Microphone.PullSample(format, tsDuration);
+                    sample =  Microphone.PullSample(format, tsDuration);
                 }
-                else
-                    return null;
             }
+
+            this.MicrophoneAudioSource.NewData(sample);
+
+            return sample;
         }
 
 
@@ -902,9 +944,45 @@ namespace WPFXMPPClient
            
         }
 
+        private void CheckBoxCancelOutMusic_Checked(object sender, RoutedEventArgs e)
+        {
+            if (thismember != null)
+            {
+                if (thismember.SourceExcludeList.Contains(AudioFileReaderSpy) == false)
+                    thismember.SourceExcludeList.Add(AudioFileReaderSpy); /// we don't want to hear the tone we're sending
+            }
+        }
+
+        private void CheckBoxCancelOutMusic_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (thismember != null)
+            {
+                if (thismember.SourceExcludeList.Contains(AudioFileReaderSpy) == true)
+                    thismember.SourceExcludeList.Remove(AudioFileReaderSpy); /// we don't want to hear the tone we're sending
+            }
+        }
+
         private void ButtonStartStopVideo_Click(object sender, RoutedEventArgs e)
         {
+            ImageAquisition.MFVideoCaptureDevice dev = ComboBoxVideoSources.SelectedItem as ImageAquisition.MFVideoCaptureDevice;
+            if (dev != null)
+            {
+                VideoCaptureRate rate = ComboBoxResolution.SelectedItem as VideoCaptureRate;
+                if (rate != null)
+                {
+                    WPFImageWindows.VideoCaptureSource devwrapper = new WPFImageWindows.VideoCaptureSource(dev);
+                    devwrapper.ActiveVideoCaptureRate = rate;
+                    this.OurVideo.DataContext = devwrapper;
+                    devwrapper.StartCapture();
+                }
+            }
+        }
 
+        private void ComboBoxVideoSources_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ImageAquisition.MFVideoCaptureDevice dev = ComboBoxVideoSources.SelectedItem as ImageAquisition.MFVideoCaptureDevice;
+            if (dev != null)
+                ComboBoxResolution.ItemsSource = dev.VideoFormats;
         }
     }
 

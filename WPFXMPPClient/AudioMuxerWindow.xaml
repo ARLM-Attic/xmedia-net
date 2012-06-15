@@ -61,8 +61,8 @@
 
                     <Grid Margin="2" Grid.Row="0" >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="560"/>
-                            <ColumnDefinition Width="0.472*"/>
+                            <ColumnDefinition Width="150*"/>
+                            <ColumnDefinition Width="220"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.5*"/>
@@ -76,10 +76,18 @@
 
 
                         <Grid Height="40" Margin="0,0,0,4" Grid.Row="0" Grid.ColumnSpan="2" >
-                            <Label Width="125" Content="Speaker Device" HorizontalAlignment="Left"/>
-                            <ComboBox Width="200" Background="#AAEEFFEE" x:Name="ComboBoxSpeakerDevices" SelectionChanged="ComboBoxSpeakerDevices_SelectionChanged" HorizontalAlignment="Left" Margin="125,0,0,0" />
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="40" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition Width="100*" />
+                            </Grid.ColumnDefinitions>
+                            <Label Width="60" Content="Speaker" HorizontalAlignment="Left"/>
+                            <ComboBox Grid.Column="1" Background="#AAEEFFEE" x:Name="ComboBoxSpeakerDevices" SelectionChanged="ComboBoxSpeakerDevices_SelectionChanged" />
                             <!--<s:SurfaceCheckBox Margin="5,0" x:Name="CheckBoxAutoAnswer" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Auto Answer</s:SurfaceCheckBox>-->
-                            <ToggleButton ToolTip="Speaker Off" Background="#AACCFFCC" Margin="327,2,0,2" BorderBrush="{x:Null}" x:Name="ButtonMuteSpeaker" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding SpeakerMute}" HorizontalAlignment="Left">
+                            <ToggleButton Grid.Column="2" ToolTip="Speaker Off" Background="#AACCFFCC" BorderBrush="{x:Null}" x:Name="ButtonMuteSpeaker" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding SpeakerMute}" HorizontalAlignment="Left">
                                 <Image Width="32" Height="32" >
                                     <Image.Style>
                                         <Style>
@@ -95,11 +103,11 @@
                                     </Image.Style>
                                 </Image>
                             </ToggleButton>
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="367,0,0,0">
+                            <StackPanel Grid.Column="3" Orientation="Vertical" >
                                 <Slider Margin="0,2,0,0" x:Name="SliderSpeakerVolume" Minimum="0" Maximum="100" Value="{Binding Volume, Mode=TwoWay}" Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
                                 <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top" Content="Speaker Volume"/>
                             </StackPanel>
-                            <ToggleButton ToolTip="Auto Answer" Background="#AACCFFCC" Margin="469,2,0,2" BorderBrush="{x:Null}" x:Name="ButtonAutoAnswer" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding AutoAnswer}" HorizontalAlignment="Left">
+                            <ToggleButton Grid.Column="4" ToolTip="Auto Answer" Background="#AACCFFCC" BorderBrush="{x:Null}" x:Name="ButtonAutoAnswer" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding AutoAnswer}" >
                                 <Image Width="32" Height="32" >
                                     <Image.Style>
                                         <Style>
@@ -116,12 +124,23 @@
                                 </Image>
                             </ToggleButton>
 
+                            <extra:AudioViewerControl x:Name="OurAudioViewer" Width="100" Grid.Column="5" HorizontalAlignment="Left"  />
+                            
                         </Grid>
 
                         <Grid Height="40" Grid.Row="1" Grid.ColumnSpan="2" >
-                            <Label Width="125" Content="Microphone Device" HorizontalAlignment="Left"/>
-                            <ComboBox Background="#AAEEFFEE" Width="200" x:Name="ComboBoxMicDevices" SelectionChanged="ComboBoxMicDevices_SelectionChanged" HorizontalAlignment="Left" Margin="125,0,0,0" />
-                            <ToggleButton ToolTip="Mute" Background="#AACCFFCC" Margin="327,2,0,2" BorderBrush="{x:Null}" x:Name="ButtonMute" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding Muted}" HorizontalAlignment="Left">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60" />
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="40" />
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="60*" />
+                                <ColumnDefinition Width="100*" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <Label  Content="Mic" HorizontalAlignment="Left"/>
+                            <ComboBox Grid.Column="1" Background="#AAEEFFEE" Width="200" x:Name="ComboBoxMicDevices" SelectionChanged="ComboBoxMicDevices_SelectionChanged" />
+                            <ToggleButton Grid.Column="2" ToolTip="Mute" Background="#AACCFFCC" BorderBrush="{x:Null}" x:Name="ButtonMute" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding Muted}" >
                                 <Image x:Name="ImageMicMute" Width="32" Height="32">
                                     <Image.Style>
                                         <Style>
@@ -138,11 +157,12 @@
                                 </Image>
                             </ToggleButton>
 
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="367,0,0,0">
+                            <StackPanel Grid.Column="3" Orientation="Vertical">
                                 <Slider Margin="0,2,0,0" x:Name="SliderMicVolume" Minimum="0" Maximum="100" Value="{Binding Volume, Mode=TwoWay}" Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
                                 <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top" Content="Mic Volume"/>
                             </StackPanel>
-                            <CheckBox Margin="472,0,369.52,0" IsChecked="{Binding UseAEC}" x:Name="CheckBoxUseAEC" Checked="CheckBoxUseAEC_Checked" Unchecked="CheckBoxUseAEC_Unchecked"  VerticalAlignment="Center" Content="AEC" ToolTip="Activate Acoustic Echo Cancellation" d:LayoutOverrides="Width"/>
+                            <CheckBox Grid.Column="4"  IsChecked="{Binding UseAEC}" x:Name="CheckBoxUseAEC" Checked="CheckBoxUseAEC_Checked" Unchecked="CheckBoxUseAEC_Unchecked"  VerticalAlignment="Center" Content="AEC" ToolTip="Activate Acoustic Echo Cancellation" d:LayoutOverrides="Width"/>
+                            <CheckBox Grid.Column="5" Checked="CheckBoxCancelOutMusic_Checked" Unchecked="CheckBoxCancelOutMusic_Unchecked"  x:Name="CheckBoxCancelOutMusic" VerticalAlignment="Center" Content="Cancel Out Music" ToolTip="Prevents music from playing back to the speaker.  Only conference members can hear the music" d:LayoutOverrides="Width"/>
                         </Grid>
 
                     </Grid>
@@ -282,7 +302,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="Video" Visibility="Collapsed">
+            <TabItem Header="Video" Visibility="Visible">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="240" />
@@ -294,7 +314,7 @@
                         <RowDefinition Height="182*" />
                     </Grid.RowDefinitions>
 
-                    <ComboBox x:Name="ComboBoxSources"></ComboBox>
+                    <ComboBox x:Name="ComboBoxVideoSources" SelectionChanged="ComboBoxVideoSources_SelectionChanged"></ComboBox>
                     <StackPanel Orientation="Horizontal" Grid.Row="1">
                         <ComboBox x:Name="ComboBoxResolution" Width="150" />
                         

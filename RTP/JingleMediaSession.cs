@@ -48,8 +48,11 @@ namespace RTP
             UserName = GenerateRandomString(8);
             Password = GenerateRandomString(16);
 
-            m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            AudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
             AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
+
+            VideoRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(VideoRTPStream_OnUnhandleSTUNMessage);
+
             AddKnownAudioPayload(KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711 | KnownAudioPayload.G722);
             Initiator = true;
             LocalEndpoint = LocalEp;
@@ -61,6 +64,7 @@ namespace RTP
             CheckGoogleTalk();
             Bind();
         }
+
 
         private RosterItem m_objRosterItem = null;
 
@@ -94,8 +98,10 @@ namespace RTP
             UserName = GenerateRandomString(8);
             Password = GenerateRandomString(16);
 
-            m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            AudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
             AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
+            VideoRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(VideoRTPStream_OnUnhandleSTUNMessage);
+
             AddKnownAudioPayload(KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711 | KnownAudioPayload.G722);
             Initiator = true;
             LocalEndpoint = LocalEp;
@@ -112,8 +118,10 @@ namespace RTP
             UserName = GenerateRandomString(8);
             Password = GenerateRandomString(16);
 
-            m_objAudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
+            AudioRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(m_objAudioRTPStream_OnUnhandleSTUNMessage);
             AudioRTCPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(AudioRTCPStream_OnUnhandleSTUNMessage);
+            VideoRTPStream.OnUnhandleSTUNMessage += new DelegateSTUNMessage(VideoRTPStream_OnUnhandleSTUNMessage);
+
             AddKnownAudioPayload(LocalPayloads);
 
             Initiator = false;
@@ -164,6 +172,13 @@ namespace RTP
         }
 
         protected RTCPSession AudioRTCPStream = new RTCPSession();
+
+        private RTPVideoStream m_objVideoRTPStream = new RTPVideoStream(110, null);
+        public RTPVideoStream VideoRTPStream
+        {
+            get { return m_objVideoRTPStream; }
+            set { m_objVideoRTPStream = value; }
+        }
 
         protected List<Candidate> LocalCandidates = new List<Candidate>();
         protected List<Candidate> RemoteCandidates = new List<Candidate>();
@@ -1061,7 +1076,7 @@ namespace RTP
         void AudioRTCPStream_OnUnhandleSTUNMessage(STUNMessage smsg, IPEndPoint epfrom)
         {
                 
-            /// Our RTPStream received a STUN message.
+            /// Our RTCP Stream has received a STUN message.
             if (smsg.Class == StunClass.Request)
             {
                 if (smsg.Method == StunMethod.Binding)
@@ -1105,6 +1120,54 @@ namespace RTP
                 }
             }
         }
+
+        void VideoRTPStream_OnUnhandleSTUNMessage(STUNMessage smsg, IPEndPoint epfrom)
+        {
+            /// Our RTCP Stream has received a STUN message.
+            if (smsg.Class == StunClass.Request)
+            {
+                if (smsg.Method == StunMethod.Binding)
+                {
+
+                    STUN2Message sresp = new STUN2Message();
+                    sresp.TransactionId = smsg.TransactionId;
+                    sresp.Method = StunMethod.Binding;
+                    sresp.Class = StunClass.Success;
+
+                    XORMappedAddressAttribute attr = new XORMappedAddressAttribute();
+                    attr.Port = (ushort)epfrom.Port;
+                    attr.IPAddress = epfrom.Address;
+                    attr.AddressFamily = StunAddressFamily.IPv4;
+                    sresp.AddAttribute(attr);
+
+                    IceControlledAttribute iattr = new IceControlledAttribute();
+                    sresp.AddAttribute(iattr);
+
+
+                    UserNameAttribute unameattr = new UserNameAttribute();
+                    unameattr.UserName = string.Format("{0}:{1}", this.UserName, this.RemoteUserName);
+                    sresp.AddAttribute(unameattr);
+
+                    /// Add message integrity, computes over all the items currently added
+                    /// 
+                    int nLengthWithoutMessageIntegrity = sresp.Bytes.Length;
+                    MessageIntegrityAttribute mac = new MessageIntegrityAttribute();
+                    sresp.AddAttribute(mac);
+                    mac.ComputeHMACShortTermCredentials(sresp, nLengthWithoutMessageIntegrity, this.RemotePassword);
+
+                    /// Add fingerprint
+                    /// 
+                    int nLengthWithoutFingerPrint = sresp.Bytes.Length;
+                    FingerPrintAttribute fattr = new FingerPrintAttribute();
+                    sresp.AddAttribute(fattr);
+                    fattr.ComputeCRC(sresp, nLengthWithoutFingerPrint);
+
+
+                    VideoRTPStream.SendSTUNMessage(sresp, epfrom);
+                }
+            }
+        }
+
 
         public const ushort StunPort = 3478;
         public IPEndPoint PerformSTUNRequest(string strStunServer, int nTimeout)

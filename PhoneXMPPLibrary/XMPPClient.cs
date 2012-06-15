@@ -345,7 +345,7 @@ namespace System.Net.XMPP
        
         public event EventHandler OnRetrievedRoster = null;
 
-        internal void FireGotRoster()
+        protected virtual void GotRoster()
         {
             if (OnRetrievedRoster != null)
                 OnRetrievedRoster(this, new EventArgs());
@@ -356,6 +356,11 @@ namespace System.Net.XMPP
             this.XMPPAccount.LastPrescence.PresenceShow = PresenceShow.chat;
             this.XMPPAccount.LastPrescence.Status = "online";
             UpdatePresence();
+        }
+
+        internal void FireGotRoster()
+        {
+            GotRoster();
         }
 
 
@@ -401,10 +406,17 @@ namespace System.Net.XMPP
 
         public void FireListChanged(object objnull)
         {
+            RosterChanged();
+        }
+
+        protected virtual void RosterChanged()
+        {
             FirePropertyChanged("RosterItems");
             if (OnRosterItemsChanged != null)
-               OnRosterItemsChanged(this, new EventArgs());
+                OnRosterItemsChanged(this, new EventArgs());
         }
+
+     
 
 
 
@@ -740,6 +752,38 @@ namespace System.Net.XMPP
 
             return iqlog.RecvIQ;
         }
+
+        /// <summary>
+        /// Allows the client to syncronously wait for an xmpp message of the given type.  Don't call this from the xmpp receiving threads.
+        /// </summary>
+        /// <param name="msgtype"></param>
+        /// <param name="nTimeoutMS"></param>
+        /// <returns></returns>
+        public Message WaitForMessageType(Type msgtype, int nTimeoutMS)
+        {
+            WaitForMessageLogic msglog = new WaitForMessageLogic(this, msgtype);
+            AddLogic(msglog);
+
+            msglog.Wait(nTimeoutMS);
+
+            RemoveLogic(msglog);
+
+            return msglog.RecvMessage;
+        }
+
+        /// <summary>
+        /// Adds a 1 time message waiter to the logic queue.  This object can be examined to determine when the message has been received
+        /// </summary>
+        /// <param name="msgtype"></param>
+        /// <returns></returns>
+        public WaitForMessageLogic AddSingleMessageWaiter(Type msgtype)
+        {
+            WaitForMessageLogic msglog = new WaitForMessageLogic(this, msgtype);
+            AddLogic(msglog);
+
+            return msglog;
+        }
+
 
         /// <summary>
         /// Sends a chat message to a user

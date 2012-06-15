@@ -50,9 +50,9 @@ namespace RTP
                 return;
 
             byte [] bFrame = VideoCodec.DecodeToBytes(packet);
-            if ( (bFrame != null) && (NewFrame != null) && (VideoFormat != null) )
+            if ( (bFrame != null) && (OnNewFrame != null) && (VideoFormat != null) )
             {
-                NewFrame(bFrame, VideoFormat.UncompressedFormat, VideoFormat.Width, VideoFormat.Height);
+                OnNewFrame(bFrame, VideoFormat);
             }
         }
 
@@ -104,13 +104,8 @@ namespace RTP
 
         #region IVideoSource Members
 
-        public VideoCaptureRate[] GetSupportedCaptureRates()
-        {
-            return null;
-        }
 
         // Call when we have a new video fram available
-        public event DelegateRawFrame NewFrame = null;
         protected VideoCaptureRate VideoFormat = null;
         public VideoCaptureRate ActiveVideoCaptureRate
         {
@@ -136,8 +131,24 @@ namespace RTP
             }
         }
 
-        #endregion
+        public List<VideoCaptureRate> VideoFormats
+        {
+            get { throw new NotImplementedException(); }
+        }
 
+        public event DelegateRawFrame OnNewFrame = null;
+
+        public bool Start(VideoCaptureRate videoformat)
+        {
+            return true; /// don't really have these
+        }
+
+        public void Stop()
+        {
+            
+        }
+
+        #endregion
         #region IVideoSink Members
 
 
@@ -148,5 +159,7 @@ namespace RTP
         }
 
         #endregion
+
+     
     }
 }

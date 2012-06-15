@@ -525,7 +525,7 @@ MFVideoCaptureDevice::MFVideoCaptureDevice(IntPtr nMFActivate)
 {
 	MFActivate = nMFActivate;
 	quit = true;
-	VideoFormats = gcnew System::Collections::Generic::List<VideoCaptureRate ^>();
+	m_listVideoFormats = gcnew System::Collections::Generic::List<VideoCaptureRate ^>();
 	SourceDevice = IntPtr::Zero;
 	SourceReader = IntPtr::Zero;
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
