@@ -82,6 +82,14 @@ namespace AudioClasses
 
         private int m_nFrameRate = 30;
 
+        public int PixelCount
+        {
+            get
+            {
+                return Width * Height;
+            }
+        }
+
         [DataMember]
         public int FrameRate
         {

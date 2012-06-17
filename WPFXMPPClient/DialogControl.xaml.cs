@@ -101,7 +101,7 @@ namespace WPFXMPPClient
         //}
 
 
-        Regex reghyperlink = new Regex(@"\w+\://\S+", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+        public static Regex reghyperlink = new Regex(@"\w+\://\S+", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
         Paragraph MainParagraph = new Paragraph();
 
         public void SetConversation()
@@ -242,6 +242,47 @@ namespace WPFXMPPClient
             msgspan.Inlines.Add(new LineBreak());
 
             this.MainParagraph.Inlines.Add(msgspan);
+        }
+
+        /// <summary>
+        /// Replace web links in a phrase with another text.   Used when speaking out the text, so
+        /// 'Try this link:  http://www.google.com' 
+        ///    becomes
+        /// 'Try this link: url sent by user'
+        /// </summary>
+        /// <param name="strMessage"></param>
+        /// <param name="strWebLinkPharse"></param>
+        /// <returns></returns>
+        public static string ReplaceWebLinksWithPhrase(string strMessage, string strWebLinkPharse)
+        {
+            StringBuilder sbRet = new StringBuilder();
+            int nMatchAt = 0;
+            Match matchype = reghyperlink.Match(strMessage, nMatchAt);
+            while (matchype.Success == true)
+            {
+                string strHyperlink = matchype.Value;
+
+                /// Add everything before this as a normal run
+                /// 
+                if (matchype.Index > nMatchAt)
+                    sbRet.Append(strMessage.Substring(nMatchAt, (matchype.Index - nMatchAt)));
+
+                sbRet.Append(strWebLinkPharse);
+                nMatchAt = matchype.Index + matchype.Length;
+
+                if (nMatchAt >= (strMessage.Length - 1))
+                    break;
+
+                matchype = reghyperlink.Match(strMessage, nMatchAt);
+            }
+
+            /// see if we have any remaining text
+            /// 
+            if (nMatchAt < strMessage.Length)
+            {
+                sbRet.Append(strMessage.Substring(nMatchAt, (strMessage.Length - nMatchAt)));
+            }
+            return sbRet.ToString();
         }
 
         void link_Click(object sender, RoutedEventArgs e)

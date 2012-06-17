@@ -183,7 +183,7 @@ namespace WPFImageWindows
 
       
 
-        bool StopCapture()
+        public bool StopCapture()
         {
             StopTime = DateTime.Now;
             if (m_bCapturing == false)
@@ -202,25 +202,17 @@ namespace WPFImageWindows
         }
 
         
-        bool m_bNeedTakePicture = false;
         bool m_bNeedReturnPicture = false;
-        /// <summary>
-        ///  TODO...wait on an event here and return the picture... for now, just flag it so it's done on the next frame
-        /// </summary>
-        public void TakePicture()
+        System.Threading.ManualResetEvent PictureEvent = new System.Threading.ManualResetEvent(false);
+        byte[] m_bPictureRGB = null;
+        public byte [] GetPictureRGB()
         {
-            m_bNeedTakePicture = true;
+            PictureEvent.Reset();
+            m_bPictureRGB = null;
+            m_bNeedReturnPicture = true;
+            PictureEvent.WaitOne(1000);
+            return m_bPictureRGB;
         }
-
-        //System.Drawing.Bitmap LastPicture = null;
-        //System.Threading.ManualResetEvent PictureEvent = new System.Threading.ManualResetEvent(false);
-        //public System.Drawing.Bitmap GetPicture()
-        //{
-        //    PictureEvent.Reset();
-        //    m_bNeedReturnPicture = true;
-        //    PictureEvent.WaitOne();
-        //    return LastPicture;
-        //}
 
         int m_nNumberFramesCaptures = 0;
         int m_nNumberFramesProcessed = 0;
@@ -269,6 +261,8 @@ namespace WPFImageWindows
             }
         }
 
+        
+
         void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat)
         {
             m_nNumberFramesCaptures++;
@@ -280,27 +274,12 @@ namespace WPFImageWindows
             m_nNumberFramesProcessed++;
 
 
-            //if (m_bNeedTakePicture == true)
-            //{
-            //    if (Directory.Exists(this.MotionRecorder.Directory) == false)
-            //        Directory.CreateDirectory(MotionRecorder.Directory);
-
-            //    string strFileName = string.Format("{0}/{1}.png", this.MotionRecorder.Directory, Guid.NewGuid());
-
-            //    FileStream file = new FileStream(strFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-            //    FrameBitmap.Save(file, System.Drawing.Imaging.ImageFormat.Png);
-            //    file.Close();
-            //    file.Dispose();
-            //    file = null;
-
-            //    m_bNeedTakePicture = false;
-            //}
-            //if (m_bNeedReturnPicture == true)
-            //{
-            //    LastPicture = (System.Drawing.Bitmap)FrameBitmap.Clone();
-            //    PictureEvent.Set();
-            //    m_bNeedReturnPicture = false;
-            //}
+            if (m_bNeedReturnPicture == true)
+            {
+                m_bPictureRGB = (byte [] ) pFrame.Clone();
+                PictureEvent.Set();
+                m_bNeedReturnPicture = false;
+            }
 
 
             if (OnNewFrame != null)

@@ -40,6 +40,10 @@ namespace ImageAquisition
 			}
 		}
 
+		virtual System::String ^ToString() override
+		{
+			return Name;
+		}
 
 
 		delegate void DelegateError(String ^strError);
@@ -70,6 +74,21 @@ namespace ImageAquisition
 
 		}
 
+		property int MaxFrameRate
+		{
+			int get()
+			{
+				return m_nMaxFrameRate;
+			}
+
+			void set(int nValue)
+			{
+				m_nMaxFrameRate = nValue;
+				m_dtLastFrameSent = DateTime::MinValue;
+			}
+
+		}
+
 		String ^DisplayName;
 
 		String ^UniqueName;
@@ -91,6 +110,9 @@ namespace ImageAquisition
 
 		IntPtr MFActivate;
 		IntPtr SourceReader;
+
+		int m_nMaxFrameRate;
+		DateTime m_dtLastFrameSent;
 	};
 
 	public ref class MFAudioDevice

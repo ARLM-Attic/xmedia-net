@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:s="http://schemas.microsoft.com/surface/2008"
         AllowsTransparency="True" WindowStyle="None"
+        xmlns:local="clr-namespace:WPFXMPPClient"
         MouseDown="Window_MouseDown" ResizeMode="CanResizeWithGrip"
         Title="{Binding}"  Width="617" Height="420" MinHeight="200" Loaded="Window_Loaded" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" WindowStartupLocation="CenterOwner">
     
@@ -38,6 +39,7 @@
                     <!--<ColumnDefinition Width="30" />-->
                     <ColumnDefinition Width="76*" />
                     <ColumnDefinition Width="357*" />
+                    <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
@@ -110,19 +112,35 @@
                     <Image Source="Images/photo - crop.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
 
-                <s:SurfaceButton ToolTip="Clear" Grid.Column="4" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
-                    <Image Source="Images/trash.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" ImageFailed="Image_ImageFailed" />
+                <Button Grid.Column="4" Grid.RowSpan="2" Background="{StaticResource ButtonBrush}" 
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        VerticalAlignment="Center" x:Name="ButtonSendPhotoCapture" 
+                        Click="ButtonSendPhotoCapture_Click" Width="40" Height="40"  RenderTransformOrigin=".5,.5" 
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" ToolTip="Capture a photo and send it" >
+                    <Button.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Button.RenderTransform>
+                    <Rectangle Stretch="UniformToFill" Fill="{DynamicResource camera}" Width="28" Height="28" />
+                </Button>
+
+                
+                <s:SurfaceButton ToolTip="Clear" Grid.Column="5" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                    <Image Source="Images/trash.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
 
-                <s:SurfaceButton ToolTip="Close" Grid.Column="5" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                <s:SurfaceButton ToolTip="Close" Grid.Column="6" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
             </Grid>
 
             <TabControl Grid.Row="1" Margin="5" x:Name="TabControlThreads">
                 <TabItem Header="Main Thread">
-                    <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" TouchDown="TextBlockChat_TouchDown"  TouchMove="TextBlockChat_TouchMove" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"  x:Name="TextBlockChat" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    </RichTextBox>
+                    <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" ></local:DialogControl>
                 </TabItem>
                 
             </TabControl>

@@ -84,110 +84,12 @@ namespace WPFXMPPClient
                 }
             }
 
+            this.DialogControlLastMessage.OurRosterItem = this.OurRosterItem;
+            this.DialogControlLastMessage.ShowTimeStamps = true;
 
             OurRosterItem.HasNewMessages = false; /// We just viewed new messages
             this.DataContext = OurRosterItem;
             XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
-            SetConversation();
-        }
-
-        Regex reghyperlink = new Regex(@"\w+\://\S+", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
-
-        Paragraph MainParagraph = new Paragraph();
-
-        public void SetConversation()
-        {
-            MainParagraph.Inlines.Clear();
-            TextBlockChat.Document.Blocks.Clear();
-            TextBlockChat.Document.Blocks.Add(MainParagraph);
-            
-            foreach (TextMessage msg in OurRosterItem.Conversation.Messages)
-            {
-                AddInlinesForMessage(msg);
-            }
-
-            this.TextBlockChat.ScrollToEnd();
-        }
-
-        const double FontSizeFrom = 10.0f;
-        const double FontSizeMessage = 14.0f;
-        void AddInlinesForMessage(TextMessage msg)
-        {
-            if (msg.Message == null)
-                return;
-            Span msgspan = new Span();
-            string strRun = string.Format("{0} to {1} - {2}", msg.From, msg.To, msg.Received);
-            Run runfrom = new Run(strRun);
-            runfrom.Foreground = Brushes.Gray;
-            runfrom.FontSize = FontSizeFrom;
-            msgspan.Inlines.Add(runfrom);
-
-            msgspan.Inlines.Add(new LineBreak());
-
-
-            Span spanmsg = new Span();
-            spanmsg.Foreground = Brushes.Gray;
-            spanmsg.FontSize = FontSizeMessage;
-            msgspan.Inlines.Add(spanmsg);
-
-            /// Look for hyperlinks in our run
-            /// 
-            string strMessage = msg.Message;
-            int nMatchAt = 0;
-            Match matchype = reghyperlink.Match(strMessage, nMatchAt);
-            while (matchype.Success == true)
-            {
-                string strHyperlink = matchype.Value;
-
-                /// Add everything before this as a normal run
-                /// 
-                if (matchype.Index > nMatchAt)
-                {
-                    Run runtext = new Run(strMessage.Substring(nMatchAt, (matchype.Index - nMatchAt)));
-                    runtext.Foreground = msg.TextColor;
-                    msgspan.Inlines.Add(runtext);
-                }
-
-                Hyperlink link = new Hyperlink();
-                link.Inlines.Add(strMessage.Substring(matchype.Index, matchype.Length));
-                link.Foreground = Brushes.Blue;
-                link.TargetName = "_blank";
-                try
-                {
-                    link.NavigateUri = new Uri(strMessage.Substring(matchype.Index, matchype.Length));
-                }
-                catch (Exception)
-                {
-                }
-                link.Click += new RoutedEventHandler(link_Click);
-                msgspan.Inlines.Add(link);
-
-                nMatchAt = matchype.Index + matchype.Length;
-
-                if (nMatchAt >= (strMessage.Length - 1))
-                    break;
-
-                matchype = reghyperlink.Match(strMessage, nMatchAt);
-            }
-
-            /// see if we have any remaining text
-            /// 
-            if (nMatchAt < strMessage.Length)
-            {
-                Run runtext = new Run(strMessage.Substring(nMatchAt, (strMessage.Length - nMatchAt)));
-                runtext.Foreground = msg.TextColor;
-                msgspan.Inlines.Add(runtext);
-            }
-            msgspan.Inlines.Add(new LineBreak());
-
-            this.MainParagraph.Inlines.Add(msgspan);
-        }
-
-        void link_Click(object sender, RoutedEventArgs e)
-        {
-            /// Navigate to this link
-            /// 
-            System.Diagnostics.Process.Start(((Hyperlink)sender).NavigateUri.ToString());
         }
 
 
@@ -260,13 +162,11 @@ namespace WPFXMPPClient
 
             if (item.JID.BareJID.Equals(OurRosterItem.JID.BareJID) == true)
             {
-                AddInlinesForMessage(msg);
-
                 if (bReceived == true)
                 {
                     if (this.CheckBoxUseSpeech.IsChecked == true)
                     {
-                        PhrasesToSpeak.Enqueue(msg.Message);
+                        PhrasesToSpeak.Enqueue(DialogControl.ReplaceWebLinksWithPhrase(msg.Message, "hyperlink specified here"));
                         
                     }
                     else
@@ -285,8 +185,6 @@ namespace WPFXMPPClient
                 {
                     OurRosterItem.HasNewMessages = false;
                 }
-
-                this.TextBlockChat.ScrollToEnd();
             }
         }
 
@@ -306,7 +204,6 @@ namespace WPFXMPPClient
         public void Clear()
         {
             OurRosterItem.Conversation.Clear();
-            SetConversation();
         }
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
@@ -385,7 +282,6 @@ namespace WPFXMPPClient
                 }
             }
 
-            //XMPPClient.SendChatMessage(, OurRosterItem.JID);
             this.TextBoxChatToSend.Text = "";
         }
 
@@ -402,26 +298,7 @@ namespace WPFXMPPClient
             this.Close();
         }
 
-        private void ButtonCopy_Click(object sender, RoutedEventArgs e)
-        {
-            /// Copy all the selected text 
-            /// 
-            StringBuilder sb = new StringBuilder();
-            //foreach (TextMessage msg in this.ListBoxConversation.SelectedItems)
-            //{
-            //    if (msg.Sent == false)
-            //       sb.AppendFormat("From {0} at {1}\r\n{2}", msg.From, msg.Received, msg.Message);
-            //    else
-            //        sb.AppendFormat("To {0} at {1}\r\n{2}", msg.To, msg.Received, msg.Message);
-            //}
-            Clipboard.SetText(sb.ToString());
-        }
-
-        private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-
-        }
-
+     
         private void ButtonSendFile_Click(object sender, RoutedEventArgs e)
         {
             // Find the file to send
@@ -513,17 +390,6 @@ namespace WPFXMPPClient
             System.Diagnostics.Process.Start(strLocalFileName);
         }
 
-        private void TextBlockChat_TouchDown(object sender, TouchEventArgs e)
-        {
-            /// scroll our window
-            /// 
-            
-        }
-
-        private void TextBlockChat_TouchMove(object sender, TouchEventArgs e)
-        {
-
-        }
 
         private void ButtonStartAudioCall_Click(object sender, RoutedEventArgs e)
         {
@@ -539,6 +405,43 @@ namespace WPFXMPPClient
                     break;
                 }
             }
+        }
+
+        private void ButtonSendPhotoCapture_Click(object sender, RoutedEventArgs e)
+        {
+            CameraCaptureWindow camwin = new CameraCaptureWindow();
+            if (camwin.ShowDialog() == true)
+            {
+                if (camwin.CompressedAcceptedImage != null)
+                {
+                    string strFileName = string.Format("camera_{0}.jpg", Guid.NewGuid());
+
+                    if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
+                        this.ListBoxInstances.SelectedIndex = 0;
+
+                    if (this.ListBoxInstances.SelectedItems.Count > 0)
+                    {
+                        foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                        {
+                            /// Just send it to 1 recepient for now, must have a full jid
+                            string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, camwin.CompressedAcceptedImage, instance.FullJID);
+
+                            foreach (Window wind in Application.Current.Windows)
+                            {
+                                if (wind is MainWindow)
+                                {
+                                    ((MainWindow)wind).ShowFileTransfer();
+                                    break;
+                                }
+                            }
+
+                            break;
+                        }
+                    }
+                
+                }
+            }
+            
         }
 
     

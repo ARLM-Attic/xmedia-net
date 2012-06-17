@@ -276,14 +276,22 @@ namespace WPFImageWindows
                 if ((VideoWidth != nWidth) || (VideoHeight != nHeight))
                     SetSize(nWidth, nHeight);
 
-                if (bBytes != null)
+                if (bBytes != null) 
                 {
-                    videobmp.Lock();
-                    Int32Rect rect = new Int32Rect(0, 0, nWidth, nHeight);
-                    videobmp.WritePixels(rect, bBytes, nWidth * 4, 0);
+                    if (bBytes.Length == nWidth * 4 * nHeight)
+                    {
 
-                    videobmp.AddDirtyRect(rect);
-                    videobmp.Unlock();
+                        videobmp.Lock();
+                        Int32Rect rect = new Int32Rect(0, 0, nWidth, nHeight);
+                        videobmp.WritePixels(rect, bBytes, nWidth * 4, 0);
+
+                        videobmp.AddDirtyRect(rect);
+                        videobmp.Unlock();
+                    }
+                    else
+                    {
+                        System.Diagnostics.Trace.WriteLine("Incoming frame has the wrong resolution");
+                    }
                 }
 
             }
@@ -591,20 +599,25 @@ namespace WPFImageWindows
             int nXDif = (int) (Endpoint.X - StartingPoint.X);
             int nYDif = (int) (Endpoint.Y - StartingPoint.Y);
 
-            //if (Math.Abs(nXDif) > this.Camera.ActiveVideoCaptureRate.Width/10)
-            //{
-            //    if (nXDif > 0)
-            //        Camera.PanLeft();
-            //    else
-            //        Camera.PanRight();
-            // }
-            //if (Math.Abs(nYDif) > this.Camera.ActiveVideoCaptureRate.Height/ 10)
-            //{
-            //    if (nYDif > 0)
-            //        Camera.TiltUp();
-            //    else
-            //        Camera.TiltDown();
-            //}
+            if (this.Camera is VideoCaptureSource)
+            {
+                VideoCaptureSource VCamera = Camera as VideoCaptureSource;
+
+                if (Math.Abs(nXDif) > this.Camera.ActiveVideoCaptureRate.Width/10)
+                {
+                    if (nXDif > 0)
+                        VCamera.PanLeft();
+                    else
+                        VCamera.PanRight();
+                 }
+                if (Math.Abs(nYDif) > this.Camera.ActiveVideoCaptureRate.Height/ 10)
+                {
+                    if (nYDif > 0)
+                        VCamera.TiltUp();
+                    else
+                        VCamera.TiltDown();
+                }
+            }
         }
 
         private bool m_bDrawingMotionZone = false;

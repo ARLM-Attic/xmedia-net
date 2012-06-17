@@ -523,6 +523,8 @@ LPCWSTR GetGUIDNameConst(const GUID& guid)
 
 MFVideoCaptureDevice::MFVideoCaptureDevice(IntPtr nMFActivate)
 {
+	m_nMaxFrameRate = -1;
+	m_dtLastFrameSent = DateTime::MinValue;
 	MFActivate = nMFActivate;
 	quit = true;
 	m_listVideoFormats = gcnew System::Collections::Generic::List<VideoCaptureRate ^>();
@@ -1132,46 +1134,61 @@ void MFVideoCaptureDevice::OurCaptureThread()
         {
 			//DWORD dwBufferCount = 0;
 			//pSample->GetBufferCount(&dwBufferCount);
+			bool bSendFrame = true;
 
+			/// Some clients can't handle our full frame rate, for these we'll throttle the
+			/// events to the max framerate they ask for (well, interframe time anyways)
+			if (m_nMaxFrameRate > 0)
+			{
+				TimeSpan tsDif = DateTime::Now - m_dtLastFrameSent;
+				double fTsMaxFreq = 1.0f/m_nMaxFrameRate;
+				if (tsDif.TotalMilliseconds < fTsMaxFreq)
+					bSendFrame = false;
+			}
 		
-			DWORD dwLength = 0;
-			pSample->GetTotalLength(&dwLength);
+			if (bSendFrame == true)
+			{
+				DWORD dwLength = 0;
+				pSample->GetTotalLength(&dwLength);
 			
-			if (pBuffer == NULL)
-			{
-			   MFCreateMemoryBuffer(dwLength, &pBuffer);
-			   arrayBytesRet = gcnew array<unsigned char>(dwLength);
-			}
-			else
-			{
-				DWORD dwCurrentLen = 0;
-				pBuffer->GetCurrentLength(&dwCurrentLen);
-				if (dwCurrentLen != dwLength)
+				if (pBuffer == NULL)
 				{
-					pBuffer->SetCurrentLength(dwLength);
-					arrayBytesRet = gcnew array<unsigned char>(dwLength);
+				   MFCreateMemoryBuffer(dwLength, &pBuffer);
+				   arrayBytesRet = gcnew array<unsigned char>(dwLength);
 				}
+				else
+				{
+					DWORD dwCurrentLen = 0;
+					pBuffer->GetCurrentLength(&dwCurrentLen);
+					if (dwCurrentLen != dwLength)
+					{
+						pBuffer->SetCurrentLength(dwLength);
+						arrayBytesRet = gcnew array<unsigned char>(dwLength);
+					}
+				}
+
+				pSample->CopyToBuffer(pBuffer);
+
+				/// Lock our buffer so we can copy our data
+				BYTE *pBytes = NULL;
+				pBuffer->Lock(&pBytes, NULL, NULL);
+
+				pin_ptr<unsigned char> ppBytesRet = &arrayBytesRet[0];
+				unsigned char *pBytesRet = (unsigned char *)ppBytesRet;
+
+				memcpy(pBytesRet, pBytes, dwLength);
+				pBuffer->Unlock();
+
+
+				OnNewFrame(arrayBytesRet, ActiveVideoFormat);
+
+				m_dtLastFrameSent = DateTime::Now;
 			}
-
-			pSample->CopyToBuffer(pBuffer);
-
-			/// Lock our buffer so we can copy our data
-			BYTE *pBytes = NULL;
-			pBuffer->Lock(&pBytes, NULL, NULL);
-
-			pin_ptr<unsigned char> ppBytesRet = &arrayBytesRet[0];
-			unsigned char *pBytesRet = (unsigned char *)ppBytesRet;
-
-			memcpy(pBytesRet, pBytes, dwLength);
-			pBuffer->Unlock();
-
-
-			OnNewFrame(arrayBytesRet, ActiveVideoFormat);
-
 
         
 			pSample->Release();
 			pSample = NULL;
+
         }
     }
 

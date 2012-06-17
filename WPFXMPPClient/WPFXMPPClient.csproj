@@ -35,7 +35,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>93</ApplicationRevision>
+    <ApplicationRevision>94</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -126,6 +126,9 @@
     <Compile Include="BetterAudioResampler.cs" />
     <Compile Include="BlankWindow.xaml.cs">
       <DependentUpon>BlankWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CameraCaptureWindow.xaml.cs">
+      <DependentUpon>CameraCaptureWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="DialogControl.xaml.cs">
       <DependentUpon>DialogControl.xaml</DependentUpon>
@@ -236,6 +239,10 @@
     <Page Include="BlankWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="CameraCaptureWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ChatWindow.xaml">
       <SubType>Designer</SubType>
