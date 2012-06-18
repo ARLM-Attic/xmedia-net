@@ -47,8 +47,40 @@
 		<StackPanel Orientation="Horizontal" d:LayoutOverrides="Height" Grid.Row="4" >
 			<Label Width="120" Content="Picture"/>
 			<Border BorderBrush="Red">
-				<Image Source="Avatars/avatar.png" Height="120" Width="120" Stretch="Fill" x:Name="ImagePicture" MouseDown="ImagePicture_MouseDown" />
+				<Image Source="Avatars/avatar.png" Height="120" Width="120" Stretch="Uniform"  x:Name="ImagePicture" MouseDown="ImagePicture_MouseDown" />
 			</Border>
+            <StackPanel>
+                <Button Grid.Column="4" Grid.RowSpan="2" Background="{StaticResource ButtonBrush}" 
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        VerticalAlignment="Center" x:Name="ButtonSendFromFile" 
+                        Click="ButtonSendFromFile_Click"  Width="40" Height="40"  RenderTransformOrigin=".5,.5" 
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" ToolTip="Capture a photo and send it" >
+                    <Button.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Button.RenderTransform>
+                    <Rectangle Stretch="UniformToFill" Fill="{DynamicResource folder}" Width="28" Height="28" />
+                </Button>
+                <Button Grid.Column="4" Grid.RowSpan="2" Background="{StaticResource ButtonBrush}" 
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        VerticalAlignment="Center" x:Name="ButtonSendPhotoCapture" 
+                        Click="ButtonSendPhotoCapture_Click"  Width="40" Height="40"  RenderTransformOrigin=".5,.5" 
+                        Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" ToolTip="Capture a photo and send it" >
+                    <Button.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Button.RenderTransform>
+                    <Rectangle Stretch="UniformToFill" Fill="{DynamicResource camera}" Width="28" Height="28" />
+                </Button>                
+            </StackPanel>
 		</StackPanel>
 
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="5">

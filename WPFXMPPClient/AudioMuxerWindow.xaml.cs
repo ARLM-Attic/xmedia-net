@@ -108,6 +108,8 @@ namespace WPFXMPPClient
         System.Windows.Threading.DispatcherTimer UpdateTimer = null;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            m_bAutoAnswer = Properties.Settings.Default.AutoAnswer;
+
             /// Set up our audio source for drawing mic output
             MicrophoneAudioSource = new WPFImageWindows.AudioSource(this);
             MicrophoneAudioSource.ForeColor = Colors.Blue;
@@ -129,15 +131,46 @@ namespace WPFXMPPClient
             if ((MicrophoneDevices != null) && (MicrophoneDevices.Length > 0))
             {
                 this.ComboBoxMicDevices.ItemsSource = MicrophoneDevices;
-                this.ComboBoxMicDevices.SelectedItem = MicrophoneDevices[0];
-                MicrophoneVolume = new ImageAquisition.AudioDeviceVolume(MicrophoneDevices[0]);
+
+                bool bSetMic = false;
+                foreach (AudioDevice nextmic in MicrophoneDevices)
+                {
+                    if (nextmic.Guid == Properties.Settings.Default.LastMicrophoneDevice)
+                    {
+                        this.ComboBoxMicDevices.SelectedItem = nextmic;
+                        MicrophoneVolume = new ImageAquisition.AudioDeviceVolume(nextmic);
+                        bSetMic = true;
+                        break;
+                    }
+                }
+
+                if (bSetMic == false)
+                {
+                    this.ComboBoxMicDevices.SelectedItem = MicrophoneDevices[0];
+                    MicrophoneVolume = new ImageAquisition.AudioDeviceVolume(MicrophoneDevices[0]);
+                }
                 this.SliderMicVolume.DataContext = MicrophoneVolume;
             }
             if ((SpeakerDevices != null) && (SpeakerDevices.Length > 0))
             {
                 this.ComboBoxSpeakerDevices.ItemsSource = SpeakerDevices;
-                this.ComboBoxSpeakerDevices.SelectedItem = SpeakerDevices[0];
-                SpeakerVolume = new ImageAquisition.AudioDeviceVolume(SpeakerDevices[0]);
+
+                bool bSetSpeaker = false;
+                foreach (AudioDevice nextspeaker in MicrophoneDevices)
+                {
+                    if (nextspeaker.Guid == Properties.Settings.Default.LastSpeakerDevice)
+                    {
+                        this.ComboBoxSpeakerDevices.SelectedItem = nextspeaker;
+                        SpeakerVolume = new ImageAquisition.AudioDeviceVolume(nextspeaker);
+                        bSetSpeaker = true;
+                        break;
+                    }
+                }
+                if (bSetSpeaker == false)
+                {
+                    this.ComboBoxSpeakerDevices.SelectedItem = SpeakerDevices[0];
+                    SpeakerVolume = new ImageAquisition.AudioDeviceVolume(SpeakerDevices[0]);
+                }
                 this.SliderSpeakerVolume.DataContext = SpeakerVolume;
             }
 
@@ -581,6 +614,9 @@ namespace WPFXMPPClient
                 if (m_bAutoAnswer != value)
                 {
                     m_bAutoAnswer = value;
+                    Properties.Settings.Default.AutoAnswer = m_bAutoAnswer;
+                    Properties.Settings.Default.Save();
+
                     FirePropertyChanged("AutoAnswer");
                 }
             }
@@ -842,6 +878,11 @@ namespace WPFXMPPClient
 
             SpeakerVolume = new ImageAquisition.AudioDeviceVolume(speakdevice);
             this.SliderSpeakerVolume.DataContext = SpeakerVolume;
+
+            Properties.Settings.Default.LastMicrophoneDevice = micdevice.Guid;
+            Properties.Settings.Default.LastSpeakerDevice = speakdevice.Guid;
+            Properties.Settings.Default.Save();
+
 
 
             if (Microphone == null) /// Haven't start yet, no need to restart

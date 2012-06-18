@@ -35,7 +35,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://ninethumbs.com/apps/WPFXMPPClient/</InstallUrl>
     <PublisherName>ninethumbs</PublisherName>
-    <ApplicationRevision>94</ApplicationRevision>
+    <ApplicationRevision>97</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -323,6 +323,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="..\OtherLibs\WPFImageControls\WPFImageWindows\Sounds\shutter.wav">
+      <Link>Sounds\shutter.wav</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\XMPPClient\sounds\ding.wav">
       <Link>Sounds\ding.wav</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -525,6 +525,8 @@ namespace WPFXMPPClient
                 this.FirePropertyChanged("ConnectedStateBrush");
                 ComboBoxPresence.IsEnabled = true;
                 ButtonAddBuddy.IsEnabled = true;
+                this.ImageAvatar.Source = XMPPClient.Avatar;
+
                 //XMPPClient.SetGeoLocation(32.234, -97.3453);
             }
             else if (XMPPClient.XMPPState == XMPPState.AuthenticationFailed)
@@ -625,6 +627,9 @@ namespace WPFXMPPClient
            
             VCardWindow win = new VCardWindow();
             win.vcard = XMPPClient.vCard;
+            win.XMPPClient = this.XMPPClient;
+            win.CurrentSource = XMPPClient.Avatar;
+
             if (win.ShowDialog() == true)
             {
                 XMPPClient.UpdatevCard();

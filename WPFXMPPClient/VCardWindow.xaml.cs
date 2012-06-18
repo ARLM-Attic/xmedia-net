@@ -38,10 +38,42 @@ namespace WPFXMPPClient
           set { m_objvcard = value; }
         }
 
-        BitmapImage BitmapImageSrc = new BitmapImage();
+        BitmapImage BitmapImageSrc = null;
+        public ImageSource CurrentSource = null;
 
+        public XMPPClient XMPPClient = null;
 
         private void ImagePicture_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+       
+               
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.DataContext = vcard;
+            if (CurrentSource != null)
+                this.ImagePicture.Source = CurrentSource;
+        }
+
+        private void ButtonYes_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = true;
+            this.Close();
+        }
+
+        private void ButtonClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if ((e.ChangedButton == MouseButton.Left) && (e.ButtonState == MouseButtonState.Pressed))
+                this.DragMove();
+        }
+
+        private void ButtonSendFromFile_Click(object sender, RoutedEventArgs e)
         {
             /// Select a new avatar
             /// 
@@ -66,7 +98,6 @@ namespace WPFXMPPClient
                     MessageBox.Show("Unknown image type", "Can't set avatar", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-
                 FileStream stream = new FileStream(dlg.FileName, FileMode.Open, FileAccess.Read);
                 byte[] bData = new byte[stream.Length];
                 stream.Read(bData, 0, bData.Length);
@@ -74,27 +105,55 @@ namespace WPFXMPPClient
 
                 //MemoryStream ms = new MemoryStream(bData);
                 Image i = new Image();
-                
 
+                BitmapImageSrc = new BitmapImage();
                 BitmapImageSrc.BeginInit();
                 BitmapImageSrc.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
                 BitmapImageSrc.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
                 BitmapImageSrc.UriSource = new Uri(dlg.FileName);
                 //BitmapImageSrc.StreamSource = stream;
                 BitmapImageSrc.EndInit();
-                
+
                 int nWidth = (int)BitmapImageSrc.Width;
                 int nHeight = (int)BitmapImageSrc.Height;
                 //ms.Close();
 
-                
-                if ((nWidth > 100) || (nHeight > 0))
+                float fScale = 1.0f;
+                if ((nWidth > 100) || (nHeight > 100))
                 {
-                    if (MessageBox.Show("This image is larger than the recommend avatar size of 64x64.  Are you sure you want to use it", "Confirm use of large image", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
-                        return;
+                    float fWtoH = (float)nWidth / (float)nHeight;
+
+                    if (fWtoH > 1.0f) /// width is greater than height
+                        fScale = 100.0f / (float)nWidth;
+                    else
+                        fScale = 100.0f / (float)nHeight;
+
+                        //if (MessageBox.Show("This image is larger than the recommend avatar size of 64x64.  Are you sure you want to use it", "Confirm use of large image", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+                      //  return;
                 }
 
-                
+                if (fScale != 1.0f)
+                {
+                    TransformedBitmap transbit = new TransformedBitmap(BitmapImageSrc, new ScaleTransform(fScale, fScale));
+                    //bit.BeginInit();
+                    //bit.EndInit();
+
+                    PngBitmapEncoder objImageEncoder = new PngBitmapEncoder();
+                    BitmapFrame frame = BitmapFrame.Create(transbit);
+                    objImageEncoder.Frames.Add(frame);
+
+                    System.IO.MemoryStream ms = new System.IO.MemoryStream();
+                    objImageEncoder.Save(ms);
+
+                    ms.Seek(0, SeekOrigin.Begin);
+                    bData = new byte[ms.Length];
+                    ms.Read(bData, 0, bData.Length);
+                    ms.Close();
+                    ms.Dispose();
+
+                }
+
+
                 vcard.Photo = new Photo();
                 vcard.Photo.Bytes = bData;
                 vcard.Photo.Type = strContentType;
@@ -102,32 +161,73 @@ namespace WPFXMPPClient
 
                 //XMPPClient.SetAvatar(bData, nWidth, nHeight, strContentType);
             }
-               
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ButtonSendPhotoCapture_Click(object sender, RoutedEventArgs e)
         {
-            this.DataContext = vcard;
+            CameraCaptureWindow win = new CameraCaptureWindow();
+            if (win.ShowDialog() == true)
+            {
+                Image i = new Image();
+                string strFileName = string.Format("camera_{0}.jpg", Guid.NewGuid());
+
+                byte [] bData = win.CompressedAcceptedImage;
+                string strContentType = "image/jpeg";
+                MemoryStream stream = new MemoryStream(win.CompressedAcceptedImage);
+
+                BitmapImageSrc = new BitmapImage();
+                BitmapImageSrc.BeginInit();
+                BitmapImageSrc.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                BitmapImageSrc.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
+                BitmapImageSrc.StreamSource = stream;
+                BitmapImageSrc.EndInit();
+
+                int nWidth = (int)BitmapImageSrc.Width;
+                int nHeight = (int)BitmapImageSrc.Height;
+                //ms.Close();
+
+                float fScale = 1.0f;
+                if ((nWidth > 100) || (nHeight > 100))
+                {
+                    float fWtoH = (float)nWidth / (float)nHeight;
+
+                    if (fWtoH > 1.0f) /// width is greater than height
+                        fScale = 100.0f / (float)nWidth;
+                    else
+                        fScale = 100.0f / (float)nHeight;
+                }
+
+                if (fScale != 1.0f)
+                {
+                    TransformedBitmap transbit = new TransformedBitmap(BitmapImageSrc, new ScaleTransform(fScale, fScale));
+                    //bit.BeginInit();
+                    //bit.EndInit();
+
+                    PngBitmapEncoder objImageEncoder = new PngBitmapEncoder();
+                    BitmapFrame frame = BitmapFrame.Create(transbit);
+                    objImageEncoder.Frames.Add(frame);
+
+                    System.IO.MemoryStream ms = new System.IO.MemoryStream();
+                    objImageEncoder.Save(ms);
+
+                    ms.Seek(0, SeekOrigin.Begin);
+                    bData = new byte[ms.Length];
+                    ms.Read(bData, 0, bData.Length);
+                    ms.Close();
+                    ms.Dispose();
+
+                }
+
+
+                vcard.Photo = new Photo();
+                vcard.Photo.Bytes = bData;
+                vcard.Photo.Type = strContentType;
+                this.ImagePicture.Source = BitmapImageSrc;
+            }
+
         }
 
-        private void ButtonYes_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = true;
-            this.Close();
-        }
 
-        private void ButtonClose_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if ((e.ChangedButton == MouseButton.Left) && (e.ButtonState == MouseButtonState.Pressed))
-                this.DragMove();
-        }
-
-
-
+       
     }
 }

@@ -298,6 +298,19 @@
                 </DrawingGroup>
             </DrawingBrush.Drawing>
         </DrawingBrush>
+
+        <DrawingBrush x:Key="folder" Stretch="UniformToFill">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <DrawingGroup.Children>
+                        <GeometryDrawing Brush="#FF9D9B9B" Geometry="F1 M 64,8C 94.9279,8 120,33.0721 120,64C 120,94.9279 94.9279,120 64,120C 33.0721,120 8,94.9279 8,64C 8,33.0721 33.0721,8 64,8 Z "/>
+                        <GeometryDrawing Brush="#FF000000" Geometry="F1 M 33.5,45.1829L 94.5,45.1829C 96.1568,45.1829 97.5,46.526 97.5,48.1829L 97.5,86.1828C 97.5,87.8397 96.1568,89.1828 94.5,89.1828L 33.5,89.1828C 31.8431,89.1828 30.5,87.8397 30.5,86.1828L 30.5,48.1829C 30.5,46.526 31.8431,45.1829 33.5,45.1829 Z "/>
+                        <GeometryDrawing Brush="#FF000000" Geometry="F1 M 38.6667,38.5L 59.4167,38.5C 60.5212,38.5 61.4166,39.3955 61.4166,40.5L 61.4166,47.75C 61.4166,48.8546 60.5212,49.75 59.4167,49.75L 38.6667,49.75C 37.5621,49.75 36.6667,48.8546 36.6667,47.75L 36.6667,40.5C 36.6667,39.3955 37.5621,38.5 38.6667,38.5 Z "/>
+                    </DrawingGroup.Children>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+
         <Style x:Key="ButtonFocusVisual">
     		<Setter Property="Control.Template">
     			<Setter.Value>

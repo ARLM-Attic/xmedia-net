@@ -222,7 +222,7 @@ namespace System.Net.XMPP
 #else
                 objImage.BeginInit();
                 objImage.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-                objImage.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
+                objImage.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.DelayCreation;
                 
                 objImage.StreamSource = stream;
                 objImage.EndInit();

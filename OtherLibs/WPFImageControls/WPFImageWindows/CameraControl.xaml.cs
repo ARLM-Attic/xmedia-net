@@ -32,6 +32,16 @@ namespace WPFImageWindows
         {
             VideoDevices = MFVideoCaptureDevice.GetCaptureDevices();
             this.ComboBoxSource.ItemsSource = VideoDevices;
+
+            foreach (MFVideoCaptureDevice nextdev in VideoDevices)
+            {
+                if (nextdev.UniqueName ==Properties.Settings.Default.LastCamera)
+                {
+                    this.ComboBoxSource.SelectedItem = nextdev;
+                    return;
+                }
+            }
+
             this.ComboBoxSource.SelectedIndex = 0;
         }
 
@@ -105,6 +115,9 @@ namespace WPFImageWindows
                     CurrentSource.ActiveVideoCaptureRate = CurrentRate;
                     CurrentSource.CameraActive = true;
                     this.DataContext = this;
+
+                    Properties.Settings.Default.LastCamera = this.CurrentVideoDevice.UniqueName;
+                    Properties.Settings.Default.Save();
 
                     System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(OnSetParams));
                 }
