@@ -670,7 +670,7 @@ namespace System.Net.XMPP
         /// Must keep this bitmapimage as a class member or it won't appear.  Not sure why it's going out of scope
         /// when it should be referenced by WPF
         /// </summary>
-        System.Windows.Media.Imaging.BitmapImage OurImage = null;
+        System.Windows.Media.Imaging.BitmapSource OurImage = null;
         public System.Windows.Media.ImageSource Avatar
         {
             get

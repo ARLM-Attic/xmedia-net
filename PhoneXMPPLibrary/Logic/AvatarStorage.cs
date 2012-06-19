@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Windows.Media.Imaging;
 #endif
 
 using System.IO;
@@ -194,7 +195,7 @@ namespace System.Net.XMPP
 
 
 #if !MONO
-        public System.Windows.Media.Imaging.BitmapImage GetAvatarImage(string strHash)
+        public System.Windows.Media.Imaging.BitmapSource GetAvatarImage(string strHash)
         {
             System.Windows.Media.Imaging.BitmapImage objImage = null;
             IsolatedStorageFile storage = null;
@@ -216,18 +217,30 @@ namespace System.Net.XMPP
             try
             {
                 stream = new IsolatedStorageFileStream(strFileName, System.IO.FileMode.Open, storage);
-                objImage = new System.Windows.Media.Imaging.BitmapImage();
+
+                
 #if WINDOWS_PHONE
                 objImage.SetSource(stream);
 #else
+
+                byte[] bData = new byte[stream.Length];
+                stream.Read(bData, 0, bData.Length);
+
+                MemoryStream memstream = new MemoryStream(bData);
+
+
+                //JpegBitmapDecoder decoder = new JpegBitmapDecoder(memstream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                //BitmapFrame frame = decoder.Frames[0];
+                //objImage = frame;
+
+                objImage = new System.Windows.Media.Imaging.BitmapImage();
                 objImage.BeginInit();
                 objImage.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-                objImage.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.DelayCreation;
-                
-                objImage.StreamSource = stream;
+                objImage.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
+                objImage.StreamSource = memstream;
                 objImage.EndInit();
 
-                double nWith = objImage.Width;
+                double nWidth = objImage.Width;
                 double nHeight = objImage.Height;
 #endif
 

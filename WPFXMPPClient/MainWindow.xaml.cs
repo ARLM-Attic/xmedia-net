@@ -531,12 +531,35 @@ namespace WPFXMPPClient
             }
             else if (XMPPClient.XMPPState == XMPPState.AuthenticationFailed)
             {
-                MessageBox.Show("Incorrect username or password", "Authentication Failed", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-                XMPPClient.Disconnect();
+                if (MessageBox.Show(string.Format("Incorrect username or password.  Would you like to create user '{0}'?", XMPPClient.UserName), "Authentication Failed", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
+                {
+                    System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(CreateAccountAsync));
+                }
+                else
+                {
+                    XMPPClient.Disconnect();
+                }
             }
             else
             {
             }
+        }
+
+        void CreateAccountAsync(object obj)
+        {
+            bool bCreated = XMPPClient.CreateAccount(XMPPClient.UserName, XMPPClient.Password, "");
+            if (bCreated == true)
+            {
+                //MessageBox.Show("Created User!", "New User Added", MessageBoxButton.OK, MessageBoxImage.None);
+                XMPPClient.Disconnect();
+                XMPPClient.Connect();
+            }
+            else
+            {
+                //MessageBox.Show("Failed to create user!", "User may already exists or server cannot create new users", MessageBoxButton.OK, MessageBoxImage.None);
+                XMPPClient.Disconnect();
+            }
+
         }
 
         private void HyperlinkRosterItem_Click(object sender, RoutedEventArgs e)

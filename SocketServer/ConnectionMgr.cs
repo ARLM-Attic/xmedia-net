@@ -8,6 +8,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections;
 using System.Text.RegularExpressions;
+using System.Net.NetworkInformation;
+using System.Collections.Generic;
 
 namespace SocketServer
 {
@@ -554,6 +556,135 @@ namespace SocketServer
         }
 
 
+        public static IPAddress[] FindAddresses()
+        {
+            List<IPAddress> IPs = new List<IPAddress>();
+            /// See what interfaces can connect to our itpcluster
+            /// 
+
+            IPAddress BindAddress = IPAddress.Any;
+            NetworkInterface[] infs = NetworkInterface.GetAllNetworkInterfaces();
+
+
+            foreach (NetworkInterface inf in infs)
+            {
+                try
+                {
+                    IPInterfaceProperties props = inf.GetIPProperties();
+                    if (props == null)
+                        continue;
+
+                    IPv4InterfaceProperties ip4 = props.GetIPv4Properties();
+                    if (ip4 == null)  /// TODO.. allow for IPV6 interfaces
+                        continue;
+                    if (ip4.IsAutomaticPrivateAddressingActive == true)
+                        continue;
+                    foreach (UnicastIPAddressInformation addrinfo in props.UnicastAddresses)
+                    {
+
+                        if (addrinfo.Address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+                            continue;
+
+                        //addrinfo.SuffixOrigin == SuffixOrigin.OriginDhcp
+                        //addrinfo.PrefixOrigin == PrefixOrigin.Dhcp
+
+                        if (addrinfo.PrefixOrigin == PrefixOrigin.WellKnown)
+                            continue; /// ignore well known IP addresses
+
+
+                        if (addrinfo.Address.Equals(IPAddress.Any) == false)
+                        {
+
+                            if (addrinfo.Address.Equals(IPAddress.Parse("127.0.0.1")) == false)
+                                IPs.Add(new IPAddress(addrinfo.Address.GetAddressBytes()));
+                        }
+
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            return IPs.ToArray();
+        }
+
+        public static IPAddress GetIPAddressForNetworkMaskLength(int nMaskLength, AddressFamily family)
+        {
+            int nByteLengthAddress = 4;
+            if (family == AddressFamily.InterNetworkV6)
+                nByteLengthAddress = 16;
+
+            byte [] bAddress = new byte[nByteLengthAddress];
+
+            int nBitAt = 0;
+            int nByteAt = 0;
+            int nBitsLeft = nMaskLength;
+            for (int i=0; i<nByteLengthAddress*8; i++)
+            {
+                if (nBitsLeft <= 0)
+                    break;
+
+                bAddress[nByteAt] |= (byte) (1<< (7-nBitAt));
+                nBitAt++;
+                nBitsLeft--;
+                if (nBitAt > 7)
+                {
+                    nBitAt = 0;
+                    nByteAt++;
+                }
+                if (nByteAt > (bAddress.Length-1))
+                    break;
+            }
+
+            return new IPAddress(bAddress);
+        }
+
+        public static bool IsPartOfThisNetwork(IPAddress addressin, IPAddress addressexamine, int nMaskLength)
+        {
+            if (addressin.AddressFamily != addressexamine.AddressFamily)
+                return false;
+
+            IPAddress addressmask = GetIPAddressForNetworkMaskLength(nMaskLength, addressexamine.AddressFamily);
+
+            byte[] bAddressBytes = addressexamine.GetAddressBytes();
+            byte[] bOurBytes = addressin.GetAddressBytes();
+            byte[] bMaskBytes = addressmask.GetAddressBytes();
+            for (int i = 0; i < bOurBytes.Length; i++)
+            {
+                if ((bOurBytes[i] & bMaskBytes[i]) != (bAddressBytes[i] & bMaskBytes[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        ///  See if in RFC 1918 ranges
+        /// </summary>
+        /// <param name="addressexamine"></param>
+        /// <returns></returns>
+        public static bool IsInPrivateRange(IPAddress addressexamine)
+        {
+            bool bInPrivateRange = IsPartOfThisNetwork(IPAddress.Parse("192.168.0.0"), addressexamine, 16);
+            if (bInPrivateRange == true)
+                return true;
+            bInPrivateRange = IsPartOfThisNetwork(IPAddress.Parse("172.16.0.0"), addressexamine, 12);
+            if (bInPrivateRange == true)
+                return true;
+            bInPrivateRange = IsPartOfThisNetwork(IPAddress.Parse("10.0.0.0"), addressexamine, 8);
+            if (bInPrivateRange == true)
+                return true;
+
+            bInPrivateRange = IsPartOfThisNetwork(IPAddress.Parse("fc00::"), addressexamine, 7);
+            if (bInPrivateRange == true)
+                return true;
+
+            bInPrivateRange = IsPartOfThisNetwork(IPAddress.Parse("fe80::"), addressexamine, 10);
+            if (bInPrivateRange == true)
+                return true;
+
+            return false;
+        }
     }
 
 }

@@ -109,6 +109,9 @@
     <Compile Include="..\PhoneXMPPLibrary\Logic\PubSubNodeManager.cs">
       <Link>Logic\PubSubNodeManager.cs</Link>
     </Compile>
+    <Compile Include="..\PhoneXMPPLibrary\Logic\RegisterClasses.cs">
+      <Link>Logic\RegisterClasses.cs</Link>
+    </Compile>
     <Compile Include="..\PhoneXMPPLibrary\Logic\RosterLogic.cs">
       <Link>Logic\RosterLogic.cs</Link>
     </Compile>

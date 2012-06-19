@@ -76,6 +76,7 @@
     <Compile Include="Logic\PresenceLogic.cs" />
     <Compile Include="Logic\PubSubClasses.cs" />
     <Compile Include="Logic\PubSubNodeManager.cs" />
+    <Compile Include="Logic\RegisterClasses.cs" />
     <Compile Include="Logic\RosterLogic.cs" />
     <Compile Include="Logic\ServiceDiscoveryLogic.cs" />
     <Compile Include="Logic\SOCKS5Listener.cs" />

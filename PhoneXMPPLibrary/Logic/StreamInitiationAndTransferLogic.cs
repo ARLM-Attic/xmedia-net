@@ -923,9 +923,29 @@ namespace System.Net.XMPP
                     }
                 }
 
-                StreamHost host = new StreamHost() { Host = strHost, Port = strPort, Jid = strJID };
+                List<StreamHost> hosts = new List<StreamHost>();
+
+                /// See if we have a public IP for our local stream.  If so, send it, and setup a local socks5 proxy
+                //StreamHost hostloco = new StreamHost() { Host = strHost, Port = strPort, Jid = XMPPClient.JID };
+#if !WINDOWS_PHONE
+                IPAddress [] addresses = SocketServer.ConnectMgr.FindAddresses();
+                /// Find out which addresses are public, and if they are advertise them.  (If they're private we can stun and use them in Jingle streams sessions, but not here)
+                /// the one exception is if we let the user specify an address because they opened the port
+                /// 
+                foreach (IPAddress address in addresses)
+                {
+                    if (SocketServer.ConnectMgr.IsInPrivateRange(address) == false)
+                    {
+                        /// Need a port to listen on for this address... needs socks5 server listening
+                        //hosts.Add(new StreamHost() { Host = address.ToString(), Port = strPort, Jid = strJID });
+                    }
+                }
+
+#endif
+
+                hosts.Add(new StreamHost() { Host = strHost, Port = strPort, Jid = strJID });
                 //StreamHost host = new StreamHost() { Host = "192.168.1.124", Port = "7777", Jid = string.Format("proxy.{0}", XMPPClient.Domain) };
-                IQStart.ByteStreamQuery.Hosts = new StreamHost[] { host };
+                IQStart.ByteStreamQuery.Hosts = hosts.ToArray();
                 IQStart.ByteStreamQuery.Mode = StreamMode.tcp.ToString();
 
 

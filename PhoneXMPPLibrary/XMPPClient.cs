@@ -1194,6 +1194,7 @@ namespace System.Net.XMPP
             set { m_bAutomaticallyDownloadAvatars = value; }
         }
 
+
         // commented out because this uses the old method, and we do it automatically now (If set)
         //public void DownloadAvatar(JID jidfrom, string strItem)
         //{
@@ -1239,7 +1240,7 @@ namespace System.Net.XMPP
         /// Must keep this bitmapimage as a class member or it won't appear.  Not sure why it's going out of scope
         /// when it should be referenced by WPF
         /// </summary>
-        System.Windows.Media.Imaging.BitmapImage OurImage = null;
+        System.Windows.Media.Imaging.BitmapSource OurImage = null;
         public System.Windows.Media.ImageSource Avatar
         {
             get
@@ -1276,6 +1277,53 @@ namespace System.Net.XMPP
             iq.InnerXML = Utility.GetXMLStringFromObject(vCard);
 
             SendXMPP(iq);
+        }
+
+        /// <summary>
+        /// Called by the host when state is AuthenticationFailed to create an account
+        /// </summary>
+        /// <param name="strUserName"></param>
+        /// <param name="strPassword"></param>
+        /// <param name="strEmail"></param>
+        public bool CreateAccount(string strUserName, string strPassword, string strEmail)
+        {
+            RegisterQueryIQ iq = new RegisterQueryIQ();
+            iq.To = null;
+            iq.From = null;
+            iq.Type = IQType.set.ToString();
+            iq.RegisterQuery.UserName = strUserName;
+            iq.RegisterQuery.Password = strPassword;
+            iq.RegisterQuery.Email = strEmail;
+
+
+            IQ iqResult = SendRecieveIQ(iq, 10000, SerializationMethod.XMLSerializeObject);
+            if (iqResult == null)
+                return false;
+            if (iqResult.Type == IQType.error.ToString())
+                return false;
+
+            return true;
+
+        }
+
+        public bool ChangePassword(string strUserName, string strPassword)
+        {
+            RegisterQueryIQ iq = new RegisterQueryIQ();
+            iq.To = this.Domain;
+            iq.From = null;
+            iq.Type = IQType.set.ToString();
+            iq.RegisterQuery.UserName = strUserName;
+            iq.RegisterQuery.Password = strPassword;
+            iq.RegisterQuery.Email = null;
+
+
+            IQ iqResult = SendRecieveIQ(iq, 10000, SerializationMethod.XMLSerializeObject);
+            if (iqResult == null)
+                return false;
+            if (iqResult.Type == IQType.error.ToString())
+                return false;
+
+            return true;
         }
 
     }

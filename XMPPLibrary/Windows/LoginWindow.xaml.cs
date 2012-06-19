@@ -176,10 +176,15 @@ namespace System.Net.XMPP
 
         private void ButtonAddAccount_Click(object sender, RoutedEventArgs e)
         {
-            XMPPAccount newaccount = new XMPPAccount();
-            newaccount.AccountName = "New Account";
-            this.AllAccounts.Add(newaccount);
             this.ComboBoxAccounts.ItemsSource = null;
+
+            XMPPAccount newaccount = new XMPPAccount();
+            Random rand = new Random();
+            newaccount.AccountName = string.Format("New Account - {0}", rand.Next(1000));
+            this.AllAccounts.Add(newaccount);
+
+            ActiveAccount = newaccount;
+            this.DataContext = ActiveAccount;
             this.ComboBoxAccounts.ItemsSource = this.AllAccounts;
             this.ComboBoxAccounts.SelectedItem = newaccount;
             this.TextBoxPassword.Password = newaccount.Password;
