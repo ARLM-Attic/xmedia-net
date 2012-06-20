@@ -928,16 +928,30 @@ namespace System.Net.XMPP
                 /// See if we have a public IP for our local stream.  If so, send it, and setup a local socks5 proxy
                 //StreamHost hostloco = new StreamHost() { Host = strHost, Port = strPort, Jid = XMPPClient.JID };
 #if !WINDOWS_PHONE
-                IPAddress [] addresses = SocketServer.ConnectMgr.FindAddresses();
-                /// Find out which addresses are public, and if they are advertise them.  (If they're private we can stun and use them in Jingle streams sessions, but not here)
-                /// the one exception is if we let the user specify an address because they opened the port
-                /// 
-                foreach (IPAddress address in addresses)
+
+                if ((FileTransferManager.SOCKS5ByteServerPublicIP != null) && (FileTransferManager.SOCKS5ByteServerPublicIP.Length > 0))
                 {
-                    if (SocketServer.ConnectMgr.IsInPrivateRange(address) == false)
+                    FileTransferManager.StartSocks5ByteServer();
+                    hosts.Add(new StreamHost() { Host = FileTransferManager.SOCKS5ByteServerPublicIP, Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+                }
+                else
+                {
+                    IPAddress[] addresses = SocketServer.ConnectMgr.FindAddresses();
+                    /// Find out which addresses are public, and if they are advertise them.  (If they're private we can stun and use them in Jingle streams sessions, but not here)
+                    /// the one exception is if we let the user specify an address because they opened the port
+                    /// 
+
+
+
+                    foreach (IPAddress address in addresses)
                     {
-                        /// Need a port to listen on for this address... needs socks5 server listening
-                        //hosts.Add(new StreamHost() { Host = address.ToString(), Port = strPort, Jid = strJID });
+                        if (SocketServer.ConnectMgr.IsInPrivateRange(address) == false)
+                        {
+                            FileTransferManager.StartSocks5ByteServer();
+
+                            /// Need a port to listen on for this address... needs socks5 server listening
+                            hosts.Add(new StreamHost() { Host = address.ToString(), Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+                        }
                     }
                 }
 
@@ -996,6 +1010,7 @@ namespace System.Net.XMPP
                         ByteStreamQueryIQ bsiq = iq as ByteStreamQueryIQ;
                         if (bsiq.Type == IQType.result.ToString())
                         {
+                            
                             System.Threading.ThreadPool.QueueUserWorkItem(new Threading.WaitCallback(SendFileThread), bsiq);
                         }
                         else if (bsiq.Type == IQType.error.ToString())
@@ -1050,8 +1065,8 @@ namespace System.Net.XMPP
         }
 
 
-
-          public void SendFileThread(object obj)
+        
+        public void SendFileThread(object obj)
         {
             ByteStreamQueryIQ bsiq = obj as ByteStreamQueryIQ;
 
@@ -1059,97 +1074,166 @@ namespace System.Net.XMPP
             /// 
             StreamHost host = bsiq.ByteStreamQuery.StreamHostUsed;
 
-            SocketServer.SocketClient client = new SocketClient();
-
-            client.SetSOCKSProxy(5, XMPPClient.Server, 7777, "xmppclient");
-            client.OnAsyncConnectFinished += new DelegateConnectFinish(client_OnAsyncConnectFinished);
-            EventConnected.Reset();
-            ConnectSuccesful = false;
-
-            string strHost = string.Format("{0}{1}{2}", this.FileTransfer.sid, XMPPClient.JID, bsiq.From);
-            System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
-            byte [] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHost));
-            strHost = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
-
-            /// Connect parametrs are the sha1 hash and 0, the socks proxy will connect us to the correct place
-            client.ConnectAsync(strHost, 0);
-
-            EventConnected.WaitOne();
-            if (ConnectSuccesful == true)
+            if (host.Jid != XMPPClient.JID) 
             {
+                SocketServer.SocketClient client = new SocketClient();
 
-                /// Now we must activate the proxy so we can send
-                /// 
-                EventActivate.Reset();
-                IQActivate = new ByteStreamQueryIQ();
-                IQActivate.ByteStreamQuery = new ByteStreamQuery();
-                IQActivate.ByteStreamQuery.SID = this.FileTransfer.sid;
-                IQActivate.From = XMPPClient.JID;
-                IQActivate.To = host.Jid;
-                IQActivate.Type = IQType.set.ToString();
-                IQActivate.ByteStreamQuery.Activate = FileTransfer.RemoteJID;
-                XMPPClient.SendObject(IQActivate);
-                EventActivate.WaitOne();
+                client.SetSOCKSProxy(5, XMPPClient.Server, 7777, "xmppclient");
+                client.OnAsyncConnectFinished += new DelegateConnectFinish(client_OnAsyncConnectFinished);
+                EventConnected.Reset();
+                ConnectSuccesful = false;
 
-                if (IsCompleted == true)
+                string strHost = string.Format("{0}{1}{2}", this.FileTransfer.sid, XMPPClient.JID, bsiq.From);
+                System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
+                byte[] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHost));
+                strHost = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
+
+                /// Connect parametrs are the sha1 hash and 0, the socks proxy will connect us to the correct place
+                client.ConnectAsync(strHost, 0);
+
+                EventConnected.WaitOne();
+                if (ConnectSuccesful == true)
                 {
-                    /// Error, exit this thread
-                    FileTransfer.FileTransferState = FileTransferState.Error;
+
+                    /// Now we must activate the proxy so we can send
+                    /// 
+                    EventActivate.Reset();
+                    IQActivate = new ByteStreamQueryIQ();
+                    IQActivate.ByteStreamQuery = new ByteStreamQuery();
+                    IQActivate.ByteStreamQuery.SID = this.FileTransfer.sid;
+                    IQActivate.From = XMPPClient.JID;
+                    IQActivate.To = host.Jid;
+                    IQActivate.Type = IQType.set.ToString();
+                    IQActivate.ByteStreamQuery.Activate = FileTransfer.RemoteJID;
+                    XMPPClient.SendObject(IQActivate);
+                    EventActivate.WaitOne();
+
+                    if (IsCompleted == true)
+                    {
+                        /// Error, exit this thread
+                        FileTransfer.FileTransferState = FileTransferState.Error;
+                        XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
+                        return;
+                    }
+
+
+                    FileTransfer.BytesRemaining = FileTransfer.Bytes.Length;
+                    FileTransfer.FileTransferState = FileTransferState.Transferring;
+
+                    /// Now send all our data
+                    /// 
+                    ByteBuffer buffer = new ByteBuffer();
+                    buffer.AppendData(FileTransfer.Bytes);
+
+
+                    while (buffer.Size > 0)
+                    {
+                        int nSize = (buffer.Size > 16384) ? 16384 : buffer.Size;
+                        Sockets.SocketAsyncEventArgs asyncsend = new Sockets.SocketAsyncEventArgs();
+                        asyncsend.SetBuffer(buffer.GetNSamples(nSize), 0, nSize);
+                        asyncsend.Completed += new EventHandler<Sockets.SocketAsyncEventArgs>(asyncsend_Completed);
+
+
+                        SendCompletedEvent.Reset();
+                        bSendSuccess = false;
+                        bool bSent = false;
+                        try
+                        {
+                            client.socket.SendAsync(asyncsend);
+                        }
+                        catch (Exception ex)
+                        {
+                            IsCompleted = true;
+                            FileTransfer.Error = ex.Message;
+                            FileTransfer.FileTransferState = FileTransferState.Error;
+                            return;
+                        }
+                        SendCompletedEvent.WaitOne();
+                        if (IsCompleted == true)
+                            break;
+
+                        if ((bSendSuccess == false) && (bSent == false)) /// was sent async because bSent is false, so we can examine bSendSuccess to make sure we sent the right number of bytes
+                        {
+                            break;
+                        }
+                        FileTransfer.BytesRemaining -= nSize;
+                    }
+
+
+                    client.Disconnect();
+
+                    FileTransfer.FileTransferState = FileTransferState.Done;
+                    IsCompleted = true;
                     XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                     return;
                 }
 
+                FileTransfer.Error = "Failed to send data";
+                FileTransfer.FileTransferState = FileTransferState.Error;
+                IsCompleted = true;
+            }
+#if !WINDOWS_PHONE
+            else /// We are using our local socks5 bytestream proxy.  No need to connect or activate, just find the right connection and send
+            {
+                string strHostUs = string.Format("{0}{1}{2}", this.FileTransfer.sid, XMPPClient.JID, bsiq.From);
+                System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
+                byte[] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHostUs));
+                strHostUs = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
 
-                FileTransfer.BytesRemaining = FileTransfer.Bytes.Length;
-                FileTransfer.FileTransferState = FileTransferState.Transferring;
 
-                /// Now send all our data
-                /// 
-                ByteBuffer buffer = new ByteBuffer();
-                buffer.AppendData(FileTransfer.Bytes);
+                SOCKSServerSession RemoteSession = FileTransferManager.LocalSOCKS5ByteServer.GetIncomingByteStreamSession(strHostUs);
 
-
-                while (buffer.Size > 0)
+                if (RemoteSession != null)
                 {
-                    int nSize = (buffer.Size > 16384) ? 16384 : buffer.Size;
-                    Sockets.SocketAsyncEventArgs asyncsend = new Sockets.SocketAsyncEventArgs();
-                    asyncsend.SetBuffer(buffer.GetNSamples(nSize), 0, nSize);
-                    asyncsend.Completed += new EventHandler<Sockets.SocketAsyncEventArgs>(asyncsend_Completed);
-                    
-                    
-                    SendCompletedEvent.Reset();
-                    bSendSuccess = false;
-                    bool bSent = false;
-                    try
+                    if (IsCompleted == true)
                     {
-                        client.socket.SendAsync(asyncsend);
-                    }
-                    catch (Exception ex)
-                    {
-                        IsCompleted = true;
-                        FileTransfer.Error = ex.Message;
+                        /// Error, exit this thread
                         FileTransfer.FileTransferState = FileTransferState.Error;
+                        XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                         return;
                     }
-                    SendCompletedEvent.WaitOne();
-                    if (IsCompleted == true)
-                        break;
 
-                    if ((bSendSuccess == false) && (bSent == false) ) /// was sent async because bSent is false, so we can examine bSendSuccess to make sure we sent the right number of bytes
+
+                    FileTransfer.BytesRemaining = FileTransfer.Bytes.Length;
+                    FileTransfer.FileTransferState = FileTransferState.Transferring;
+
+                    /// Now send all our data
+                    /// 
+                    ByteBuffer buffer = new ByteBuffer();
+                    buffer.AppendData(FileTransfer.Bytes);
+
+
+                    while (buffer.Size > 0)
                     {
-                        break;
+                        int nSize = (buffer.Size > 16384) ? 16384 : buffer.Size;
+                        byte[] bSend = buffer.GetNSamples(nSize);
+
+                        try
+                        {
+                            RemoteSession.Send(bSend);
+                        }
+                        catch (Exception ex)
+                        {
+                            IsCompleted = true;
+                            FileTransfer.Error = ex.Message;
+                            FileTransfer.FileTransferState = FileTransferState.Error;
+                            return;
+                        }
+                        if (IsCompleted == true)
+                            break;
+
+                        FileTransfer.BytesRemaining -= nSize;
                     }
-                    FileTransfer.BytesRemaining -= nSize;
+
+                    FileTransferManager.LocalSOCKS5ByteServer.CloseAndRemoveSession(RemoteSession);
+
+                    FileTransfer.FileTransferState = FileTransferState.Done;
+                    IsCompleted = true;
+                    XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
+                    return;
                 }
-                
-
-                client.Disconnect();
-
-                FileTransfer.FileTransferState = FileTransferState.Done;
-                IsCompleted = true;
-                XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
-                return;
             }
+#endif
 
             FileTransfer.Error = "Failed to send data";
             FileTransfer.FileTransferState = FileTransferState.Error;

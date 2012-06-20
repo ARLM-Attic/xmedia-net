@@ -118,9 +118,6 @@
     <Compile Include="..\PhoneXMPPLibrary\Logic\ServiceDiscoveryLogic.cs">
       <Link>Logic\ServiceDiscoveryLogic.cs</Link>
     </Compile>
-    <Compile Include="..\PhoneXMPPLibrary\Logic\SOCKS5Listener.cs">
-      <Link>Logic\SOCKS5Listener.cs</Link>
-    </Compile>
     <Compile Include="..\PhoneXMPPLibrary\Logic\StreamInitiationAndTransferLogic.cs">
       <Link>Logic\StreamInitiationAndTransferLogic.cs</Link>
     </Compile>

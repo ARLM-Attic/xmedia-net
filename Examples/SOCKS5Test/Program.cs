@@ -13,7 +13,7 @@ namespace SOCKS5Test
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            SOCKS5ServiceLibrary.SOCKServer server = new SOCKS5ServiceLibrary.SOCKServer();
+            SocketServer.SOCKServer server = new SocketServer.SOCKServer();
             server.Port = 8080;
             server.Start();
 

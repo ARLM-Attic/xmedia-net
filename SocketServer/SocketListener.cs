@@ -51,6 +51,13 @@ namespace SocketServer
             return EnableAccept(ep);
         }
 
+        private int m_nPortListeningOn = 0;
+
+        public int PortListeningOn
+        {
+            get { return m_nPortListeningOn; }
+            set { m_nPortListeningOn = value; }
+        }
 
         public System.Net.Sockets.Socket ListeningSocket = null;
 		/// <summary>
@@ -69,6 +76,7 @@ namespace SocketServer
 		    try
 		    {
 			    ListeningSocket.Bind(epBind);
+                PortListeningOn = ((IPEndPoint)ListeningSocket.LocalEndPoint).Port;
 		    }
          catch(SocketException e) /// winso
          {

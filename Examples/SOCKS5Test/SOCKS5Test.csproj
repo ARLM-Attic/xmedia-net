@@ -51,9 +51,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SOCKS5ServiceLibrary\socks5.csproj">
-      <Project>{D30DED6E-E360-4DDD-BD14-02B9361E676E}</Project>
-      <Name>socks5</Name>
+    <ProjectReference Include="..\..\SocketServer\socketserver.csproj">
+      <Project>{77F78E2F-A04F-4823-A2A9-3F1F27D0F8B8}</Project>
+      <Name>socketserver</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

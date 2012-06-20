@@ -65,6 +65,9 @@
     <Compile Include="..\PhoneSocketServer\SOCKClasses.cs">
       <Link>SOCKClasses.cs</Link>
     </Compile>
+    <Compile Include="..\PhoneSocketServer\SOCKServer.cs">
+      <Link>SOCKServer.cs</Link>
+    </Compile>
     <Compile Include="..\PhoneSocketServer\TLS\ByteHelper.cs">
       <Link>ByteHelper.cs</Link>
     </Compile>
