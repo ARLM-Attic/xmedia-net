@@ -282,6 +282,7 @@ namespace SocketServer
                         }
                         else
                         {
+                            Console.WriteLine("SOCKS5 Bytestream connection for: {0}", reqmsg.DestinationDomain);
                             RemoteHost = reqmsg.DestinationDomain;
                             bConnected = true;
                             this.ServerSessionState = SocketServer.ServerSessionState.JustExisting;
@@ -498,6 +499,7 @@ namespace SocketServer
         /// <param name="strHost"></param>
         public SOCKSServerSession GetIncomingByteStreamSession(string strHost)
         {
+            Console.WriteLine("Host looking for SOCKS5 Bytestream connection for: {0}", strHost);
             lock (SessionLock)
             {
                 foreach (SOCKSServerSession nextsession in Sessions)
@@ -530,7 +532,7 @@ namespace SocketServer
 
         void Listener_OnNewConnection(System.Net.Sockets.Socket s)
         {
-            Console.WriteLine("Session Connecting: {0}", s);
+            Console.WriteLine("Session Connecting: {0}", s.RemoteEndPoint);
             SOCKSServerSession session = new SOCKSServerSession(s, this);
             session.SOCKSServerMode = SOCKSServerMode;
             lock (SessionLock)

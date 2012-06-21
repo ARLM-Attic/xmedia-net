@@ -322,6 +322,8 @@ namespace System.Net.XMPP
         }
 
 #if !WINDOWS_PHONE
+
+        public static bool UseLocalSOCKS5Server = true;
         /// <summary>
         /// A Local SOCKS5 Byte Stream server for file transfers.  Start this if you have a public IP or port forwarding setup and don't want to use the XMPP servers
         /// </summary>

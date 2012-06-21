@@ -567,9 +567,6 @@ namespace System.Net.XMPP
         {
         }
 
-        [XmlAttribute(AttributeName="sid")]
-        [DataMember]
-        public string SID = null;
 
         private ByteStreamQuery m_aByteStreamQuery = null;
         [XmlElement(ElementName = "query", Namespace="http://jabber.org/protocol/bytestreams")]
@@ -929,28 +926,31 @@ namespace System.Net.XMPP
                 //StreamHost hostloco = new StreamHost() { Host = strHost, Port = strPort, Jid = XMPPClient.JID };
 #if !WINDOWS_PHONE
 
-                if ((FileTransferManager.SOCKS5ByteServerPublicIP != null) && (FileTransferManager.SOCKS5ByteServerPublicIP.Length > 0))
+                if (FileTransferManager.UseLocalSOCKS5Server == true)
                 {
-                    FileTransferManager.StartSocks5ByteServer();
-                    hosts.Add(new StreamHost() { Host = FileTransferManager.SOCKS5ByteServerPublicIP, Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
-                }
-                else
-                {
-                    IPAddress[] addresses = SocketServer.ConnectMgr.FindAddresses();
-                    /// Find out which addresses are public, and if they are advertise them.  (If they're private we can stun and use them in Jingle streams sessions, but not here)
-                    /// the one exception is if we let the user specify an address because they opened the port
-                    /// 
-
-
-
-                    foreach (IPAddress address in addresses)
+                    if ((FileTransferManager.SOCKS5ByteServerPublicIP != null) && (FileTransferManager.SOCKS5ByteServerPublicIP.Length > 0))
                     {
-                        if (SocketServer.ConnectMgr.IsInPrivateRange(address) == false)
-                        {
-                            FileTransferManager.StartSocks5ByteServer();
+                        FileTransferManager.StartSocks5ByteServer();
+                        hosts.Add(new StreamHost() { Host = FileTransferManager.SOCKS5ByteServerPublicIP, Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+                    }
+                    else
+                    {
+                        IPAddress[] addresses = SocketServer.ConnectMgr.FindAddresses();
+                        /// Find out which addresses are public, and if they are advertise them.  (If they're private we can stun and use them in Jingle streams sessions, but not here)
+                        /// the one exception is if we let the user specify an address because they opened the port
+                        /// 
 
-                            /// Need a port to listen on for this address... needs socks5 server listening
-                            hosts.Add(new StreamHost() { Host = address.ToString(), Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+
+
+                        foreach (IPAddress address in addresses)
+                        {
+                            if (SocketServer.ConnectMgr.IsInPrivateRange(address) == false)
+                            {
+                                FileTransferManager.StartSocks5ByteServer();
+
+                                /// Need a port to listen on for this address... needs socks5 server listening
+                                hosts.Add(new StreamHost() { Host = address.ToString(), Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+                            }
                         }
                     }
                 }
@@ -1292,8 +1292,8 @@ namespace System.Net.XMPP
                     /// connected and negotiated socks5, tell the far end to start sending data
                     /// 
                     ByteStreamQueryIQ iqresponse = new ByteStreamQueryIQ();
-                    iqresponse.SID = this.FileTransfer.sid;
                     iqresponse.ByteStreamQuery = new ByteStreamQuery();
+                    iqresponse.ByteStreamQuery.SID = this.FileTransfer.sid;
                     iqresponse.ByteStreamQuery.StreamHostUsed = new StreamHost();
                     iqresponse.ByteStreamQuery.StreamHostUsed.Jid = host.Jid;
                     iqresponse.From = XMPPClient.JID;

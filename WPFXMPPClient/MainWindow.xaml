@@ -102,13 +102,16 @@
                                 </Grid.RowDefinitions>
 
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="300*" />
+                                    <ColumnDefinition Width="200*" />
+                                    <ColumnDefinition Width="35" />
+                                    <ColumnDefinition Width="35" />
+                                    <ColumnDefinition Width="35" />
                                     <ColumnDefinition Width="35" />
                                     <ColumnDefinition Width="35" />
                                     <ColumnDefinition Width="35" />
                                 </Grid.ColumnDefinitions>
                                 
-                                <local:DialogControl Grid.Row="1" GotFocus="DialogControlLastMessage_GotFocus" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" Height="50"></local:DialogControl>
+                                <local:DialogControl Grid.Row="1" GotFocus="DialogControlLastMessage_GotFocus" Grid.ColumnSpan="7" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" Height="50"></local:DialogControl>
 
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Margin="10,0,0,0" HorizontalAlignment="Stretch" TextTrimming="CharacterEllipsis">
@@ -146,7 +149,43 @@
                         <Rectangle Stretch="UniformToFill" Fill="{DynamicResource speaker}" Width="24" Height="24" />
                     </Button>
 
-                    <Button Width="30" Height="30"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"  RenderTransformOrigin=".5,.5" Visibility="{Binding NewMessagesVisible}" Grid.Column="3" x:Name="ToggleButtonChat" Click="HyperlinkRosterItem_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" >
+                    <Button Width="30" Height="30" Grid.Column="3" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendFromCamera_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendFromCamera" ToolTip="Send a PIC from the camera" >
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Rectangle Stretch="UniformToFill" Fill="{DynamicResource camera}" Width="24" Height="24" />
+                    </Button>
+
+                    <Button Width="30" Height="30" Grid.Column="4" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendFile_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendFile" ToolTip="Send a File" >
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Rectangle Stretch="UniformToFill" Fill="{DynamicResource folder}" Width="24" Height="24" />
+                    </Button>
+
+                    <Button Width="30" Height="30" Grid.Column="5" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendScreenCapture_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendScreenCapture" ToolTip="Send a screen capture" >
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Rectangle Stretch="UniformToFill" Fill="{DynamicResource crop}" Width="24" Height="24" />
+                    </Button>
+
+                    <Button Width="30" Height="30"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"  RenderTransformOrigin=".5,.5" Visibility="{Binding NewMessagesVisible}" Grid.Column="6" x:Name="ToggleButtonChat" Click="HyperlinkRosterItem_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" >
                         <Button.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -429,7 +468,8 @@
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
-                </Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40" />
+            </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="34" />
                     <RowDefinition Height="34" />
@@ -530,7 +570,22 @@
             <s:SurfaceButton ToolTip="View Media Sessions" Grid.Column="5" x:Name="ButtonMediaSessions" IsEnabled="True" Click="ButtonMediaSessions_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/volume.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </s:SurfaceButton>
-            <s:SurfaceButton ToolTip="Close" Grid.Column="6" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+
+            <Button Width="40" Height="40" Grid.Column="6"  Grid.RowSpan="2" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonOptions_Click"  
+                    Background="{DynamicResource ButtonBrush}"
+                    VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonOptions" ToolTip="Set General Options" >
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+                <Rectangle Width="28" Height="28" Stretch="UniformToFill" Fill="{DynamicResource tools}" />
+            </Button>
+            
+            <s:SurfaceButton ToolTip="Close" Grid.Column="7" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                     <Image Source="Images/calculator - multiply.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </s:SurfaceButton>
 

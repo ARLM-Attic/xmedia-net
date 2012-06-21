@@ -130,12 +130,13 @@ namespace WPFXMPPClient
 
             if ((MicrophoneDevices != null) && (MicrophoneDevices.Length > 0))
             {
+                this.ComboBoxMicDevices.DataContext = Option.Options;
                 this.ComboBoxMicDevices.ItemsSource = MicrophoneDevices;
 
                 bool bSetMic = false;
                 foreach (AudioDevice nextmic in MicrophoneDevices)
                 {
-                    if (nextmic.Guid == Properties.Settings.Default.LastMicrophoneDevice)
+                    if (nextmic.Guid == Option.Options.MicrophoneDevice)
                     {
                         this.ComboBoxMicDevices.SelectedItem = nextmic;
                         MicrophoneVolume = new ImageAquisition.AudioDeviceVolume(nextmic);
@@ -153,12 +154,13 @@ namespace WPFXMPPClient
             }
             if ((SpeakerDevices != null) && (SpeakerDevices.Length > 0))
             {
+                this.ComboBoxSpeakerDevices.DataContext = Option.Options;
                 this.ComboBoxSpeakerDevices.ItemsSource = SpeakerDevices;
 
                 bool bSetSpeaker = false;
-                foreach (AudioDevice nextspeaker in MicrophoneDevices)
+                foreach (AudioDevice nextspeaker in SpeakerDevices)
                 {
-                    if (nextspeaker.Guid == Properties.Settings.Default.LastSpeakerDevice)
+                    if (nextspeaker.Guid == Option.Options.SpeakerDevice)
                     {
                         this.ComboBoxSpeakerDevices.SelectedItem = nextspeaker;
                         SpeakerVolume = new ImageAquisition.AudioDeviceVolume(nextspeaker);

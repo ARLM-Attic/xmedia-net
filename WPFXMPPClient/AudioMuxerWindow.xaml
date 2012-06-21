@@ -85,7 +85,7 @@
                                 <ColumnDefinition Width="100*" />
                             </Grid.ColumnDefinitions>
                             <Label Width="60" Content="Speaker" HorizontalAlignment="Left"/>
-                            <ComboBox Grid.Column="1" Background="#AAEEFFEE" x:Name="ComboBoxSpeakerDevices" SelectionChanged="ComboBoxSpeakerDevices_SelectionChanged" />
+                            <ComboBox Grid.Column="1" Background="#AAEEFFEE" x:Name="ComboBoxSpeakerDevices" SelectionChanged="ComboBoxSpeakerDevices_SelectionChanged" SelectedValuePath="Guid" SelectedValue="{Binding SpeakerDevice}" />
                             <!--<s:SurfaceCheckBox Margin="5,0" x:Name="CheckBoxAutoAnswer" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Auto Answer</s:SurfaceCheckBox>-->
                             <ToggleButton Grid.Column="2" ToolTip="Speaker Off" Background="#AACCFFCC" BorderBrush="{x:Null}" x:Name="ButtonMuteSpeaker" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding SpeakerMute}" HorizontalAlignment="Left">
                                 <Image Width="32" Height="32" >
@@ -139,7 +139,7 @@
                             </Grid.ColumnDefinitions>
                             
                             <Label  Content="Mic" HorizontalAlignment="Left"/>
-                            <ComboBox Grid.Column="1" Background="#AAEEFFEE" Width="200" x:Name="ComboBoxMicDevices" SelectionChanged="ComboBoxMicDevices_SelectionChanged" />
+                            <ComboBox Grid.Column="1" Background="#AAEEFFEE" x:Name="ComboBoxMicDevices" SelectionChanged="ComboBoxMicDevices_SelectionChanged" SelectedValuePath="Guid" SelectedValue="{Binding MicrophoneDevice}"/>
                             <ToggleButton Grid.Column="2" ToolTip="Mute" Background="#AACCFFCC" BorderBrush="{x:Null}" x:Name="ButtonMute" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding Muted}" >
                                 <Image x:Name="ImageMicMute" Width="32" Height="32">
                                     <Image.Style>

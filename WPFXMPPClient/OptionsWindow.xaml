@@ -1,8 +1,89 @@
 ﻿<Window x:Class="WPFXMPPClient.OptionsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="OptionsWindow" Height="300" Width="300">
+        Loaded="Window_Loaded"
+        Title="Options" Height="318" Width="439">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="300*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TabControl>
+            <TabItem Header="General">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Call Answer Mode</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxCallAnswerMode" SelectedItem="{Binding AnswerType}" />
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+            
+            <TabItem Header="Audio">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Speaker Device</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxSpeakerDevice" SelectedValuePath="Guid" SelectedValue="{Binding SpeakerDevice}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Microphone Device</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxMicrophoneDevice" SelectedValuePath="Guid" SelectedValue="{Binding MicrophoneDevice}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Preferred Codec</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxAudioCodec" SelectedItem="{Binding AudioCodec}" />
+                    </StackPanel>
+                </StackPanel>
+
+            </TabItem>
+            <TabItem Header="Video">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Video Device</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxVideoDevice" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Resolution</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxVideoResolution" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Camera Frame Rate</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxVideoFrameRate" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Throttle Frame Rate</Label>
+                        <TextBox Width="160" x:Name="TextBoxThrottleVideoFrameRate" />
+                    </StackPanel>
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Video Codec</Label>
+                        <ComboBox Width="160" x:Name="ComboBoxVideoCodec" />
+                    </StackPanel>
+                </StackPanel>
+
+            </TabItem>
+            <TabItem Header="File Transfer">
+                <StackPanel>
+                    <CheckBox Margin="0,5" IsChecked="{Binding UseLocalSOCKS5Proxy}" x:Name="CheckBoxUseLocalSOCKS5Proxy" Content="Use Local SOCKS5 Proxy" />
+                    <StackPanel Margin="5,0" Orientation="Horizontal">
+                        <Label Width="160">SOCKS5 Proxy Public IP</Label>
+                        <TextBox Width="160" x:Name="TextBoxSocks5PublicIP" Text="{Binding ProxyPublicIP}" />
+                    </StackPanel>
+                    <StackPanel Margin="5,0" Orientation="Horizontal">
+                        <Label Width="160">SOCKS5 Proxy Port</Label>
+                        <TextBox Width="160" x:Name="TextBoxSocks5Port" Text="{Binding ProxyPort}" />
+                    </StackPanel>
+                    <CheckBox Margin="0,5" IsChecked="{Binding UseIBB}" x:Name="CheckBoxUseIBB" Content="Use Inband File Transfer Only" />
+                    
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">File Transfer Directory</Label>
+                        <TextBox Width="160" Text="{Binding FileTransferDirectory}" x:Name="TextBoxFileTransferDirectory" />
+                    </StackPanel>
+
+                </StackPanel>
+
+            </TabItem>
+        </TabControl>
         
+        <Button IsDefault="True" Grid.Row="1" x:Name="ButtonSave" Content="Save" HorizontalAlignment="Right" Width="80" Click="ButtonSave_Click" />
     </Grid>
 </Window>

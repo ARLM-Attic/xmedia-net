@@ -57,7 +57,7 @@ namespace WPFXMPPClient
 
                 string strFilename = string.Format("{0}_conversation.item", OurRosterItem.JID.BareJID);
 
-                string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                string strPath = string.Format("{0}\\conversations\\{1}", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), XMPPClient.JID.BareJID.Replace("@", ""));
                 if (System.IO.Directory.Exists(strPath) == false)
                     System.IO.Directory.CreateDirectory(strPath);
 
@@ -98,7 +98,8 @@ namespace WPFXMPPClient
             /// Save this conversation so it can be restored later... save it under the JID name
             string strFilename = string.Format("{0}_conversation.item", item.JID.BareJID);
 
-            string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+            //string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+            string strPath = string.Format("{0}\\conversations\\{1}", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), item.XMPPClient.JID.BareJID.Replace("@", ""));
             if (System.IO.Directory.Exists(strPath) == false)
                 System.IO.Directory.CreateDirectory(strPath);
 
@@ -301,6 +302,26 @@ namespace WPFXMPPClient
      
         private void ButtonSendFile_Click(object sender, RoutedEventArgs e)
         {
+            if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
+                this.ListBoxInstances.SelectedIndex = 0;
+
+            List<string> JIDS = new List<string>();
+            if (this.ListBoxInstances.SelectedItems.Count > 0)
+            {
+                foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                {
+                    JIDS.Add(instance.FullJID);
+                }
+            }
+
+            if (JIDS.Count > 0)
+            {
+                SendFile(XMPPClient, JIDS.ToArray());
+            }
+        }
+
+        public static void SendFile(XMPPClient XMPPClient, string [] saJIDS)
+        {
             // Find the file to send
 
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
@@ -308,34 +329,44 @@ namespace WPFXMPPClient
             {
                 string strFileName = dlg.FileName;
 
-                if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
-                    this.ListBoxInstances.SelectedIndex = 0;
-
-                if (this.ListBoxInstances.SelectedItems.Count > 0)
+                foreach (string strJID in saJIDS)
                 {
-                    foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                    /// Just send it to 1 recepient for now, must have a full jid
+                    string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, strJID);
+
+                    foreach (Window wind in Application.Current.Windows)
                     {
-                        /// Just send it to 1 recepient for now, must have a full jid
-                        string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, instance.FullJID);
-
-                        foreach (Window wind in Application.Current.Windows)
+                        if (wind is MainWindow)
                         {
-                            if (wind is MainWindow)
-                            {
-                                ((MainWindow)wind).ShowFileTransfer();
-                                break;
-                            }
+                            ((MainWindow)wind).ShowFileTransfer();
+                            break;
                         }
-
-                        break;
                     }
                 }
-                
-
             }
         }
 
         private void ButtonSendScreenCapture_Click(object sender, RoutedEventArgs e)
+        {
+            if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
+                this.ListBoxInstances.SelectedIndex = 0;
+
+            List<string> JIDS = new List<string>();
+            if (this.ListBoxInstances.SelectedItems.Count > 0)
+            {
+                foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                {
+                    JIDS.Add(instance.FullJID);
+                }
+            }
+
+            if (JIDS.Count > 0)
+            {
+                SendScreenCapture(XMPPClient, JIDS.ToArray());
+            }
+        }
+
+        public static void SendScreenCapture(XMPPClient XMPPClient, string [] saJIDS)
         {
             List<Window> RestoreList = new List<Window>();
             foreach (Window win in Application.Current.Windows)
@@ -358,26 +389,18 @@ namespace WPFXMPPClient
             {
                 string strFileName = string.Format("sc_{0}.png", Guid.NewGuid());
 
-                if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
-                    this.ListBoxInstances.SelectedIndex = 0;
-
-                if (this.ListBoxInstances.SelectedItems.Count > 0)
+                foreach (string strJID in saJIDS)
                 {
-                    foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                    /// Just send it to 1 recepient for now, must have a full jid
+                    string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, bPng, strJID);
+
+                    foreach (Window wind in Application.Current.Windows)
                     {
-                        /// Just send it to 1 recepient for now, must have a full jid
-                        string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, bPng, instance.FullJID);
-
-                        foreach (Window wind in Application.Current.Windows)
+                        if (wind is MainWindow)
                         {
-                            if (wind is MainWindow)
-                            {
-                                ((MainWindow)wind).ShowFileTransfer();
-                                break;
-                            }
+                            ((MainWindow)wind).ShowFileTransfer();
+                            break;
                         }
-
-                        break;
                     }
                 }
                 
@@ -409,39 +432,51 @@ namespace WPFXMPPClient
 
         private void ButtonSendPhotoCapture_Click(object sender, RoutedEventArgs e)
         {
-            CameraCaptureWindow camwin = new CameraCaptureWindow();
+            if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
+                this.ListBoxInstances.SelectedIndex = 0;
+
+            List<string> JIDS = new List<string>();
+            if (this.ListBoxInstances.SelectedItems.Count > 0)
+            {
+                foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                {
+                    JIDS.Add(instance.FullJID);
+                }
+            }
+
+            if (JIDS.Count > 0)
+            {
+                SendPhotoCapture(XMPPClient, JIDS.ToArray());
+            }
+            
+        }
+
+        public static void SendPhotoCapture(XMPPClient XMPPClient, string [] saJIDS)
+        {
+             CameraCaptureWindow camwin = new CameraCaptureWindow();
             if (camwin.ShowDialog() == true)
             {
                 if (camwin.CompressedAcceptedImage != null)
                 {
                     string strFileName = string.Format("camera_{0}.jpg", Guid.NewGuid());
 
-                    if ((this.ListBoxInstances.SelectedItems.Count <= 0) && (this.ListBoxInstances.Items.Count > 0))
-                        this.ListBoxInstances.SelectedIndex = 0;
-
-                    if (this.ListBoxInstances.SelectedItems.Count > 0)
+                    foreach (string strJID in saJIDS)
                     {
-                        foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
+                        /// Just send it to 1 recepient for now, must have a full jid
+                        string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, camwin.CompressedAcceptedImage, strJID);
+
+                        foreach (Window wind in Application.Current.Windows)
                         {
-                            /// Just send it to 1 recepient for now, must have a full jid
-                            string strSendID = XMPPClient.FileTransferManager.SendFile(strFileName, camwin.CompressedAcceptedImage, instance.FullJID);
-
-                            foreach (Window wind in Application.Current.Windows)
+                            if (wind is MainWindow)
                             {
-                                if (wind is MainWindow)
-                                {
-                                    ((MainWindow)wind).ShowFileTransfer();
-                                    break;
-                                }
+                                ((MainWindow)wind).ShowFileTransfer();
+                                break;
                             }
-
-                            break;
                         }
                     }
-                
+               
                 }
             }
-            
         }
 
     

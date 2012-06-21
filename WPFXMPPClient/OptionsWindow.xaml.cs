@@ -22,5 +22,27 @@ namespace WPFXMPPClient
         {
             InitializeComponent();
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.DataContext = Option.Options;
+            
+            ComboBoxCallAnswerMode.Items.Add(AnswerType.Normal);
+            ComboBoxCallAnswerMode.Items.Add(AnswerType.DND);
+            ComboBoxCallAnswerMode.Items.Add(AnswerType.AcceptToConference);
+            ComboBoxCallAnswerMode.Items.Add(AnswerType.AcceptToHold);
+
+            ComboBoxSpeakerDevice.ItemsSource = ImageAquisition.NarrowBandMic.GetSpeakerDevices();
+            ComboBoxMicrophoneDevice.ItemsSource = ImageAquisition.NarrowBandMic.GetMicrophoneDevices();
+
+
+
+        }
+
+        private void ButtonSave_Click(object sender, RoutedEventArgs e)
+        {
+            Option.Save();
+            this.Close();
+        }
     }
 }

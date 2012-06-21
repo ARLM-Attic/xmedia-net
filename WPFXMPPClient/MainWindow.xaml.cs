@@ -53,6 +53,8 @@ namespace WPFXMPPClient
 
         private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            Option.Load();
+
             PrivService = new PrivacyService(XMPPClient);
             PrivService.OnMustClearUserHistory += new DelegateRosterItemAction(PrivService_OnMustClearUserHistory);
             PrivService.OnMustHideMyChatWindow += new DelegateRosterItemAction(PrivService_OnMustHideMyChatWindow);
@@ -424,7 +426,9 @@ namespace WPFXMPPClient
 
                     string strFilename = string.Format("{0}_conversation.item", item.JID.BareJID);
 
-                    string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                    //string strPath = string.Format("{0}\\conversations", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                    string strPath = string.Format("{0}\\conversations\\{1}", Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), XMPPClient.JID.BareJID.Replace("@", ""));
+
                     if (System.IO.Directory.Exists(strPath) == false)
                         System.IO.Directory.CreateDirectory(strPath);
 
@@ -728,6 +732,10 @@ namespace WPFXMPPClient
                     stream.Close();
                     trans.FileName = strFullFileName;
                 }
+                else
+                {
+                    trans.FileName = strFullFileName;
+                }
                 
                 trans.Close();
             }
@@ -995,6 +1003,41 @@ namespace WPFXMPPClient
             if (item == null)
                 return;
             item.HasNewMessages = false;
+        }
+
+        private void ButtonOptions_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsWindow opt = new OptionsWindow();
+            opt.Owner = this;
+            opt.ShowDialog();
+            Option.Options.SetToXMPPClient(this.XMPPClient);
+        }
+
+        private void ButtonSendFromCamera_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            ChatWindow.SendPhotoCapture(this.XMPPClient, new string[] { item.LastFullJIDToGetMessageFrom });
+        }
+
+        private void ButtonSendFile_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            ChatWindow.SendFile(this.XMPPClient, new string[] { item.LastFullJIDToGetMessageFrom });
+        }
+
+        private void ButtonSendScreenCapture_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            ChatWindow.SendScreenCapture(this.XMPPClient, new string[] { item.LastFullJIDToGetMessageFrom });
         }
 
 
