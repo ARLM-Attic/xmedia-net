@@ -336,7 +336,7 @@ namespace LocationClasses
 
     public class SizeParameters
     {
-        private int m_Horizontal = 400;
+        private int m_Horizontal = 800;
 
         public int Horizontal
         {
@@ -344,7 +344,7 @@ namespace LocationClasses
             set { m_Horizontal = value; }
         }
 
-        private int m_Vertical = 400;
+        private int m_Vertical = 800;
 
         public int Vertical
         {
