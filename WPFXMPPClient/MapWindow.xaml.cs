@@ -146,43 +146,23 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-
 using System.Net.XMPP;
 using System.IO;
-
-
-      using Microsoft.VisualBasic;
-using System;
+using Microsoft.VisualBasic;
 using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Windows.Threading;
 using System.Threading;
 using System.Net;
 //using System.Drawing;
-using System.IO;
 using Microsoft.Win32;
 using System.Xml;
 using System.Xml.Linq;
-
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using System.Collections.Generic;
-using System.Net.XMPP;
 using System.Xml.Serialization;
 using LocationClasses;
 using System.ComponentModel;
-
-
 
 namespace WPFXMPPClient
 {
@@ -196,57 +176,58 @@ namespace WPFXMPPClient
             InitializeComponent();
         }
 
-        // public XMPPClient XMPPClient = null;
-        private RosterItem m_OurRosterItem = null;
+        //// public XMPPClient XMPPClient = null;
+        //private RosterItem m_OurRosterItem = null;
 
-        public RosterItem OurRosterItem
-        {
-            get { return m_OurRosterItem; }
-            set
-            {
-                m_OurRosterItem = value;
-                //MapUserControl1.OurRosterItem = value;
-            }
-        }
+        //public RosterItem OurRosterItem
+        //{
+        //    get { return m_OurRosterItem; }
+        //    set
+        //    {
+        //        m_OurRosterItem = value;
+        //        //MapUserControl1.OurRosterItem = value;
+        //    }
+        //}
 
-        private bool m_SingleRosterItemMap = true;
+        //private bool m_SingleRosterItemMap = true;
 
-        public bool SingleRosterItemMap
-        {
-            get { return m_SingleRosterItemMap; }
-            set
-            {
-                //MapUserControl1.SingleRosterItemMap = m_SingleRosterItemMap;
-                m_SingleRosterItemMap = value;
-            }
-        }
+        //public bool SingleRosterItemMap
+        //{
+        //    get { return m_SingleRosterItemMap; }
+        //    set
+        //    {
+        //        //MapUserControl1.SingleRosterItemMap = m_SingleRosterItemMap;
+        //        m_SingleRosterItemMap = value;
+        //    }
+        //}
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if ((e.ChangedButton == MouseButton.Left) && (e.ButtonState == MouseButtonState.Pressed))
                 this.DragMove();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            /// Bind to our XMPP Client filetransfer
-            /// 
-            this.DataContext = XMPPClient;
-              MapUserControl1.XMPPClient = XMPPClient;
-              MapUserControl1.OurRosterItem = this.OurRosterItem;
-            //   this.ListBoxConversation.ItemsSource = XMPPClient.FileTransferManager.FileTransfers;
+        //private void Window_Loaded(object sender, RoutedEventArgs e)
+        //{
+        //    /// Bind to our XMPP Client filetransfer
+        //    /// 
+        //    this.DataContext = XMPPClient;
+            
+        //    // MapUserControl1.XMPPClient = XMPPClient;
+        //     // MapUserControl1.OurRosterItem = this.OurRosterItem;
+        //    //   this.ListBoxConversation.ItemsSource = XMPPClient.FileTransferManager.FileTransfers;
 
-          ////  AddressTxtBox.Focus();
+        //  ////  AddressTxtBox.Focus();
 
-            var _with1 = saveDialog;
-            _with1.DefaultExt = "png";
-            _with1.Title = "Save Map Image";
-            _with1.OverwritePrompt = true;
-            _with1.Filter = "(*.png)|*.png";
+        //    var _with1 = saveDialog;
+        //    _with1.DefaultExt = "png";
+        //    _with1.Title = "Save Map Image";
+        //    _with1.OverwritePrompt = true;
+        //    _with1.Filter = "(*.png)|*.png";
 
-            saveDialog.FileOk += saveDialog_FileOk;
+        //    saveDialog.FileOk += saveDialog_FileOk;
 
 
-        }
+        //}
 
         private void ButtonCancelSend_Click(object sender, RoutedEventArgs e)
         {
@@ -328,18 +309,20 @@ namespace WPFXMPPClient
 
         private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
         {
-            MapUserControl1.Refresh();
+            Refresh();
+
+            //MapUserControl1.Refresh();
             //ButtonLoadURL_Click(null, e);
         }
 
         private void ButtonZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            MapUserControl1.ZoomIn(1);
+            ZoomIn(1);
         }
 
         private void ButtonZoomOut_Click(object sender, RoutedEventArgs e)
         {
-            MapUserControl1.ZoomOut(1);
+            ZoomOut(1);
         }
 
      
@@ -534,7 +517,7 @@ namespace WPFXMPPClient
 
         //}
 
-        MapProperties MapProperties = new MapProperties();
+        //MapProperties MapProperties = new MapProperties();
 
         private void ShowMapUsingLatLngForAllCheckedBuddies()
         {
@@ -554,51 +537,53 @@ namespace WPFXMPPClient
         // Zoom-in on map.
         private void ZoomIn()
         {
-            //if ((zoom < 21))
-            //{
-            //    zoom += 1;
-            //    ShowMapUsingLatLng();
+            if ((MapProperties.LocationParameters.Zoom < 21))
+            {
+                MapProperties.LocationParameters.Zoom += 1;
+                ShowMapUsingLatLng();
 
-            //    if ((ZoomOutButton.IsEnabled == false))
-            //    {
-            //        ZoomOutButton.IsEnabled = true;
-            //    }
-            //}
-            //else
-            //{
-            //    ZoomInButton.IsEnabled = false;
-            //}
+                if ((ZoomOutButton.IsEnabled == false))
+                {
+                    ZoomOutButton.IsEnabled = true;
+                }
+            }
+            else
+            {
+                ZoomInButton.IsEnabled = false;
+            }
 
-            //if (zoom < 21)
-            //    ZoomInButton.IsEnabled = true;
-            //else
-            //    ZoomInButton.IsEnabled = false;
+            if (MapProperties.LocationParameters.Zoom < 21)
+                ZoomInButton.IsEnabled = true;
+            else
+                ZoomInButton.IsEnabled = false;
+
+
         }
 
         // Zoom-out on map.
         private void ZoomOut()
         {
-        //    if ((zoom > 0))
-        //    {
-        //        zoom -= 1;
-        //        ShowMapUsingLatLng();
+            if ((MapProperties.LocationParameters.Zoom > 0))
+            {
+                MapProperties.LocationParameters.Zoom -= 1;
+                ShowMapUsingLatLng();
 
-        //        if ((ZoomInButton.IsEnabled == false))
-        //        {
-        //            ZoomInButton.IsEnabled = true;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        ZoomOutButton.IsEnabled = false;
-        //    }
+                if ((ZoomInButton.IsEnabled == false))
+                {
+                    ZoomInButton.IsEnabled = true;
+                }
+            }
+            else
+            {
+                ZoomOutButton.IsEnabled = false;
+            }
 
 
-        //    if (zoom > 0)
-        //        ZoomOutButton.IsEnabled = true;
-        //    else
-        //        ZoomOutButton.IsEnabled = false;
-        //
+            if (MapProperties.LocationParameters.Zoom > 0)
+                ZoomOutButton.IsEnabled = true;
+            else
+                ZoomOutButton.IsEnabled = false;
+        
         }
 
         private void SaveMap()
@@ -631,19 +616,19 @@ namespace WPFXMPPClient
             // Use 88 to avoid values beyond 90 degrees of lat.
             if ((lat < 88))
             {
-                if ((zoom == 15))
+                if ((MapProperties.LocationParameters.Zoom == 15))
                 {
                     lat += 0.003;
                 }
-                else if ((zoom > 15))
+                else if ((MapProperties.LocationParameters.Zoom > 15))
                 {
-                    diff = zoom - 15;
+                    diff = MapProperties.LocationParameters.Zoom - 15;
                     shift = ((15 - diff) * 0.003) / 15;
                     lat += shift;
                 }
                 else
                 {
-                    diff = 15 - zoom;
+                    diff = 15 - MapProperties.LocationParameters.Zoom;
                     shift = ((15 + diff) * 0.003) / 15;
                     lat += shift;
                 }
@@ -661,19 +646,19 @@ namespace WPFXMPPClient
             double shift = 0;
             if ((lat > -88))
             {
-                if ((zoom == 15))
+                if ((MapProperties.LocationParameters.Zoom == 15))
                 {
                     lat -= 0.003;
                 }
-                else if ((zoom > 15))
+                else if ((MapProperties.LocationParameters.Zoom > 15))
                 {
-                    diff = zoom - 15;
+                    diff = MapProperties.LocationParameters.Zoom - 15;
                     shift = ((15 - diff) * 0.003) / 15;
                     lat -= shift;
                 }
                 else
                 {
-                    diff = 15 - zoom;
+                    diff = 15 - MapProperties.LocationParameters.Zoom;
                     shift = ((15 + diff) * 0.003) / 15;
                     lat -= shift;
                 }
@@ -692,19 +677,19 @@ namespace WPFXMPPClient
             // Use -178 to avoid negative values below -180.
             if ((lng > -178))
             {
-                if ((zoom == 15))
+                if ((MapProperties.LocationParameters.Zoom == 15))
                 {
                     lng -= 0.003;
                 }
-                else if ((zoom > 15))
+                else if ((MapProperties.LocationParameters.Zoom > 15))
                 {
-                    diff = zoom - 15;
+                    diff = MapProperties.LocationParameters.Zoom - 15;
                     shift = ((15 - diff) * 0.003) / 15;
                     lng -= shift;
                 }
                 else
                 {
-                    diff = 15 - zoom;
+                    diff = 15 - MapProperties.LocationParameters.Zoom;
                     shift = ((15 + diff) * 0.003) / 15;
                     lng -= shift;
                 }
@@ -1007,15 +992,22 @@ namespace WPFXMPPClient
 
 
 
-        public XMPPClient XMPPClient = new XMPPClient();
-        //public RosterItem OurRosterItem = new RosterItem();
-        public BuddyPosition MyBuddyPosition = null;
-        public RosterItem MyRosterItem = null;
+        //public XMPPClient XMPPClient = new XMPPClient();
+        ////public RosterItem OurRosterItem = new RosterItem();
+        //public BuddyPosition MyBuddyPosition = null;
+        //public RosterItem MyRosterItem = null;
 
 
         //EARTHLib.ApplicationGEClass earth = new EARTHLib.ApplicationGEClass();
-        private void Window_LoadedOld(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            if (OurRosterItem != null)
+            {
+                TextBlockTitle.Text = String.Format("Buddy Map - {0}", OurRosterItem.JID.ToString());
+                this.Title = String.Format("Buddy Map - {0}", OurRosterItem.JID.ToString());
+            }
+
+
             RosterItem MyRosterItem = new RosterItem(XMPPClient, XMPPClient.XMPPAccount.JID);
             MyBuddyPosition = new BuddyPosition(MyRosterItem) { bIsMe = true };
 
@@ -1051,7 +1043,40 @@ namespace WPFXMPPClient
 
             // Make my own BuddyPosition
 
-            WriteSampleKML();
+           // WriteSampleKML();
+
+            InitializeValues();
+            ComboBoxZoom.ItemsSource = ZoomLevels;
+            ComboBoxZoom.SelectedIndex = 15;
+
+            ComboBoxScale.ItemsSource = ScaleValues;
+            ComboBoxScale.SelectedIndex = 1;
+            //ComboBoxZoom.DataContext = MapProperties.LocationParameters.Zoom;
+
+            ComboBoxMapType.ItemsSource = Enum.GetValues(typeof(MapType));
+            ComboBoxMapType.SelectedIndex = 0;
+
+            MapProperties.MapParameters = new MapParameters() { MapType = (MapType)ComboBoxMapType.SelectedValue, Scale = (int)ComboBoxScale.SelectedValue };
+            MapProperties.MapParameters.Size = new SizeParameters() { Horizontal = 400, Vertical = 400 };
+            TextBoxSizeHorizontal.Text = String.Format("{0}", 400);
+            TextBoxSizeVertical.Text = String.Format("{0}", 400);
+
+            MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(TextBoxSizeHorizontal.Text);
+            MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(TextBoxSizeVertical.Text);
+
+            MapProperties.LocationParameters = new LocationParameters() { Zoom = (int)ComboBoxZoom.SelectedValue };
+
+            //BuildURL();
+            //LoadURL();
+            if (XMPPClient != null)
+            {
+                XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
+                XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
+            }
+            SetUpRosterItemNotifications();
+            ButtonLoadLocation_Click(null, e);
+
+
         }
 
 
@@ -1061,6 +1086,7 @@ namespace WPFXMPPClient
         }
 
         ObservableCollectionEx<BuddyPosition> BuddyPositions = new ObservableCollectionEx<BuddyPosition>();
+        BuddyPosition MyBuddyPosition = null;
 
         void client_OnRetrievedRoster(object sender, EventArgs e)
         {
@@ -1266,6 +1292,8 @@ namespace WPFXMPPClient
             //ToggleButtonStartRecording_Click.I
         }
 
+
+
          
 
         //private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -1273,7 +1301,7 @@ namespace WPFXMPPClient
         //    if ((e.ChangedButton == MouseButton.Left) && (e.ButtonState == MouseButtonState.Pressed))
         //        this.DragMove();
         //}
-    }
+    
 
     //public class BuddyPosition : INotifyPropertyChanged
     //{
@@ -1352,4 +1380,594 @@ namespace WPFXMPPClient
 
     //    #endregion
     //}
+
+        //protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        //{
+        //    var percentWidthChange = Math.Abs(sizeInfo.NewSize.Width - sizeInfo.PreviousSize.Width) / sizeInfo.PreviousSize.Width;
+        //    var percentHeightChange = Math.Abs(sizeInfo.NewSize.Height - sizeInfo.PreviousSize.Height) / sizeInfo.PreviousSize.Height;
+
+        //    if (percentWidthChange > percentHeightChange)
+        //        this.Height = sizeInfo.NewSize.Width / _aspectRatio;
+        //    else
+        //        this.Width = sizeInfo.NewSize.Height * _aspectRatio;
+
+        //    base.OnRenderSizeChanged(sizeInfo);
+        //}
+
+        //private int _aspectRatio = 10;
+
+
+        bool bLoaded = false;
+
+        public string strURL = "http://maps.googleapis.com/maps/api/staticmap?";
+
+        public RosterItem OurRosterItem = null;
+        public XMPPClient XMPPClient = null;
+        public MapProperties MapProperties = new MapProperties();
+
+        private bool m_SingleRosterItemMap = true;
+
+        public List<int> ZoomLevels = new List<int>();
+        public List<int> ScaleValues = new List<int>();
+
+        public bool SingleRosterItemMap
+        {
+            get { return m_SingleRosterItemMap; }
+            set { m_SingleRosterItemMap = value; }
+        }
+
+        private void InitializeValues()
+        {
+            ZoomLevels.Clear();
+            for (int i = 1; i <= 21; i++)
+            {
+                ZoomLevels.Add(i);
+            }
+
+            ScaleValues.Clear();
+            for (int i = 1; i <= 2; i++)
+            {
+                ScaleValues.Add(i);
+            }
+        }
+
+
+        //private void Window_Loaded(object sender, RoutedEventArgs e)
+        //{
+        //    InitializeValues();
+        //    ComboBoxZoom.ItemsSource = ZoomLevels;
+        //    ComboBoxZoom.SelectedIndex = 15;
+
+        //    ComboBoxScale.ItemsSource = ScaleValues;
+        //    ComboBoxScale.SelectedIndex = 1;
+        //    //ComboBoxZoom.DataContext = MapProperties.LocationParameters.Zoom;
+
+        //    ComboBoxMapType.ItemsSource = Enum.GetValues(typeof(MapType));
+        //    ComboBoxMapType.SelectedIndex = 0;
+
+        //    MapProperties.MapParameters = new MapParameters() { MapType = (MapType)ComboBoxMapType.SelectedValue, Scale = (int)ComboBoxScale.SelectedValue };
+        //    MapProperties.MapParameters.Size = new SizeParameters() { Horizontal = 1000, Vertical = 1000 };
+        //    TextBoxSizeHorizontal.Text = String.Format("{0}", 1000);
+        //    TextBoxSizeVertical.Text = String.Format("{0}", 1000);
+
+        //    MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(TextBoxSizeHorizontal.Text);
+        //    MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(TextBoxSizeVertical.Text);
+
+        //    MapProperties.LocationParameters = new LocationParameters() { Zoom = (int)ComboBoxZoom.SelectedValue };
+
+        //    //BuildURL();
+        //    //LoadURL();
+        //    if (XMPPClient != null)
+        //    {
+        //        XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
+        //        XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
+        //    }
+        //    SetUpRosterItemNotifications();
+        //    ButtonLoadLocation_Click(null, e);
+        //}
+
+        private geoloc ExtractGeoLoc(string strXML)
+        {
+            geoloc newGeoLoc = null;
+            //<geoloc xmlns=\"http://jabber.org/protocol/geoloc\">
+            //<lat>32.816849551194174</lat>
+            //<lon>-96.757696867079247</lon>
+            //<acurracy>0</acurracy>
+            //<timestamp>2012-03-20T16:47:23.379-05:00</timestamp>
+            //<geoloc>";
+            return newGeoLoc;
+        }
+
+        void XMPPClient_OnXMLSent(XMPPClient client, string strXML)
+        {
+
+            if (strXML.Contains("GeoLoc"))
+            {
+
+            }
+
+            // throw new NotImplementedException();
+        }
+
+        void XMPPClient_OnXMLReceived(XMPPClient client, string strXML)
+        {
+            if (strXML.Contains("GeoLoc"))
+            {
+
+            }
+            // throw new NotImplementedException();
+        }
+
+        private void SetUpRosterItemNotifications()
+        {
+            if (XMPPClient == null)
+                return;
+
+            foreach (RosterItem rosterItem in XMPPClient.RosterItems)
+            {
+                rosterItem.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(rosterItem_PropertyChanged);
+            }
+        }
+
+        protected override void OnPreviewKeyDown(KeyEventArgs e)
+        {
+            if ((e.Key == Key.F5))
+            {
+                //                BuildURL();
+                //                LoadURL();
+                ButtonLoadLocation_Click(null, null);
+            }
+
+            base.OnPreviewKeyDown(e);
+        }
+
+        void rosterItem_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                // WebBrowserMap.Navigate(strURL);
+                if (e.PropertyName == "GeoLoc")
+                {
+                    // increment the counter. not the right way to determine when to move the map but a way for now.
+                    nMovementCounter++;
+                    // determine how many steps puts us too far, based on the size and the current location and last center, etc.
+                    if (nMovementCounter >= 10)
+                    {
+                        bCenterOnMap = true;
+                        nMovementCounter = 0;
+                    }
+
+                    if (SingleRosterItemMap)
+                    {
+                        RosterItem item = sender as RosterItem;
+
+                        //if (item.JID.User == "brianbonnett")
+                        {
+                            if (item.GeoLoc.lat == 0.0 && item.GeoLoc.lon == 0.0)
+                                return;
+
+                            BuildURL();
+
+                            TextBlockLastLocationTimestamp.Text = String.Format("{0} {1}", item.GeoLoc.TimeStamp.ToShortDateString(),
+                                item.GeoLoc.TimeStamp.ToShortTimeString());
+
+                            //strURL = BuildURLForRosterItem(item, "blue", "B");
+                            Console.WriteLine(String.Format("{0}: {1}, {2}", item.JID.User, item.GeoLoc.lat, item.GeoLoc.lon));
+                            // MessageBox.Show("updating location!");
+                            if (Paths.ContainsKey(item) == false)
+                                Paths.Add(item, new List<geoloc>());
+                            Paths[item].Add(item.GeoLoc);
+
+                            TextBoxURL.Text = strURL;
+                            ///TextBoxTimeStamp.Text = String.Format("{0}'s Location ({1}): {2}, {3}", item.JID.BareJID, item.GeoLoc.TimeStamp, item.GeoLoc.lat, item.GeoLoc.lon);
+                            if (item.GeoLoc.TimeStamp != null) 
+                                TextBoxTimeStamp.Text = String.Format("{0}", item.GeoLoc.TimeStamp).Replace("Timestamp: ", "");
+                            RosterItems.Add(item);
+                           // LocationsList.ItemsSource = RosterItems;
+                            LoadURL();
+
+
+                            return;
+                        }
+                    }
+                    else
+                    {
+
+                        // throw new NotImplementedException();
+                        //if (e.PropertyName == "GeoLoc")
+                        {
+                            string strURLUpdated = BuildURLForAllRosterItems();
+                            if (String.Compare(strURLUpdated, strURL, true) == 0)
+                            {
+                                strURL = strURLUpdated;
+                                LoadURL();
+                            }
+                        }
+                    }
+                }
+            })
+                  );
+
+        }
+
+        List<RosterItem> RosterItems = new List<RosterItem>();
+
+        private void LoadURL()
+        {
+            //LoadImageFromURL();
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                LoadImageFromURL();
+                // WebBrowserMap.Navigate(strURL);
+            })
+            );
+
+
+        }
+
+        private void LoadImageFromURL()
+        {
+            BitmapImage _image = new BitmapImage();
+            _image.BeginInit();
+            //if (bLoaded == false)
+            {
+                _image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                _image.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.None;
+
+                //_image.CacheOption = BitmapCacheOption.None;
+                //_image.UriCachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+                //_image.CacheOption = BitmapCacheOption.OnLoad;
+                //_image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            }
+
+            _image.UriSource = new Uri(strURL, UriKind.RelativeOrAbsolute);
+            _image.EndInit();
+            MapImage.Source = _image;
+
+            if (bLoaded == false)
+            {
+                bLoaded = true;
+                LoadImageFromURL();
+            }
+
+            //BitmapImage bmpImage = new BitmapImage();
+            ////string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
+            //bmpImage.BeginInit();
+            //bmpImage.UriSource = new Uri(strURL);
+            //bmpImage.EndInit();
+
+            //MapImage.Source = bmpImage;
+        }
+
+
+        private string BuildURLForAllRosterItems()
+        {
+            string strGoogleMapsApiURL = "http://maps.googleapis.com/maps/api/staticmap?";
+            strGoogleMapsApiURL += String.Format("&zoom={0}", MapProperties.LocationParameters.Zoom);
+
+            strGoogleMapsApiURL += String.Format("&maptype={0}", MapProperties.MapParameters.MapType);
+
+            strGoogleMapsApiURL += String.Format("&size=800x800");
+            strGoogleMapsApiURL += String.Format("&sensor=false");
+            string strMyLatLon = String.Format("{0},{1}", this.XMPPClient.GeoLocation.lat, this.XMPPClient.GeoLocation.lon);
+            string strMyColor = "red";
+            string strMyLabel = "A";
+            if (this.XMPPClient.JID != null && this.XMPPClient.JID.User != null && this.XMPPClient.JID.User.Length >= 1)
+                strMyLabel = this.XMPPClient.JID.User[0].ToString();
+
+            if (strMyLatLon != "0,0")
+                strGoogleMapsApiURL += String.Format("&center={0}", strMyLatLon);
+            if (strMyLatLon != "0,0")
+                strGoogleMapsApiURL += String.Format("&markers=color:{0}%7Clabel:{1}%7C{2}", strMyColor, strMyLabel, strMyLatLon);
+
+            // BuildMarkerForRosterItem(rosterItem, strColor, strLabel);
+
+            string strMarkers = "";
+            List<string> colors = new List<string>() { "red", "blue", "yellow", "green" };
+            List<string> labels = new List<string>() { "B", "C", "D", "E", "F", "G", "H", "I", "J" };
+
+            int nColorIndex = 0;
+            int nLabelIndex = 0;
+
+            foreach (RosterItem rosterItem in XMPPClient.RosterItems)
+            {
+                string strColor = "";
+                string strLabel = "";
+                if (!(nColorIndex < colors.Count()))
+                    nColorIndex++;
+                if (!(nLabelIndex < labels.Count()))
+                    nLabelIndex++;
+
+                strColor = colors[nColorIndex];
+                strLabel = labels[nLabelIndex];
+
+                //string strLabel = labels[nColorIndex];
+
+                if (rosterItem != null && rosterItem.JID != null && rosterItem.JID.User != null && rosterItem.JID.User.Length >= 1)
+                    strLabel = rosterItem.JID.User[0].ToString();
+
+                strMarkers += BuildMarkerForRosterItem(rosterItem, strColor, strLabel);
+
+
+
+
+
+            }
+
+            strGoogleMapsApiURL += strMarkers;
+
+
+            return strGoogleMapsApiURL;
+        }
+
+        private string BuildMarkerForRosterItem(RosterItem rosterItem, string strColor, string strLabel)
+        {
+            string strLatLon = String.Format("{0},{1}", rosterItem.GeoLoc.lat, rosterItem.GeoLoc.lon);
+            return String.Format("&markers=color:{0}%7Clabel:{1}%7C{2}", strColor, strLabel, strLatLon);
+
+        }
+
+        private string BuildURLForRosterItem(RosterItem rosterItem, string strColor, string strLabel)
+        {
+            string strGoogleMapsApiURL = "http://maps.googleapis.com/maps/api/staticmap?";
+
+            if (rosterItem != null)
+            {
+                string strLatLon = String.Format("{0},{1}", rosterItem.GeoLoc.lat, rosterItem.GeoLoc.lon);
+                // OurRosterItem.GeoString;
+
+                strGoogleMapsApiURL += String.Format("center={0}", strLatLon);
+
+                strGoogleMapsApiURL += BuildMarkerForRosterItem(rosterItem, strColor, strLabel);
+
+                TextBoxTimeStamp.Text = String.Format("{0}'s Location ({1}): ", rosterItem.JID.ToString(), rosterItem.GeoLoc.TimeStamp);
+                TextBoxGeoLoc.Text = strLatLon;
+
+                //strURL = strGoogleMapsApiURL;
+                //TextBoxURL.Text = strURL;
+                // center=Williamsburg,Brooklyn,NY
+                // &zoom=13
+                // &size=800x800&
+                // markers=color:blue%7Clabel:S%7C11211%7C11206%7C11222&sensor=false";
+
+            }
+            return strGoogleMapsApiURL;
+        }
+
+        public void Refresh()
+        {
+            ButtonLoadLocation_Click(null, null);
+        }
+
+        private int nMovementCounter = 0;
+        private bool bCenterOnMap = true;
+        private bool bDirty = false;
+
+        private void ComboBoxMapType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            bDirty = true;
+        }
+
+        private void TextBoxSizeHorizontal_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            bDirty = true;
+        }
+
+        private void TextBoxSizeVertical_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            bDirty = true;
+        }
+        private void BuildURL()
+        {
+            // validate values.
+            OperationResult result = MapProperties.MapParameters.Size.ValidateAndSaveSize(TextBoxSizeHorizontal.Text, TextBoxSizeVertical.Text);
+
+            if (result.bSuccess == false)
+            {
+                if (result.strMessage != "")
+                {
+                    MessageBox.Show(result.strMessage);
+                    return;
+                }
+            }
+
+        // was this ok? 
+            MapProperties.MapParameters.Scale = (int)ComboBoxScale.SelectedValue;
+            // MapProperties.LocationParameters.Zoom = (int)ComboBoxZoom.SelectedValue;
+
+
+            string strGoogleMapsApiURL = "http://maps.googleapis.com/maps/api/staticmap?";
+
+            if (OurRosterItem != null)
+            {
+                if (OurRosterItem.GeoLoc.lat == 0.0 && OurRosterItem.GeoLoc.lon == 0.0)
+                    return;
+
+                string strLatLon = String.Format("{0},{1}", OurRosterItem.GeoLoc.lat, OurRosterItem.GeoLoc.lon);
+
+                // OurRosterItem.GeoString;
+
+                if (bCenterOnMap)
+                {
+                    MapProperties.LocationParameters.Center = strLatLon;
+                }
+             
+                // Use previous center if it's not time to recenter again.
+                strGoogleMapsApiURL += String.Format("center={0}", strLatLon);
+                
+                // if you don't send the center parameter what happens?
+
+                strGoogleMapsApiURL += String.Format("&zoom={0}", MapProperties.LocationParameters.Zoom);
+                strGoogleMapsApiURL += String.Format("&maptype={0}", MapProperties.MapParameters.MapType);
+                strGoogleMapsApiURL += String.Format("&size={0}x{1}", 
+                    MapProperties.MapParameters.Size.Horizontal, MapProperties.MapParameters.Size.Vertical);
+                    // "800", "800");
+                strGoogleMapsApiURL += BuildMarkerForRosterItem(OurRosterItem, "red", "");
+                // += String.Format("&markers=color:blue%7Clabel:B%7C{0}", strLatLon);
+                strGoogleMapsApiURL += String.Format("&sensor={0}", MapProperties.Sensor.ToString().ToLower());
+
+
+                //string strURLFromObject = MapProperties.URL;
+
+                strURL = strGoogleMapsApiURL;
+                if (MapProperties.URL == strURL)
+                {
+
+                }
+
+                // false");
+
+                TextBoxURL.Text = MapProperties.URL;
+                    //strURL;
+
+
+                TextBoxTimeStamp.Text = String.Format("{0} ", OurRosterItem.GeoLoc.TimeStamp);
+                TextBoxGeoLoc.Text = strLatLon;
+                
+                // center=Williamsburg,Brooklyn,NY
+                // &zoom=13
+                // &size=800x800&
+                // markers=color:blue%7Clabel:S%7C11211%7C11206%7C11222&sensor=false";
+
+            }
+
+        }
+
+        private void ButtonLoadURL_Click(object sender, RoutedEventArgs e)
+        {
+            strURL = TextBoxURL.Text;
+            LoadURL();
+
+        }
+
+        private void ButtonLoadLocation_Click(object sender, RoutedEventArgs e)
+        {
+            // ButtonLoadLocationAll_Click(sender, e);
+
+            BuildURL();
+            LoadURL();
+        }
+
+        private void ButtonLoadLocationAll_Click(object sender, RoutedEventArgs e)
+        {
+            string strURLUpdated = BuildURLForAllRosterItems();
+            if (String.Compare(strURLUpdated, strURL, true) != 0)
+            {
+                strURL = strURLUpdated;
+                LoadURL();
+            }
+        }
+
+        private Dictionary<RosterItem, List<geoloc>> m_Paths = new Dictionary<RosterItem, List<geoloc>>();
+
+        public Dictionary<RosterItem, List<geoloc>> Paths
+        {
+            get { return m_Paths; }
+            set { m_Paths = value; }
+        }
+
+        private void HyperlinkRosterItem_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ButtonViewMessages_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ButtonUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                MapProperties.LocationParameters.Zoom = (int)ComboBoxZoom.SelectedValue;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            //if (ComboBoxMapType.SelectedValue.ToString() == "roadmap")
+            //    MapProperties.MapParameters.MapType = MapType.roadmap;
+            //else if (ComboBoxMapType.SelectedValue.ToString() == "satellite")
+            //    MapProperties.MapParameters.MapType = MapType.satellite;
+
+            //else if (ComboBoxMapType.SelectedValue.ToString() == "terrain")
+            //    MapProperties.MapParameters.MapType = MapType.terrain;
+
+            //else if (ComboBoxMapType.SelectedValue.ToString() == "hybrid")
+            //    MapProperties.MapParameters.MapType = MapType.hybrid;
+
+            MapProperties.MapParameters.MapType = (MapType)ComboBoxMapType.SelectedValue;
+
+            ButtonLoadLocation_Click(sender, e);
+        }
+
+        public void ZoomIn(int delta)
+        {
+            MapProperties.LocationParameters.Zoom += delta;
+
+            if (MapProperties.LocationParameters.Zoom < 0)
+                MapProperties.LocationParameters.Zoom = 0;
+            if (MapProperties.LocationParameters.Zoom > 21)
+                MapProperties.LocationParameters.Zoom = 21;
+
+            ComboBoxZoom.SelectedItem = MapProperties.LocationParameters.Zoom;
+            Refresh();
+        }
+
+        public void ZoomOut(int delta)
+        {
+            MapProperties.LocationParameters.Zoom -= delta;
+
+            if (MapProperties.LocationParameters.Zoom < 0)
+                MapProperties.LocationParameters.Zoom = 0;
+            if (MapProperties.LocationParameters.Zoom > 21)
+                MapProperties.LocationParameters.Zoom = 21;
+            ComboBoxZoom.SelectedItem = MapProperties.LocationParameters.Zoom;
+            Refresh();
+        }
+
+        private void MapImage_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta > 0)
+                ZoomIn(1);
+            else if (e.Delta < 0)
+                ZoomOut(1);
+
+            //MapProperties.LocationParameters.Zoom = Convert.ToInt32(Math.Max(MapProperties.LocationParameters.Zoom + (0.1F * e.Delta / 120.0F), 0.01F));
+
+            //if (MapProperties.LocationParameters.Zoom < 0)
+            //    MapProperties.LocationParameters.Zoom = 0;
+            //if (MapProperties.LocationParameters.Zoom > 21)
+            //    MapProperties.LocationParameters.Zoom = 21;
+
+            //Refresh();
+        }
+
+        private void ButtonStartRecording_Click(object sender, RoutedEventArgs e)
+        {
+            IsRecordingKML = true;
+            IsNotRecordingKML = false;
+        }
+
+        private bool IsRecordingKML = false;
+        private bool IsNotRecordingKML = true;
+
+        private void ButtonStopRecording_Click(object sender, RoutedEventArgs e)
+        {
+            IsRecordingKML = false;
+            IsNotRecordingKML = true;
+        }
+
+        private void ButtonButtonLoadKMLFile_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+    }
 }

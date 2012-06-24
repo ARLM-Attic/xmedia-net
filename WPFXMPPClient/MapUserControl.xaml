@@ -141,9 +141,7 @@
             <!--</StackPanel>-->
         </Grid>
 
-        <Grid Grid.Row="0" Background="Beige" Margin="3,3,3,3" >
-            <Image x:Name="MapImage" Margin="3,3,3,3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-        </Grid>
+        <Image Grid.Row="0" x:Name="MapImage" Margin="3,3,3,3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinHeight="400" MinWidth="400"/>
         
         <Grid Visibility="Collapsed" Grid.Row="2" Margin="5,5,5,5">
             <Grid.RowDefinitions>
@@ -152,8 +150,6 @@
             </Grid.RowDefinitions>
        
             <WebBrowser Visibility="Collapsed" Grid.Row="0" x:Name="WebBrowserMap" Margin="0,0,0,0"></WebBrowser>
-            
-            
           
             <Grid Visibility="Collapsed" Margin="5,5,5,5" Grid.Row="2" DataContext="{Binding ElementName=OurRosterItem}">
                 <Grid.RowDefinitions>

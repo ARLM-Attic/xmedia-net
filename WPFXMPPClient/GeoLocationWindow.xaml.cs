@@ -779,10 +779,6 @@ namespace WPFXMPPClient
         //EARTHLib.ApplicationGEClass earth = new EARTHLib.ApplicationGEClass();
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
-            MapWindow mapWindow = new MapWindow() { XMPPClient = XMPPClient, OurRosterItem = OurRosterItem };
-            mapWindow.Show();
-
             RosterItem MyRosterItem = new RosterItem(XMPPClient, XMPPClient.XMPPAccount.JID);
             MyBuddyPosition = new BuddyPosition(MyRosterItem) { bIsMe = true };
             OurRosterItem.PropertyChanged += new PropertyChangedEventHandler(OurRosterItem_PropertyChanged);

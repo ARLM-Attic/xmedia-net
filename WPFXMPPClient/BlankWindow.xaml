@@ -6,7 +6,7 @@
         xmlns:location="clr-namespace:LocationClasses;assembly=LocationClasses"
         AllowsTransparency="True" WindowStyle="None"
         MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded"
-        Title="Options" Height="383" Width="387">
+        Title="Options">
 
     <Window.Resources>
         <ObjectDataProvider x:Key="mapTypeData"
@@ -52,9 +52,9 @@
                     <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" Text="Options"></TextBlock>
-                <s:SurfaceButton ToolTip="Save" IsEnabled="{Binding bDirty}" Grid.Column="1" x:Name="ButtonSave" Click="ButtonSave_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <!--<s:SurfaceButton ToolTip="Save" IsEnabled="{Binding bDirty}" Grid.Column="1" x:Name="ButtonSave" Click="ButtonSave_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/check.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
+                </s:SurfaceButton>-->
                 <s:SurfaceButton ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
@@ -108,6 +108,8 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"></RowDefinition>
                             <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="40"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="100"></ColumnDefinition>
@@ -141,9 +143,18 @@
 
                         <Label Margin="3,3,3,3" Grid.Row="1" Grid.Column="0">Map Type</Label>
                         <ComboBox  Margin="3,3,3,3" Width="Auto"  Grid.Row="1" Grid.Column="1" x:Name="ComboBoxMapType" SelectedValue="{Binding MapParameters.Maptype, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource mapTypeData}}" SelectionChanged="ComboBoxMapType_SelectionChanged"></ComboBox>
-                   
-                       
-                        
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right">
+                        <s:SurfaceButton Width="60" ToolTip="Save" IsEnabled="{Binding bDirty}" x:Name="ButtonSave" Click="ButtonSave_Click"  Height="40"  Padding="0" Margin="0,0,8,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                            <TextBlock Text="Save"></TextBlock>
+                            <!-- <Image Source="Images/check.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" /> -->
+                        </s:SurfaceButton>
+                        <s:SurfaceButton Width="60" ToolTip="Cancel" x:Name="ButtonCancel" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                                <TextBlock Text="Cancel"></TextBlock>
+                            <!-- <Image Source="Images/check.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" /> -->
+                        </s:SurfaceButton>
+                        </StackPanel>
+
                     </Grid>
 
                 </Expander>

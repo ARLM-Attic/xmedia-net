@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:WPFXMPPClient"
         AllowsTransparency="False" WindowStyle="None"
         MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded"
-        Title="MapWindow" Height="900" Width="900">
+        Title="MapWindow" >
 
     <Window.Background>
         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -13,6 +13,253 @@
             <GradientStop Color="#FFEEFFDF" Offset="1"/>
         </LinearGradientBrush>
     </Window.Background>
+    <Window.Resources>
+        <DataTemplate x:Key="GeoLocTemplate">
+            <Grid Background="{x:Null}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="300*" />
+                    <ColumnDefinition Width="33" />
+                    <ColumnDefinition Width="33" />
+                    <ColumnDefinition Width="33" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="44" />
+                    <RowDefinition Height="20" />
+                </Grid.RowDefinitions>
+
+                <Rectangle Stroke="Black" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="44" Height="44" Grid.Column="0" Grid.Row="0" />
+                <Image Grid.Column="0" Grid.Row="0" Width="36" Height="36" Source="{Binding Avatar}" />
+
+
+                <Button Background="#AAEEFFEE" BorderBrush="{x:Null}" Margin="10,0" Grid.Column="1" Grid.Row="0" 
+                             HorizontalAlignment="Stretch" VerticalContentAlignment="Center" 
+                             x:Name="HyperlinkRosterItem" Click="HyperlinkRosterItem_Click" 
+                             FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Stretch" Content="{Binding Name}">
+                </Button>
+
+
+                <Button BorderThickness="0" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="View New Messages" Grid.Row="0" Grid.Column="2" x:Name="ButtonViewMessages" Click="ButtonViewMessages_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Visibility="{Binding NewMessagesVisible}" >
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#EE4444FF" Offset="0"/>
+                            <GradientStop Color="#EECCCCFF" Offset=".5"/>
+                            <GradientStop Color="#EE4444FF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+
+                    <Image  Source="Images/mail.png" Width="20" Height="20" />
+                </Button>
+
+                <!-- Create and use the globe.png image instead of the more.png image -->
+                <!--<Button Background="#AAEEFFEE" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="View on Map" Grid.Row="0" Grid.Column="3" x:Name="ButtonViewOnMap" Click="ButtonViewOnMap_Click"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                    <Image  Source="Images/more.png" Width="20" Height="20" />
+                </Button>-->
+
+                <!--<Button Background="#AAEEFFEE" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="Start an Audio Call" Grid.Row="0" Grid.Column="4" x:Name="ButtonStartAudioCall" Click="ButtonStartAudioCall_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                    <Image  Source="Images/volume.png" Width="20" Height="20" />
+                </Button>-->
+
+                <!--<s:ElementMenu>
+                        <s:ElementMenuItem x:Name="MenuItemQuery" Click="MenuItemQuery_Click">Query</s:ElementMenuItem>
+                    </s:ElementMenu>-->
+                <StackPanel Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="5" Orientation="Horizontal">
+                    <TextBlock Margin="5,0" Text="{Binding Path=Presence.PresenceType}" />
+                    <TextBlock Margin="5,0" Text="{Binding Path=Presence.Status}" />
+                    <TextBlock Margin="5,0" Text="{Binding GeoString}"  />
+                </StackPanel>
+            </Grid>
+
+        </DataTemplate>
+        <ControlTemplate x:Key="ZoomInButtonCtrlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="ZoomInBgrndRct"/>
+                <Path Fill="#F1FFFFFF" Stretch="Fill" Stroke="{x:Null}" StrokeThickness="0.5" Margin="5.83,6.083,5.83,6.083" RenderTransformOrigin="0.500000003172494,0.500000010877122" Data="M7.5809999,0 L9.2529998,0 C9.747295,0 10.148,0.40070518 10.148,0.89499998 L10.148,6.6859999 15.939,6.6859999 C16.433293,6.6859999 16.834,7.0867053 16.834,7.5809999 L16.834,9.2530003 C16.834,9.7472935 16.433293,10.148 15.939,10.148 L10.148,10.148 10.148,15.939 C10.148,16.433297 9.7472936,16.834 9.2529998,16.834 L7.5809999,16.834 C7.0867063,16.834 6.6859998,16.433297 6.6859999,15.939 L6.6859999,10.148 0.89499998,10.148 C0.40070413,10.148 0,9.7472927 0,9.2530003 L0,7.5809999 C0,7.086706 0.4007045,6.6859999 0.89499998,6.6859999 L6.6859999,6.6859999 6.6859999,0.89499998 C6.6859998,0.4007051 7.086705,0 7.5809999,0 z" x:Name="Cross">
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="90"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" TargetName="Cross" Value="#F14FB9E0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="ZoomOutButtonCtrlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="ZoomInBgrndRct"/>
+                <Rectangle Fill="#F2FFFFFF" Stroke="{x:Null}" RadiusX="0.648" RadiusY="0.648" HorizontalAlignment="Stretch" Margin="10.929,6.4,10.654,6.684" VerticalAlignment="Stretch" RenderTransformOrigin="0.5,0.5" StrokeThickness="0.5" Opacity="1" x:Name="MinusRct" >
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="90"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" TargetName="MinusRct" Value="#F14FB9E0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="SaveButtonCtrlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Image x:Name="SaveImage" Stretch="Fill" Margin="1.019,1.209,1.018,0.833" Opacity="1"/>
+            </Grid>
+        </ControlTemplate>
+        <ControlTemplate x:Key="SaveButtonControlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="2.5" RadiusY="2.5" x:Name="ZoomInBgrndRct"/>
+                <Rectangle Fill="#E0FFFFFF" Stroke="{x:Null}" StrokeThickness="0.5" RadiusX="0.33" RadiusY="0.33" Margin="3.92,1.435,3.83,10.172" VerticalAlignment="Stretch" x:Name="LabelRct"/>
+                <Rectangle Fill="#97000000" Stroke="{x:Null}" StrokeThickness="0.5" RadiusX="0.413" RadiusY="0.413" Margin="5.022,0,3.83,0.927" VerticalAlignment="Bottom" Height="6.626" x:Name="SlideRgnRct"/>
+                <Path Fill="#F2F0F0F0" Stretch="Fill" Stroke="{x:Null}" StrokeThickness="0.5" Margin="5.398,0,6.87,0.926" VerticalAlignment="Bottom" Height="6.314" Data="M1.318,0.74899988 C1.1467917,0.74899994 1.008,0.88779168 1.008,1.0589999 L1.008,5.0040001 C1.008,5.175208 1.1467917,5.3140001 1.318,5.3140001 L3.346,5.3140001 C3.5172083,5.3140001 3.6559999,5.175208 3.6559999,5.0040001 L3.6559999,1.0589999 C3.6559999,0.88779168 3.5172083,0.74899994 3.346,0.74899988 z M0.31000003,2.8421709E-14 L12.089,2.8421709E-14 C12.260208,-7.465465E-08 12.399,0.13879165 12.399,0.30999984 L12.399,6.0040001 C12.399,6.175208 12.260208,6.3140001 12.089,6.3140001 L0.31000003,6.3140001 C0.13879173,6.3140001 0,6.175208 0,6.0040001 L0,0.30999984 C0,0.13879165 0.13879173,-7.465465E-08 0.31000003,2.8421709E-14 z" x:Name="MetalRct"/>
+                <Rectangle Fill="#E0454545" Stroke="{x:Null}" StrokeThickness="0.5" RadiusX="0.33" RadiusY="0.33" Margin="4.791,3.979,4.543,0" VerticalAlignment="Top" Height="0.75"/>
+                <Rectangle Fill="#E0454545" Stroke="{x:Null}" StrokeThickness="0.5" RadiusX="0.33" RadiusY="0.33" Margin="4.791,6.064,4.543,0" VerticalAlignment="Top" Height="0.75"/>
+                <Rectangle Fill="#E0454545" Stroke="{x:Null}" StrokeThickness="0.5" RadiusX="0.33" RadiusY="0.33" Margin="4.791,8.149,4.543,0" VerticalAlignment="Top" Height="0.75"/>
+                <Rectangle Fill="#E0454545" Stroke="{x:Null}" StrokeThickness="0.5" RadiusX="0.33" RadiusY="0.33" Margin="4.791,10.36,4.543,0" VerticalAlignment="Top" Height="0.75"/>
+                <Rectangle Fill="#E0454545" Stroke="{x:Null}" StrokeThickness="0.5" RadiusX="0.33" RadiusY="0.33" Margin="4.791,0,4.543,11.744" VerticalAlignment="Bottom" Height="0.75"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" TargetName="LabelRct" Value="#FFFFFFFF"/>
+                    <Setter Property="Fill" TargetName="MetalRct" Value="#FFF0F0F0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="RoadmapButtonCtrlTemplate" TargetType="{x:Type ToggleButton}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="ZoomInBgrndRct"/>
+                <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center" Content="Roadmap" Foreground="#EEE3E3E3" x:Name="contentControl" FontSize="11"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" TargetName="contentControl" Value="#FFFFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Foreground" TargetName="contentControl" Value="#F965BDFF"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="HybridToggleButtonCtrlTemplate" TargetType="{x:Type ToggleButton}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="ZoomInBgrndRct"/>
+                <ContentControl HorizontalAlignment="Center" x:Name="contentControl" VerticalAlignment="Center" Content="Hybrid" FontSize="11" Foreground="#EEE3E3E3"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" TargetName="contentControl" Value="#FFFFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Foreground" TargetName="contentControl" Value="#F965BDFF"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="TerrainToggleButtonCtrlTemplate" TargetType="{x:Type ToggleButton}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="ZoomInBgrndRct"/>
+                <ContentControl HorizontalAlignment="Center" x:Name="contentControl" VerticalAlignment="Center" Content="Terrain" FontSize="11" Foreground="#EEE3E3E3"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" TargetName="contentControl" Value="#FFFFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Foreground" TargetName="contentControl" Value="#F965BDFF"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="LeftButtonCtrlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="LeftBgrndRct"/>
+                <Path Fill="#F2FFFFFF" Stretch="Fill" Stroke="{x:Null}" StrokeThickness="0.5" HorizontalAlignment="Stretch" Margin="10.366,4.491,3.449,8.593" x:Name="LeftArrowPath" VerticalAlignment="Stretch" Opacity="1" RenderTransformOrigin="0.142092680229453,0.500000007691215" Data="M1.5419999,0 L1.8476233,0.12659333 2.3394138,0.19133873 10.080815,4.6608386 C10.818343,5.0866503 11.071036,6.0297222 10.645226,6.76725 10.219415,7.5047777 9.2763425,7.757473 8.5388145,7.3316612 L3.0840001,4.1823225 3.0840001,10.481 C3.0840001,11.332623 2.3936234,12.023 1.5419999,12.023 0.69037711,12.023 -8.6916135E-08,11.332623 7.1054274E-15,10.481 L7.1054274E-15,1.542 0.18982393,1.0837243 0.2330026,0.75574995 0.36885397,0.6515075 0.45164128,0.45164127 0.83775319,0.29170851 1.1693147,0.037292377 1.3837976,0.065529556 z">
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="-1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="-120"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" TargetName="LeftArrowPath" Value="#F14FB9E0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="RightButtonCtrlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="RightBgrndRct"/>
+                <Path Fill="#F2FFFFFF" Stretch="Fill" Stroke="{x:Null}" StrokeThickness="0.5" HorizontalAlignment="Stretch" Margin="11.201,4.491,2.614,8.593" x:Name="RightArrowPath" VerticalAlignment="Stretch" Opacity="1" RenderTransformOrigin="0.142092680229453,0.500000007691215" Data="M1.5419999,0 L1.8476233,0.12659333 2.3394138,0.19133873 10.080815,4.6608386 C10.818343,5.0866503 11.071036,6.0297222 10.645226,6.76725 10.219415,7.5047777 9.2763425,7.757473 8.5388145,7.3316612 L3.0840001,4.1823225 3.0840001,10.481 C3.0840001,11.332623 2.3936234,12.023 1.5419999,12.023 0.69037711,12.023 -8.6916135E-08,11.332623 7.1054274E-15,10.481 L7.1054274E-15,1.542 0.18982393,1.0837243 0.2330026,0.75574995 0.36885397,0.6515075 0.45164128,0.45164127 0.83775319,0.29170851 1.1693147,0.037292377 1.3837976,0.065529556 z">
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="120"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" TargetName="RightArrowPath" Value="#F14FB9E0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="UpButtonCtrlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="UpBgrndRct"/>
+                <Path Fill="#F2FFFFFF" Stretch="Fill" Stroke="{x:Null}" StrokeThickness="0.5" HorizontalAlignment="Right" Margin="0,6.241,0.574,6.843" x:Name="UpArrowPath" VerticalAlignment="Stretch" Opacity="1" RenderTransformOrigin="0.142092680229453,0.500000007691215" Data="M1.5419999,0 L1.8476233,0.12659333 2.3394138,0.19133873 10.080815,4.6608386 C10.818343,5.0866503 11.071036,6.0297222 10.645226,6.76725 10.219415,7.5047777 9.2763425,7.757473 8.5388145,7.3316612 L3.0840001,4.1823225 3.0840001,10.481 C3.0840001,11.332623 2.3936234,12.023 1.5419999,12.023 0.69037711,12.023 -8.6916135E-08,11.332623 7.1054274E-15,10.481 L7.1054274E-15,1.542 0.18982393,1.0837243 0.2330026,0.75574995 0.36885397,0.6515075 0.45164128,0.45164127 0.83775319,0.29170851 1.1693147,0.037292377 1.3837976,0.065529556 z" Width="10.852">
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="-1" ScaleY="1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="-30"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" TargetName="UpArrowPath" Value="#F14FB9E0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+        <ControlTemplate x:Key="DownButtonCtrlTemplate" TargetType="{x:Type Button}">
+            <Grid>
+                <Rectangle Fill="#CB000000" Stroke="#F17693A1" RadiusX="3.5" RadiusY="3.5" x:Name="DownBgrndRct"/>
+                <Path Fill="#F2FFFFFF" Stretch="Fill" Stroke="{x:Null}" StrokeThickness="0.5" HorizontalAlignment="Right" Margin="0,6.991,0.574,6.093" x:Name="DownArrowPath" VerticalAlignment="Stretch" Opacity="1" RenderTransformOrigin="0.142092680229453,0.500000007691215" Data="M1.5419999,0 L1.8476233,0.12659333 2.3394138,0.19133873 10.080815,4.6608386 C10.818343,5.0866503 11.071036,6.0297222 10.645226,6.76725 10.219415,7.5047777 9.2763425,7.757473 8.5388145,7.3316612 L3.0840001,4.1823225 3.0840001,10.481 C3.0840001,11.332623 2.3936234,12.023 1.5419999,12.023 0.69037711,12.023 -8.6916135E-08,11.332623 7.1054274E-15,10.481 L7.1054274E-15,1.542 0.18982393,1.0837243 0.2330026,0.75574995 0.36885397,0.6515075 0.45164128,0.45164127 0.83775319,0.29170851 1.1693147,0.037292377 1.3837976,0.065529556 z" Width="10.852">
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="-1" ScaleY="-1"/>
+                            <SkewTransform AngleX="0" AngleY="0"/>
+                            <RotateTransform Angle="30"/>
+                            <TranslateTransform X="0" Y="0"/>
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Fill" TargetName="DownArrowPath" Value="#F14FB9E0"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+    </Window.Resources>
 
 
     <Border BorderBrush="Black" BorderThickness="1" CornerRadius="2" >
@@ -20,6 +267,7 @@
         <Grid x:Name="LayoutRoot" Background="Transparent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -50,20 +298,23 @@
                 <TextBlock Grid.ColumnSpan="5" Grid.Row="0" x:Name="TextBlockTitle" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
                 <!--<TextBlock Grid.ColumnSpan="5" Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"></TextBlock>
                 <TextBlock Grid.ColumnSpan="5" Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"></TextBlock>-->
-                
 
-                <s:SurfaceButton ToolTip="Zoom In" Grid.Column="1" x:Name="ButtonZoomIn" Click="ButtonZoomIn_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+
+                <s:SurfaceButton Visibility="Collapsed" ToolTip="Zoom In" Grid.Column="1" x:Name="ButtonZoomIn" Click="ButtonZoomIn_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - addition.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
-                <s:SurfaceButton ToolTip="Zoom Out" Grid.Column="2" x:Name="ButtonZoomOut" Click="ButtonZoomOut_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton Visibility="Collapsed"  ToolTip="Zoom Out" Grid.Column="2" x:Name="ButtonZoomOut" Click="ButtonZoomOut_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - minus.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
-                <s:SurfaceButton ToolTip="Refresh" Grid.Column="3" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton Visibility="Collapsed" ToolTip="Refresh" Grid.Column="3" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/refresh.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
                 <s:SurfaceButton ToolTip="Close" Grid.Column="4" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
+
+
+
             </Grid>
 
             <!--<s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
@@ -108,10 +359,213 @@
                 
             </Image>-->
             <!--<Grid Grid.Row="1" Background="Beige" Margin="3,0">
-                <Image x:Name="MapImage" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"> </Image>
+                <Image x:Name="MapImage" VerticalAlignment="Stretch" ="Stretch"> </Image>
             </Grid>-->
-            <local:MapUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Visible" Grid.Row="1" Margin="3,3,3,3" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>
-        
+
+
+            <!--<Grid Background="{x:Null}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="300*" />
+                    <ColumnDefinition Width="33" />
+                    <ColumnDefinition Width="33" />
+                    <ColumnDefinition Width="33" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="44" />
+                    <RowDefinition Height="20" />
+                </Grid.RowDefinitions>-->
+
+            <!--<Rectangle Stroke="Black" StrokeThickness="1" Fill="{Binding Presence.PresenceBrush}"  Width="44" Height="44" Grid.Column="0" Grid.Row="0" />
+                <Image Grid.Column="0" Grid.Row="0" Width="36" Height="36" Source="{Binding Avatar}" />
+
+
+                <Button Background="#AAEEFFEE" BorderBrush="{x:Null}" Margin="10,0" Grid.Column="1" Grid.Row="0" 
+                             HorizontalAlignment="Stretch" VerticalContentAlignment="Center" 
+                             x:Name="HyperlinkRosterItem" Click="HyperlinkRosterItem_Click" 
+                             FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Stretch" Content="{Binding Name}">
+                </Button>-->
+
+
+
+            <!-- Create and use the globe.png image instead of the more.png image -->
+            <!--<Button Background="#AAEEFFEE" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="View on Map" Grid.Row="0" Grid.Column="3" x:Name="ButtonViewOnMap" Click="ButtonViewOnMap_Click"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                    <Image  Source="Images/more.png" Width="20" Height="20" />
+                </Button>-->
+
+            <!--<Button Background="#AAEEFFEE" BorderBrush="{x:Null}" HorizontalAlignment="Stretch" ToolTip="Start an Audio Call" Grid.Row="0" Grid.Column="4" x:Name="ButtonStartAudioCall" Click="ButtonStartAudioCall_Click"   HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                    <Image  Source="Images/volume.png" Width="20" Height="20" />
+                </Button>-->
+
+            <!--<s:ElementMenu>
+                        <s:ElementMenuItem x:Name="MenuItemQuery" Click="MenuItemQuery_Click">Query</s:ElementMenuItem>
+                    </s:ElementMenu>-->
+            <!--<StackPanel Grid.Row="1" Grid.Column="0"  Grid.ColumnSpan="5" Orientation="Horizontal">
+                    <TextBlock Margin="5,0" Text="{Binding Path=Presence.PresenceType}" />
+                    <TextBlock Margin="5,0" Text="{Binding Path=Presence.Status}" />
+                    <TextBlock Margin="5,0" Text="{Binding GeoString}"  />
+                </StackPanel>-->
+            <!--</Grid>-->
+
+
+            <Grid Background="Transparent" x:Name="GridMain" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <!-- Row 0: Options -->
+                    <RowDefinition Height="Auto" />
+
+                    <!-- Row 1: Menu -->
+                    <RowDefinition Height="Auto" />
+
+                    <!-- Row 2: Map -->
+                    <RowDefinition Height="Auto" />
+
+                    <!-- Row 3: Real-time Stats  -->
+                    <RowDefinition Height="Auto" />
+                   
+                </Grid.RowDefinitions>
+
+                <StackPanel Visibility="Collapsed" Orientation="Horizontal">
+                    <TextBox x:Name="TextBoxURL" Text="http://www.yahoo.com"></TextBox>
+                    <Button Click="ButtonLoadURL_Click" x:Name="ButtonLoadURL" Width="Auto">Load URL</Button>
+                </StackPanel>
+
+                <Expander Margin="4,4,4,4" Grid.Row="0" Grid.ColumnSpan="4" Header="Map Properties">
+                    <Grid Visibility="Visible" Margin="5,5,5,5"  x:Name="GridOptions" >
+                        <!-- Options Grid -->
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- Map Type-->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- Zoom -->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- Size -->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- Scale -->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- Timestamp -->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- Coordinates -->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- Update -->
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <!--<Expander Header="Location History">
+                
+                    <ListView x:Name="LocationsList">
+                
+                    </ListView>
+                </Expander>-->
+
+
+
+                        <Button Visibility="Collapsed" Grid.Column="2" HorizontalAlignment="Right" x:Name="ButtonLoadLocation" Click="ButtonLoadLocation_Click" Width="Auto">Refresh</Button>
+                        <Button Visibility="Collapsed" Grid.Column="3" HorizontalAlignment="Right" x:Name="ButtonLoadLocationAll" Click="ButtonLoadLocationAll_Click" Width="Auto" Margin="0,0,65,0">Load All</Button>
+
+
+
+                        <!--<StackPanel Margin="5,5,5,5"  Visibility="Visible" Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">-->
+                        <Label Margin="3,3,3,3" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center">Map Type</Label>
+                        <ComboBox Margin="3,3,3,3" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxMapType" Width="100" Height="25" />
+
+                        <Label Margin="3,3,3,3" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" FontWeight="Bold"  VerticalAlignment="Center">Zoom</Label>
+                        <ComboBox Margin="3,3,0,3" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxZoom" ItemsSource="{Binding}" Width="50" Height="25"/>
+
+                        <Label VerticalAlignment="Center" Margin="3,3,3,3" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" FontWeight="Bold">Size</Label>
+                        <StackPanel Margin="3,3,3,3" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Orientation="Horizontal">
+                            <TextBox  Width="70" x:Name="TextBoxSizeHorizontal" ></TextBox>
+                            <Label FontWeight="Bold" >x</Label>
+                            <TextBox Width="70" x:Name="TextBoxSizeVertical" ></TextBox>
+                            <Label FontWeight="Regular" >Pixels</Label>
+                        </StackPanel>
+
+                        <Label Margin="3,3,3,3" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" FontWeight="Bold"  VerticalAlignment="Center">Scale</Label>
+                        <ComboBox Margin="3,3,0,3" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ComboBoxScale" ItemsSource="{Binding}" Width="50" Height="25"/>
+
+
+                        <!--<StackPanel Grid.Row="1" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Stretch">-->
+
+
+                        <!--</StackPanel>-->
+
+                        <Label Margin="3,3,3,3" Grid.Column="0" Grid.Row="3" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center">Timestamp</Label>
+                        <TextBlock Margin="3,3,3,3" Grid.Column="1" Grid.Row="3" x:Name="TextBoxTimeStamp" HorizontalAlignment="Left" VerticalAlignment="Center"></TextBlock>
+                        <Label Margin="3,3,3,3" Grid.Column="0" Grid.Row="2" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center">Location</Label>
+                        <TextBox Margin="3,3,0,3" Grid.Column="1" Grid.Row="2" x:Name="TextBoxGeoLoc" HorizontalAlignment="Left" VerticalAlignment="Center"></TextBox>
+
+                        <Button Grid.Column="3" Width="50" Grid.Row="4" x:Name="ButtonUpdate" Click="ButtonUpdate_Click" Height="25" HorizontalAlignment="Right">Refresh</Button>
+
+                        <!--</StackPanel>-->
+                    </Grid>
+                </Expander>
+
+                <Expander Margin="4,4,4,4" Grid.Row="1" Grid.ColumnSpan="4" Header="KML" Padding="4">
+                    <StackPanel Margin="3,3,3,3" Orientation="Horizontal" IsEnabled="False" >
+                        <Button IsEnabled="{Binding IsNotRecordingKML}" Margin="0,0,6,6" VerticalAlignment="Center" x:Name="ButtonStartRecording" Click="ButtonStartRecording_Click" Height="25">Start Recording</Button>
+                        <Button IsEnabled="{Binding IsRecordingKML}" Margin="0,0,6,6" VerticalAlignment="Center" x:Name="ButtonStopRecording" Click="ButtonStopRecording_Click" Height="25">Stop Recording</Button>
+                        <Button Margin="0,0,6,6" VerticalAlignment="Center" x:Name="ButtonLoadKMLFile" Click="ButtonButtonLoadKMLFile_Click" Height="25">Load KML File</Button>
+                    </StackPanel>
+                </Expander>
+                
+                <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="0" >-->
+
+                <!-- MAP -->
+                <Grid Grid.Row="2">
+                
+
+                    <Image  x:Name="MapImage" Margin="3,3,3,3" Height="500" Width="500"/>
+
+
+                    <Button Canvas.ZIndex="1" HorizontalAlignment="Left" Margin="7.667,71.359,0,0" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomInButtonCtrlTemplate}" Cursor="Hand" x:Name="ZoomInButton" IsEnabled="True" Click="ZoomInButton_Click"/>
+                    <Button Canvas.ZIndex="1" Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,38.696,0,0" x:Name="ZoomOutButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomOutButtonCtrlTemplate}" IsEnabled="True" Click="ZoomOutButton_Click"/>
+                    <Button Canvas.ZIndex="1" Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,7,0,0" x:Name="SaveButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource SaveButtonControlTemplate}" ToolTip="Save map" IsEnabled="True" Click="SaveButton_Click"/>
+
+                    <ToggleButton Canvas.ZIndex="1" Margin="0,5,86,0" VerticalAlignment="Top" Height="23" Content="Roadmap" Width="78" HorizontalAlignment="Right" Template="{DynamicResource RoadmapButtonCtrlTemplate}" IsChecked="False" Cursor="Hand" x:Name="RoadmapToggleButton" IsEnabled="True" Click="RoadmapToggleButton_Checked"/>
+                    <ToggleButton Canvas.ZIndex="1" Margin="0,5,6,0" VerticalAlignment="Top" Height="23" Content="" Width="78" HorizontalAlignment="Right" Template="{DynamicResource TerrainToggleButtonCtrlTemplate}" x:Name="TerrainToggleButton" Cursor="Hand" IsEnabled="True" Click="TerrainToggleButton_Checked" />
+                    <Grid Canvas.ZIndex="1" Width="82.001" Height="54.2139999999999" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6">
+                        <Button Height="25.107" Content="" Template="{DynamicResource UpButtonCtrlTemplate}" x:Name="MoveUpButton" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Top" Click="MoveUpButton_Click" />
+                        <Button x:Name="MoveDownButton" Height="25.107" Content="" Template="{DynamicResource DownButtonCtrlTemplate}" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Bottom" Click="MoveDownButton_Click" />
+                        <Button x:Name="MoveLeftButton" Width="24.667" Content="" Template="{DynamicResource LeftButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Left" Margin="0,14.337,0,14.77" Click="MoveLeftButton_Click" />
+                        <Button x:Name="MoveRightButton" Width="24.667" Content="" Template="{DynamicResource RightButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Right" Margin="0,14.337,0,14.77" Click="MoveRightButton_Click" />
+                    </Grid>
+                </Grid>
+                <!--</ScrollViewer>-->
+
+                <Grid Visibility="Collapsed" Grid.Row="2" Margin="5,5,5,5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"></RowDefinition>
+
+                    </Grid.RowDefinitions>
+
+                    <WebBrowser Visibility="Collapsed" Grid.Row="0" x:Name="WebBrowserMap" Margin="0,0,0,0"></WebBrowser>
+
+                    <Grid Visibility="Collapsed" Margin="5,5,5,5" Grid.Row="2" DataContext="{Binding ElementName=OurRosterItem}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed">
+                            <Button Margin="10,0" x:Name="ButtonClearKML" Click="ButtonClearKML_Click">Clear</Button>
+                            <Button Margin="10,0" x:Name="ButtonSaveKML" Click="ButtonSaveKML_Click">Save KML</Button>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Visibility="Collapsed">
+                            <Label>Last location received at:</Label>
+                            <TextBlock x:Name="TextBlockLastLocationTimestamp" Text="{Binding OurRosterItem.GeoLoc.TimeStamp}"></TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+
+            <!--<local:MapUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Visible" Grid.Row="1" Margin="3,3,3,3" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>-->
+
             <Grid Grid.Row="2" Background="Beige" Visibility="Collapsed">
                 <StackPanel>
                     <ListView x:Name="ListViewBuddies">

@@ -187,7 +187,9 @@ namespace WPFXMPPClient
                             Paths[item].Add(item.GeoLoc);
 
                             TextBoxURL.Text = strURL;
-                            TextBoxTimeStamp.Text = String.Format("{0}'s Location ({1}): {2}, {3}", item.JID.BareJID, item.GeoLoc.TimeStamp, item.GeoLoc.lat, item.GeoLoc.lon);
+                            ///TextBoxTimeStamp.Text = String.Format("{0}'s Location ({1}): {2}, {3}", item.JID.BareJID, item.GeoLoc.TimeStamp, item.GeoLoc.lat, item.GeoLoc.lon);
+                            if (item.GeoLoc.TimeStamp != null) 
+                                TextBoxTimeStamp.Text = String.Format("{0}", item.GeoLoc.TimeStamp).Replace("Timestamp: ", "");
                             RosterItems.Add(item);
                            // LocationsList.ItemsSource = RosterItems;
                             LoadURL();
@@ -447,7 +449,7 @@ namespace WPFXMPPClient
                     //strURL;
 
 
-                TextBoxTimeStamp.Text = String.Format("Timestamp: {0} ", OurRosterItem.GeoLoc.TimeStamp);
+                TextBoxTimeStamp.Text = String.Format("{0} ", OurRosterItem.GeoLoc.TimeStamp);
                 TextBoxGeoLoc.Text = strLatLon;
                 
                 // center=Williamsburg,Brooklyn,NY

@@ -49,7 +49,8 @@ namespace WPFXMPPClient
 
         PrivacyService PrivService = null;
         AudioMuxerWindow AudioMuxerWindow = new AudioMuxerWindow();
-        MapWindow MapWindow = new MapWindow();
+        GeoLocationWindow MapWindow = new GeoLocationWindow();
+        public Dictionary<string, GeoLocationWindow> GeoLocationWindows = new Dictionary<string, GeoLocationWindow>();
 
         private void SurfaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -831,20 +832,43 @@ namespace WPFXMPPClient
 
         private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
         {
-            MapWindow.XMPPClient = this.XMPPClient;
-
             RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
             if (item == null)
                 return;
 
-            ShowMapWindow(item);
+            if (GeoLocationWindows.ContainsKey(item.JID.BareJID) == true)
+            {
+                GeoLocationWindow exwin = GeoLocationWindows[item.JID.BareJID];
+                exwin.Activate();
+                return;
+            }
+
+            GeoLocationWindow win = new GeoLocationWindow();
+            win.XMPPClient = this.XMPPClient;
+            win.OurRosterItem = item;
+            win.Closed += new EventHandler(win_Closed);
+            GeoLocationWindows.Add(item.JID.BareJID, win);
+            win.Show();
+
+
+
+
+
+
+            //MapWindow.XMPPClient = this.XMPPClient;
+
+            //RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            //if (item == null)
+            //    return;
+
+            //ShowMapWindow(item);
         }
 
         public void ShowMapWindow(RosterItem item)
         {
             if (MapWindow.IsLoaded == false)
             {
-                MapWindow = new MapWindow();
+                MapWindow = new GeoLocationWindow();
                 MapWindow.XMPPClient = this.XMPPClient;
                 MapWindow.OurRosterItem = item;
 

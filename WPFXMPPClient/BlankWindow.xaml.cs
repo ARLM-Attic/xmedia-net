@@ -31,6 +31,23 @@ namespace WPFXMPPClient
             InitializeComponent();
         }
 
+        //public delegate void MyDelegate(string whatHappened);    
+        //public event MyDelegate MyEvent;
+
+        //public event EventHandler SaveButtonClicked2;
+        //void FireSaveButtonClicked2(MapProperties savedMapProperties)
+        //{
+        //    if (SaveButtonClicked2 != null)
+        //        SaveButtonClicked2(this, new);
+        //}
+
+        //public event System.ComponentModel.PropertyChangedEventHandler SaveButtonClicked;
+        //void FireSaveButtonClicked(string strName)
+        //{
+        //    if (SaveButtonClicked != null)
+        //        SaveButtonClicked(this, new System.ComponentModel.PropertyChangedEventArgs(strName));
+        //}
+
         public XMPPClient XMPPClient = null;
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -54,6 +71,7 @@ namespace WPFXMPPClient
             this.DataContext = MapProperties;
                 // XMPPClient;
             this.ListBoxConversation.ItemsSource = XMPPClient.FileTransferManager.FileTransfers;
+            this.ComboBoxMapType.SelectedIndex = 0;
         }
 
         private void ButtonCancelSend_Click(object sender, RoutedEventArgs e)
