@@ -20,9 +20,9 @@
         xmlns:local="clr-namespace:WPFXMPPClient"
         AllowsTransparency="False" WindowStyle="None"
         MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded"
-        Title="GeoLocationWindow" Height="800" Width="600">    
-    
-    
+        Title="GeoLocationWindow">
+
+    <!--  ResizeMode="CanResizeWithGrip" Height="650" Width="600" -->
     <Window.Resources>
         <Storyboard x:Key="StoryBoardMakeBigGlobe">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="ButtonGlobe">
@@ -612,8 +612,8 @@
         <Grid x:Name="LayoutRoot" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <!--<RowDefinition Height="*"/>-->
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0"  BorderThickness="1">
@@ -626,10 +626,11 @@
             </Border>
 
 
-            <Grid Margin="0,5" Grid.Row="0" >
+            <Grid Margin="0,5" Grid.Row="0" x:Name="GridTitleBar" >
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="357*" />
-                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
@@ -637,13 +638,13 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
 
 
-                <TextBlock Grid.ColumnSpan="5" Grid.Row="0" x:Name="TextBlockTitle" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
-                <!--<TextBlock Grid.ColumnSpan="5" Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"></TextBlock>
-                <TextBlock Grid.ColumnSpan="5" Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"></TextBlock>-->
+                <TextBlock x:Name="TextBlockTitle" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
+                <TextBlock Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="18" FontWeight="SemiBold"></TextBlock>
+                <TextBlock Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="12" FontWeight="SemiBold"></TextBlock>
 
 
                 <!--<s:SurfaceButton ToolTip="Zoom In" Grid.Column="1" x:Name="ButtonZoomIn" Click="ButtonZoomIn_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
@@ -652,13 +653,13 @@
                 <s:SurfaceButton ToolTip="Zoom Out" Grid.Column="2" x:Name="ButtonZoomOut" Click="ButtonZoomOut_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - minus.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>-->
-                <s:SurfaceButton ToolTip="Refresh" Grid.Column="3" x:Name="ButtonOptions" Click="ButtonOptions_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton Visibility="Collapsed" ToolTip="Refresh" Grid.Column="4" x:Name="ButtonOptions" Click="ButtonOptions_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/tools.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
-                <s:SurfaceButton ToolTip="Refresh" Grid.Column="2" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton ToolTip="Refresh" Grid.Column="4" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/refresh.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
-                <s:SurfaceButton ToolTip="Close" Grid.Column="4" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton ToolTip="Close" Grid.Column="5" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
             </Grid>
@@ -684,44 +685,84 @@
             </Grid>-->
 
 
-            <Grid Grid.Row="1" Margin="3,3,3,3" Background="Beige">
+            <!--<Grid Grid.Row="1" Margin="3,3,3,0" Background="Transparent" VerticalAlignment="Top">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="*"></RowDefinition>
-                </Grid.RowDefinitions>
+                    <RowDefinition Height="397*"></RowDefinition>-->
+                    <!--<RowDefinition Height="*"></RowDefinition>-->
+                    <!--<RowDefinition Height="*"></RowDefinition>-->
+                <!--</Grid.RowDefinitions>-->
                 <!--<Rectangle Stroke="#FF819DA3" x:Name="BgndRectangle" StrokeThickness="1" Fill="#FFFFFFFF" RadiusY="6.25" RadiusX="6.25" MouseLeftButtonDown="BgndRectangle_MouseLeftButtonDown" Height="580" Margin="0,0,0,-46" Grid.RowSpan="2" />-->
                 <!--<Grid VerticalAlignment="Top" Height="23" x:Name="TitleGrid">
                     <TextBlock HorizontalAlignment="Left" Margin="9.667,6.066,0,2.647" x:Name="TitleTxtBlck" Width="30" FontSize="12" FontWeight="Normal" Foreground="#EEAFA780" Text="WPF" TextWrapping="Wrap" FontFamily="Myriad Pro" Visibility="Visible"/>
                     <Button Style="{DynamicResource CloseButtonStyle}" Width="11.195" Content="Button" x:Name="CloseButton" Cursor="Hand" HorizontalAlignment="Right" Margin="0,5.583,9.468,4.647" Click="CloseButton_Click"/>
                     <Button Style="{DynamicResource MinimizeButtonStyle}" Width="12.402" Content="Button" x:Name="MinimizeButton" Cursor="Hand" HorizontalAlignment="Right" Margin="0,4.733,26.606,4.73" Click="MinimizeButton_Click"/>
                 </Grid>-->
-                <Grid Margin="17,24,17,110" Width="500" Height="400" x:Name="MapImageGrid" Background="{x:Null}">
-                    <Rectangle Fill="#FFEAEAEA" Stroke="{x:Null}" x:Name="MIGBgndRct" StrokeThickness="0.6"/>
-                    <Image x:Name="MapImage" MouseLeftButtonUp="MapImage_MouseLeftButtonUp"/>
-                    <Rectangle Fill="{x:Null}" Stroke="#FF000000" x:Name="ImageRct" StrokeThickness="0.6"/>
-                    <ProgressBar Margin="179,189,179,189" IsIndeterminate="True" x:Name="MapProgressBar" Visibility="Hidden"/>
-                    <Button HorizontalAlignment="Left" Margin="7.667,71.359,0,0" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomInButtonCtrlTemplate}" Cursor="Hand" x:Name="ZoomInButton" IsEnabled="True" Click="ZoomInButton_Click"/>
-                    <Button Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,38.696,0,0" x:Name="ZoomOutButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomOutButtonCtrlTemplate}" IsEnabled="True" Click="ZoomOutButton_Click"/>
-                    <Button Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,7,0,0" x:Name="SaveButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource SaveButtonControlTemplate}" ToolTip="Save map" IsEnabled="True" Click="SaveButton_Click"/>
-                    <ToggleButton Margin="0,5,86,0" VerticalAlignment="Top" Height="23" Content="Roadmap" Width="78" HorizontalAlignment="Right" Template="{DynamicResource RoadmapButtonCtrlTemplate}" IsChecked="False" Cursor="Hand" x:Name="RoadmapToggleButton" IsEnabled="True" Click="RoadmapToggleButton_Checked"/>
-                    <ToggleButton Margin="0,5,6,0" VerticalAlignment="Top" Height="23" Content="" Width="78" HorizontalAlignment="Right" Template="{DynamicResource TerrainToggleButtonCtrlTemplate}" x:Name="TerrainToggleButton" Cursor="Hand" IsEnabled="True" Click="TerrainToggleButton_Checked" />
-                    <Viewbox HorizontalAlignment="Right" Margin="0,0,9.999,12.717" VerticalAlignment="Bottom" Width="66.001" Height="43.636" Stretch="Fill" x:Name="MoveBtnsVwBox">
+                <!-- Margin="17,24,17
+            ,277" -->
+            <!--<Canvas x:Name="MapImageCanvas" Grid.Row="1" Margin="8,8,8,8" Canvas.Top="0" Canvas.Left="0" Canvas.Right="0" Canvas.Bottom="0"  MouseDown="MapImageCanvas_MouseDown" MouseMove="MapImageCanvas_MouseMove">-->
+ 
+            <Grid Grid.Row="1" x:Name="MapImageGrid" Background="{x:Null}" Margin="3,3,3,3" >
+                <!--<Rectangle Fill="#FFEAEAEA" Stroke="{x:Null}" x:Name="MIGBgndRct" StrokeThickness="0.6" Margin="0,0,0,0" />-->
+
+                <Image Margin="0,0,0,0" Width="600" Height="600" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                       x:Name="MapImage" MouseLeftButtonUp="MapImage_MouseLeftButtonUp" MouseMove="MapImage_MouseMove" 
+                    MouseDown="MapImage_MouseDown" MouseUp="MapImage_MouseUp"  PreviewMouseDown="MapImage_PreviewMouseDown" 
+                    PreviewMouseMove="MapImage_PreviewMouseMove" />
+
+                <!--<Rectangle Fill="{x:Null}" Stroke="#FF000000" x:Name="ImageRct" StrokeThickness="0.6" Margin="0,0,0,0" />-->
+                <!--<ProgressBar Margin="179,189,179,219" IsIndeterminate="True" x:Name="MapProgressBar" Visibility="Collapsed"/>-->
+
+                <!--<Viewbox HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" Height="Auto" Stretch="Fill" x:Name="ZoomAndSaveVwBox">
+                    <Grid>-->
+                
+                <StackPanel Margin="5" VerticalAlignment="Top" HorizontalAlignment="Left">
+                        <!--
+                        <Button HorizontalAlignment="Left" Margin="7.667,71,0,0" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomInButtonCtrlTemplate}" Cursor="Hand" x:Name="ZoomInButton" IsEnabled="True" Click="ZoomInButton_Click"/>
+                        <Button Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,39,0,0" x:Name="ZoomOutButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomOutButtonCtrlTemplate}" IsEnabled="True" Click="ZoomOutButton_Click"/>
+                        <Button Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,7,0,0" x:Name="SaveButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource SaveButtonControlTemplate}" ToolTip="Save map" IsEnabled="True" Click="SaveButton_Click"/>
+                        -->
+                    <Button Margin="2" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomInButtonCtrlTemplate}" Cursor="Hand" x:Name="ZoomInButton" IsEnabled="True" Click="ZoomInButton_Click"/>
+                    <Button Margin="2" Cursor="Hand" x:Name="ZoomOutButton" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomOutButtonCtrlTemplate}" IsEnabled="True" Click="ZoomOutButton_Click"/>
+                    <Button Margin="2" Cursor="Hand" x:Name="SaveButton" Width="24.667" Height="25.107" Content="" Template="{DynamicResource SaveButtonControlTemplate}" ToolTip="Save map" IsEnabled="True" Click="SaveButton_Click"/>
+                </StackPanel>
+                <!--</Grid>
+                </Viewbox>-->
+            
+                <!--<Viewbox HorizontalAlignment="Right" VerticalAlignment="Top" Stretch="Fill" x:Name="MapTypeVwBox">
+                    <Grid>-->
+                <StackPanel Margin="5" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+                        <ToggleButton Margin="2" Height="23" Content="Roadmap" Width="78" Template="{DynamicResource RoadmapButtonCtrlTemplate}" IsChecked="False" Cursor="Hand" x:Name="RoadmapToggleButton" IsEnabled="True" Click="RoadmapToggleButton_Checked"/>
+                        <ToggleButton Margin="2" Height="23" Content="" Width="78" Template="{DynamicResource TerrainToggleButtonCtrlTemplate}" x:Name="TerrainToggleButton" Cursor="Hand" IsEnabled="True" Click="TerrainToggleButton_Checked" />
+                </StackPanel>
+                <!--</Grid>
+                </Viewbox>-->
+                <Viewbox Margin="5" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="66.001" Height="43.636" Stretch="Fill" x:Name="MoveBtnsVwBox" >
                         <Grid Width="82.001" Height="54.2139999999999">
                             <Button Height="25.107" Content="" Template="{DynamicResource UpButtonCtrlTemplate}" x:Name="MoveUpButton" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Top" Click="MoveUpButton_Click"/>
                             <Button x:Name="MoveDownButton" Height="25.107" Content="" Template="{DynamicResource DownButtonCtrlTemplate}" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Bottom" Click="MoveDownButton_Click"/>
+                            <!--<Button x:Name="MoveCenterButton" Height="25.107" Content="" Template="{DynamicResource DownButtonCtrlTemplate}" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Bottom" Click="MoveDownButton_Click"/> -->
                             <Button x:Name="MoveLeftButton" Width="24.667" Content="" Template="{DynamicResource LeftButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Left" Margin="0,14.337,0,14.77" Click="MoveLeftButton_Click"/>
                             <Button x:Name="MoveRightButton" Width="24.667" Content="" Template="{DynamicResource RightButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Right" Margin="0,14.337,0,14.77" Click="MoveRightButton_Click"/>
                         </Grid>
                     </Viewbox>
-                </Grid>
-                <TextBlock Margin="17,0,17,83" VerticalAlignment="Bottom" Height="21" Text="XXXXXXXXX, XXXX, XXXXX" TextWrapping="Wrap" FontSize="12" TextAlignment="Center" x:Name="AddressTxtBlck"/>
-                <Grid Margin="79,0,78.662,57" VerticalAlignment="Bottom" Height="23" x:Name="LatLngGrid">
-                    <TextBlock HorizontalAlignment="Left" Margin="-1,2,0,0" x:Name="LatTxtBlck" Width="53" FontSize="12" Foreground="#FF7E0000" Text="Latitude:" TextWrapping="Wrap"/>
-                    <TextBlock HorizontalAlignment="Left" Margin="51,2,0,0" x:Name="LatitudeTxtBlck" Width="82" FontSize="12" Foreground="#FF2871A5" Text="XXXXXXXXXX" TextWrapping="Wrap"/>
-                    <TextBlock Margin="143,2,172.338,0" x:Name="LngTxtBlck" FontSize="12" Foreground="#FF7E0000" Text="Longitude:" TextWrapping="Wrap"/>
-                    <TextBlock Margin="0,2,90.338,0" x:Name="LongitudeTxtBlck" FontSize="12" Foreground="#FF2871A5" Text="XXXXXXXXXX" TextWrapping="Wrap" HorizontalAlignment="Right" Width="82"/>
-                    <Rectangle Stroke="{x:Null}" StrokeThickness="1" RadiusX="0.919" RadiusY="0.919" HorizontalAlignment="Left" Margin="132.768,0.333,0,4" x:Name="SeparatorTriangle" Width="2.124">
+                <TextBlock Visibility="Collapsed" VerticalAlignment="Bottom" Height="21" Text="XXXXXXXXX, XXXX, XXXXX" TextWrapping="Wrap" FontSize="12" TextAlignment="Center" x:Name="AddressTxtBlck"/>
+                <TextBox Visibility="Collapsed" VerticalAlignment="Bottom" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="AddressTxtBox" FontFamily="Segoe UI"/>
+                <StackPanel Orientation="Horizontal" Visibility="Collapsed">
+                    <Label   >Latitude</Label>
+                    <TextBox  Width="100" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="TextBoxLat" FontFamily="Segoe UI"/>
+                    <Label   >Longitude</Label>
+                    <TextBox Width="100" Margin="0,0,0,20" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="TextBoxLon" FontFamily="Segoe UI"/>
+                    <Button  Content="ShowLatLon" Cursor="Hand" FontFamily="Myriad Pro" FontSize="12" Foreground="#FFFFFFFF" Height="24" IsDefault="True" Name="buttonShowLatLon" Template="{DynamicResource ShowButtonControlTemplate}" Click="buttonShowLatLon_Click" />
+                </StackPanel>
+            </Grid>
+            <!--</Canvas>-->
+<!--
+                <Grid Visibility="Collapsed" VerticalAlignment="Bottom" Height="23" x:Name="LatLngGrid">
+                    <TextBlock HorizontalAlignment="Left"  x:Name="LatTxtBlck" Width="53" FontSize="12" Foreground="#FF7E0000" Text="Latitude:" TextWrapping="Wrap"/>
+                    <TextBlock HorizontalAlignment="Left"  x:Name="LatitudeTxtBlck" Width="82" FontSize="12" Foreground="#FF2871A5" Text="XXXXXXXXXX" TextWrapping="Wrap"/>
+                    <TextBlock  x:Name="LngTxtBlck" FontSize="12" Foreground="#FF7E0000" Text="Longitude:" TextWrapping="Wrap"/>
+                    <TextBlock  x:Name="LongitudeTxtBlck" FontSize="12" Foreground="#FF2871A5" Text="XXXXXXXXXX" TextWrapping="Wrap" HorizontalAlignment="Right" Width="82"/>
+                    <Rectangle Stroke="{x:Null}" StrokeThickness="1" RadiusX="0.919" RadiusY="0.919" HorizontalAlignment="Left" x:Name="SeparatorTriangle" Width="2.124">
                         <Rectangle.Fill>
                             <LinearGradientBrush EndPoint="0.972,0.5" StartPoint="0.028,0.5">
                                 <GradientStop Color="#FF7C7C7C" Offset="0"/>
@@ -737,40 +778,38 @@
                         <TextBlock Margin="0.003,1.165,0,0.835" x:Name="AccuracyTxtBlck" FontSize="11" Foreground="#FFFFFFFF" Text="XXXXXXX" TextWrapping="Wrap" TextAlignment="Center" FontFamily="Segoe UI"/>
                     </Grid>
                 </Grid>
-                <TextBox Margin="17,0,115,20" VerticalAlignment="Bottom" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="AddressTxtBox" FontFamily="Segoe UI"/>
-                <Button HorizontalAlignment="Right" Margin="0,0,20,21" VerticalAlignment="Bottom" Width="84" Height="24" Content="Show" Template="{DynamicResource ShowButtonControlTemplate}" Foreground="#FFFFFFFF" FontFamily="Myriad Pro" FontSize="12" Cursor="Hand" x:Name="ShowMapButton" IsDefault="True" Click="ShowMapButton_Click" />
+                <TextBox Visibility="Collapsed" VerticalAlignment="Bottom" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="AddressTxtBox" FontFamily="Segoe UI"/>
+                <Button Visibility="Collapsed" HorizontalAlignment="Right"  VerticalAlignment="Bottom" Width="84" Height="24" Content="Show" Template="{DynamicResource ShowButtonControlTemplate}" Foreground="#FFFFFFFF" FontFamily="Myriad Pro" FontSize="12" Cursor="Hand" x:Name="ShowMapButton" IsDefault="True" Click="ShowMapButton_Click" />
 
 
-                <Grid Grid.Row="1" Visibility="Collapsed">
-                    <StackPanel Orientation="Horizontal">
-                        <Label  Margin="17,0,0,20" >Latitude</Label>
-                        <TextBox Margin="0,0,0,20" Width="100" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="TextBoxLat" FontFamily="Segoe UI"/>
-                        <Label  Margin="17,0,0,20" >Longitude</Label>
+            <Grid Visibility="Collapsed" >
+                <StackPanel Orientation="Horizontal">
+                        <Label   >Latitude</Label>
+                        <TextBox  Width="100" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="TextBoxLat" FontFamily="Segoe UI"/>
+                        <Label   >Longitude</Label>
                         <TextBox Width="100" Margin="0,0,0,20" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="26" Text="" TextWrapping="Wrap" FontSize="14" x:Name="TextBoxLon" FontFamily="Segoe UI"/>
-                        <Button Margin="105,0,0,20" Content="ShowLatLon" Cursor="Hand" FontFamily="Myriad Pro" FontSize="12" Foreground="#FFFFFFFF" Height="24" IsDefault="True" Name="buttonShowLatLon" Template="{DynamicResource ShowButtonControlTemplate}" Width="84" Click="buttonShowLatLon_Click" />
+                        <Button  Content="ShowLatLon" Cursor="Hand" FontFamily="Myriad Pro" FontSize="12" Foreground="#FFFFFFFF" Height="24" IsDefault="True" Name="buttonShowLatLon" Template="{DynamicResource ShowButtonControlTemplate}" Width="84" Click="buttonShowLatLon_Click" />
                     </StackPanel>
-                </Grid>
+                </Grid>-->
 
-                <Grid Margin="5,10,5,0" Grid.Row="1" >
+                <!--<Grid Visibility="Collapsed" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="100*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock FontWeight="Bold" FontSize="14"><Run Text="Roster"/></TextBlock>
                     <CheckBox Grid.Column="1" Margin="10,0" x:Name="CheckBoxSHowAll" IsChecked="{Binding ShowAll}">Show All</CheckBox>
-                </Grid>
-                
-                <ListBox x:Name="ListBoxRoster" 
-                 Grid.Row="2" Grid.ColumnSpan="5"
-                 BorderBrush="{x:Null}" Background="{x:Null}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                </Grid>-->
+
+            <!-- <ListBox x:Name="ListBoxRoster" Visibility="Collapsed" BorderBrush="{x:Null}" Background="{x:Null}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  SelectionChanged="ListBoxRoster_SelectionChanged"
                  SelectionMode="Multiple"
                  ItemsSource="{Binding Source={StaticResource SortedRosterItems}}"
-                 ItemTemplate="{StaticResource ChatMessageTemplate}" >
+                 ItemTemplate="{StaticResource ChatMessageTemplate}" Margin="0,0,0,177">
 
 
-                    <ListBox.GroupStyle>
+                   <ListBox.GroupStyle>
                         <GroupStyle>
                             <GroupStyle.HeaderTemplate>
                                 <DataTemplate>
@@ -789,7 +828,6 @@
                                 </DataTemplate>
                             </GroupStyle.HeaderTemplate>
                         </GroupStyle>
-                        <!--<x:Static Member="GroupStyle.Default"/>-->
                     </ListBox.GroupStyle>
 
                     <ListBox.ItemContainerStyle>
@@ -831,10 +869,10 @@
                         </Style>
                     </ListBox.ItemContainerStyle>
 
-                </ListBox>
+                </ListBox>-->
 
-                <Grid Grid.Row="1" Height="160">
-                    <StackPanel>
+            <!--<Grid Visibility="Collapsed" >
+                <StackPanel>
                         <ListBox x:Name="ListViewBuddies" 
                                   
                                   >
@@ -874,11 +912,11 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </StackPanel>
-                </Grid>
+                </Grid>-->
 
                 
                 
-            </Grid>
+            <!--</Grid>-->
        
 
         </Grid>
