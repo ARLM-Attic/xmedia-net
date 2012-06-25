@@ -779,6 +779,11 @@ namespace WPFXMPPClient
         //EARTHLib.ApplicationGEClass earth = new EARTHLib.ApplicationGEClass();
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            MapWindow win = new MapWindow();
+            win.XMPPClient = XMPPClient;
+            win.OurRosterItem = OurRosterItem;
+            win.Show();
+
             RosterItem MyRosterItem = new RosterItem(XMPPClient, XMPPClient.XMPPAccount.JID);
             MyBuddyPosition = new BuddyPosition(MyRosterItem) { bIsMe = true };
             OurRosterItem.PropertyChanged += new PropertyChangedEventHandler(OurRosterItem_PropertyChanged);
@@ -934,9 +939,9 @@ namespace WPFXMPPClient
             kml.Document.Name = "brian";
 
             List<GeoCoordinate> Coords = new List<GeoCoordinate>();
-            Coords.Add(new GeoCoordinate(-96.757835, 32.816929, DateTime.Now - TimeSpan.FromMinutes(10)));
-            Coords.Add(new GeoCoordinate(-96.75758399999999, 32.815437, DateTime.Now - TimeSpan.FromMinutes(5)));
-            Coords.Add(new GeoCoordinate(-96.757721, 32.817078, DateTime.Now));
+            Coords.Add(new GeoCoordinate(32.816929, -96.757835, DateTime.Now - TimeSpan.FromMinutes(10)));
+            Coords.Add(new GeoCoordinate(32.815437, -96.75758399999999, DateTime.Now - TimeSpan.FromMinutes(5)));
+            Coords.Add(new GeoCoordinate(32.817078, -96.757721, DateTime.Now));
 
             int i = 1;
             foreach (GeoCoordinate coord in Coords)
@@ -1308,92 +1313,4 @@ namespace WPFXMPPClient
 
     }
 
-    public class BuddyPosition : INotifyPropertyChanged
-    {
-        public bool bShowOnMap = false;
-        public bool bCenterOnBuddy = false;
-        public bool bIsMe = false;
-
-        public BuddyPosition(RosterItem item)
-        {
-            RosterItem = item;
-            ((INotifyPropertyChanged)item).PropertyChanged += new PropertyChangedEventHandler(BuddyPosition_PropertyChanged);
-        }
-
-        void BuddyPosition_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "GeoLoc")
-            {
-                /// New geolocation, add it to our list
-                /// 
-                GeoCoordinate coord = new GeoCoordinate(RosterItem.GeoLoc.lon, RosterItem.GeoLoc.lat, RosterItem.GeoLoc.TimeStamp);
-                CoordinateList.Add(coord);
-                FirePropertyChanged("Count");
-
-                FirePropertyChanged("MapImage");
-
-
-            }
-        }
-
-        private RosterItem m_objRosterItem = null;
-
-        public RosterItem RosterItem
-        {
-            get { return m_objRosterItem; }
-            set
-            {
-                m_objRosterItem = value;
-                FirePropertyChanged("RosterItem");
-            }
-        }
-
-        public void ClearCoordinates()
-        {
-            m_listCoordinateList.Clear();
-            FirePropertyChanged("Count");
-        }
-
-        private List<GeoCoordinate> m_listCoordinateList = new List<GeoCoordinate>();
-
-        public List<GeoCoordinate> CoordinateList
-        {
-            get { return m_listCoordinateList; }
-            set { m_listCoordinateList = value; }
-        }
-
-        public int Count
-        {
-            get
-            {
-                return CoordinateList.Count;
-            }
-            set
-            {
-            }
-        }
-
-        private BitmapImage m_MapImage = new BitmapImage();
-
-        public BitmapImage MapImage
-        {
-            get { return m_MapImage; }
-            set { m_MapImage = value; }
-        }
-
-
-
-
-
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        void FirePropertyChanged(string strName)
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(strName));
-        }
-
-        #endregion
-    }
 }

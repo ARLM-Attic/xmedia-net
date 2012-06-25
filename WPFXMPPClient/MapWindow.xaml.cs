@@ -458,6 +458,9 @@ namespace WPFXMPPClient
         // Get and display map image in Image ctrl.
         private void ShowMapImage()
         {
+            Refresh();
+            return;
+
             BitmapImage bmpImage = new BitmapImage();
             string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
 
@@ -470,6 +473,9 @@ namespace WPFXMPPClient
 
         private void ShowMapUsingLatLng()
         {
+            Refresh();
+            return;
+
             BitmapImage bmpImage = new BitmapImage();
             string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
             bmpImage.BeginInit();
@@ -588,7 +594,9 @@ namespace WPFXMPPClient
 
         private void SaveMap()
         {
-            string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
+            // string mapURL = "http://maps.googleapis.com/maps/api/staticmap?" + "center=" + lat + "," + lng + "&" + "size=500x400&markers=size:mid%7Ccolor:red%7C" + location + "&zoom=" + zoom + "&maptype=" + mapType + "&sensor=false";
+            string mapURL = MapProperties.URL;
+
             WebClient webClient = new WebClient();
             try
             {
@@ -607,6 +615,9 @@ namespace WPFXMPPClient
 
         private void MoveUp()
         {
+            if (MapProperties.LocationParameters.CenterGeoCoordinate.Latitude == -1)
+                MapProperties.LocationParameters.CenterGeoCoordinate.Latitude = OurRosterItem.GeoLoc.lat;
+
             // Default zoom is 15 and at this level changing
             // the center point is done by 0.003 degrees. 
             // Shifting the center point is done by higher values
@@ -614,120 +625,129 @@ namespace WPFXMPPClient
             double diff = 0;
             double shift = 0;
             // Use 88 to avoid values beyond 90 degrees of lat.
-            if ((lat < 88))
+            if ((MapProperties.LocationParameters.CenterGeoCoordinate.Latitude < 88))
             {
                 if ((MapProperties.LocationParameters.Zoom == 15))
                 {
-                    lat += 0.003;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Latitude += 0.003;
                 }
                 else if ((MapProperties.LocationParameters.Zoom > 15))
                 {
                     diff = MapProperties.LocationParameters.Zoom - 15;
                     shift = ((15 - diff) * 0.003) / 15;
-                    lat += shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Latitude += shift;
                 }
                 else
                 {
                     diff = 15 - MapProperties.LocationParameters.Zoom;
                     shift = ((15 + diff) * 0.003) / 15;
-                    lat += shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Latitude += shift;
                 }
                 ShowMapUsingLatLng();
             }
             else
             {
-                lat = 90;
+                MapProperties.LocationParameters.CenterGeoCoordinate.Latitude = 90;
             }
         }
 
         private void MoveDown()
         {
+            if (MapProperties.LocationParameters.CenterGeoCoordinate.Latitude == -1)
+                MapProperties.LocationParameters.CenterGeoCoordinate.Latitude = OurRosterItem.GeoLoc.lat;
+
             double diff = 0;
             double shift = 0;
-            if ((lat > -88))
+            if ((MapProperties.LocationParameters.CenterGeoCoordinate.Latitude > -88))
             {
                 if ((MapProperties.LocationParameters.Zoom == 15))
                 {
-                    lat -= 0.003;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Latitude -= 0.003;
                 }
                 else if ((MapProperties.LocationParameters.Zoom > 15))
                 {
                     diff = MapProperties.LocationParameters.Zoom - 15;
                     shift = ((15 - diff) * 0.003) / 15;
-                    lat -= shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Latitude -= shift;
                 }
                 else
                 {
                     diff = 15 - MapProperties.LocationParameters.Zoom;
                     shift = ((15 + diff) * 0.003) / 15;
-                    lat -= shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Latitude -= shift;
                 }
                 ShowMapUsingLatLng();
             }
             else
             {
-                lat = -90;
+                MapProperties.LocationParameters.CenterGeoCoordinate.Latitude = -90;
             }
         }
 
         private void MoveLeft()
         {
+            if (MapProperties.LocationParameters.CenterGeoCoordinate.Longitude == -1)
+                MapProperties.LocationParameters.CenterGeoCoordinate.Longitude = OurRosterItem.GeoLoc.lon;
+
             double diff = 0;
             double shift = 0;
             // Use -178 to avoid negative values below -180.
-            if ((lng > -178))
+            if ((MapProperties.LocationParameters.CenterGeoCoordinate.Longitude > -178))
             {
                 if ((MapProperties.LocationParameters.Zoom == 15))
                 {
-                    lng -= 0.003;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Longitude -= 0.003;
                 }
                 else if ((MapProperties.LocationParameters.Zoom > 15))
                 {
                     diff = MapProperties.LocationParameters.Zoom - 15;
                     shift = ((15 - diff) * 0.003) / 15;
-                    lng -= shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Longitude -= shift;
                 }
                 else
                 {
                     diff = 15 - MapProperties.LocationParameters.Zoom;
                     shift = ((15 + diff) * 0.003) / 15;
-                    lng -= shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Longitude -= shift;
                 }
                 ShowMapUsingLatLng();
             }
             else
             {
-                lng = 180;
+                MapProperties.LocationParameters.CenterGeoCoordinate.Longitude = 180;
             }
         }
 
         private void MoveRight()
         {
+            if (MapProperties.LocationParameters.CenterGeoCoordinate.Longitude == -1)
+                MapProperties.LocationParameters.CenterGeoCoordinate.Longitude = OurRosterItem.GeoLoc.lon;
+
             double diff = 0;
             double shift = 0;
-            if ((lng < 178))
+            if ((MapProperties.LocationParameters.CenterGeoCoordinate.Longitude < 178))
             {
-                if ((zoom == 15))
+                if ((MapProperties.LocationParameters.Zoom == 15))
                 {
-                    lng += 0.003;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Longitude += 0.003;
                 }
-                else if ((zoom > 15))
+                else if ((MapProperties.LocationParameters.Zoom > 15))
                 {
-                    diff = zoom - 15;
+                    diff = MapProperties.LocationParameters.Zoom - 15;
                     shift = ((15 - diff) * 0.003) / 15;
-                    lng += shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Longitude += shift;
                 }
                 else
                 {
-                    diff = 15 - zoom;
+                    diff = 15 - MapProperties.LocationParameters.Zoom;
                     shift = ((15 + diff) * 0.003) / 15;
-                    lng += shift;
+                    MapProperties.LocationParameters.CenterGeoCoordinate.Longitude += shift;
                 }
                 ShowMapUsingLatLng();
             }
             else
             {
-                lng = -180;
+                MapProperties.LocationParameters.CenterGeoCoordinate.Longitude = -180;
             }
         }
 
@@ -1003,8 +1023,10 @@ namespace WPFXMPPClient
         {
             if (OurRosterItem != null)
             {
-                TextBlockTitle.Text = String.Format("Buddy Map - {0}", OurRosterItem.JID.ToString());
+                //TextBlockTitle.Text = String.Format("Buddy Map - {0}", OurRosterItem.JID.ToString());
                 this.Title = String.Format("Buddy Map - {0}", OurRosterItem.JID.ToString());
+                TextBlockTitleBuddy.Text = OurRosterItem.JID.ToString();
+                TextBlockTitleTimestamp.Text = OurRosterItem.GeoLoc.TimeStamp.ToString();
             }
 
 
@@ -1057,33 +1079,50 @@ namespace WPFXMPPClient
             ComboBoxMapType.SelectedIndex = 0;
 
             MapProperties.MapParameters = new MapParameters() { MapType = (MapType)ComboBoxMapType.SelectedValue, Scale = (int)ComboBoxScale.SelectedValue };
-            MapProperties.MapParameters.Size = new SizeParameters() { Horizontal = 400, Vertical = 400 };
-            TextBoxSizeHorizontal.Text = String.Format("{0}", 400);
-            TextBoxSizeVertical.Text = String.Format("{0}", 400);
+            MapProperties.MapParameters.Size = new SizeParameters(); //  { Horizontal = 1000, Vertical = 1000 };
+            TextBoxSizeHorizontal.Text = String.Format("{0}", MapProperties.MapParameters.Size.Horizontal);
+            TextBoxSizeVertical.Text = String.Format("{0}", MapProperties.MapParameters.Size.Vertical);
 
-            MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(TextBoxSizeHorizontal.Text);
-            MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(TextBoxSizeVertical.Text);
+           // MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(TextBoxSizeHorizontal.Text);
+           // MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(TextBoxSizeVertical.Text);
 
-            MapProperties.LocationParameters = new LocationParameters() { Zoom = (int)ComboBoxZoom.SelectedValue };
+            MapProperties.LocationParameters = new LocationParameters(); 
+            // { Zoom = (int)ComboBoxZoom.SelectedValue };
+            ComboBoxZoom.SelectedValue = MapProperties.LocationParameters.Zoom;
 
             //BuildURL();
             //LoadURL();
-            if (XMPPClient != null)
-            {
-                XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
-                XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
-            }
+            //if (XMPPClient != null)
+            //{
+            //    XMPPClient.OnXMLReceived += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLReceived);
+            //    XMPPClient.OnXMLSent += new System.Net.XMPP.XMPPClient.DelegateString(XMPPClient_OnXMLSent);
+            //}
             SetUpRosterItemNotifications();
-            ButtonLoadLocation_Click(null, e);
+           //  ButtonLoadLocation_Click(null, e);
 
-
+            Refresh();
+ 
         }
 
+        private string BuildHtml()
+        {
+            StringBuilder html = new StringBuilder();
+           
+            //string jqueryPath = System.IO.Path.Combine(appPath, "jquery-1.7.2.js"); 
+            //html.AppendFormat("<script type=\"text/javascript\" src=\"{0}\"; ></script>", jqueryPath);
+            html.AppendLine("<html>");
+            html.AppendLine("hello world");
+            html.AppendLine("</html>");
+
+            return html.ToString();
+        }
 
         void client_OnStateChanged(object sender, EventArgs e)
         {
 
         }
+
+        KMLBuilder KMLBuilder = new KMLBuilder();
 
         ObservableCollectionEx<BuddyPosition> BuddyPositions = new ObservableCollectionEx<BuddyPosition>();
         BuddyPosition MyBuddyPosition = null;
@@ -1101,85 +1140,58 @@ namespace WPFXMPPClient
             }
 
             this.Dispatcher.Invoke(new Action(() => { this.ListViewBuddies.ItemsSource = BuddyPositions; this.DataContext = this; this.ListViewBuddies.DataContext = BuddyPositions; }));
+           
         }
 
-        void WriteSampleKML()
-        {
-            MyKML kml = new MyKML();
-            kml.Document.Name = "brian";
+ 
+        //void WriteBuddyKML(string strFileName, BuddyPosition buddy)
+        //{
+        //    MyKML kml = new MyKML();
+        //    kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
 
-            List<GeoCoordinate> Coords = new List<GeoCoordinate>();
-            Coords.Add(new GeoCoordinate(-96.757835, 32.816929, DateTime.Now - TimeSpan.FromMinutes(10)));
-            Coords.Add(new GeoCoordinate(-96.75758399999999, 32.815437, DateTime.Now - TimeSpan.FromMinutes(5)));
-            Coords.Add(new GeoCoordinate(-96.757721, 32.817078, DateTime.Now));
+        //    int i = 1;
+        //    foreach (GeoCoordinate coord in buddy.CoordinateList1)
+        //    {
+        //        string strNextName = i.ToString();
+        //        kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
+        //        i++;
+        //    }
+        //    kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList1));
 
-            int i = 1;
-            foreach (GeoCoordinate coord in Coords)
-            {
-                string strNextName = i.ToString();
-                kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
-                i++;
-            }
-            kml.Document.Placemarks.Add(new Placemark("Total Path", Coords));
+        //    string strXML = GetXMLStringFromObject(kml);
+        //    System.IO.FileStream output = new FileStream(strFileName, FileMode.Create);
+        //    byte[] bXML = System.Text.UTF8Encoding.UTF8.GetBytes(strXML);
+        //    output.Write(bXML, 0, bXML.Length);
+        //    output.Close();
 
-            //kml.Document.Placemark.LineString.Coordinates = "-96.757835,32.816929,0 -96.75775899999999,32.817066,0 -96.75785100000002,32.817116,0 -96.75856,32.817074,0 -96.75862100000001,32.817039,0 -96.758636,32.81638,0 -96.75861399999999,32.816273,0 -96.75855300000001,32.816238,0 -96.758095,32.81609,0 -96.757668,32.816059,0 -96.75759100000001,32.815968,0 -96.75758399999999,32.815437,0 -96.757645,32.815018,0 -96.75759100000001,32.814468,0 -96.75753,32.814243,0 -96.75756800000002,32.814007,0 -96.75752300000001,32.813923,0 -96.75755299999999,32.813671,0 -96.75752300000001,32.813156,0 -96.757538,32.812908,0 -96.75753,32.812859,0 -96.757431,32.812717,0 -96.757042,32.812649,0 -96.756218,32.812725,0 -96.75525700000002,32.81271,0 -96.754898,32.812431,0 -96.75482900000002,32.812344,0 -96.75436400000001,32.812031,0 -96.75415000000001,32.811966,0 -96.753975,32.811852,0 -96.75372299999998,32.811626,0 -96.75347099999999,32.811337,0 -96.753265,32.811169,0 -96.753113,32.8111,0 -96.752945,32.811203,0 -96.75266299999998,32.811287,0 -96.75241100000001,32.811539,0 -96.752312,32.811611,0 -96.75219,32.811653,0 -96.751953,32.811535,0 -96.75168600000001,32.811291,0 -96.75146499999998,32.811161,0 -96.75053399999999,32.810883,0 -96.750305,32.810844,0 -96.75000799999999,32.810886,0 -96.74977899999999,32.81097,0 -96.74961899999998,32.811192,0 -96.74949600000001,32.811234,0 -96.74943500000001,32.811359,0 -96.74928300000001,32.811394,0 -96.749146,32.811371,0 -96.74900100000001,32.811241,0 -96.748772,32.811096,0 -96.748711,32.810997,0 -96.748634,32.810989,0 -96.74844400000001,32.810745,0 -96.748322,32.81068,0 -96.74813100000002,32.810513,0 -96.747856,32.810192,0 -96.747124,32.809586,0 -96.746758,32.809338,0 -96.746239,32.808823,0 -96.74600199999999,32.808758,0 -96.74588,32.808681,0 -96.74496499999998,32.807957,0 -96.744781,32.807858,0 -96.744728,32.807743,0 -96.74465900000001,32.807732,0 -96.74453,32.807781,0 -96.74427799999999,32.807976,0 -96.743866,32.808182,0 -96.74283599999998,32.808537,0 -96.74215700000001,32.808681,0 -96.74197399999999,32.808762,0 -96.741699,32.808811,0 -96.74120300000001,32.80899,0 -96.74092899999999,32.809025,0 -96.740578,32.80917,0 -96.73992200000001,32.809277,0 -96.739555,32.809303,0 -96.739334,32.809284,0 -96.739212,32.809319,0 -96.73904400000001,32.809807,0 -96.738998,32.81015,0 -96.738884,32.810326,0 -96.738861,32.81049,0 -96.7388,32.810555,0 -96.73877,32.810741,0 -96.738708,32.81086,0 -96.73854799999999,32.811695,0 -96.738274,32.812561,0 -96.73819000000002,32.813019,0 -96.73814400000001,32.813068,0 -96.73803700000001,32.813412,0 -96.73795300000001,32.813572,0 -96.73782300000001,32.814171,0 -96.73773199999998,32.814392,0 -96.73773199999998,32.814617,0 -96.73769400000001,32.814663,0 -96.73762499999998,32.814957,0 -96.737633,32.815063,0 -96.73733500000002,32.816135,0 -96.73733500000002,32.817547,0 -96.73743399999999,32.81805,0 -96.737572,32.818424,0 -96.737724,32.819038,0 -96.737816,32.819466,0 -96.73786200000001,32.819923,0 -96.738007,32.820564,0 -96.738281,32.821457,0 -96.73838000000001,32.822159,0 -96.738472,32.822559,0 -96.73850299999999,32.822598,0 -96.73854799999999,32.823063,0 -96.73865499999999,32.823513,0 -96.738708,32.823597,0 -96.73878500000001,32.823593,0 -96.73932600000001,32.823532,0 -96.73949399999999,32.82349,0 -96.740532,32.823387,0 -96.74086800000001,32.823414,0 -96.741173,32.823326,0 -96.74131000000001,32.82333,0 -96.741287,32.823372,0 -96.74130200000001,32.823757,0 -96.741264,32.823795,0 -96.741249,32.823982,0 -96.741165,32.824337,0 -96.741158,32.824493,0 -96.74124099999999,32.824738,0 -96.74155399999999,32.825054,0 -96.74156199999999,32.82518,0 -96.74121899999999,32.825611,0 -96.74086800000001,32.825974,0 -96.74066899999998,32.826118,0 -96.74037199999999,32.826221,0 -96.74031100000001,32.826416,0 -96.74012000000001,32.827511,0 -96.74026499999999,32.827854,0 -96.740517,32.828201,0 -96.740852,32.828568,0 -96.740921,32.828671,0 -96.741074,32.828785,0 -96.74128,32.829052,0 -96.741821,32.829548,0 -96.74215700000001,32.829929,0 -96.74232499999999,32.830257,0 -96.742706,32.830872,0 -96.743011,32.831516,0 -96.74308000000002,32.831528,0 -96.743622,32.831371,0 -96.74408700000001,32.831276,0 -96.74440800000001,32.831158,0 -96.744942,32.831154,0 -96.74533099999999,32.831184,0 -96.745468,32.831226,0 -96.74567399999999,32.831211,0 -96.745689,32.831142,0 -96.74572000000001,32.830605,0 -96.745865,32.829601,0 -96.745811,32.829388,0 -96.745598,32.829266,0 -96.74546099999999,32.829247,0 -96.745346,32.829189,0 -96.74521599999999,32.829208,0 -96.74485,32.829063,0 -96.74444599999998,32.828785,0 -96.74435400000002,32.82869,0 -96.743622,32.828201,0 -96.74355300000001,32.82811,0 -96.74355300000001,32.82806,0 -96.743858,32.827766,0 -96.744064,32.827499,0 -96.744072,32.827358,0 -96.74397999999999,32.827133,0 -96.744438,32.826843,0 -96.744614,32.82679,0 -96.74530799999999,32.826759,0 -96.74543799999999,32.826778,0 -96.74597900000001,32.82674,0 -96.746246,32.826759,0 -96.74664300000002,32.826714,0 -96.747192,32.826736,0 -96.74733000000001,32.826721,0 -96.74750500000002,32.826637,0 -96.74758900000001,32.826653,0 -96.747765,32.826595,0 -96.74854300000001,32.826481,0 -96.748802,32.826477,0 -96.749374,32.826542,0 -96.749916,32.826534,0 -96.74999200000002,32.82629,0 -96.75,32.825863,0 -96.75003100000001,32.825699,0 -96.75007600000001,32.824848,0 -96.749878,32.824417,0 -96.74986300000001,32.824219,0 -96.749931,32.823101,0 -96.74988599999999,32.822636,0 -96.74987000000002,32.82169,0 -96.749931,32.821434,0 -96.749878,32.821346,0 -96.74987000000002,32.821236,0 -96.74990099999999,32.821007,0 -96.75004600000001,32.820808,0 -96.751091,32.819702,0 -96.75135799999998,32.819351,0 -96.75135,32.819294,0 -96.751289,32.819286,0 -96.750336,32.819458,0 -96.75013,32.819431,0 -96.749786,32.819542,0 -96.749847,32.819256,0 -96.749893,32.819153,0 -96.749893,32.819019,0 -96.75,32.818542,0 -96.75,32.818428,0 -96.750069,32.818329,0 -96.750328,32.81823,0 -96.75046500000001,32.818104,0 -96.751076,32.817898,0 -96.75205200000002,32.817497,0 -96.752296,32.817371,0 -96.752495,32.81723,0 -96.75278500000002,32.817131,0 -96.753693,32.817112,0 -96.753838,32.817139,0 -96.75398999999999,32.817116,0 -96.755409,32.817139,0 -96.755737,32.81712,0 -96.755852,32.817078,0 -96.75592000000002,32.817093,0 -96.755951,32.817039,0 -96.75611899999998,32.817005,0 -96.75694300000001,32.817165,0 -96.757469,32.817154,0 -96.757721,32.817078,0";
-
-            string strXML = GetXMLStringFromObject(kml);
-            System.IO.FileStream output = new FileStream("c:/temp/new.kml", FileMode.Create);
-            byte[] bXML = System.Text.UTF8Encoding.UTF8.GetBytes(strXML);
-            output.Write(bXML, 0, bXML.Length);
-            output.Close();
-
-        }
-
-        void WriteBuddyKML(string strFileName, BuddyPosition buddy)
-        {
-            MyKML kml = new MyKML();
-            kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
-
-            int i = 1;
-            foreach (GeoCoordinate coord in buddy.CoordinateList)
-            {
-                string strNextName = i.ToString();
-                kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
-                i++;
-            }
-            kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList));
-
-            string strXML = GetXMLStringFromObject(kml);
-            System.IO.FileStream output = new FileStream(strFileName, FileMode.Create);
-            byte[] bXML = System.Text.UTF8Encoding.UTF8.GetBytes(strXML);
-            output.Write(bXML, 0, bXML.Length);
-            output.Close();
-
-        }
+        //}
         ///{"Member DocumentType.Items of type AbstractFeatureType[] hides 
         ///base class member AbstractFeatureType.Items of type AbstractStyleSelectorType[]. 
         /// Use XmlElementAttribute or XmlAttributeAttribute to specify a new name."}
-        public static string GetXMLStringFromObject(object obj)
-        {
-            StringWriter stream = new StringWriter();
-            XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
-            namespaces.Add("gx", "http://www.google.com/kml/ext/2.2");
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.OmitXmlDeclaration = true;
-            settings.Indent = true;
-            XmlWriter writer = XmlWriter.Create(stream, settings);
+        //public static string GetXMLStringFromObject(object obj)
+        //{
+        //    StringWriter stream = new StringWriter();
+        //    XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
+        //    namespaces.Add("gx", "http://www.google.com/kml/ext/2.2");
+        //    XmlWriterSettings settings = new XmlWriterSettings();
+        //    settings.OmitXmlDeclaration = true;
+        //    settings.Indent = true;
+        //    XmlWriter writer = XmlWriter.Create(stream, settings);
 
 
-            XmlSerializer ser = new XmlSerializer(obj.GetType());
-            ser.Serialize(writer, obj, namespaces);
+        //    XmlSerializer ser = new XmlSerializer(obj.GetType());
+        //    ser.Serialize(writer, obj, namespaces);
 
-            writer.Flush();
-            writer.Close();
+        //    writer.Flush();
+        //    writer.Close();
 
-            string strRet = stream.ToString();
+        //    string strRet = stream.ToString();
 
-            stream.Close();
-            stream.Dispose();
+        //    stream.Close();
+        //    stream.Dispose();
 
-            return strRet;
-        }
+        //    return strRet;
+        //}
 
         private void ButtonSaveKML_Click(object sender, RoutedEventArgs e)
         {
@@ -1191,14 +1203,14 @@ namespace WPFXMPPClient
                     System.IO.Directory.CreateDirectory(strDirectory);
 
                 string strFileName = string.Format("{0}/{1}_{2}.kml", strDirectory, buddy.RosterItem.JID.User, Guid.NewGuid());
-                WriteBuddyKML(strFileName, buddy);
+                KMLBuilder.WriteBuddyKML(strFileName, buddy);
                 System.Diagnostics.Process.Start(strFileName);
             }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            XMPPClient.Disconnect();
+            //XMPPClient.Disconnect();
         }
 
         private void ButtonClearKML_Click(object sender, RoutedEventArgs e)
@@ -1322,7 +1334,7 @@ namespace WPFXMPPClient
     //            /// New geolocation, add it to our list
     //            /// 
     //            GeoCoordinate coord = new GeoCoordinate(RosterItem.GeoLoc.lon, RosterItem.GeoLoc.lat, RosterItem.GeoLoc.TimeStamp);
-    //            CoordinateList.Add(coord);
+    //            CoordinateList1.Add(coord);
     //            FirePropertyChanged("Count");
 
 
@@ -1350,7 +1362,7 @@ namespace WPFXMPPClient
 
     //    private List<GeoCoordinate> m_listCoordinateList = new List<GeoCoordinate>();
 
-    //    public List<GeoCoordinate> CoordinateList
+    //    public List<GeoCoordinate> CoordinateList1
     //    {
     //        get { return m_listCoordinateList; }
     //        set { m_listCoordinateList = value; }
@@ -1360,7 +1372,7 @@ namespace WPFXMPPClient
     //    {
     //        get
     //        {
-    //            return CoordinateList.Count;
+    //            return CoordinateList1.Count;
     //        }
     //        set
     //        {
@@ -1525,6 +1537,13 @@ namespace WPFXMPPClient
         {
             this.Dispatcher.Invoke(new Action(() =>
             {
+                RosterItem item = sender as RosterItem;
+                if (item == null)
+                    return;
+
+                if (item != OurRosterItem)
+                    return;
+
                 // WebBrowserMap.Navigate(strURL);
                 if (e.PropertyName == "GeoLoc")
                 {
@@ -1539,7 +1558,7 @@ namespace WPFXMPPClient
 
                     if (SingleRosterItemMap)
                     {
-                        RosterItem item = sender as RosterItem;
+                        //RosterItem item = sender as RosterItem;
 
                         //if (item.JID.User == "brianbonnett")
                         {
@@ -1594,10 +1613,17 @@ namespace WPFXMPPClient
 
         private void LoadURL()
         {
+
+            // Build Javascript HTML
+            strJavaScriptHtml = MapBuilder.BuildJavaScriptSourceCode(MapProperties, OurRosterItem);
+            TextBoxBrowserSourceCode.Text = strJavaScriptHtml;
+
+
             //LoadImageFromURL();
             this.Dispatcher.Invoke(new Action(() =>
             {
                 LoadImageFromURL();
+                WebBrowserMap.NavigateToString(TextBoxBrowserSourceCode.Text);
                 // WebBrowserMap.Navigate(strURL);
             })
             );
@@ -1736,7 +1762,8 @@ namespace WPFXMPPClient
 
         public void Refresh()
         {
-            ButtonLoadLocation_Click(null, null);
+            ButtonUpdate_Click(null, null);
+            //ButtonLoadLocation_Click(null, null);
         }
 
         private int nMovementCounter = 0;
@@ -1760,6 +1787,7 @@ namespace WPFXMPPClient
         private void BuildURL()
         {
             // validate values.
+
             OperationResult result = MapProperties.MapParameters.Size.ValidateAndSaveSize(TextBoxSizeHorizontal.Text, TextBoxSizeVertical.Text);
 
             if (result.bSuccess == false)
@@ -1790,32 +1818,33 @@ namespace WPFXMPPClient
                 if (bCenterOnMap)
                 {
                     MapProperties.LocationParameters.Center = strLatLon;
+                    MapProperties.LocationParameters.CenterGeoCoordinate = new GeoCoordinate(OurRosterItem.GeoLoc.lat, OurRosterItem.GeoLoc.lon, OurRosterItem.GeoLoc.TimeStamp);
                 }
              
-                // Use previous center if it's not time to recenter again.
-                strGoogleMapsApiURL += String.Format("center={0}", strLatLon);
+                //// Use previous center if it's not time to recenter again.
+                //strGoogleMapsApiURL += String.Format("center={0}", strLatLon);
                 
-                // if you don't send the center parameter what happens?
+                //// if you don't send the center parameter what happens?
 
-                strGoogleMapsApiURL += String.Format("&zoom={0}", MapProperties.LocationParameters.Zoom);
-                strGoogleMapsApiURL += String.Format("&maptype={0}", MapProperties.MapParameters.MapType);
-                strGoogleMapsApiURL += String.Format("&size={0}x{1}", 
-                    MapProperties.MapParameters.Size.Horizontal, MapProperties.MapParameters.Size.Vertical);
-                    // "800", "800");
-                strGoogleMapsApiURL += BuildMarkerForRosterItem(OurRosterItem, "red", "");
-                // += String.Format("&markers=color:blue%7Clabel:B%7C{0}", strLatLon);
-                strGoogleMapsApiURL += String.Format("&sensor={0}", MapProperties.Sensor.ToString().ToLower());
+                //strGoogleMapsApiURL += String.Format("&zoom={0}", MapProperties.LocationParameters.Zoom);
+                //strGoogleMapsApiURL += String.Format("&maptype={0}", MapProperties.MapParameters.MapType);
+                //strGoogleMapsApiURL += String.Format("&size={0}x{1}", 
+                //    MapProperties.MapParameters.Size.Horizontal, MapProperties.MapParameters.Size.Vertical);
+                //    // "800", "800");
+                //strGoogleMapsApiURL += BuildMarkerForRosterItem(OurRosterItem, "red", "");
+                //// += String.Format("&markers=color:blue%7Clabel:B%7C{0}", strLatLon);
+                //strGoogleMapsApiURL += String.Format("&sensor={0}", MapProperties.Sensor.ToString().ToLower());
 
 
-                //string strURLFromObject = MapProperties.URL;
+                ////string strURLFromObject = MapProperties.URL;
 
-                strURL = strGoogleMapsApiURL;
-                if (MapProperties.URL == strURL)
-                {
+                //strURL = strGoogleMapsApiURL;
+                //if (MapProperties.URL == strURL)
+                //{
 
-                }
+                //}
 
-                // false");
+                //// false");
 
                 TextBoxURL.Text = MapProperties.URL;
                     //strURL;
@@ -1823,15 +1852,29 @@ namespace WPFXMPPClient
 
                 TextBoxTimeStamp.Text = String.Format("{0} ", OurRosterItem.GeoLoc.TimeStamp);
                 TextBoxGeoLoc.Text = strLatLon;
-                
+                TextBlockTitleBuddy.Text = String.Format("{0}", OurRosterItem.JID.ToString());
+                TextBlockTitleTimestamp.Text = String.Format("{0} ", OurRosterItem.GeoLoc.TimeStamp);
+
+
+
+                // Build Javascript HTML
+                MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(GridBrowser.ActualHeight * .98);
+                MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(GridBrowser.ActualWidth * .98);
+
+                strJavaScriptHtml = MapBuilder.BuildJavaScriptSourceCode(MapProperties, OurRosterItem);
+                TextBoxBrowserSourceCode.Text = strJavaScriptHtml;
+
                 // center=Williamsburg,Brooklyn,NY
                 // &zoom=13
                 // &size=800x800&
                 // markers=color:blue%7Clabel:S%7C11211%7C11206%7C11222&sensor=false";
-
             }
-
         }
+
+        //make sure they aer updated when I update mine!
+        public MapBuilder MapBuilder = new MapBuilder();
+        private string strJavaScriptHtml = "";
+
 
         private void ButtonLoadURL_Click(object sender, RoutedEventArgs e)
         {
@@ -1952,8 +1995,16 @@ namespace WPFXMPPClient
 
         private void ButtonStartRecording_Click(object sender, RoutedEventArgs e)
         {
+            KMLBuilder.IsRecordingKML = true;
+            KMLBuilder.IsNotRecordingKML = false;
+
             IsRecordingKML = true;
             IsNotRecordingKML = false;
+
+            if (KMLBuilder.Dictionary.ContainsKey(OurRosterItem) == false)
+            {
+                KMLBuilder.Dictionary.Add(OurRosterItem, new KMLBuilderForRosterItem() { IsRecordingKML = true, IsNotRecordingKML = false, CoordinateList = new List<GeoCoordinate>() });
+            }
         }
 
         private bool IsRecordingKML = false;
@@ -1961,6 +2012,9 @@ namespace WPFXMPPClient
 
         private void ButtonStopRecording_Click(object sender, RoutedEventArgs e)
         {
+            KMLBuilder.IsNotRecordingKML = true;
+            KMLBuilder.IsRecordingKML = false;
+
             IsRecordingKML = false;
             IsNotRecordingKML = true;
         }
@@ -1968,6 +2022,11 @@ namespace WPFXMPPClient
         private void ButtonButtonLoadKMLFile_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ButtonReloadBrowser_Click(object sender, RoutedEventArgs e)
+        {
+            LoadURL();
         }
     }
 }

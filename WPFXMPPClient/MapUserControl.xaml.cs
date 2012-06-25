@@ -74,14 +74,17 @@ namespace WPFXMPPClient
             ComboBoxMapType.SelectedIndex = 0;
 
             MapProperties.MapParameters = new MapParameters() { MapType = (MapType)ComboBoxMapType.SelectedValue, Scale = (int)ComboBoxScale.SelectedValue };
-            MapProperties.MapParameters.Size = new SizeParameters() { Horizontal = 1000, Vertical = 1000 };
-            TextBoxSizeHorizontal.Text = String.Format("{0}", 1000);
-            TextBoxSizeVertical.Text = String.Format("{0}", 1000);
+            MapProperties.MapParameters.Size = new SizeParameters();
+            TextBoxSizeHorizontal.Text = String.Format("{0}", MapProperties.MapParameters.Size.Horizontal);
+            TextBoxSizeVertical.Text = String.Format("{0}", MapProperties.MapParameters.Size.Vertical);
 
-            MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(TextBoxSizeHorizontal.Text);
-            MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(TextBoxSizeVertical.Text);
+            //MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(TextBoxSizeHorizontal.Text);
+            //MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(TextBoxSizeVertical.Text);
 
-            MapProperties.LocationParameters = new LocationParameters() { Zoom = (int)ComboBoxZoom.SelectedValue };
+            MapProperties.LocationParameters = new LocationParameters();
+            ComboBoxZoom.SelectedValue = MapProperties.LocationParameters.Zoom;
+
+            //{ Zoom = (int)ComboBoxZoom.SelectedValue };
 
             //BuildURL();
             //LoadURL();

@@ -4,7 +4,7 @@
         xmlns:s="http://schemas.microsoft.com/surface/2008"
         xmlns:local="clr-namespace:WPFXMPPClient"
         AllowsTransparency="False" WindowStyle="None"
-        MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded"
+        MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded" Width="800" Height="800"
         Title="MapWindow" >
 
     <Window.Background>
@@ -267,9 +267,13 @@
         <Grid x:Name="LayoutRoot" Background="Transparent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
             <Border Grid.Row="0"  BorderThickness="1">
                 <Border.BorderBrush >
@@ -292,12 +296,15 @@
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+
+                    <RowDefinition Height="Auto"></RowDefinition>
                 </Grid.RowDefinitions>
 
 
                 <TextBlock Grid.ColumnSpan="5" Grid.Row="0" x:Name="TextBlockTitle" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
-                <!--<TextBlock Grid.ColumnSpan="5" Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"></TextBlock>
-                <TextBlock Grid.ColumnSpan="5" Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"></TextBlock>-->
+                <TextBlock Grid.ColumnSpan="5" Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"></TextBlock>
+                <TextBlock Grid.ColumnSpan="5" Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"></TextBlock>
 
 
                 <s:SurfaceButton Visibility="Collapsed" ToolTip="Zoom In" Grid.Column="1" x:Name="ButtonZoomIn" Click="ButtonZoomIn_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
@@ -306,7 +313,7 @@
                 <s:SurfaceButton Visibility="Collapsed"  ToolTip="Zoom Out" Grid.Column="2" x:Name="ButtonZoomOut" Click="ButtonZoomOut_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - minus.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
-                <s:SurfaceButton Visibility="Collapsed" ToolTip="Refresh" Grid.Column="3" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <s:SurfaceButton Visibility="Visible" ToolTip="Refresh" Grid.Column="3" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/refresh.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>
                 <s:SurfaceButton ToolTip="Close" Grid.Column="4" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
@@ -409,28 +416,89 @@
             <!--</Grid>-->
 
 
-            <Grid Background="Transparent" x:Name="GridMain" Grid.Row="1">
-                <Grid.RowDefinitions>
-                    <!-- Row 0: Options -->
-                    <RowDefinition Height="Auto" />
 
-                    <!-- Row 1: Menu -->
-                    <RowDefinition Height="Auto" />
+            <StackPanel Visibility="Collapsed" Orientation="Horizontal">
+                <TextBox x:Name="TextBoxURL" Text="http://www.yahoo.com"></TextBox>
+                <Button Click="ButtonLoadURL_Click" x:Name="ButtonLoadURL" Width="Auto">Load URL</Button>
+            </StackPanel>
+            <Grid x:Name="GridBrowser" Grid.Row="1">
+                <WebBrowser x:Name="WebBrowserMap" Margin="3,3,3,3"></WebBrowser>
+            </Grid>
 
-                    <!-- Row 2: Map -->
-                    <RowDefinition Height="Auto" />
-
-                    <!-- Row 3: Real-time Stats  -->
-                    <RowDefinition Height="Auto" />
-                   
-                </Grid.RowDefinitions>
-
-                <StackPanel Visibility="Collapsed" Orientation="Horizontal">
-                    <TextBox x:Name="TextBoxURL" Text="http://www.yahoo.com"></TextBox>
-                    <Button Click="ButtonLoadURL_Click" x:Name="ButtonLoadURL" Width="Auto">Load URL</Button>
+            <Expander Grid.Row="2" Header="Source Code" Margin="3,3,3,3">
+                <StackPanel Margin="0,0,0,0">
+                    <TextBox Margin="0,0,0,0" x:Name="TextBoxBrowserSourceCode" ></TextBox>
+                    <Button x:Name="ButtonReloadBrowser" Click="ButtonReloadBrowser_Click" Width="Auto" HorizontalAlignment="Right" Margin="4,4,4,4">Reload</Button>
                 </StackPanel>
+            </Expander>
 
-                <Expander Margin="4,4,4,4" Grid.Row="0" Grid.ColumnSpan="4" Header="Map Properties">
+            <TabControl Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="4" Margin="4,4,4,4" Background="Beige">
+
+
+
+
+                <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="0" >-->
+
+                <!-- MAP -->
+                <TabItem Header="Static Map" Margin="0,0,0,0" Visibility="Collapsed">
+                    <Grid Margin="0,0,0,0">
+
+
+                        <Image  x:Name="MapImage" Margin="0,0,0,0" />
+
+
+                        <Button Canvas.ZIndex="1" HorizontalAlignment="Left" Margin="7.667,71.359,0,0" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomInButtonCtrlTemplate}" Cursor="Hand" x:Name="ZoomInButton" IsEnabled="True" Click="ZoomInButton_Click"/>
+                        <Button Canvas.ZIndex="1" Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,38.696,0,0" x:Name="ZoomOutButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomOutButtonCtrlTemplate}" IsEnabled="True" Click="ZoomOutButton_Click"/>
+                        <Button Canvas.ZIndex="1" Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,7,0,0" x:Name="SaveButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource SaveButtonControlTemplate}" ToolTip="Save map" IsEnabled="True" Click="SaveButton_Click"/>
+
+                        <ToggleButton Canvas.ZIndex="1" Margin="0,5,86,0" VerticalAlignment="Top" Height="23" Content="Roadmap" Width="78" HorizontalAlignment="Right" Template="{DynamicResource RoadmapButtonCtrlTemplate}" IsChecked="False" Cursor="Hand" x:Name="RoadmapToggleButton" IsEnabled="True" Click="RoadmapToggleButton_Checked"/>
+                        <ToggleButton Canvas.ZIndex="1" Margin="0,5,6,0" VerticalAlignment="Top" Height="23" Content="" Width="78" HorizontalAlignment="Right" Template="{DynamicResource TerrainToggleButtonCtrlTemplate}" x:Name="TerrainToggleButton" Cursor="Hand" IsEnabled="True" Click="TerrainToggleButton_Checked" />
+                        <Grid Canvas.ZIndex="1" Width="82.001" Height="54.2139999999999" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6">
+                            <Button Height="25.107" Content="" Template="{DynamicResource UpButtonCtrlTemplate}" x:Name="MoveUpButton" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Top" Click="MoveUpButton_Click" />
+                            <Button x:Name="MoveDownButton" Height="25.107" Content="" Template="{DynamicResource DownButtonCtrlTemplate}" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Bottom" Click="MoveDownButton_Click" />
+                            <Button x:Name="MoveLeftButton" Width="24.667" Content="" Template="{DynamicResource LeftButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Left" Margin="0,14.337,0,14.77" Click="MoveLeftButton_Click" />
+                            <Button x:Name="MoveRightButton" Width="24.667" Content="" Template="{DynamicResource RightButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Right" Margin="0,14.337,0,14.77" Click="MoveRightButton_Click" />
+                        </Grid>
+                    </Grid>
+                </TabItem>
+                <!--</ScrollViewer>-->
+
+                <TabItem Header="Browser" IsSelected="True">
+
+                    <Grid Margin="5,5,5,5" DataContext="{Binding JavaScriptMapBuilder}" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <!-- browser element         -->
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <!-- source code (for debug) -->
+                        </Grid.RowDefinitions>
+
+                        <WebBrowser Grid.Row="0" x:Name="WebBrowserMapOld" Margin="3,3,3,3" MinWidth="600" MinHeight="600"></WebBrowser>
+                        <Expander Grid.Row="1" Header="Source" Margin="3,3,3,3">
+                            <StackPanel Margin="0,0,0,0">
+                                <TextBox Margin="0,0,0,0" x:Name="TextBoxBrowserSourceCodeOld" ></TextBox>
+                                <Button x:Name="ButtonReloadBrowserOld" Click="ButtonReloadBrowser_Click" Width="Auto" HorizontalAlignment="Right" Margin="4,4,4,4">Reload</Button>
+                            </StackPanel>
+                        </Expander>
+                        <Grid Visibility="Collapsed" Margin="5,5,5,5" Grid.Row="2" DataContext="{Binding ElementName=OurRosterItem}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed">
+                                <Button Margin="10,0" x:Name="ButtonClearKML" Click="ButtonClearKML_Click">Clear</Button>
+                                <Button Margin="10,0" x:Name="ButtonSaveKML" Click="ButtonSaveKML_Click">Save KML</Button>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Visibility="Collapsed">
+                                <Label>Last location received at:</Label>
+                                <TextBlock x:Name="TextBlockLastLocationTimestamp" Text="{Binding OurRosterItem.GeoLoc.TimeStamp}"></TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem  Header="Options">
                     <Grid Visibility="Visible" Margin="5,5,5,5"  x:Name="GridOptions" >
                         <!-- Options Grid -->
                         <Grid.RowDefinitions>
@@ -503,95 +571,75 @@
 
                         <!--</StackPanel>-->
                     </Grid>
-                </Expander>
+                </TabItem>
 
-                <Expander Margin="4,4,4,4" Grid.Row="1" Grid.ColumnSpan="4" Header="KML" Padding="4">
-                    <StackPanel Margin="3,3,3,3" Orientation="Horizontal" IsEnabled="False" >
-                        <Button IsEnabled="{Binding IsNotRecordingKML}" Margin="0,0,6,6" VerticalAlignment="Center" x:Name="ButtonStartRecording" Click="ButtonStartRecording_Click" Height="25">Start Recording</Button>
-                        <Button IsEnabled="{Binding IsRecordingKML}" Margin="0,0,6,6" VerticalAlignment="Center" x:Name="ButtonStopRecording" Click="ButtonStopRecording_Click" Height="25">Stop Recording</Button>
-                        <Button Margin="0,0,6,6" VerticalAlignment="Center" x:Name="ButtonLoadKMLFile" Click="ButtonButtonLoadKMLFile_Click" Height="25">Load KML File</Button>
+                <!--<local:MapUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Visible" Grid.Row="1" Margin="3,3,3,3" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>-->
+                <TabItem Header="Location History" Visibility="Collapsed">
+
+
+                    <Grid Background="Beige" >
+                        <StackPanel>
+                            <ListView x:Name="ListViewLocationHistory">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock x:Name="TextBlockTimeStamp" Text="{Binding GeoLoc.TimeStamp}"></TextBlock>
+                                            <TextBlock x:Name="TextBlockCoordinates" Text="{Binding GeoLoc.GeoString}"></TextBlock>
+                                            <TextBlock x:Name="TextBlockKML" Text="{Binding KML}"></TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+
+
+                <!--<local:MapUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Visible" Grid.Row="1" Margin="3,3,3,3" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>-->
+                <TabItem Header="Roster" Visibility="Collapsed">
+
+
+                    <Grid Background="Beige" >
+                        <StackPanel>
+                            <ListView x:Name="ListViewBuddies">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox x:Name="CheckBoxCenterOnBuddy" IsChecked="{Binding Path=bCenterOnBuddy}" Checked="CheckBoxCenterOnBuddy_Checked" >Center Map on Buddy</CheckBox>
+                                            <CheckBox x:Name="CheckBoxShowOnMap" IsChecked="{Binding Path=bShowOnMap}" Checked="CheckBoxShowOnMap_Checked">Show on Map</CheckBox>
+
+                                            <Label FontWeight="Bold">Name</Label>
+                                            <TextBlock Width="200" VerticalAlignment="Center" Text="{Binding Path=RosterItem.JID}" />
+
+                                            <Label FontWeight="Bold" Margin="10,0">Count</Label>
+                                            <TextBlock Width="50" VerticalAlignment="Center" Text="{Binding Path=Count}" />
+                                            <ToggleButton Margin="10,0" x:Name="ToggleButtonStartRecording" Click="ToggleButtonStartRecording_Click">Record</ToggleButton>
+                                            <Button Margin="10,0" x:Name="ButtonSaveKML" Click="ButtonSaveKML_Click">Save KML</Button>
+
+                                            <Button Margin="10,0" x:Name="ButtonClearKML" Click="ButtonClearKML_Click">Clear</Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem Visibility="Collapsed" Header="KML" DataContext="{Binding KMLBuilder}" >
+                    <StackPanel>
+                        <StackPanel Margin="3,3,3,3" Orientation="Horizontal" IsEnabled="True" >
+                            <Button IsEnabled="{Binding IsNotRecordingKML}" Margin="4,4,4,4" VerticalAlignment="Center" x:Name="ButtonStartRecording" Click="ButtonStartRecording_Click" Height="25">Start Recording</Button>
+                            <Button IsEnabled="{Binding IsRecordingKML}" Margin="4,4,4,4" VerticalAlignment="Center" x:Name="ButtonStopRecording" Click="ButtonStopRecording_Click" Height="25">Stop Recording</Button>
+                            <Button Margin="4,4,4,4" VerticalAlignment="Center" x:Name="ButtonLoadKMLFile" Click="ButtonButtonLoadKMLFile_Click" Height="25">Load KML File</Button>
+                        </StackPanel>
+                        <TextBox x:Name="TextBoxKML"></TextBox>
+                        <StackPanel Margin="3,3,3,3" Orientation="Horizontal" IsEnabled="False" HorizontalAlignment="Right">
+                            <Button IsEnabled="{Binding IsDirty}" Margin="4,4,4,4" VerticalAlignment="Center" x:Name="ButtonSaveTextBoxKML" Click="ButtonStartRecording_Click" Height="25">Save</Button>
+                            <Button IsEnabled="{Binding IsNotEmpty}" Margin="4,4,4,4" VerticalAlignment="Center" x:Name="ButtonClearTextBoxKML" Click="ButtonClearKML_Click" Height="25">Clear</Button>
+                        </StackPanel>
                     </StackPanel>
-                </Expander>
-                
-                <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" Grid.Row="0" >-->
+                </TabItem>
 
-                <!-- MAP -->
-                <Grid Grid.Row="2">
-                
-
-                    <Image  x:Name="MapImage" Margin="3,3,3,3" Height="500" Width="500"/>
-
-
-                    <Button Canvas.ZIndex="1" HorizontalAlignment="Left" Margin="7.667,71.359,0,0" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomInButtonCtrlTemplate}" Cursor="Hand" x:Name="ZoomInButton" IsEnabled="True" Click="ZoomInButton_Click"/>
-                    <Button Canvas.ZIndex="1" Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,38.696,0,0" x:Name="ZoomOutButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource ZoomOutButtonCtrlTemplate}" IsEnabled="True" Click="ZoomOutButton_Click"/>
-                    <Button Canvas.ZIndex="1" Cursor="Hand" HorizontalAlignment="Left" Margin="7.667,7,0,0" x:Name="SaveButton" VerticalAlignment="Top" Width="24.667" Height="25.107" Content="" Template="{DynamicResource SaveButtonControlTemplate}" ToolTip="Save map" IsEnabled="True" Click="SaveButton_Click"/>
-
-                    <ToggleButton Canvas.ZIndex="1" Margin="0,5,86,0" VerticalAlignment="Top" Height="23" Content="Roadmap" Width="78" HorizontalAlignment="Right" Template="{DynamicResource RoadmapButtonCtrlTemplate}" IsChecked="False" Cursor="Hand" x:Name="RoadmapToggleButton" IsEnabled="True" Click="RoadmapToggleButton_Checked"/>
-                    <ToggleButton Canvas.ZIndex="1" Margin="0,5,6,0" VerticalAlignment="Top" Height="23" Content="" Width="78" HorizontalAlignment="Right" Template="{DynamicResource TerrainToggleButtonCtrlTemplate}" x:Name="TerrainToggleButton" Cursor="Hand" IsEnabled="True" Click="TerrainToggleButton_Checked" />
-                    <Grid Canvas.ZIndex="1" Width="82.001" Height="54.2139999999999" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,6,6">
-                        <Button Height="25.107" Content="" Template="{DynamicResource UpButtonCtrlTemplate}" x:Name="MoveUpButton" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Top" Click="MoveUpButton_Click" />
-                        <Button x:Name="MoveDownButton" Height="25.107" Content="" Template="{DynamicResource DownButtonCtrlTemplate}" IsEnabled="True" Margin="28.667,0,28.667,0" VerticalAlignment="Bottom" Click="MoveDownButton_Click" />
-                        <Button x:Name="MoveLeftButton" Width="24.667" Content="" Template="{DynamicResource LeftButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Left" Margin="0,14.337,0,14.77" Click="MoveLeftButton_Click" />
-                        <Button x:Name="MoveRightButton" Width="24.667" Content="" Template="{DynamicResource RightButtonCtrlTemplate}" IsEnabled="True" HorizontalAlignment="Right" Margin="0,14.337,0,14.77" Click="MoveRightButton_Click" />
-                    </Grid>
-                </Grid>
-                <!--</ScrollViewer>-->
-
-                <Grid Visibility="Collapsed" Grid.Row="2" Margin="5,5,5,5">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"></RowDefinition>
-
-                    </Grid.RowDefinitions>
-
-                    <WebBrowser Visibility="Collapsed" Grid.Row="0" x:Name="WebBrowserMap" Margin="0,0,0,0"></WebBrowser>
-
-                    <Grid Visibility="Collapsed" Margin="5,5,5,5" Grid.Row="2" DataContext="{Binding ElementName=OurRosterItem}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed">
-                            <Button Margin="10,0" x:Name="ButtonClearKML" Click="ButtonClearKML_Click">Clear</Button>
-                            <Button Margin="10,0" x:Name="ButtonSaveKML" Click="ButtonSaveKML_Click">Save KML</Button>
-                        </StackPanel>
-
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Visibility="Collapsed">
-                            <Label>Last location received at:</Label>
-                            <TextBlock x:Name="TextBlockLastLocationTimestamp" Text="{Binding OurRosterItem.GeoLoc.TimeStamp}"></TextBlock>
-                        </StackPanel>
-                    </Grid>
-                </Grid>
-            </Grid>
-
-
-            <!--<local:MapUserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Visibility="Visible" Grid.Row="1" Margin="3,3,3,3" x:Name="MapUserControl1" Loaded="MapUserControl1_Loaded"></local:MapUserControl>-->
-
-            <Grid Grid.Row="2" Background="Beige" Visibility="Collapsed">
-                <StackPanel>
-                    <ListView x:Name="ListViewBuddies">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <CheckBox x:Name="CheckBoxCenterOnBuddy" IsChecked="{Binding Path=bCenterOnBuddy}" Checked="CheckBoxCenterOnBuddy_Checked" >Center Map on Buddy</CheckBox>
-                                    <CheckBox x:Name="CheckBoxShowOnMap" IsChecked="{Binding Path=bShowOnMap}" Checked="CheckBoxShowOnMap_Checked">Show on Map</CheckBox>
-
-                                    <Label FontWeight="Bold">Name</Label>
-                                    <TextBlock Width="200" VerticalAlignment="Center" Text="{Binding Path=RosterItem.JID}" />
-
-                                    <Label FontWeight="Bold" Margin="10,0">Count</Label>
-                                    <TextBlock Width="50" VerticalAlignment="Center" Text="{Binding Path=Count}" />
-                                    <ToggleButton Margin="10,0" x:Name="ToggleButtonStartRecording" Click="ToggleButtonStartRecording_Click">Record</ToggleButton>
-                                    <Button Margin="10,0" x:Name="ButtonSaveKML" Click="ButtonSaveKML_Click">Save KML</Button>
-
-                                    <Button Margin="10,0" x:Name="ButtonClearKML" Click="ButtonClearKML_Click">Clear</Button>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </StackPanel>
-            </Grid>
-
-
+            </TabControl>
 
 
 
