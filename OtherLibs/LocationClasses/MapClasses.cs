@@ -8,6 +8,11 @@ namespace LocationClasses
     // https://developers.google.com/maps/documentation/staticmaps/
     public class MapProperties
     {
+        public MapProperties()
+        {
+
+        }
+
         private static string m_URLBase = "http://maps.googleapis.com/maps/api/staticmap?";
 
         private string m_URL = "http://maps.googleapis.com/maps/api/staticmap?";
@@ -83,6 +88,11 @@ namespace LocationClasses
 
     public class MarkerCollection
     {
+        public MarkerCollection()
+        {
+
+        }
+
         private MarkerStyle m_MarkerStyle = null;
 
         public MarkerStyle MarkerStyle
@@ -127,6 +137,11 @@ namespace LocationClasses
 
     public class MarkerStyle
     {
+        public MarkerStyle()
+        {
+
+        }
+
         private MarkerSize m_MarkerSize = MarkerSize.mid;
 
         public MarkerSize MarkerSize
@@ -155,6 +170,11 @@ namespace LocationClasses
 
     public class MarkerLocation
     {
+        public MarkerLocation()
+        {
+
+        }
+
         private MarkerStyle m_MarkerStyle = null;
         public MarkerStyle MarkerStyle
         {
@@ -202,10 +222,37 @@ namespace LocationClasses
 
     public class LocationParameters
     {
+        public LocationParameters()
+        {
+
+        }
+
         public static string SetCenterFromLatLon(double lat, double lon)
         {
             return String.Format("{0},{1}", lat.ToString(), lon.ToString());
         }
+
+        private GeoCoordinate m_CenterGeoCoordinate = null;
+
+        public GeoCoordinate CenterGeoCoordinate
+        {
+            get { return m_CenterGeoCoordinate; }
+            set { m_CenterGeoCoordinate = value; }
+        }
+
+        private string m_CenterGeoCoordinateString = "";
+
+        public string CenterGeoCoordinateString
+        {
+            get
+            {
+
+                m_CenterGeoCoordinateString = String.Format("{0},{1}", CenterGeoCoordinate.Latitude.ToString(), CenterGeoCoordinate.Longitude.ToString());
+                return m_CenterGeoCoordinateString;
+            }
+            set { m_CenterGeoCoordinateString = value; }
+        }
+
 
         private string m_Center = "";
 
@@ -237,6 +284,14 @@ namespace LocationClasses
 
             return retStr;
         }
+
+        public string ToJavaScriptString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("                 center: new google.maps.LatLng({0}, {1}),\r\n", CenterGeoCoordinate.Latitude, CenterGeoCoordinate.Longitude);
+            sb.AppendFormat("                 zoom: {0},\r\n", Zoom);
+            return sb.ToString();
+        }
     }
 
     //Map Parameters:
@@ -258,6 +313,11 @@ namespace LocationClasses
 
     public class MapParameters
     {
+        public MapParameters()
+        {
+
+        }
+
         private SizeParameters m_Size = new SizeParameters();
 
         public SizeParameters Size
@@ -305,6 +365,17 @@ namespace LocationClasses
             return retStr;
         }
 
+        public string ToJavaScriptString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat("                 mapTypeId: google.maps.MapTypeId.{0}\r\n", MapType.ToString().ToUpper());
+
+            //sb.AppendFormat("                 center: new google.maps.LatLng({0}, {1}),", CenterGeoCoordinate.Latitude, CenterGeoCoordinate.Longitude);
+            //sb.AppendFormat("                 zoom: {0},", Zoom);
+            return sb.ToString();
+        }
+
         public const int _ScaleMin = 1;
         public const int _ScaleMax = 2;
     }
@@ -336,6 +407,11 @@ namespace LocationClasses
 
     public class SizeParameters
     {
+        public SizeParameters()
+        {
+
+        }
+
         private int m_Horizontal = 800;
 
         public int Horizontal
@@ -367,7 +443,7 @@ namespace LocationClasses
             get { return Vertical.ToString(); }
             //set { m_strVertical = value; }
         }
-        
+
         public override string ToString()
         {
             return String.Format("{0}x{1}", Horizontal, Vertical);
@@ -406,11 +482,23 @@ namespace LocationClasses
             return result;
         }
 
+        public string ToJavaScriptString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("width: {0}px; height: {1}px", Horizontal, Vertical);
+            return sb.ToString();
+        }
+
 
     }
 
     public class OperationResult
     {
+        public OperationResult()
+        {
+
+        }
+
         private bool m_bSuccess = true;
 
         public bool bSuccess

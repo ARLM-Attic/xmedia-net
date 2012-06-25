@@ -22,7 +22,7 @@ namespace LocationClasses
             {
                 /// New geolocation, add it to our list
                 /// 
-                GeoCoordinate coord = new GeoCoordinate(RosterItem.GeoLoc.lon, RosterItem.GeoLoc.lat, RosterItem.GeoLoc.TimeStamp);
+                GeoCoordinate coord = new GeoCoordinate(RosterItem.GeoLoc.lat, RosterItem.GeoLoc.lon, RosterItem.GeoLoc.TimeStamp);
                 CoordinateList.Add(coord);
                 FirePropertyChanged("Count");
             }

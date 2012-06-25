@@ -14,7 +14,7 @@ namespace LocationClasses
         public GeoCoordinate()
         {
         }
-        public GeoCoordinate(double fLon, double fLat, DateTime timestamp)
+        public GeoCoordinate(double fLat, double fLon, DateTime timestamp)
         {
             Longitude = fLon;
             Latitude = fLat;
