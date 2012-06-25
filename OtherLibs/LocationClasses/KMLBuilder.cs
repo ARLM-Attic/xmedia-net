@@ -9,8 +9,54 @@ using System.Net.XMPP;
 
 namespace LocationClasses
 {
+    public class KMLBuilderForRosterItem
+    {
+        private RosterItem m_RosterItem = new RosterItem();
+
+        public RosterItem RosterItem
+        {
+            get { return m_RosterItem; }
+            set { m_RosterItem = value; }
+        }
+
+        private List<GeoCoordinate> m_CoordinateList = new List<GeoCoordinate>();
+
+        public List<GeoCoordinate> CoordinateList
+        {
+            get { return m_CoordinateList; }
+            set { m_CoordinateList = value; }
+        }
+
+
+        private bool m_IsNotRecordingKML = true;
+
+        public bool IsNotRecordingKML
+        {
+            get { return m_IsNotRecordingKML; }
+            set { m_IsNotRecordingKML = value; }
+        }
+
+        private bool m_IsRecordingKML = false;
+
+        public bool IsRecordingKML
+        {
+            get { return m_IsRecordingKML; }
+            set { m_IsRecordingKML = value; }
+        }
+
+      
+    }
+
     public class KMLBuilder
     {
+        private Dictionary<RosterItem, KMLBuilderForRosterItem> m_Dictionary = new Dictionary<RosterItem, KMLBuilderForRosterItem>();
+
+        public Dictionary<RosterItem, KMLBuilderForRosterItem> Dictionary
+        {
+            get { return m_Dictionary; }
+            set { m_Dictionary = value; }
+        }
+
         private bool m_IsNotRecordingKML = true;
 
         public bool IsNotRecordingKML
@@ -124,13 +170,13 @@ namespace LocationClasses
             //kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
 
             //int i = 1;
-            //foreach (GeoCoordinate coord in buddy.CoordinateList)
+            //foreach (GeoCoordinate coord in buddy.CoordinateList1)
             //{
             //    string strNextName = i.ToString();
             //    kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
             //    i++;
             //}
-            //kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList));
+            //kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList1));
 
             //string strXML = GetXMLStringFromObject(kml);
 
@@ -150,13 +196,13 @@ namespace LocationClasses
             //kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
 
             //int i = 1;
-            //foreach (GeoCoordinate coord in buddy.CoordinateList)
+            //foreach (GeoCoordinate coord in buddy.CoordinateList1)
             //{
             //    string strNextName = i.ToString();
             //    kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
             //    i++;
             //}
-            //kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList));
+            //kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList1));
 
             //string strXML = GetXMLStringFromObject(kml);
 
