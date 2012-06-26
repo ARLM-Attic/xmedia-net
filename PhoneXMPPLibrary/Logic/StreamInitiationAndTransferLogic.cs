@@ -676,6 +676,17 @@ namespace System.Net.XMPP
 
             if (FileBuffer.Size <= 0)
             {
+                IQ CloseIQ = new IQ();
+                CloseIQ.From = XMPPClient.JID;
+                CloseIQ.To = FileTransfer.RemoteJID;
+                CloseIQ.Type = IQType.set.ToString();
+
+                CloseIQ.InnerXML = string.Format("<close xmlns='http://jabber.org/protocol/ibb'  sid='{0}' />",
+                                                            FileTransfer.sid);
+                XMPPClient.SendXMPP(CloseIQ);
+
+
+
                 FileTransfer.FileTransferState = FileTransferState.Done;
                 XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                 this.IsCompleted = true;
@@ -772,7 +783,7 @@ namespace System.Net.XMPP
 
                         return true;
                     }
-                    if ((elem != null) && (elem.Name == "{http://jabber.org/protocol/ibb}data"))
+                    else if ((elem != null) && (elem.Name == "{http://jabber.org/protocol/ibb}data"))
                     {
                         string strStreamId = null;
                         if (elem.Attribute("sid") != null)
@@ -807,6 +818,25 @@ namespace System.Net.XMPP
                             IsCompleted = true;
                             XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
                         }
+
+                        return true;
+                    }
+                    else if ((elem != null) && (elem.Name == "{http://jabber.org/protocol/ibb}close"))
+                    {
+                        string strStreamId = null;
+                        if (elem.Attribute("sid") != null)
+                            strStreamId = elem.Attribute("sid").Value;
+                        if ((strStreamId == null) || (strStreamId != this.FileTransfer.sid))
+                            return false;
+
+                        /// SEnd ack to close
+                        /// 
+                        IQ iqresponse = new IQ();
+                        iqresponse.ID = iq.ID;
+                        iqresponse.From = XMPPClient.JID;
+                        iqresponse.To = FileTransfer.RemoteJID;
+                        iqresponse.Type = IQType.result.ToString();
+                        XMPPClient.SendXMPP(iqresponse);
 
                         return true;
                     }

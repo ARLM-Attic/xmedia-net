@@ -970,14 +970,15 @@ namespace WPFXMPPClient
             ChatWindow.SaveConversation(item);
         }
 
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-        }
+        //private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        //{
+        //}
 
-        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            HyperlinkRosterItem_Click(sender, new RoutedEventArgs());
-        }
+        //private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        //{
+        //    HyperlinkRosterItem_Click(sender, new RoutedEventArgs());
+        //    e.Handled = true;
+        //}
 
         private void ButtonStartAudio_Click(object sender, RoutedEventArgs e)
         {
@@ -1064,8 +1065,15 @@ namespace WPFXMPPClient
             ChatWindow.SendScreenCapture(this.XMPPClient, new string[] { item.LastFullJIDToGetMessageFrom });
         }
 
+        private void ButtonRosterItem_Click(object sender, RoutedEventArgs e)
+        {
+            HyperlinkRosterItem_Click(sender, e);
+        }
+
 
     }
+
+   
 
 }
 

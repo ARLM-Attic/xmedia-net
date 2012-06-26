@@ -80,6 +80,7 @@
     <Compile Include="ByteBuffer.cs" />
     <Compile Include="AudioSourceSpy.cs" />
     <Compile Include="Resampler.cs" />
+    <Compile Include="VideoSharedMemory.cs" />
     <Compile Include="SimpleEchoCanceller.cs" />
     <Compile Include="ToneGenerator.cs" />
     <Compile Include="Utils.cs" />

@@ -13,18 +13,18 @@ using System.ComponentModel;
 
 namespace AudioClasses
 {
-    public enum VideoDataFormat
+    public enum VideoDataFormat : int
 	{
-		Unknown,
-		RGB32, // RGB32 frames
-        RGB24,
-		MJPEG, /// motion jpeg frames (each frame a jpeg)
-        MPNG, /// motion png
-        MP4, // H.264 in mp4 container
-        WMV9, // windows media 9 in asf container
-        WMVSCREEN, /// windows media screen in asf container
-        VC1, /// vc1 in asf container
-        H264, /// Raw h.264 stream returned from cam
+		Unknown = 0,
+        RGB32 = 1, // RGB32 frames
+        RGB24 = 2,
+        MJPEG = 3, /// motion jpeg frames (each frame a jpeg)
+        MPNG = 4, /// motion png
+        MP4 = 5, // H.264 in mp4 container
+        WMV9 = 6, // windows media 9 in asf container
+        WMVSCREEN = 7, /// windows media screen in asf container
+        VC1 = 8, /// vc1 in asf container
+        H264 = 9, /// Raw h.264 stream returned from cam
 	};
 
 

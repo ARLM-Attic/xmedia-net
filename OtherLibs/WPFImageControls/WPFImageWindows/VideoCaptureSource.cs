@@ -150,7 +150,7 @@ namespace WPFImageWindows
 
         protected bool m_bCapturing = false;
         
-        public bool StartCapture()
+        public virtual bool StartCapture()
         {
             if (m_bCapturing == true)
                 return false;
