@@ -288,7 +288,8 @@ namespace LocationClasses
         public string ToJavaScriptString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("                 center: new google.maps.LatLng({0}, {1}),\r\n", CenterGeoCoordinate.Latitude, CenterGeoCoordinate.Longitude);
+            if (CenterGeoCoordinate != null)
+                sb.AppendFormat("                 center: new google.maps.LatLng({0}, {1}),\r\n", CenterGeoCoordinate.Latitude, CenterGeoCoordinate.Longitude);
             sb.AppendFormat("                 zoom: {0},\r\n", Zoom);
             return sb.ToString();
         }
@@ -412,7 +413,7 @@ namespace LocationClasses
 
         }
 
-        private int m_Horizontal = 800;
+        private int m_Horizontal = 500;
 
         public int Horizontal
         {
@@ -420,7 +421,7 @@ namespace LocationClasses
             set { m_Horizontal = value; }
         }
 
-        private int m_Vertical = 800;
+        private int m_Vertical = 500;
 
         public int Vertical
         {
