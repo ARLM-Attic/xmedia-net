@@ -305,7 +305,19 @@
                 <TextBlock Grid.ColumnSpan="5" Grid.Row="0" x:Name="TextBlockTitle" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
                 <TextBlock Grid.ColumnSpan="5" Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"></TextBlock>
                 <TextBlock Grid.ColumnSpan="5" Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"></TextBlock>
-
+                <StackPanel Grid.ColumnSpan="5" Grid.Row="3" Orientation="Horizontal" Margin="4,4,4,4" Visibility="Collapsed" >
+                    <Label FontWeight="Bold">Map Provider</Label>
+                    <ComboBox HorizontalAlignment="Left" Height="Auto" Width="110" x:Name="ComboBoxMapProvider" SelectionChanged="ComboBoxMapProvider_SelectionChanged">
+                        <ComboBoxItem IsSelected="True">Google Maps</ComboBoxItem>
+                        <!--<ComboBoxItem>Google Earth</ComboBoxItem>-->
+                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Visibility="Collapsed">
+                    <Label Margin="15,0,0,0" FontWeight="Bold">Map Type</Label>
+                    <ComboBox HorizontalAlignment="Left" Height="Auto" Width="110" x:Name="ComboBoxMapFeature" SelectionChanged="ComboBoxMapFeature_SelectionChanged">
+                    </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+                
 
                 <s:SurfaceButton Visibility="Collapsed" ToolTip="Zoom In" Grid.Column="1" x:Name="ButtonZoomIn" Click="ButtonZoomIn_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - addition.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
@@ -421,17 +433,58 @@
                 <TextBox x:Name="TextBoxURL" Text="http://www.yahoo.com"></TextBox>
                 <Button Click="ButtonLoadURL_Click" x:Name="ButtonLoadURL" Width="Auto">Load URL</Button>
             </StackPanel>
-            <Grid x:Name="GridBrowser" Grid.Row="1">
-                <WebBrowser x:Name="WebBrowserMap" Margin="3,3,3,3"></WebBrowser>
+            <Grid Margin="4,4,4,4" x:Name="GridBrowser" Grid.Row="1" Background="Beige">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="0">
+                    <!--<StackPanel DockPanel.Dock="Top">
+                        <TextBlock>Test on Top</TextBlock>
+                    </StackPanel>-->
+                    <StackPanel DockPanel.Dock="Left">
+                        
+                    </StackPanel>
+                    <!--<StackPanel DockPanel.Dock="Right">
+                        <TextBlock>Test on Right</TextBlock>
+                    </StackPanel>-->
+                    <!--<StackPanel DockPanel.Dock="Bottom">
+                        <TextBlock>Test on Bottom</TextBlock>
+                    </StackPanel>-->
+                    <WebBrowser DockPanel.Dock="Right" x:Name="WebBrowserMap" Margin="3,3,3,3"></WebBrowser>
+                </DockPanel>
+
+               
+
+                <Expander Grid.Row="1" Header="Source Code" Margin="3,3,3,3" >
+                    <StackPanel Margin="0,0,0,0">
+                        <TextBox Margin="0,0,0,0" x:Name="TextBoxBrowserSourceCode" ></TextBox>
+                        <Button x:Name="ButtonReloadBrowser" Click="ButtonReloadBrowser_Click" Width="Auto" HorizontalAlignment="Right" Margin="4,4,4,4">Reload</Button>
+                    </StackPanel>
+                </Expander>
+                
+                <Expander Visibility="Collapsed" Grid.Row="2" Header="Location History" Margin="3,3,3,3">
+                    <Grid>
+                        <StackPanel>
+                            <ListView x:Name="ListViewLocationHistory">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox x:Name="CheckBoxLocationHistoryInclude" IsChecked="True"></CheckBox>
+                                            <TextBlock x:Name="TextBlockTimeStamp" Text="{Binding GeoLoc.TimeStamp}"></TextBlock>
+                                            <TextBlock x:Name="TextBlockCoordinates" Text="{Binding GeoLoc.GeoString}"></TextBlock>
+                                            <!--<TextBlock x:Name="TextBlockKML" Text="{Binding KML}"></TextBlock>-->
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Grid>
+
+
+                </Expander>
             </Grid>
-
-            <Expander Grid.Row="2" Header="Source Code" Margin="3,3,3,3">
-                <StackPanel Margin="0,0,0,0">
-                    <TextBox Margin="0,0,0,0" x:Name="TextBoxBrowserSourceCode" ></TextBox>
-                    <Button x:Name="ButtonReloadBrowser" Click="ButtonReloadBrowser_Click" Width="Auto" HorizontalAlignment="Right" Margin="4,4,4,4">Reload</Button>
-                </StackPanel>
-            </Expander>
-
             <TabControl Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="4" Margin="4,4,4,4" Background="Beige">
 
 
@@ -524,15 +577,6 @@
                             <ColumnDefinition Width="*"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
 
-                        <!--<Expander Header="Location History">
-                
-                    <ListView x:Name="LocationsList">
-                
-                    </ListView>
-                </Expander>-->
-
-
-
                         <Button Visibility="Collapsed" Grid.Column="2" HorizontalAlignment="Right" x:Name="ButtonLoadLocation" Click="ButtonLoadLocation_Click" Width="Auto">Refresh</Button>
                         <Button Visibility="Collapsed" Grid.Column="3" HorizontalAlignment="Right" x:Name="ButtonLoadLocationAll" Click="ButtonLoadLocationAll_Click" Width="Auto" Margin="0,0,65,0">Load All</Button>
 
@@ -577,21 +621,6 @@
                 <TabItem Header="Location History" Visibility="Collapsed">
 
 
-                    <Grid Background="Beige" >
-                        <StackPanel>
-                            <ListView x:Name="ListViewLocationHistory">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock x:Name="TextBlockTimeStamp" Text="{Binding GeoLoc.TimeStamp}"></TextBlock>
-                                            <TextBlock x:Name="TextBlockCoordinates" Text="{Binding GeoLoc.GeoString}"></TextBlock>
-                                            <TextBlock x:Name="TextBlockKML" Text="{Binding KML}"></TextBlock>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
-                    </Grid>
                 </TabItem>
 
 

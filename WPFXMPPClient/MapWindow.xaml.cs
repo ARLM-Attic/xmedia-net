@@ -1416,7 +1416,7 @@ namespace WPFXMPPClient
         public RosterItem OurRosterItem = null;
         public XMPPClient XMPPClient = null;
         public MapProperties MapProperties = new MapProperties();
-
+       
         private bool m_SingleRosterItemMap = true;
 
         public List<int> ZoomLevels = new List<int>();
@@ -1613,20 +1613,35 @@ namespace WPFXMPPClient
 
         private void LoadURL()
         {
+            if (MapProperties.LocationParameters.CenterGeoCoordinate == null)
+                MapProperties.LocationParameters.CenterGeoCoordinate = new GeoCoordinate(OurRosterItem.GeoLoc.lat, OurRosterItem.GeoLoc.lon, OurRosterItem.GeoLoc.TimeStamp);
 
-            // Build Javascript HTML
-            strJavaScriptHtml = MapBuilder.BuildJavaScriptSourceCode(MapProperties, OurRosterItem);
-            TextBoxBrowserSourceCode.Text = strJavaScriptHtml;
-
-
-            //LoadImageFromURL();
-            this.Dispatcher.Invoke(new Action(() =>
+            if (OurRosterItem != null)
             {
-                LoadImageFromURL();
-                WebBrowserMap.NavigateToString(TextBoxBrowserSourceCode.Text);
-                // WebBrowserMap.Navigate(strURL);
-            })
-            );
+                // Build Javascript HTML
+                strJavaScriptHtml = MapBuilder.BuildJavaScriptSourceCode(MapProperties, OurRosterItem);
+                TextBoxBrowserSourceCode.Text = strJavaScriptHtml;
+
+
+                //LoadImageFromURL();
+                this.Dispatcher.Invoke(new Action(() =>
+                {
+                   // LoadImageFromURL();
+                    WebBrowserMap.NavigateToString(TextBoxBrowserSourceCode.Text);
+                    // WebBrowserMap.Navigate(strURL);
+                })
+                );
+
+
+                //if (OurRosterItem != null)
+                {
+                    //TextBlockTitle.Text = String.Format("Buddy Map - {0}", OurRosterItem.JID.ToString());
+                    this.Title = String.Format("Buddy Map - {0}", OurRosterItem.JID.ToString());
+                    TextBlockTitleBuddy.Text = OurRosterItem.JID.ToString();
+                    TextBlockTitleTimestamp.Text = OurRosterItem.GeoLoc.TimeStamp.ToString();
+                }
+
+            }
 
 
         }
@@ -1787,20 +1802,22 @@ namespace WPFXMPPClient
         private void BuildURL()
         {
             // validate values.
+           // TextBoxSizeHorizontal.Text = "500";
+           // TextBoxSizeVertical.Text = "500";
 
-            OperationResult result = MapProperties.MapParameters.Size.ValidateAndSaveSize(TextBoxSizeHorizontal.Text, TextBoxSizeVertical.Text);
+            //OperationResult result = MapProperties.MapParameters.Size.ValidateAndSaveSize(TextBoxSizeHorizontal.Text, TextBoxSizeVertical.Text);
 
-            if (result.bSuccess == false)
-            {
-                if (result.strMessage != "")
-                {
-                    MessageBox.Show(result.strMessage);
-                    return;
-                }
-            }
+            //if (result.bSuccess == false)
+            //{
+            //    if (result.strMessage != "")
+            //    {
+            //        MessageBox.Show(result.strMessage);
+            //        return;
+            //    }
+            //}
 
         // was this ok? 
-            MapProperties.MapParameters.Scale = (int)ComboBoxScale.SelectedValue;
+         //   MapProperties.MapParameters.Scale = (int)ComboBoxScale.SelectedValue;
             // MapProperties.LocationParameters.Zoom = (int)ComboBoxZoom.SelectedValue;
 
 
@@ -1860,6 +1877,15 @@ namespace WPFXMPPClient
                 // Build Javascript HTML
                 MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(GridBrowser.ActualHeight * .98);
                 MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(GridBrowser.ActualWidth * .98);
+
+                if (ComboBoxMapProvider.SelectedValue.ToString() == "Google Earth")
+                    MapBuilder.MapProvider = MapProviderType.GoogleEarth;
+                else if (ComboBoxMapProvider.SelectedValue.ToString() == "Google Maps")
+                    MapBuilder.MapProvider = MapProviderType.GoogleMaps;
+
+                if (MapProperties.LocationParameters.CenterGeoCoordinate == null)
+                    MapProperties.LocationParameters.CenterGeoCoordinate = new GeoCoordinate(OurRosterItem.GeoLoc.lat, OurRosterItem.GeoLoc.lon,
+                        OurRosterItem.GeoLoc.TimeStamp);
 
                 strJavaScriptHtml = MapBuilder.BuildJavaScriptSourceCode(MapProperties, OurRosterItem);
                 TextBoxBrowserSourceCode.Text = strJavaScriptHtml;
@@ -1926,6 +1952,9 @@ namespace WPFXMPPClient
 
         private void ButtonUpdate_Click(object sender, RoutedEventArgs e)
         {
+            if (OurRosterItem == null)
+                return;
+
             try
             {
                 MapProperties.LocationParameters.Zoom = (int)ComboBoxZoom.SelectedValue;
@@ -1946,7 +1975,8 @@ namespace WPFXMPPClient
             //else if (ComboBoxMapType.SelectedValue.ToString() == "hybrid")
             //    MapProperties.MapParameters.MapType = MapType.hybrid;
 
-            MapProperties.MapParameters.MapType = (MapType)ComboBoxMapType.SelectedValue;
+            MapProperties.MapParameters.MapType = MapType.roadmap;
+                // (MapType)ComboBoxMapType.SelectedValue;
 
             ButtonLoadLocation_Click(sender, e);
         }
@@ -2027,6 +2057,38 @@ namespace WPFXMPPClient
         private void ButtonReloadBrowser_Click(object sender, RoutedEventArgs e)
         {
             LoadURL();
+        }
+
+        private void ComboBoxMapProvider_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ComboBox cb = sender as ComboBox;
+            if (cb != null)
+            {
+                if (cb.SelectedValue.ToString() == "Google Earth")
+                {
+                    ComboBoxMapFeature.ItemsSource = MapBuilder.MapExamples["GoogleEarth"];
+
+                    ComboBoxMapFeature.SelectedIndex = 0;
+                    MapBuilder.MapProvider = MapProviderType.GoogleEarth;
+                }
+                else if (cb.SelectedValue.ToString() == "Google Maps")
+                {
+                    ComboBoxMapFeature.ItemsSource = MapBuilder.MapExamples["GoogleMaps"];
+
+                    ComboBoxMapFeature.SelectedIndex = 0;
+                    MapBuilder.MapProvider = MapProviderType.GoogleMaps;
+                }
+               
+               
+                Refresh();
+            }
+        }
+
+        Dictionary<string, List<string>> MapExamples = new Dictionary<string,List<string>>();
+
+        private void ComboBoxMapFeature_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }
