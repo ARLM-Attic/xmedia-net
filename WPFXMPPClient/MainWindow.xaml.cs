@@ -349,6 +349,7 @@ namespace WPFXMPPClient
         }
 
         public Dictionary<string, ChatWindow> ChatWindows = new Dictionary<string, ChatWindow>();
+        public Dictionary<string, MapWindow> MapWindows = new Dictionary<string, MapWindow>();
 
         void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
@@ -829,31 +830,27 @@ namespace WPFXMPPClient
             XMPPClient.PresenceLogic.UnsubscribeToPresence(item.JID);
 
         }
-
         private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
         {
             RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
             if (item == null)
                 return;
 
-            if (GeoLocationWindows.ContainsKey(item.JID.BareJID) == true)
+            if (MapWindows.ContainsKey(item.JID.BareJID) == true)
             {
-                GeoLocationWindow exwin = GeoLocationWindows[item.JID.BareJID];
+                MapWindow exwin = MapWindows[item.JID.BareJID];
                 exwin.Activate();
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(MapWindow).Handle;
+                FlashWindow(windowHandle, true);
                 return;
             }
 
-            GeoLocationWindow win = new GeoLocationWindow();
-            win.XMPPClient = this.XMPPClient;
-            win.OurRosterItem = item;
-            win.Closed += new EventHandler(win_Closed);
-            GeoLocationWindows.Add(item.JID.BareJID, win);
-            win.Show();
-
-
-
-
-
+            MapWindow mapWin = new MapWindow();
+            mapWin.XMPPClient = this.XMPPClient;
+            mapWin.OurRosterItem = item;
+            mapWin.Closed += new EventHandler(mapWin_Closed);
+            MapWindows.Add(item.JID.BareJID, mapWin);
+            mapWin.Show();
 
             //MapWindow.XMPPClient = this.XMPPClient;
 
@@ -863,6 +860,56 @@ namespace WPFXMPPClient
 
             //ShowMapWindow(item);
         }
+
+        void mapWin_Closed(object sender, EventArgs e)
+        {
+            ((MapWindow)sender).Closed -= new EventHandler(mapWin_Closed);
+            string strRemove = null;
+            foreach (string strKey in MapWindows.Keys)
+            {
+                if (MapWindows[strKey] == sender)
+                {
+                    strRemove = strKey;
+                    break;
+                }
+            }
+            if (strRemove != null)
+                MapWindows.Remove(strRemove);
+        }
+
+        //private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
+        //{
+        //    RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+        //    if (item == null)
+        //        return;
+
+        //    if (GeoLocationWindows.ContainsKey(item.JID.BareJID) == true)
+        //    {
+        //        GeoLocationWindow exwin = GeoLocationWindows[item.JID.BareJID];
+        //        exwin.Activate();
+        //        return;
+        //    }
+
+        //    GeoLocationWindow win = new GeoLocationWindow();
+        //    win.XMPPClient = this.XMPPClient;
+        //    win.OurRosterItem = item;
+        //    win.Closed += new EventHandler(win_Closed);
+        //    GeoLocationWindows.Add(item.JID.BareJID, win);
+        //    win.Show();
+
+
+
+
+
+
+        //    //MapWindow.XMPPClient = this.XMPPClient;
+
+        //    //RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+        //    //if (item == null)
+        //    //    return;
+
+        //    //ShowMapWindow(item);
+        //}
 
         public void ShowMapWindow(RosterItem item)
         {
@@ -970,15 +1017,14 @@ namespace WPFXMPPClient
             ChatWindow.SaveConversation(item);
         }
 
-        //private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        //{
-        //}
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+        }
 
-        //private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
-        //{
-        //    HyperlinkRosterItem_Click(sender, new RoutedEventArgs());
-        //    e.Handled = true;
-        //}
+        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            HyperlinkRosterItem_Click(sender, new RoutedEventArgs());
+        }
 
         private void ButtonStartAudio_Click(object sender, RoutedEventArgs e)
         {
@@ -1065,15 +1111,8 @@ namespace WPFXMPPClient
             ChatWindow.SendScreenCapture(this.XMPPClient, new string[] { item.LastFullJIDToGetMessageFrom });
         }
 
-        private void ButtonRosterItem_Click(object sender, RoutedEventArgs e)
-        {
-            HyperlinkRosterItem_Click(sender, e);
-        }
-
 
     }
-
-   
 
 }
 
