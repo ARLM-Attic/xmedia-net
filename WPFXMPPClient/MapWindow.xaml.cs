@@ -1545,7 +1545,7 @@ namespace WPFXMPPClient
                     return;
 
                 // WebBrowserMap.Navigate(strURL);
-                if (e.PropertyName == "GeoLoc")
+                if (e.PropertyName == "GeoLoc" || e.PropertyName == "Name" || e.PropertyName == "JID") // i.e. not at 2 places anymore
                 {
                     // increment the counter. not the right way to determine when to move the map but a way for now.
                     nMovementCounter++;

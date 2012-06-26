@@ -303,8 +303,8 @@
 
 
                 <TextBlock Grid.ColumnSpan="5" Grid.Row="0" x:Name="TextBlockTitle" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold">Buddy Map</TextBlock>
-                <TextBlock Grid.ColumnSpan="5" Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"></TextBlock>
-                <TextBlock Grid.ColumnSpan="5" Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"></TextBlock>
+                <TextBlock Visibility="Collapsed" Grid.ColumnSpan="5" Grid.Row="1" x:Name="TextBlockTitleBuddy" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"></TextBlock>
+                <TextBlock  Visibility="Collapsed" Grid.ColumnSpan="5" Grid.Row="2" x:Name="TextBlockTitleTimestamp" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"></TextBlock>
                 <StackPanel Grid.ColumnSpan="5" Grid.Row="3" Orientation="Horizontal" Margin="4,4,4,4" Visibility="Collapsed" >
                     <Label FontWeight="Bold">Map Provider</Label>
                     <ComboBox HorizontalAlignment="Left" Height="Auto" Width="110" x:Name="ComboBoxMapProvider" SelectionChanged="ComboBoxMapProvider_SelectionChanged">
