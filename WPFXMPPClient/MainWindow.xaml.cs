@@ -1111,6 +1111,11 @@ namespace WPFXMPPClient
             ChatWindow.SendScreenCapture(this.XMPPClient, new string[] { item.LastFullJIDToGetMessageFrom });
         }
 
+        private void ButtonRosterItem_Click(object sender, RoutedEventArgs e)
+        {
+            HyperlinkRosterItem_Click(sender, e);
+        }
+
 
     }
 
