@@ -171,6 +171,13 @@
                     <ListView x:Name="ListViewAudioSessions" Grid.Row="1" Margin="5" >
                         <ListView.View>
                             <GridView>
+                                <GridViewColumn Header="Video" Width="180">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <extra:VideoControl x:Name="VideoControlUser" Width="160" Height="100" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                                 <GridViewColumn Header="Remote User" Width="180"  >
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>

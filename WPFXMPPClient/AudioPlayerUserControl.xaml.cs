@@ -65,7 +65,7 @@ namespace WPFXMPPClient
 
         private void ButtonNext_Click(object sender, RoutedEventArgs e)
         {
-            AudioFileReader.AbortCurrentSong();
+            AudioFileReader.OurPlayList.NextTrack();
         }
 
         private void ButtonPause_Click(object sender, RoutedEventArgs e)
@@ -89,31 +89,19 @@ namespace WPFXMPPClient
             if (dlg.ShowDialog() == true)
             {
                 foreach (string strFileName in dlg.FileNames)
-                    AudioFileReader.EnqueueFile(strFileName);
+                    AudioFileReader.OurPlayList.Add(strFileName);
             }
         }
 
         private void ButtonRandom100_Click(object sender, RoutedEventArgs e)
         {
-            string[] MusicFiles = new string[] { };
-            Random MusicRand = new Random();
-
             string strDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyMusic);
-            MusicFiles = System.IO.Directory.GetFiles(strDir, "*.mp3", System.IO.SearchOption.AllDirectories);
-
-            int nNumbSongs = (MusicFiles.Length > 100) ? 100 : MusicFiles.Length;
-            // Queue up 100 random songs
-            for (int i = 0; i < 100; i++)
-            {
-                int nIndex = MusicRand.Next(MusicFiles.Length);
-                AudioFileReader.EnqueueFile(MusicFiles[nIndex]);
-            }
+            AudioFileReader.OurPlayList.PopulateFromDirectory(strDir);
         }
 
         private void ButtonDeleteQueue_Click(object sender, RoutedEventArgs e)
         {
-            AudioFileReader.ClearPlayQueue();
-            AudioFileReader.AbortCurrentSong();
+            AudioFileReader.OurPlayList.Clear();
         }
 
       

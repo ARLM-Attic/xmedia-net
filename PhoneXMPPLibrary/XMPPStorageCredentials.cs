@@ -234,6 +234,10 @@ namespace System.Net.XMPP
         }
 
 
+        public bool m_bAutoAcceptUsers = false;
+
+
+
         #region INotifyPropertyChanged Members
 
         void FirePropertyChanged(string strName)

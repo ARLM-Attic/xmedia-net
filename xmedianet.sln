@@ -43,9 +43,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhoneSoundEffectsAudioPlayb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationClasses", "OtherLibs\LocationClasses\LocationClasses.csproj", "{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Socks5Service", "Socks5Service\Socks5Service.csproj", "{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicServer", "MusicServer\MusicServer.csproj", "{61482F5F-76E8-484B-BB0B-921C532D87BB}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 20
+		SccNumberOfProjects = 22
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs26
 		SccLocalPath0 = .
@@ -116,6 +120,14 @@ Global
 		SccProjectTopLevelParentUniqueName19 = xmedianet.sln
 		SccProjectName19 = OtherLibs/LocationClasses
 		SccLocalPath19 = OtherLibs\\LocationClasses
+		SccProjectUniqueName20 = Socks5Service\\Socks5Service.csproj
+		SccProjectTopLevelParentUniqueName20 = xmedianet.sln
+		SccProjectName20 = Socks5Service
+		SccLocalPath20 = Socks5Service
+		SccProjectUniqueName21 = MusicServer\\MusicServer.csproj
+		SccProjectTopLevelParentUniqueName21 = xmedianet.sln
+		SccProjectName21 = MusicServer
+		SccLocalPath21 = MusicServer
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -410,6 +422,34 @@ Global
 		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|Win32.ActiveCfg = Release|Any CPU
 		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|x64.ActiveCfg = Release|Any CPU
 		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4}.Release|x86.ActiveCfg = Release|Any CPU
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Debug|Win32.ActiveCfg = Debug|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Debug|x64.ActiveCfg = Debug|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Debug|x86.ActiveCfg = Debug|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Debug|x86.Build.0 = Debug|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Release|Any CPU.ActiveCfg = Release|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Release|Mixed Platforms.Build.0 = Release|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Release|Win32.ActiveCfg = Release|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Release|x64.ActiveCfg = Release|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Release|x86.ActiveCfg = Release|x86
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541}.Release|x86.Build.0 = Release|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Win32.ActiveCfg = Debug|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|x64.ActiveCfg = Debug|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|x86.ActiveCfg = Debug|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|x86.Build.0 = Debug|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Release|Any CPU.ActiveCfg = Release|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Release|Mixed Platforms.Build.0 = Release|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Release|Win32.ActiveCfg = Release|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Release|x64.ActiveCfg = Release|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Release|x86.ActiveCfg = Release|x86
+		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -419,6 +459,8 @@ Global
 		{7A6DED26-F6C0-4348-B7C8-31681236EBFD} = {A6BE34E5-E742-448F-B64C-F7A958A48805}
 		{3B0EB829-A618-47D7-A38A-E94545FF2FC1} = {A6BE34E5-E742-448F-B64C-F7A958A48805}
 		{66889025-CDAE-45AB-8839-569977CA05C1} = {A6BE34E5-E742-448F-B64C-F7A958A48805}
+		{8BB784E2-F8AC-493F-9BDA-08ABD84A2541} = {A6BE34E5-E742-448F-B64C-F7A958A48805}
+		{61482F5F-76E8-484B-BB0B-921C532D87BB} = {A6BE34E5-E742-448F-B64C-F7A958A48805}
 		{53796A00-C33A-40FF-B28D-F977EB8A9103} = {10512982-5268-4102-A137-C334F3ABF856}
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D} = {10512982-5268-4102-A137-C334F3ABF856}
 		{CB219B28-DC51-4E22-BC61-80B97D8A39C0} = {10512982-5268-4102-A137-C334F3ABF856}

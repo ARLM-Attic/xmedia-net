@@ -100,6 +100,9 @@ namespace RTP
 		public static int MaxAudioPacketsQueue = 10;
         protected override void PushNextPacket()
         {
+            if ((MediaType & MediaType.Receive) != MediaType.Receive)
+                return;
+
             if (AudioCodec == null)
                 return;
 
@@ -127,6 +130,9 @@ namespace RTP
 
         public override byte[] GetNextPacketSample(bool bReturnArrayOnNA)
         {
+            if ((MediaType & MediaType.Receive) != MediaType.Receive)
+                return null;
+
             if (AudioCodec == null)
                 return null;
 
@@ -143,6 +149,10 @@ namespace RTP
         public byte[] WaitNextPacketSample(bool bReturnArrayOnNA, int nTimeOut, out int nMsTook)
         {
             nMsTook = 0;
+
+            if ((MediaType & MediaType.Receive) != MediaType.Receive)
+                return null;
+
             if (AudioCodec == null)
                 return null;
 
@@ -171,6 +181,9 @@ namespace RTP
         /// <param name="bData"></param>
         public override void SendNextSample(byte[] bUncompressedAudio)
         {
+            if ((MediaType & MediaType.Send) != MediaType.Send)
+                return;
+
             if (IsActive == false)
                 return;
 
@@ -251,6 +264,9 @@ namespace RTP
         /// <param name="sample"></param>
         public void PushSample(MediaSample sample, object objSource)
         {
+            if ((MediaType & MediaType.Send) != MediaType.Send)
+                return;
+
             if (AudioCodec == null)
                 return;
 
@@ -305,6 +321,8 @@ namespace RTP
 
         public MediaSample PullSample(AudioFormat format, TimeSpan tsDuration)
         {
+            if ((MediaType & MediaType.Receive) != MediaType.Receive)
+                return null;
 
             if (AudioCodec == null)
                 return null;

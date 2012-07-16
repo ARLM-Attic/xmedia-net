@@ -33,6 +33,12 @@ namespace WPFImageWindows
             rectangle.Height = CaptureRectangle.Height;
             Canvas.SetLeft(rectangle, CaptureRectangle.X);
             Canvas.SetTop(rectangle, CaptureRectangle.Y);
+
+            double nX =  (System.Windows.SystemParameters.PrimaryScreenWidth -200)/2;
+            double nY = (System.Windows.SystemParameters.PrimaryScreenHeight - 40) / 2;
+
+            Canvas.SetLeft(StackPanelResult, nX);
+            Canvas.SetTop(StackPanelResult, nY);
         }
 
         public Rect CaptureRectangle = new Rect(0, 0, 100, 100);
@@ -86,7 +92,17 @@ namespace WPFImageWindows
                 Canvas.SetLeft(rectangle, StartingPoint.X);
                 Canvas.SetTop(rectangle, StartingPoint.Y);
             }
+
+            if (e.ClickCount > 1)
+            {
+                /// User wants to end this
+            }
             base.OnMouseDown(e);
+        }
+
+        protected override void OnTouchDown(TouchEventArgs e)
+        {
+            base.OnTouchDown(e);
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -140,6 +156,20 @@ namespace WPFImageWindows
         private void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
 
+        }
+
+        private void ButtonAccept_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = true;
+            SaveScreenAndClose();
+            return;
+        }
+
+        private void ButtonCancel_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
+            SaveScreenAndClose();
+            return;
         }
     }
 }

@@ -22,20 +22,24 @@
 
 using namespace System;
 using namespace ImageAquisition;
+using namespace AudioClasses;
+
+using namespace System::ComponentModel;
 
 AudioFileReader::AudioFileReader(AudioClasses::AudioFormat ^audioformat)
 {
+	OurPlayList = gcnew PlayList("Playlist");
+	OurPlayList->PropertyChanged += gcnew PropertyChangedEventHandler(this, &ImageAquisition::AudioFileReader::OnPlaylistChanged);
+	CurrentTrack = nullptr;
+
 	m_fAmplitude = 0.5f;
 	m_bActive = true;
 	m_bIsPlaying = false;
 	m_bFileProcessing = false;
 	m_bAbortRead = false;
-	m_bLoopQueue = false;
-	m_strCurrentSong = "";
 	m_nBytesInCurrentSong = 0;
 	ThreadFinishedEvent = gcnew System::Threading::ManualResetEvent(true);
 
-	FileQueue = gcnew System::Collections::Generic::Queue<String ^>();
 	OutputAudioFormat = audioformat;
 	EnqueuedAudioData = gcnew AudioClasses::ByteBuffer();
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -48,13 +52,14 @@ AudioFileReader::~AudioFileReader()
 	ThreadFinishedEvent->Close();
 }
 
-
-void AudioFileReader::EnqueueFile(String ^strSourceFile)
+void AudioFileReader::OnPlaylistChanged(System::Object ^obj, System::ComponentModel::PropertyChangedEventArgs ^args)
 {
-	FileQueue->Enqueue(strSourceFile);
-	if (FileQueue->Count == 1)
-		FirePropertyChanged("NextTrack");
-	StartNextFileQueue();
+	if (args->PropertyName == "CurrentTrack")
+	{
+		// Current track changed... start it up
+		AbortCurrentSong();
+		StartNextFileQueue();
+	}
 }
 
 
@@ -62,16 +67,62 @@ void AudioFileReader::AbortCurrentSong()
 {
 	m_bAbortRead = true;
 	EnqueuedAudioData->GetAllSamples();
-
 	ThreadFinishedEvent->WaitOne(4000);
-	FinishCurrentSong();
 }
 
-void AudioFileReader::ClearPlayQueue()
+
+void AudioFileReader::StartNextFileQueue()
 {
-	FileQueue->Clear();
-	m_bAbortRead = true;
+	if (IsSourceActive == false)
+		return;
+
+	if ( (OurPlayList->Count >= 1) && (EnqueuedAudioData->Size <= 0) && (m_bFileProcessing == false) )
+	{
+		m_bFileProcessing = true;
+		System::Threading::ThreadPool::QueueUserWorkItem(gcnew System::Threading::WaitCallback(&AudioFileReader::QueueFileThread), this);
+	}
+
+	if ( (OurPlayList->Count <= 0) && (EnqueuedAudioData->Size <= 0) && (m_bFileProcessing == false) )
+		IsPlaying = false;
 }
+
+void AudioFileReader::FinishCurrentSong()
+{
+	if (CurrentTrack != nullptr)
+		FirePlayFinished(CurrentTrack->FileName);
+	if (OurPlayList->CurrentTrack == CurrentTrack)
+		OurPlayList->NextTrack();
+}
+
+AudioClasses::MediaSample ^AudioFileReader::PullSample(AudioClasses::AudioFormat ^format, TimeSpan tsDuration)
+{
+	if (EnqueuedAudioData->Size <= 0)
+	{
+		return nullptr;
+	}
+
+	int nBytesNeeded = format->CalculateNumberOfSamplesForDuration(tsDuration)*format->BytesPerSample;
+
+
+	if (EnqueuedAudioData->Size <= nBytesNeeded)
+	{
+		EnqueuedAudioData->GetAllSamples(); /// only a fraction left, ignore
+		FinishCurrentSong();
+		return nullptr;
+	}
+
+	array<unsigned char> ^bSamples = EnqueuedAudioData->GetNSamples(nBytesNeeded);
+	
+	if (EnqueuedAudioData->Size <= 0) /// did we finish this song?
+	{
+		FinishCurrentSong();
+	}
+	
+	return gcnew AudioClasses::MediaSample(bSamples, format);
+}
+
+
+
 
 void AudioFileReader::QueueFileThread(Object ^objAudioFileReader)
 {
@@ -82,9 +133,14 @@ void AudioFileReader::QueueFileThread(Object ^objAudioFileReader)
     IMFMediaType *pUncompressedAudioType = NULL;
     IMFMediaType *pPartialType = NULL;
 
-	This->CurrentTrack = This->FileQueue->Dequeue();
+	This->CurrentTrack = This->OurPlayList->CurrentTrack;
+	if (This->CurrentTrack == nullptr)
+	{
+		This->ThreadFinishedEvent->Set();
+		return;
+	}
 
-	LPCWSTR pSourceFile = (LPCWSTR)System::Runtime::InteropServices::Marshal::StringToCoTaskMemUni(This->CurrentTrack).ToPointer(); 
+	LPCWSTR pSourceFile = (LPCWSTR)System::Runtime::InteropServices::Marshal::StringToCoTaskMemUni(This->CurrentTrack->FileName).ToPointer(); 
 	HRESULT hr = MFCreateSourceReaderFromURL(pSourceFile, NULL, &pReader);
     System::Runtime::InteropServices::Marshal::FreeCoTaskMem(System::IntPtr((void *)pSourceFile));
 
@@ -324,54 +380,6 @@ void AudioFileReader::QueueFileThread(Object ^objAudioFileReader)
 	This->m_bAbortRead = false;
 	This->m_bFileProcessing = false;
 	This->ThreadFinishedEvent->Set();
-}
-
-void AudioFileReader::StartNextFileQueue()
-{
-	if (IsSourceActive == false)
-		return;
-
-	if ( (FileQueue->Count >= 1) && (EnqueuedAudioData->Size <= 0) && (m_bFileProcessing == false) )
-	{
-		m_bFileProcessing = true;
-		System::Threading::ThreadPool::QueueUserWorkItem(gcnew System::Threading::WaitCallback(&AudioFileReader::QueueFileThread), this);
-	}
-
-	if ( (FileQueue->Count <= 0) && (EnqueuedAudioData->Size <= 0) && (m_bFileProcessing == false) )
-		IsPlaying = false;
-}
-
-AudioClasses::MediaSample ^AudioFileReader::PullSample(AudioClasses::AudioFormat ^format, TimeSpan tsDuration)
-{
-	if (EnqueuedAudioData->Size <= 0)
-	{
-		return nullptr;
-	}
-
-	int nBytesNeeded = format->CalculateNumberOfSamplesForDuration(tsDuration)*format->BytesPerSample;
 
 
-	if (EnqueuedAudioData->Size <= nBytesNeeded)
-	{
-		EnqueuedAudioData->GetAllSamples(); /// only a fraction left, ignore
-		FinishCurrentSong();
-		return nullptr;
-	}
-
-	array<unsigned char> ^bSamples = EnqueuedAudioData->GetNSamples(nBytesNeeded);
-	
-	if (EnqueuedAudioData->Size <= 0) /// did we finish this song?
-	{
-		FinishCurrentSong();
-	}
-	
-	return gcnew AudioClasses::MediaSample(bSamples, format);
-}
-
-void AudioFileReader::FinishCurrentSong()
-{
-	FirePlayFinished(CurrentTrack);
-	if (m_bLoopQueue == true)
-		FileQueue->Enqueue(CurrentTrack);
-	StartNextFileQueue();
 }

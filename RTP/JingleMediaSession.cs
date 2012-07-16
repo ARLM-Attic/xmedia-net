@@ -36,8 +36,7 @@ namespace RTP
         G722_40 = 16,
     }
 
-    
-
+  
     /// <summary>
     ///  Responsible for the RTP stream to an from a remote endpoint, as well as session management
     /// </summary>
@@ -75,7 +74,7 @@ namespace RTP
         }
 
         /// <summary>
-        /// See if this specific instance is running a client we know uses google talk protocl
+        /// See if this specific instance is running a client we know uses google talk protocol
         /// TODO... see if this a instance running standard jingle as well
         /// </summary>
         void CheckGoogleTalk()
@@ -427,6 +426,9 @@ namespace RTP
             AudioMixer = objAudioMixer;
             StartAudio();
         }
+
+
+        
 
         // Start Audio once ICE is done
         void StartAudio()

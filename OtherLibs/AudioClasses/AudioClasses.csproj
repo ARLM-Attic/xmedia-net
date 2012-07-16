@@ -63,7 +63,6 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -73,6 +72,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioClasses.cs" />
@@ -80,6 +80,7 @@
     <Compile Include="ByteBuffer.cs" />
     <Compile Include="AudioSourceSpy.cs" />
     <Compile Include="Resampler.cs" />
+    <Compile Include="Track.cs" />
     <Compile Include="VideoSharedMemory.cs" />
     <Compile Include="SimpleEchoCanceller.cs" />
     <Compile Include="ToneGenerator.cs" />

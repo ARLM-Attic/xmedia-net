@@ -38,12 +38,12 @@
                     <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Margin="10,0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold"> File Transfers</TextBlock>
-                <s:SurfaceButton ToolTip="Clear Transfers" Grid.Column="1" x:Name="ButtonClearTransfers" Click="ButtonClearTransfers_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <Button Style="{StaticResource ButtonSurface}" ToolTip="Clear Transfers" Grid.Column="1" x:Name="ButtonClearTransfers" Click="ButtonClearTransfers_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/trash.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
-                <s:SurfaceButton ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                </Button>
+                <Button Style="{StaticResource ButtonSurface}" ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
+                </Button>
             </Grid>
 
             <s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
@@ -69,13 +69,13 @@
 
                             <!--Accept or Cancel, only visible for incoming request-->
                             <StackPanel Grid.Column="1" Visibility="{Binding IsVisibleSendCancel, Mode=OneWay}" Grid.Row="2"  Orientation="Horizontal">
-                                <Button x:Name="ButtonCancelSend" Click="ButtonCancelSend_Click">Cancel</Button>
+                                <Button Style="{StaticResource ButtonSurface}" x:Name="ButtonCancelSend" Click="ButtonCancelSend_Click">Cancel</Button>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Grid.Row="2"  Orientation="Horizontal">
-                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonAcceptTransfer" Click="ButtonAcceptTransfer_Click">Accept</s:SurfaceButton>
-                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonDeclineTransfer" Click="ButtonDeclineTransfer_Click">Decline</s:SurfaceButton>
-                                <!--<s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonSaveFile" Click="ButtonSaveFile_Click" Content="Save" />-->
-                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonOpenFile" Click="ButtonOpenFile_Click"  Content="Open" />
+                                <Button Style="{StaticResource ButtonSurface}" Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonAcceptTransfer" Click="ButtonAcceptTransfer_Click">Accept</Button>
+                                <Button Style="{StaticResource ButtonSurface}" Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonDeclineTransfer" Click="ButtonDeclineTransfer_Click">Decline</Button>
+                                <!--<Button Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonSaveFile" Click="ButtonSaveFile_Click" Content="Save" />-->
+                                <Button Style="{StaticResource ButtonSurface}" Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonOpenFile" Click="ButtonOpenFile_Click"  Content="Open" />
                             </StackPanel>
 
                         </Grid>

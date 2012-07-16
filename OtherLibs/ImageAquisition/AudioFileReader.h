@@ -1,6 +1,7 @@
 #pragma once
 
 using namespace System;
+using namespace AudioClasses;
 
 namespace ImageAquisition 
 {
@@ -13,14 +14,11 @@ namespace ImageAquisition
 			AudioFileReader(AudioClasses::AudioFormat ^audioformat);
 			~AudioFileReader();
 
-			/// Loads an audio file to our outgoing buffer queue (First converts it to the correct output format)
-			void EnqueueFile(String ^strFilename);
-			void AbortCurrentSong();
-			void ClearPlayQueue();
-
 			event DelegateSong ^OnPlayStarted;
 			event DelegateSong ^OnPlayFinished;
 
+			PlayList ^OurPlayList;
+		
 			virtual AudioClasses::MediaSample ^PullSample(AudioClasses::AudioFormat ^format, TimeSpan tsDuration);
 	        property bool IsSourceActive
 			{
@@ -65,58 +63,6 @@ namespace ImageAquisition
 				}
 			}
 
-			property String ^CurrentTrack
-			{ 
-				String ^get()
-				{
-					return m_strCurrentSong;
-				}
-				void set(String ^strValue)
-				{
-					if (m_strCurrentSong != strValue)
-					{
-						m_strCurrentSong = strValue;
-						FirePropertyChanged("CurrentTrack");
-						FirePropertyChanged("CurrentTrackFileOnly");
-						FirePropertyChanged("NextTrack");
-						FirePlayStarted(m_strCurrentSong);
-					}
-				}
-			}
-
-			property String ^NextTrack
-			{ 
-				String ^get()
-				{
-					if (FileQueue->Count <= 0)
-						return "none";
-					String ^strFileName = FileQueue->Peek();
-					return System::IO::Path::GetFileName(strFileName);
-				}
-			}
-
-			property String ^CurrentTrackFileOnly
-			{ 
-				String ^get()
-				{
-					return System::IO::Path::GetFileName(m_strCurrentSong);
-				}
-				void set(String ^strValue)
-				{
-				}
-			}
-
-			property bool LoopQueue
-			{ 
-				bool get()
-				{
-					return m_bLoopQueue;
-				}
-				void set(bool value)
-				{
-					m_bLoopQueue = value;
-				}
-			}
 			
 			property double PlayProgressPercent 
 			{ 
@@ -134,6 +80,13 @@ namespace ImageAquisition
 
 		protected:
 
+
+			void AbortCurrentSong();
+			
+
+			Track ^CurrentTrack;
+
+			void OnPlaylistChanged(System::Object ^obj, System::ComponentModel::PropertyChangedEventArgs ^args);
 			
 			void FirePlayStarted(String ^strSong)
 			{
@@ -158,7 +111,6 @@ namespace ImageAquisition
 
 			AudioClasses::ByteBuffer ^EnqueuedAudioData;
 			
-			System::Collections::Generic::Queue<String ^> ^FileQueue;
 		
 			System::Threading::ManualResetEvent ^ThreadFinishedEvent;
 
@@ -166,9 +118,7 @@ namespace ImageAquisition
 			bool m_bActive;
 			bool m_bIsPlaying;
 			bool m_bAbortRead;
-			bool m_bLoopQueue;
 			bool m_bFileProcessing;
-			String ^m_strCurrentSong;
 			int m_nBytesInCurrentSong;
 	};
 

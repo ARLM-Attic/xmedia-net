@@ -26,7 +26,7 @@ using System.ComponentModel;
 using ImageAquisition;
 
 namespace WPFXMPPClient
-{
+{ 
     /// <summary>
     /// Interaction logic for AudioMuxerWindow.xaml
     /// </summary>

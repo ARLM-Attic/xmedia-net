@@ -18,5 +18,15 @@
     </Window.Resources>
     <Canvas x:Name="GridMain">
         <Rectangle x:Name="rectangle" Stroke="Red" Fill="#330000FF" StrokeThickness="4" ></Rectangle>
+
+        <StackPanel x:Name="StackPanelResult" Orientation="Horizontal" Width="200" Height="50" Background="#AAFFFFFF">
+            <Button Width="100" Height="40" RenderTransformOrigin=".5,.5" Click="ButtonAccept_Click"   
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"  Content="Accept" Foreground="White" Background="#AA000000"
+                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonAccept" ToolTip="Accept this selection" />
+            <Button Width="100" Height="40" RenderTransformOrigin=".5,.5" Click="ButtonCancel_Click"   
+                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Content="Cancel" Foreground="White" Background="#AA000000"
+                Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonCancel" ToolTip="Cancel" />
+        </StackPanel>
+        
     </Canvas>
 </Window>

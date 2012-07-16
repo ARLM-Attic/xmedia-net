@@ -1104,6 +1104,7 @@ namespace System.Net.XMPP
         {
             m_objGeoLocation.lat = fLat;
             m_objGeoLocation.lon = fLon;
+            m_objGeoLocation.TimeStamp = DateTime.Now;
             if ((m_objGeoLocation.lat == 0.0f) && (m_objGeoLocation.lon == 0.0f))
                 GeoLocationString = "Unknown Location";
             else

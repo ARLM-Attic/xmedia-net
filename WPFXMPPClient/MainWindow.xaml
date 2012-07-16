@@ -130,6 +130,7 @@
                             <ColumnDefinition Width="35" />
                             <ColumnDefinition Width="35" />
                             <ColumnDefinition Width="35" />
+                            <ColumnDefinition Width="35" />
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="0" Visibility="{Binding GeoVisible}" HorizontalAlignment="Stretch" Click="ButtonViewMap_Click" Width="30" Height="30"  RenderTransformOrigin=".5,.5" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonGlobe" ToolTip="Show location" >
@@ -156,7 +157,19 @@
                             <Rectangle Stretch="Uniform" Fill="{DynamicResource speaker}" />
                         </Button>
 
-                        <Button Width="24" Height="24" Grid.Column="2" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendFromCamera_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendFromCamera" ToolTip="Send a PIC from the camera" >
+                        <Button Width="24" Height="24" Grid.Column="2" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonStartVideo_Click" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonStartVideo" ToolTip="Start aa video call" >
+                            <Button.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform/>
+                                    <SkewTransform/>
+                                    <RotateTransform/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Button.RenderTransform>
+                            <Rectangle Stretch="Uniform" Fill="{DynamicResource videocamera}" />
+                        </Button>
+
+                        <Button Width="24" Height="24" Grid.Column="3" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendFromCamera_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendFromCamera" ToolTip="Send a PIC from the camera" >
                             <Button.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform/>
@@ -168,7 +181,7 @@
                             <Rectangle Stretch="Uniform" Fill="{DynamicResource camera}" />
                         </Button>
 
-                        <Button Width="24" Height="24" Grid.Column="3" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendFile_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendFile" ToolTip="Send a File" >
+                        <Button Width="24" Height="24" Grid.Column="4" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendFile_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendFile" ToolTip="Send a File" >
                             <Button.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform/>
@@ -180,7 +193,7 @@
                             <Rectangle Stretch="Uniform" Fill="{DynamicResource folder}" />
                         </Button>
 
-                        <Button Width="24" Height="24" Grid.Column="4" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendScreenCapture_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendScreenCapture" ToolTip="Send a screen capture" >
+                        <Button Width="24" Height="24" Grid.Column="5" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonSendScreenCapture_Click"  VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonSendScreenCapture" ToolTip="Send a screen capture" >
                             <Button.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform/>
@@ -257,13 +270,13 @@
                     </s:ElementMenu>-->
               
                 
-                <Grid Grid.Row="1" Grid.ColumnSpan="3" x:Name="GridMoreUserOptions"  Visibility="Collapsed">
+                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" x:Name="GridMoreUserOptions"  Visibility="Collapsed">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
                     </Grid.RowDefinitions>
 
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="74" />
+                        <ColumnDefinition Width="0" />
                         <ColumnDefinition Width="300*" />
                     </Grid.ColumnDefinitions>
                     
@@ -271,7 +284,7 @@
                         <TranslateTransform X="0" Y="0" />
                     </Grid.RenderTransform>
 
-                    <Grid Grid.Row="0" Grid.Column="1" Margin="10,0,0,0">
+                    <Grid Grid.Row="0" Grid.Column="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80*" />
                             <ColumnDefinition Width="24" />
@@ -303,7 +316,7 @@
                         <DataTrigger.EnterActions>
                         <BeginStoryboard>
                             <Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="GridMoreUserOptions" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"  From="-48" To="0" DecelerationRatio="0.5" Duration="0:0:0.8"/>
+                                <DoubleAnimation Storyboard.TargetName="GridMoreUserOptions" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"  From="-48" To="0" DecelerationRatio="0.5" Duration="0:0:0.1"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </DataTrigger.EnterActions>
@@ -320,6 +333,7 @@
             </DataTemplate.Triggers>
             
         </DataTemplate>
+    
         <Style x:Key="BorderStyle1" TargetType="{x:Type Border}">
         	<Setter Property="BorderBrush">
         		<Setter.Value>
@@ -616,8 +630,8 @@
         	</Rectangle.Effect>
             <Rectangle.Fill>
                 <LinearGradientBrush StartPoint=".5,0" EndPoint=".5,1">
-                	<GradientStop Color="#88AAFF88" Offset="0"/>
-                	<GradientStop Color="#88DDFF66" Offset="1"/>
+                	<GradientStop Color="#EEAAFF88" Offset="0"/>
+                	<GradientStop Color="#EEDDFF66" Offset="1"/>
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
@@ -642,29 +656,6 @@
                 	<GradientStop Color="#2E3CB109" Offset="0.995349"/>
                 </LinearGradientBrush>
             </Rectangle.Fill>
-            <!--<Rectangle.Triggers>
-                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                    <BeginStoryboard>
-                        <Storyboard RepeatBehavior="Forever">
-                            <DoubleAnimation 
-                                    Storyboard.TargetName="GradientStop1"
-                                    Storyboard.TargetProperty="Offset"
-                                    From="0.3" To="0.1" Duration="0:0:5.5"
-                                    AutoReverse="True" />
-                            <DoubleAnimation 
-                                    Storyboard.TargetName="GradientStop2"
-                                    Storyboard.TargetProperty="Offset"
-                                    From="0.4" To=".6" Duration="0:0:10.5"
-                                    AutoReverse="True" />
-                            <DoubleAnimation 
-                                    Storyboard.TargetName="GradientStop3"
-                                    Storyboard.TargetProperty="Offset"
-                                    From="0.7" To=".95" Duration="0:0:5.5"
-                                    AutoReverse="True" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Rectangle.Triggers>-->
           
         </Rectangle>
 
@@ -749,6 +740,11 @@
                         </Button.RenderTransform>
                         <Rectangle Width="28" Height="28" Stretch="UniformToFill" Fill="{DynamicResource tools}" />
                     </Button>
+
+                    <s:SurfaceButton ToolTip="Minimize" x:Name="ButtonMinimize" Click="ButtonMinimize_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" 
+                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom">
+                        <Rectangle Width="20" Height="5" Margin="0,0,0,10" Stretch="UniformToFill" Fill="#FF555555" Stroke="#FF555555" />
+                    </s:SurfaceButton>
 
                     <s:SurfaceButton ToolTip="Close" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                         <Image Source="Images/calculator - multiply.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />

@@ -17,6 +17,12 @@ namespace RTP
 {
     public delegate void DelegateSTUNMessage(STUNMessage smsg, IPEndPoint epfrom);
 
+    [Flags]
+    public enum MediaType
+    {
+        Send = 1,
+        Receive = 2,
+    }
 
     public class STUNRequestResponse
     {
@@ -179,6 +185,14 @@ namespace RTP
           }
         }
 
+        private MediaType m_eMediaType = MediaType.Send|MediaType.Receive;
+
+        public MediaType MediaType
+        {
+            get { return m_eMediaType; }
+            set { m_eMediaType = value; }
+        }
+
         protected int m_nPTimeTransmit = 20;
         public virtual int PTimeTransmit
         {
@@ -215,6 +229,10 @@ namespace RTP
 
         public STUNMessage SendRecvSTUN(EndPoint epStun, STUN2Message msgRequest, int nTimeout)
         {
+            if (msgRequest == null)
+                return null;
+            if (epStun == null)
+                return null;
             STUNRequestResponse req = new STUNRequestResponse(msgRequest);
             lock (StunLock)
             {
@@ -234,6 +252,8 @@ namespace RTP
 
         public int SendSTUNMessage(STUNMessage msg, EndPoint epStun)
         {
+            if (this.RTPUDPClient == null)
+                return 0;
             byte[] bMessage = msg.Bytes;
             return this.RTPUDPClient.SendUDP(bMessage, bMessage.Length, epStun);
         }
@@ -352,21 +372,24 @@ namespace RTP
                 }
             }
 
- 	        RTPPacket packet = RTPPacket.BuildPacket(bData, 0, nLength);
-            if (packet != null) /// Seems we get some TURN channel data messages from google talk
+            if ((MediaType & MediaType.Receive) != MediaType.Receive)
             {
-                if (ReceiveSSRC == 0)
-                    ReceiveSSRC = packet.SSRC;
-                if ((packet.PayloadType == this.Payload) && (packet.SSRC == this.ReceiveSSRC))
+                RTPPacket packet = RTPPacket.BuildPacket(bData, 0, nLength);
+                if (packet != null) /// Seems we get some TURN channel data messages from google talk
                 {
-                    HandleIncomingRTPPacket(packet);
+                    if (ReceiveSSRC == 0)
+                        ReceiveSSRC = packet.SSRC;
+                    if ((packet.PayloadType == this.Payload) && (packet.SSRC == this.ReceiveSSRC))
+                    {
+                        HandleIncomingRTPPacket(packet);
+                    }
                 }
             }
         }
 
         protected virtual void HandleIncomingRTPPacket(RTPPacket packet)
         {
-            IncomingRTPPacketBuffer.AddPacket(packet);
+           IncomingRTPPacketBuffer.AddPacket(packet);
         }
 
         public RTPPacketBuffer IncomingRTPPacketBuffer = new RTPPacketBuffer(2);
