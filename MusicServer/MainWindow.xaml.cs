@@ -460,7 +460,6 @@ namespace MusicServer
             }
         }
 
-        
 
         private void ButtonConnect_Click(object sender, RoutedEventArgs e)
         {

@@ -94,7 +94,7 @@ namespace System.Net.XMPP
                 {
                     m_bBytes = value;
                     SHA1Managed sha = new SHA1Managed();
-                    Hash = SocketServer.TLS.ByteHelper.HexStringFromByte(sha.ComputeHash(m_bBytes), false, int.MaxValue);
+                    Hash = xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(sha.ComputeHash(m_bBytes), false, int.MaxValue);
                 }
             }
         }

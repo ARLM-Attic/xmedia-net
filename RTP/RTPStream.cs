@@ -11,7 +11,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using AudioClasses;
-using SocketServer;
+using xmedianet.socketserver;
 
 namespace RTP
 {
@@ -48,12 +48,12 @@ namespace RTP
 
         public bool IsThisYou(byte [] bTransactionId)
         {
-            return SocketServer.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, bTransactionId);
+            return xmedianet.socketserver.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, bTransactionId);
         }
 
         public bool IsThisYourResponseSetIfItIs(STUNMessage msg)
         {
-            bool bRet = SocketServer.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, msg.TransactionId);
+            bool bRet = xmedianet.socketserver.TLS.ByteHelper.CompareArrays(RequestMessage.TransactionId, msg.TransactionId);
             if (bRet == true)
             {
                 ResponseMessage = msg;
@@ -155,7 +155,7 @@ namespace RTP
             set { m_objLocalEndpoint = value; }
         }
 
-        protected SocketServer.UDPSocketClient RTPUDPClient = null;
+        protected UDPSocketClient RTPUDPClient = null;
 
         protected object SocketLock = new object();
 
@@ -209,14 +209,14 @@ namespace RTP
             if (IsBound == false)
             {
                 LocalEndpoint = localEp;
-                RTPUDPClient = new SocketServer.UDPSocketClient(LocalEndpoint);
+                RTPUDPClient = new UDPSocketClient(LocalEndpoint);
                 RTPUDPClient.Bind();
 
 #if !WINDOWS_PHONE
                 LocalEndpoint = RTPUDPClient.s.LocalEndPoint as IPEndPoint;
 #endif
                 IsBound = true;
-                RTPUDPClient.OnReceiveMessage += new SocketServer.UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
+                RTPUDPClient.OnReceiveMessage += new UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
                 RTPUDPClient.StartReceiving();
 
             }
@@ -274,8 +274,8 @@ namespace RTP
 
             if (UseInternalTimersForPacketPushPull == true)
             {
-                SendTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeTransmit, new SocketServer.DelegateTimerFired(OnTimeToPushPacket), "", null);
-                ExpectPacketTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(PTimeReceive, new SocketServer.DelegateTimerFired(OnTimeToForwardPacket), "", null);
+                SendTimer = QuickTimerControllerCPU.CreateTimer(PTimeTransmit, new DelegateTimerFired(OnTimeToPushPacket), "", null);
+                ExpectPacketTimer = QuickTimerControllerCPU.CreateTimer(PTimeReceive, new DelegateTimerFired(OnTimeToForwardPacket), "", null);
             }
 
             IsActive = true;

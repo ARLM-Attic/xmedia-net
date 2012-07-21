@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     /// <summary>
     /// This class is used to create new socketclients of the correct typewithin ConnectMgr

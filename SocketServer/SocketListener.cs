@@ -11,7 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
 	public class SocketListener
 	{

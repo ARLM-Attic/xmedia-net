@@ -8,8 +8,8 @@
     <ProjectGuid>{77F78E2F-A04F-4823-A2A9-3F1F27D0F8B8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SocketServer</RootNamespace>
-    <AssemblyName>socketserver</AssemblyName>
+    <RootNamespace>xmedianet.socketserver</RootNamespace>
+    <AssemblyName>xmedianet.socketserver</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>

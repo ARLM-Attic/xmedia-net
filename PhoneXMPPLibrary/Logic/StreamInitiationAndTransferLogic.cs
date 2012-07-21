@@ -10,10 +10,11 @@ using System.Text;
 using System.Xml.Linq;
 using System.IO;
 
-using SocketServer;
+using xmedianet.socketserver;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
+using xmedianet.socketserver;
 
 namespace System.Net.XMPP
 {
@@ -965,7 +966,7 @@ namespace System.Net.XMPP
                     }
                     else
                     {
-                        IPAddress[] addresses = SocketServer.ConnectMgr.FindAddresses();
+                        IPAddress[] addresses = ConnectMgr.FindAddresses();
                         /// Find out which addresses are public, and if they are advertise them.  (If they're private we can stun and use them in Jingle streams sessions, but not here)
                         /// the one exception is if we let the user specify an address because they opened the port
                         /// 
@@ -974,7 +975,7 @@ namespace System.Net.XMPP
 
                         foreach (IPAddress address in addresses)
                         {
-                            if (SocketServer.ConnectMgr.IsInPrivateRange(address) == false)
+                            if (ConnectMgr.IsInPrivateRange(address) == false)
                             {
                                 FileTransferManager.StartSocks5ByteServer();
 
@@ -1106,7 +1107,7 @@ namespace System.Net.XMPP
 
             if (host.Jid != XMPPClient.JID) 
             {
-                SocketServer.SocketClient client = new SocketClient();
+                SocketClient client = new SocketClient();
 
                 client.SetSOCKSProxy(5, XMPPClient.Server, 7777, "xmppclient");
                 client.OnAsyncConnectFinished += new DelegateConnectFinish(client_OnAsyncConnectFinished);
@@ -1116,7 +1117,7 @@ namespace System.Net.XMPP
                 string strHost = string.Format("{0}{1}{2}", this.FileTransfer.sid, XMPPClient.JID, bsiq.From);
                 System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
                 byte[] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHost));
-                strHost = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
+                strHost = xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
 
                 /// Connect parametrs are the sha1 hash and 0, the socks proxy will connect us to the correct place
                 client.ConnectAsync(strHost, 0);
@@ -1208,7 +1209,7 @@ namespace System.Net.XMPP
                 string strHostUs = string.Format("{0}{1}{2}", this.FileTransfer.sid, XMPPClient.JID, bsiq.From);
                 System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
                 byte[] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHostUs));
-                strHostUs = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
+                strHostUs = xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
 
 
                 SOCKSServerSession RemoteSession = FileTransferManager.LocalSOCKS5ByteServer.GetIncomingByteStreamSession(strHostUs);
@@ -1295,7 +1296,7 @@ namespace System.Net.XMPP
                 if (IsCompleted == true)
                     break;
 
-                SocketServer.SocketClient client = new SocketClient();
+                SocketClient client = new SocketClient();
 
                 client.SetSOCKSProxy(5, host.Host, Convert.ToInt32(host.Port), "xmppclient");
                 client.OnAsyncConnectFinished += new DelegateConnectFinish(client_OnAsyncConnectFinished);
@@ -1305,7 +1306,7 @@ namespace System.Net.XMPP
                 string strHost = string.Format("{0}{1}{2}", this.FileTransfer.sid, bsiq.From, bsiq.To);
                 System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
                 byte [] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHost));
-                strHost = SocketServer.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
+                strHost = xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
 
                 /// Connect parametrs are the sha1 hash and 0, the socks proxy will connect us to the correct place
                 client.StartReadOnConnect = true;

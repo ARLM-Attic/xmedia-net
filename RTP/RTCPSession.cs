@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using System.Net;
+using xmedianet.socketserver;
 
 namespace RTP
 {
@@ -21,7 +22,7 @@ namespace RTP
             set { m_objLocalEndpoint = value; }
         }
 
-        protected SocketServer.UDPSocketClient UDPClient = null;
+        protected UDPSocketClient UDPClient = null;
 
         protected object SocketLock = new object();
 
@@ -72,7 +73,7 @@ namespace RTP
             if (IsBound == false)
             {
                 LocalEndpoint = localEp;
-                UDPClient = new SocketServer.UDPSocketClient(LocalEndpoint);
+                UDPClient = new UDPSocketClient(LocalEndpoint);
                 UDPClient.Bind();
 
 #if !WINDOWS_PHONE
@@ -80,7 +81,7 @@ namespace RTP
 #else
 #endif
                 IsBound = true;
-                UDPClient.OnReceiveMessage += new SocketServer.UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
+                UDPClient.OnReceiveMessage += new UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
                 UDPClient.StartReceiving();
 
             }
@@ -95,7 +96,7 @@ namespace RTP
             IsActive = false;
             IsBound = false;
             UDPClient.StopReceiving();
-            UDPClient.OnReceiveMessage -= new SocketServer.UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
+            UDPClient.OnReceiveMessage -= new UDPSocketClient.DelegateReceivePacket(RTPUDPClient_OnReceiveMessage);
             UDPClient = null;
         }
 

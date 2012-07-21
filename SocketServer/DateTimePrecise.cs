@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
    /// Taken from CodeProject, actually gutted for our use, but the original is at:
    /// 

@@ -5,7 +5,7 @@
 using System;
 using System.Net;
 
-using SocketServer;
+using xmedianet.socketserver;
 using System.Collections.Generic;
 using System.Xml;
 using System.IO;
@@ -54,7 +54,8 @@ namespace System.Net.XMPP
 
     public class XMPPClient : System.ComponentModel.INotifyPropertyChanged
     {
-        public XMPPClient(SocketServer.ILogInterface loginterface) : this()
+        public XMPPClient(xmedianet.socketserver.ILogInterface loginterface)
+            : this()
         {
             LogInterface = loginterface;
         }

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     /// <summary>
     /// When added as a filter to a socket client, parses out messages line by line

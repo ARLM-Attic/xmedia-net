@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 
 using System.Net;
+using xmedianet.socketserver;
 
 namespace RTP
 {
@@ -50,7 +51,7 @@ namespace RTP
         {
             ResponseMessage = null;
             WaitHandle.Reset();
-            EndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(StunServer, StunPort);
+            EndPoint epStun = ConnectMgr.GetIPEndpoint(StunServer, StunPort);
 
             STUNMessage msgRequest = new STUNMessage();
             msgRequest.Method = StunMethod.Binding;
@@ -64,8 +65,8 @@ namespace RTP
 
             msgRequest.AddAttribute(mattr);
 
-            SocketServer.UDPSocketClient client = new SocketServer.UDPSocketClient(LocalEndpoint);
-            client.OnReceivePacket += new SocketServer.UDPSocketClient.DelegateReceivePacket(client_OnReceivePacket3);
+            UDPSocketClient client = new UDPSocketClient(LocalEndpoint);
+            client.OnReceivePacket += new UDPSocketClient.DelegateReceivePacket(client_OnReceivePacket3);
 #if !WINDOWS_PHONE
             client.StartReceiving(true);
 #else

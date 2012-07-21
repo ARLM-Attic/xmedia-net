@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Net.NetworkInformation;
 using System.Collections.Generic;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     public delegate void DelegateConnectFinished(SocketClient client, string strErrors);
 

@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     //Copyright (c) Microsoft Corporation.  All rights reserved.
     using System;

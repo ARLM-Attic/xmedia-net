@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     /// <summary>
     /// Computes a Hash-based Message Authentication Code (HMAC) using the <see cref="T:xBrainLab.Security.Cryptography.MD5" /> hash function

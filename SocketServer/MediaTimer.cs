@@ -7,7 +7,7 @@ using System.Collections;
 using System.Threading;
 using System.Collections.Generic;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
    public interface IMediaTimer
    {

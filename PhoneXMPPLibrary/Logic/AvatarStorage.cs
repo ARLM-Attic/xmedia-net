@@ -310,7 +310,7 @@ namespace System.Net.XMPP
             string strHash = "";
             IsolatedStorageFile storage = null;
 
-            strHash = SocketServer.TLS.ByteHelper.HexStringFromByte(sha.ComputeHash(bImageData), false, int.MaxValue);
+            strHash = xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(sha.ComputeHash(bImageData), false, int.MaxValue);
 #if WINDOWS_PHONE
             storage = IsolatedStorageFile.GetUserStoreForApplication();
 #else

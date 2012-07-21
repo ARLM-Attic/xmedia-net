@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
 	/// <summary>
 	/// One instance of this class is made for each connection manager and is used to

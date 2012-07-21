@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 
 using System.Collections.Generic;
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     public enum TLSContentType : byte
     {

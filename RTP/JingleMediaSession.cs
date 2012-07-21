@@ -15,6 +15,8 @@ using System.Net.XMPP.Jingle;
 using RTP;
 using System.ComponentModel;
 
+using xmedianet.socketserver;
+
 namespace RTP
 {
     public enum SessionState
@@ -1174,7 +1176,7 @@ namespace RTP
         public const ushort StunPort = 3478;
         public IPEndPoint PerformSTUNRequest(string strStunServer, int nTimeout)
         {
-            EndPoint epStun = SocketServer.ConnectMgr.GetIPEndpoint(strStunServer, StunPort);
+            EndPoint epStun = ConnectMgr.GetIPEndpoint(strStunServer, StunPort);
             return PerformSTUNRequest(epStun, nTimeout);
         }
 

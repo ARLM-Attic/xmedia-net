@@ -10,6 +10,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.ComponentModel;
 
+using xmedianet.socketserver;
+
 namespace System.Net.XMPP
 {
     public enum FileTransferDirection
@@ -327,7 +329,7 @@ namespace System.Net.XMPP
         /// <summary>
         /// A Local SOCKS5 Byte Stream server for file transfers.  Start this if you have a public IP or port forwarding setup and don't want to use the XMPP servers
         /// </summary>
-        public static SocketServer.SOCKServer LocalSOCKS5ByteServer = null;
+        public static SOCKServer LocalSOCKS5ByteServer = null;
 
         /// <summary>
         /// The Port the local SOCKS5 Bytestream server should listen on.  Specify 0 to make it pick an available port
@@ -346,9 +348,9 @@ namespace System.Net.XMPP
         {
             if (LocalSOCKS5ByteServer == null)
             {
-                LocalSOCKS5ByteServer = new SocketServer.SOCKServer();
+                LocalSOCKS5ByteServer = new SOCKServer();
                 LocalSOCKS5ByteServer.Port = SOCKS5ByteServerPort;
-                LocalSOCKS5ByteServer.SOCKSServerMode = SocketServer.SOCKSServerMode.XMPPSOCKS5ByteStream;
+                LocalSOCKS5ByteServer.SOCKSServerMode = SOCKSServerMode.XMPPSOCKS5ByteStream;
                 LocalSOCKS5ByteServer.Start();
                 SOCKS5ByteServerPort = LocalSOCKS5ByteServer.Port;
             }

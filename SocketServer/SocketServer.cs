@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
    /// <summary>
    /// Summary description for Class1.

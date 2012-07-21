@@ -10,7 +10,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using SocketServer;
+using xmedianet.socketserver;
 
 namespace RTP
 {
@@ -168,9 +168,9 @@ namespace RTP
 
     }
 
-    public class UniversalVideoSocketClient : SocketServer.SocketClient
+    public class UniversalVideoSocketClient : SocketClient
     {
-        public UniversalVideoSocketClient(System.Net.Sockets.Socket s, SocketServer.ConnectMgr cmgr)
+        public UniversalVideoSocketClient(System.Net.Sockets.Socket s, ConnectMgr cmgr)
             : base(s, cmgr)
         {
 
@@ -313,18 +313,18 @@ namespace RTP
     }
 
 
-    public class UniversalVideoSocketClientCreator : SocketServer.SocketCreator
+    public class UniversalVideoSocketClientCreator : SocketCreator
     {
         public UniversalVideoSocketClientCreator()
         {
         }
 
-        public override SocketServer.SocketClient CreateSocket(System.Net.Sockets.Socket s, SocketServer.ConnectMgr cmgr)
+        public override SocketClient CreateSocket(System.Net.Sockets.Socket s, ConnectMgr cmgr)
         {
             return new UniversalVideoSocketClient(s, cmgr);
         }
 
-        public override SocketServer.SocketClient AcceptSocket(System.Net.Sockets.Socket s, SocketServer.ConnectMgr cmgr)
+        public override SocketClient AcceptSocket(System.Net.Sockets.Socket s, ConnectMgr cmgr)
         {
             UniversalVideoSocketClient objNew = new UniversalVideoSocketClient(s, cmgr);
             return objNew;

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 
 using AudioClasses;
-using SocketServer;
+using xmedianet.socketserver;
 
 namespace RTP
 {
@@ -121,7 +121,7 @@ namespace RTP
             }
 
 
-            SendTimer = SocketServer.QuickTimerControllerCPU.CreateTimer(20, new SocketServer.DelegateTimerFired(OnTimeToPushPacket), "", null);
+            SendTimer = QuickTimerControllerCPU.CreateTimer(20, new DelegateTimerFired(OnTimeToPushPacket), "", null);
         }
 
         public void Stop()

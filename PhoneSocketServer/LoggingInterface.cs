@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
    /// <summary>
    /// The importance of the message.  The server will only report messages that are as or more important

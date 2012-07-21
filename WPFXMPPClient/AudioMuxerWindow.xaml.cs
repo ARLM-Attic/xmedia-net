@@ -24,6 +24,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.ComponentModel;
 using ImageAquisition;
+using xmedianet.socketserver;
 
 namespace WPFXMPPClient
 { 
@@ -93,7 +94,7 @@ namespace WPFXMPPClient
 
         ImageAquisition.NarrowBandMic Microphone = null;
         DirectShowFilters.SpeakerFilter Speaker = null;
-        SocketServer.IMediaTimer ExpectPacketTimer = null;
+        IMediaTimer ExpectPacketTimer = null;
         bool m_bAudioActive = false;
 
 

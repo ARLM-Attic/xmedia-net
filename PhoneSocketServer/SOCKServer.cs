@@ -7,12 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using SocketServer;
 using System.Net;
 using System.Net.Sockets;
 
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
 
     ///  No server components in windows phone, just client for now until we need it
@@ -270,7 +269,7 @@ namespace SocketServer
                         /// See what the man wants.  It appears that mozilla immediately starts sending data if we return success here, so let's do it
                         /// 
                         bool bConnected = false;
-                        if (SOCKSServerMode == SocketServer.SOCKSServerMode.NormalSOCKS5Server)
+                        if (SOCKSServerMode == SOCKSServerMode.NormalSOCKS5Server)
                         {
                             this.ServerSessionState = ServerSessionState.Forwarding;
                             /// Let's try to connect
@@ -285,7 +284,7 @@ namespace SocketServer
                             Console.WriteLine("SOCKS5 Bytestream connection for: {0}", reqmsg.DestinationDomain);
                             RemoteHost = reqmsg.DestinationDomain;
                             bConnected = true;
-                            this.ServerSessionState = SocketServer.ServerSessionState.JustExisting;
+                            this.ServerSessionState = ServerSessionState.JustExisting;
                         }
 
                         SocksReplyMessage reply = new SocksReplyMessage();

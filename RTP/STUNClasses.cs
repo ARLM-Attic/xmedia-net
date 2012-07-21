@@ -535,14 +535,14 @@ namespace RTP
 
         public override byte[] GetBytes(STUNMessage parentmessage)
         {
-            m_bBytes = SocketServer.TLS.ByteHelper.GetBytesForInt32((int)CRC, SocketServer.TLS.Endianess.Big);
+            m_bBytes = xmedianet.socketserver.TLS.ByteHelper.GetBytesForInt32((int)CRC, xmedianet.socketserver.TLS.Endianess.Big);
             return m_bBytes;
         }
 
         public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
         {
             m_bBytes = bBytes;
-            CRC = (uint)SocketServer.TLS.ByteHelper.ReadUintBigEndian(bBytes, 0);
+            CRC = (uint)xmedianet.socketserver.TLS.ByteHelper.ReadUintBigEndian(bBytes, 0);
         }
        
     }
@@ -702,14 +702,14 @@ namespace RTP
 
         public override byte[] GetBytes(STUNMessage parentmessage)
         {
-            m_bBytes = SocketServer.TLS.ByteHelper.GetBytesForInt32(Priority, SocketServer.TLS.Endianess.Big);
+            m_bBytes = xmedianet.socketserver.TLS.ByteHelper.GetBytesForInt32(Priority, xmedianet.socketserver.TLS.Endianess.Big);
             return m_bBytes;
         }
 
         public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
         {
             m_bBytes = bBytes;
-            Priority = (int) SocketServer.TLS.ByteHelper.ReadUintBigEndian(bBytes, 0);
+            Priority = (int)xmedianet.socketserver.TLS.ByteHelper.ReadUintBigEndian(bBytes, 0);
         }
     }
 
@@ -739,19 +739,19 @@ namespace RTP
             Random rand = new Random();
             byte [] Random = new byte[8];
             rand.NextBytes(Random);
-            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(Random, 0);
+            RandomNumber = xmedianet.socketserver.TLS.ByteHelper.ReadULongBigEndian(Random, 0);
         }
 
         public ulong RandomNumber = 0;
         public override byte[] GetBytes(STUNMessage parentmessage)
         {
-            return SocketServer.TLS.ByteHelper.GetBytesForUint64(RandomNumber, SocketServer.TLS.Endianess.Big);
+            return xmedianet.socketserver.TLS.ByteHelper.GetBytesForUint64(RandomNumber, xmedianet.socketserver.TLS.Endianess.Big);
         }
 
         public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
         {
             m_bBytes = bBytes;
-            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(m_bBytes, 0);
+            RandomNumber = xmedianet.socketserver.TLS.ByteHelper.ReadULongBigEndian(m_bBytes, 0);
         }
     }
 
@@ -763,19 +763,19 @@ namespace RTP
             Random rand = new Random();
             byte[] Random = new byte[8];
             rand.NextBytes(Random);
-            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(Random, 0);
+            RandomNumber = xmedianet.socketserver.TLS.ByteHelper.ReadULongBigEndian(Random, 0);
         }
 
         public ulong RandomNumber = 0;
         public override byte[] GetBytes(STUNMessage parentmessage)
         {
-            return SocketServer.TLS.ByteHelper.GetBytesForUint64(RandomNumber, SocketServer.TLS.Endianess.Big);
+            return xmedianet.socketserver.TLS.ByteHelper.GetBytesForUint64(RandomNumber, xmedianet.socketserver.TLS.Endianess.Big);
         }
 
         public override void SetBytes(byte[] bBytes, STUNMessage parentmessage)
         {
             m_bBytes = bBytes;
-            RandomNumber = SocketServer.TLS.ByteHelper.ReadULongBigEndian(m_bBytes, 0);
+            RandomNumber = xmedianet.socketserver.TLS.ByteHelper.ReadULongBigEndian(m_bBytes, 0);
         }
     }
 

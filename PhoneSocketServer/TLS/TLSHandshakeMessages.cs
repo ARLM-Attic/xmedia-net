@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     public enum HandShakeMessageType : byte
     {

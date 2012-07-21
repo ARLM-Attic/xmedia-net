@@ -8,14 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Net;
 
-using SocketServer;
 using System.IO;
 using System.Net.Sockets;
 
 /// Classes used for parsing SOCKS4 and SOCKS5 messages
 
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     public class SocksMessage
     {

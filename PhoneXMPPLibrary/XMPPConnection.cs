@@ -6,17 +6,18 @@ using System;
 using System.Net;
 
 using System.Collections.Generic;
+using xmedianet.socketserver;
 
 namespace System.Net.XMPP
 {
-    public class XMPPConnection : SocketServer.SocketClient
+    public class XMPPConnection : xmedianet.socketserver.SocketClient
     {
         public XMPPConnection(XMPPClient client) : base()
         {
             XMPPClient = client;
         }
 
-        public XMPPConnection(XMPPClient client, SocketServer.ILogInterface loginterface)
+        public XMPPConnection(XMPPClient client, ILogInterface loginterface)
             : base(loginterface, "")
         {
             XMPPClient = client;

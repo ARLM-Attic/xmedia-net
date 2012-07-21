@@ -11,7 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     public delegate void DelegateConnectFinish(SocketClient client, bool bSuccess, string strErrors);
 
@@ -105,13 +105,13 @@ namespace SocketServer
         }
 
         SOCKSTransform SOCKStrans = null;
-        SocketServer.TLS.TLSClientTransform TLStrans = null;
+        xmedianet.socketserver.TLS.TLSClientTransform TLStrans = null;
         public bool StartTLS(string strServer)
         {
             /// Negotiate TLS, don't return until it's done
             /// (We would use SslStream in normal .NET, but that's not available here)
             /// TLS is implement as a message filter 
-            TLStrans = new SocketServer.TLS.TLSClientTransform(this);
+            TLStrans = new xmedianet.socketserver.TLS.TLSClientTransform(this);
             TransformList.Add(TLStrans);
             TLStrans.Activate();
 

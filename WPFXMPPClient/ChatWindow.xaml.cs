@@ -25,6 +25,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 using System.Speech.Synthesis;
+using xmedianet.socketserver;
 
 namespace WPFXMPPClient
 {
@@ -146,7 +147,7 @@ namespace WPFXMPPClient
         }
 
         System.Speech.Synthesis.SpeechSynthesizer syn = new SpeechSynthesizer();
-        SocketServer.EventQueueWithNotification<string> PhrasesToSpeak = new SocketServer.EventQueueWithNotification<string>();
+        EventQueueWithNotification<string> PhrasesToSpeak = new EventQueueWithNotification<string>();
         void DoOnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
             if (bReceived == true)

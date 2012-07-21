@@ -6,7 +6,7 @@ using System;
 using System.Net;
 using System.Threading;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     public class ByteBuffer
     {

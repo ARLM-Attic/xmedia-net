@@ -4,7 +4,7 @@
 
 using System;
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     public enum Endianess
     {

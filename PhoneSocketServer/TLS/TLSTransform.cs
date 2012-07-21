@@ -19,7 +19,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     /// <summary>
     /// When activated on a socket client, performs TLS negotiation and subsequently encrypts all data

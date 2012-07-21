@@ -10,7 +10,7 @@ using System.Collections;
 
 using System.Collections.Generic;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     public class BufferSocketRef
     {

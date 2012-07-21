@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     public interface IMessageFilter
    {

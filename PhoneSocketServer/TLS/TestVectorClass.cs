@@ -19,7 +19,7 @@ using System.Security.Cryptography;
 /// 
 #if DEBUG
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     public class TestVectorClass
     {
@@ -34,13 +34,13 @@ namespace SocketServer.TLS
             HMACSHA1 sha = new HMACSHA1(bKey);
             byte[] bRethmacsha1 = sha.ComputeHash(bData);
             System.Diagnostics.Debug.WriteLine("SHA1 HMAC is: ");
-            System.Diagnostics.Debug.WriteLine(SocketServer.TLS.ByteHelper.HexStringFromByte(bRethmacsha1, true, 8));
+            System.Diagnostics.Debug.WriteLine(xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(bRethmacsha1, true, 8));
             //should be this for HMACSHA1 - DE 7C 9B 85 B8 B7 8A A6 BC 8A 7A 36 F7 0A 90 70 1C 9D B4 D9
 
-            SocketServer.TLS.HMACMD5 md5 = new SocketServer.TLS.HMACMD5(bKey);
+            xmedianet.socketserver.TLS.HMACMD5 md5 = new xmedianet.socketserver.TLS.HMACMD5(bKey);
             byte[] bRethmacmd5 = md5.ComputeHash(bData);
             System.Diagnostics.Debug.WriteLine("MD5 HMAC is: ");
-            System.Diagnostics.Debug.WriteLine(SocketServer.TLS.ByteHelper.HexStringFromByte(bRethmacmd5, true, 8));
+            System.Diagnostics.Debug.WriteLine(xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(bRethmacmd5, true, 8));
             /// should be this for HMAC MD5 - 80 07 07 13 46 3E 77 49 B9 0C 2D C2 49 11 E2 75
         }
 
@@ -54,7 +54,7 @@ namespace SocketServer.TLS
             byte[] bClientRandom = ByteHelper.ByteFromHexString(strClientRandom);
             byte[] bServerRandom = ByteHelper.ByteFromHexString(strServerRandom);
 
-            SocketServer.TLS.ConnectionState trans = new SocketServer.TLS.ConnectionState();
+            xmedianet.socketserver.TLS.ConnectionState trans = new xmedianet.socketserver.TLS.ConnectionState();
 
             ByteBuffer buf = new ByteBuffer();
             buf.AppendData(bClientRandom);
@@ -136,7 +136,7 @@ namespace SocketServer.TLS
             byte[] bClientRandom = ByteHelper.ByteFromHexString(strClientRandom);
             byte[] bServerRandom = ByteHelper.ByteFromHexString(strServerRandom);
 
-            SocketServer.TLS.ConnectionState trans = new SocketServer.TLS.ConnectionState();
+            xmedianet.socketserver.TLS.ConnectionState trans = new xmedianet.socketserver.TLS.ConnectionState();
 
             ByteBuffer buf = new ByteBuffer();
             buf.AppendData(bClientRandom);
@@ -213,7 +213,7 @@ namespace SocketServer.TLS
         /// </summary>
         public static void TestPRF()
         {
-            SocketServer.TLS.ConnectionState trans = new SocketServer.TLS.ConnectionState();
+            xmedianet.socketserver.TLS.ConnectionState trans = new xmedianet.socketserver.TLS.ConnectionState();
             byte[] bSecret = new byte[48];
             int i = 0;
             for (i = 0; i < bSecret.Length; i++) bSecret[i] = 0xab;
@@ -222,7 +222,7 @@ namespace SocketServer.TLS
 
             byte[] bRet = trans.PRF(bSecret, "PRF Testvector", bSeed, 104);
             System.Diagnostics.Debug.WriteLine("PRF Testvector output is...(should be: D3 D4 D1 E3 49 B5 D5 15..)");
-            System.Diagnostics.Debug.WriteLine(SocketServer.TLS.ByteHelper.HexStringFromByte(bRet, true, 8));
+            System.Diagnostics.Debug.WriteLine(xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(bRet, true, 8));
 
             //"D3 D4 D1 E3 49 B5 D5 15 04 46 66 D5 1D E3 2B AB" + "25 8C B5 21 B6 B0 53 46 3E 35 48 32 FD 97 67 54" + "44 3B CF 9A 29 65 19 BC 28 9A BC BC 11 87 E4 EB" + "D3 1E 60 23 53 77 6C 40 8A AF B7 4C BC 85 EF F6" + "92 55 F9 78 8F AA 18 4C BB 95 7A 98 19 D8 4A 5D" + "7E B0 06 EB 45 9D 3A E8 DE 98 10 45 4B 8B 2D 8F" + "1A FB C6 55 A8 C9 A0 13";  
 

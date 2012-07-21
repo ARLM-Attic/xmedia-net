@@ -11,18 +11,18 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-using SocketServer;
+using xmedianet.socketserver;
 
 namespace RTP
 {
     /// <summary>
     ///  A class for sending an receiving RTPPackets over TCP
     /// </summary>
-    public class TCPRTPSocketClient : SocketServer.SocketClient
+    public class TCPRTPSocketClient : SocketClient
     {
 
 #if !WINDOWS_PHONE
-        public TCPRTPSocketClient(System.Net.Sockets.Socket s, SocketServer.ConnectMgr cmgr)
+        public TCPRTPSocketClient(System.Net.Sockets.Socket s, ConnectMgr cmgr)
             : base(s, cmgr)
         {
 
@@ -137,18 +137,18 @@ namespace RTP
     }
 
 #if !WINDOWS_PHONE
-    public class TCPRTPSocketClientCreator : SocketServer.SocketCreator
+    public class TCPRTPSocketClientCreator : SocketCreator
     {
         public TCPRTPSocketClientCreator()
         {
         }
 
-        public override SocketServer.SocketClient CreateSocket(System.Net.Sockets.Socket s, SocketServer.ConnectMgr cmgr)
+        public override SocketClient CreateSocket(System.Net.Sockets.Socket s, ConnectMgr cmgr)
         {
             return new TCPRTPSocketClient(s, cmgr);
         }
 
-        public override SocketServer.SocketClient AcceptSocket(System.Net.Sockets.Socket s, SocketServer.ConnectMgr cmgr)
+        public override SocketClient AcceptSocket(System.Net.Sockets.Socket s, ConnectMgr cmgr)
         {
             TCPRTPSocketClient objNew = new TCPRTPSocketClient(s, cmgr);
             return objNew;

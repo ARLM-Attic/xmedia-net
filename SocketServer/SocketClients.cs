@@ -18,7 +18,7 @@ using System.Security.Authentication;
 using System.IO;
 
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
     public delegate void DelegateConnectFinish(SocketClient client, bool bSuccess, string strErrors);
 
@@ -260,21 +260,21 @@ namespace SocketServer
             IPEndPoint EPhost = null;
             try
             {
-                if (SocketServer.ConnectMgr.IsIPAddress(ipaddr))
+                if (ConnectMgr.IsIPAddress(ipaddr))
                 {
                     EPhost = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ipaddr), nport);
                     IsIPVersion6 = false;
                 }
                 else
                 {
-                    if (SocketServer.ConnectMgr.IsIPV6Address(ipaddr) == true)
+                    if (ConnectMgr.IsIPV6Address(ipaddr) == true)
                     {
                         IsIPVersion6 = true;
                         EPhost = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ipaddr), nport);
                     }
                     else
                     {
-                        hostadd = SocketServer.ConnectMgr.Resolve(ipaddr);
+                        hostadd = ConnectMgr.Resolve(ipaddr);
                         EPhost = new IPEndPoint(hostadd, nport);
                     }
                 }

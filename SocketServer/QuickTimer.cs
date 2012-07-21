@@ -9,7 +9,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace SocketServer
+namespace xmedianet.socketserver
 {
    public class PeriodicTimerWatch : IComparable<PeriodicTimerWatch>
    {

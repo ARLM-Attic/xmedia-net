@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
     public class TLSApplicationMessage : TLSMessage
     {

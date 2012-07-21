@@ -18,7 +18,7 @@ using System.Security;
 using System.Security.Cryptography;
 
 
-namespace SocketServer.TLS
+namespace xmedianet.socketserver.TLS
 {
 
     public enum CipherSuite : ushort
