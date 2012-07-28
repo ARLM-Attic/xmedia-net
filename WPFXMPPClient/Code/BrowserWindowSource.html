@@ -498,14 +498,14 @@
 		   mapAnnotation.marker = marker[BareJID];
 
                 // RIGGED FOR NOW.
-               // mapCenter = latLng[BareJID];
-               // if (mapManager.bCenter) {
-             	  //    mapManager.center = mapCenter;
-               //    mapManager.bCenter = false;
-	        // }
+                mapCenter = latLng[BareJID];
+                if (mapManager.bCenter) {
+             	      mapManager.center = mapCenter;
+                  mapManager.bCenter = false;
+	         }
 
-               // if (bSetAsCenter) 
-               //     map.setCenter(mapAnnotation.latLng);
+                if (bSetAsCenter) 
+                    map.setCenter(mapAnnotation.latLng);
 
                 if (bShowInfoWindow) {
                     mapAnnotation.infoWindow.open(map, marker[BareJID]);
