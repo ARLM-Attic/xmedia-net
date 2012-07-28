@@ -99,9 +99,9 @@ namespace LocationClasses
             set { m_GoogleEarthSourceCode = value; }
         }
 
-        private MapProviderType m_MapProvider = MapProviderType.GoogleMaps;
+        private MapProvider m_MapProvider = new MapProvider();
 
-        public MapProviderType MapProvider
+        public MapProvider MapProvider
         {
             get { return m_MapProvider; }
             set { m_MapProvider = value; }
@@ -126,7 +126,7 @@ namespace LocationClasses
             GoogleEarthMapBuilder GoogleEarthMapBuilder = new GoogleEarthMapBuilder();
            
 
-            switch (MapProvider)
+            switch (MapProvider.MapProviderType)
             {
                 case MapProviderType.GoogleMaps:
                     retStr = BuildJavaScriptSourceCodeForGoogleMaps(MapProperties, rosterItem);

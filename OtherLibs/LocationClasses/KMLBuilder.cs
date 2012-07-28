@@ -123,25 +123,25 @@ namespace LocationClasses
             return strXML;
         }
 
-        public static string BuildKML(BuddyLocationPosition buddy)
-        {
-            string strXML = "";
-            MyKML kml = new MyKML();
+        //public static string BuildKML(BuddyLocationPosition buddy)
+        //{
+        //    string strXML = "";
+        //    MyKML kml = new MyKML();
 
-            kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
+        //    kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
 
-            int i = 1;
-            foreach (GeoCoordinate coord in buddy.CoordinateList)
-            {
-                string strNextName = i.ToString();
-                kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
-                i++;
-            }
-            kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList));
+        //    int i = 1;
+        //    foreach (GeoCoordinate coord in buddy.CoordinateList)
+        //    {
+        //        string strNextName = i.ToString();
+        //        kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
+        //        i++;
+        //    }
+        //    kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList));
 
-            strXML = GetXMLStringFromObject(kml);
-            return strXML;
-        }
+        //    strXML = GetXMLStringFromObject(kml);
+        //    return strXML;
+        //}
   
         public static string BuildKML(BuddyPosition buddy)
         {
@@ -163,31 +163,31 @@ namespace LocationClasses
             return strXML;
         }
 
-        public static string WriteBuddyKML(string strFileName, BuddyLocationPosition buddy)
-        {
-            //MyKML kml = new MyKML();
+        //public static string WriteBuddyKML(string strFileName, BuddyLocationPosition buddy)
+        //{
+        //    //MyKML kml = new MyKML();
 
-            //kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
+        //    //kml.Document.Name = string.Format("Buddy {0} coordinates for {1}", buddy.RosterItem.JID.BareJID, DateTime.Now);
 
-            //int i = 1;
-            //foreach (GeoCoordinate coord in buddy.CoordinateList1)
-            //{
-            //    string strNextName = i.ToString();
-            //    kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
-            //    i++;
-            //}
-            //kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList1));
+        //    //int i = 1;
+        //    //foreach (GeoCoordinate coord in buddy.CoordinateList1)
+        //    //{
+        //    //    string strNextName = i.ToString();
+        //    //    kml.Document.Placemarks.Add(new Placemark(strNextName, coord));
+        //    //    i++;
+        //    //}
+        //    //kml.Document.Placemarks.Add(new Placemark("Total Path", buddy.CoordinateList1));
 
-            //string strXML = GetXMLStringFromObject(kml);
+        //    //string strXML = GetXMLStringFromObject(kml);
 
-            string strXML = BuildKML(buddy);
+        //    string strXML = BuildKML(buddy);
 
-            System.IO.FileStream output = new FileStream(strFileName, FileMode.Create);
-            byte[] bXML = System.Text.UTF8Encoding.UTF8.GetBytes(strXML);
-            output.Write(bXML, 0, bXML.Length);
-            output.Close();
-            return strXML;
-        }
+        //    System.IO.FileStream output = new FileStream(strFileName, FileMode.Create);
+        //    byte[] bXML = System.Text.UTF8Encoding.UTF8.GetBytes(strXML);
+        //    output.Write(bXML, 0, bXML.Length);
+        //    output.Close();
+        //    return strXML;
+        //}
    
         public static string WriteBuddyKML(string strFileName, BuddyPosition buddy)
         {
