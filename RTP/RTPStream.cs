@@ -372,7 +372,7 @@ namespace RTP
                 }
             }
 
-            if ((MediaType & MediaType.Receive) != MediaType.Receive)
+            if ((MediaType & MediaType.Receive) == MediaType.Receive)
             {
                 RTPPacket packet = RTPPacket.BuildPacket(bData, 0, nLength);
                 if (packet != null) /// Seems we get some TURN channel data messages from google talk
