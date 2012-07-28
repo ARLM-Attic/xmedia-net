@@ -127,6 +127,9 @@
     <Compile Include="BlankWindow.xaml.cs">
       <DependentUpon>BlankWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BrowserPopupWindow.xaml.cs">
+      <DependentUpon>BrowserPopupWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CameraCaptureWindow.xaml.cs">
       <DependentUpon>CameraCaptureWindow.xaml</DependentUpon>
     </Compile>
@@ -134,20 +137,15 @@
       <DependentUpon>DialogControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="DockStuff.cs" />
+    <Compile Include="ExtendedGridSplitter.cs" />
     <Compile Include="FileTransferWindow.xaml.cs">
       <DependentUpon>FileTransferWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="GeoLocationWindow.xaml.cs">
-      <DependentUpon>GeoLocationWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="IncomingCallWindow.xaml.cs">
       <DependentUpon>IncomingCallWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MapUserControl.xaml.cs">
       <DependentUpon>MapUserControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MapWindow.xaml.cs">
-      <DependentUpon>MapWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Options.cs" />
     <Compile Include="OptionsWindow.xaml.cs">
@@ -244,6 +242,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="BrowserPopupWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="CameraCaptureWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -260,10 +262,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="GeoLocationWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="IncomingCallWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -273,10 +271,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MapUserControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="MapWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -341,6 +335,9 @@
     </Content>
     <Content Include="Avatars\avatar.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Code\BrowserWindowSource.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\camera.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
