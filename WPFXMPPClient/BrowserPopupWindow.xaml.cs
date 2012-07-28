@@ -746,54 +746,60 @@ namespace WPFXMPPClient
 
             if (WebBrowserMain.Document == null)
                 return false;
-
-            // if text thing is empty then that's another way to know the code isn't there yet.... 
-            //if (TextBoxBrowserSourceCode.Text == null || TextBoxBrowserSourceCode.Text.Length < 1)
-            //    return false;
-
-            // if (MapManager.AddMarker(item))
-
-            string strBareJID = item.RosterItem.JID.BareJID;
-            int bPanTo = item.IsTheMainRosterItem ? 1 : 0;
-            // TODO : Add back in after get it working with global array!
-
-            //callScriptFunctionWithParamButton(item.RosterItem);
-
-            string strAvatarPath = String.Format("{0}", "file://" + item.LocalAvatarPath.Replace("\\", "\\\\"));
-                // String.Format("var avatarPath=\"{0}\";\r\n", "file://" + item.LocalAvatarPath.Replace("\\", "\\\\"));
-            double dbTimestamp = DateTimeToDouble(item.RosterItem.GeoLoc.TimeStamp);
-
-            // addMarker(BareJID, name, lat, lng, avatarPath, bShowInfoWindow)
             bool bResult = true;
-            try
+
+            this.Dispatcher.Invoke((Action)delegate()
             {
-                // System.Threading.Thread.Sleep(2000);
-                bResult = (CallJavaScriptFunction(WebBrowserMain, "addMarker", new object[] { 
-                    strBareJID, item.RosterItem.JID.ToString(), item.RosterItem.GeoLoc.lat, item.RosterItem.GeoLoc.lon, 
-                    dbTimestamp, strAvatarPath, bPanTo }));
+
+                // if text thing is empty then that's another way to know the code isn't there yet.... 
+                //if (TextBoxBrowserSourceCode.Text == null || TextBoxBrowserSourceCode.Text.Length < 1)
+                //    return false;
+
+                // if (MapManager.AddMarker(item))
+
+                string strBareJID = item.RosterItem.JID.BareJID;
+                int bPanTo = item.IsTheMainRosterItem ? 1 : 0;
+                // TODO : Add back in after get it working with global array!
+
+                //callScriptFunctionWithParamButton(item.RosterItem);
+
+                string strAvatarPath = String.Format("{0}", "file://" + item.LocalAvatarPath.Replace("\\", "\\\\"));
+                // String.Format("var avatarPath=\"{0}\";\r\n", "file://" + item.LocalAvatarPath.Replace("\\", "\\\\"));
+                double dbTimestamp = DateTimeToDouble(item.RosterItem.GeoLoc.TimeStamp);
+
+                // addMarker(BareJID, name, lat, lng, avatarPath, bShowInfoWindow)
+                try
                 {
-                    //function addMarker(BareJID, name, lat, lng, timestamp, avatarPath, markerStyleType) {
-                }
-                if (bResult == false)
-                {
+                    // System.Threading.Thread.Sleep(2000);
                     bResult = (CallJavaScriptFunction(WebBrowserMain, "addMarker", new object[] { 
                     strBareJID, item.RosterItem.JID.ToString(), item.RosterItem.GeoLoc.lat, item.RosterItem.GeoLoc.lon, 
                     dbTimestamp, strAvatarPath, bPanTo }));
+                    {
+                        //function addMarker(BareJID, name, lat, lng, timestamp, avatarPath, markerStyleType) {
+                    }
                     if (bResult == false)
                     {
                         bResult = (CallJavaScriptFunction(WebBrowserMain, "addMarker", new object[] { 
                     strBareJID, item.RosterItem.JID.ToString(), item.RosterItem.GeoLoc.lat, item.RosterItem.GeoLoc.lon, 
                     dbTimestamp, strAvatarPath, bPanTo }));
-                       // if (bResult== false)
-    
+                        if (bResult == false)
+                        {
+                            bResult = (CallJavaScriptFunction(WebBrowserMain, "addMarker", new object[] { 
+                    strBareJID, item.RosterItem.JID.ToString(), item.RosterItem.GeoLoc.lat, item.RosterItem.GeoLoc.lon, 
+                    dbTimestamp, strAvatarPath, bPanTo }));
+                            // if (bResult== false)
+
                             //MessageBox.Show("Error calling AddMarker for " + item.RosterItem.JID.BareJID);
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error calling AddMarker for " + item.RosterItem.JID.BareJID + ". " + ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error calling AddMarker for " + item.RosterItem.JID.BareJID + ". " + ex.Message);
-            }
+            );
+
 
             return bResult;
             //return true;
