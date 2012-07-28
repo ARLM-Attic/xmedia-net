@@ -52,10 +52,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuddyPosition.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="CodeBuilder.cs" />
     <Compile Include="CodeSnippet.cs" />
     <Compile Include="EventArgDefinitions.cs" />
-    <Compile Include="BuddyPosition.cs" />
     <Compile Include="GoogleMapsClasses.cs" />
     <Compile Include="IMapDesigner.cs" />
     <Compile Include="KMLBuilder.cs" />
