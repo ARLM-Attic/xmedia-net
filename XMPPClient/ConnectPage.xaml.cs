@@ -164,7 +164,7 @@ namespace XMPPClient
 
 
             App.XMPPClient.XMPPAccount.Password = strPassword;
-            App.XMPPClient.Connect(App.Current as SocketServer.ILogInterface);
+            App.XMPPClient.Connect(App.Current as xmedianet.socketserver.ILogInterface);
             NavigationService.Navigate(new Uri("/MainPage.xaml", UriKind.Relative)); 
         }
 

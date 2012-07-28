@@ -30,7 +30,7 @@ using Microsoft.Phone.BackgroundAudio;
 
 namespace XMPPClient
 {
-    public partial class App : Application, SocketServer.ILogInterface
+    public partial class App : Application, xmedianet.socketserver.ILogInterface
     {
         /// <summary>
         /// Provides easy access to the root frame of the Phone Application.
@@ -96,7 +96,7 @@ namespace XMPPClient
             GeoTimer.Tick += new EventHandler(GeoTimer_Tick);
             GeoTimer.Start();
 
-            SocketServer.SocketClient.ShowDebug = true;
+            xmedianet.socketserver.SocketClient.ShowDebug = true;
 
             App.XMPPClient.AutoReconnect = true;
             App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
@@ -124,7 +124,7 @@ namespace XMPPClient
 
         void XMPPClient_OnServerDisconnect(object sender, EventArgs e)
         {
-            this.LogMessage("XMPP", SocketServer.MessageImportance.Medium, "Disconnected from server at {0}", DateTime.Now);
+            this.LogMessage("XMPP", xmedianet.socketserver.MessageImportance.Medium, "Disconnected from server at {0}", DateTime.Now);
             //Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(DoServerDisconnect), sender, e);
         }
 
@@ -158,7 +158,7 @@ namespace XMPPClient
                 {
                     if (App.XMPPClient.Connected == false)
                     {
-                        LogError("Geo", SocketServer.MessageImportance.Medium, "Can't send geo coordinates.  XPP state is ready but we're not connected");
+                        LogError("Geo", xmedianet.socketserver.MessageImportance.Medium, "Can't send geo coordinates.  XPP state is ready but we're not connected");
                         //if (MessageBox.Show("Client was disconnected, would you like to re-connect?", "Connection Lost", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                         //App.XMPPClient.Connect(this);
                         return;
@@ -175,7 +175,7 @@ namespace XMPPClient
                         {
                             /// It appears we don't always get notifed when we loose our connection, we just don't find out until we send
                             /// 
-                            LogError("Geo", SocketServer.MessageImportance.Medium, "Exception sending GeoLocation: {0}", ex.Message);
+                            LogError("Geo", xmedianet.socketserver.MessageImportance.Medium, "Exception sending GeoLocation: {0}", ex.Message);
                         }
                         System.Threading.Monitor.Exit(GeoLock);
                     }
@@ -295,7 +295,7 @@ namespace XMPPClient
             switch (e.NotificationType)
             {
                 case NetworkNotificationType.InterfaceConnected:
-                    LogMessage("Network", SocketServer.MessageImportance.Medium, "Network was Connected at {0}\r\n", DateTime.Now);
+                    LogMessage("Network", xmedianet.socketserver.MessageImportance.Medium, "Network was Connected at {0}\r\n", DateTime.Now);
 
                     if ((XMPPClient != null) && (XMPPClient.XMPPState == XMPPState.Unknown) && (XMPPClient.XMPPAccount != null) && (XMPPClient.XMPPAccount.HaveSuccessfullyConnectedAndAuthenticated==true))
                     {
@@ -303,7 +303,7 @@ namespace XMPPClient
                     }
                     break;
                 case NetworkNotificationType.InterfaceDisconnected:
-                    LogMessage("Network", SocketServer.MessageImportance.Medium, "Network was Disconnected at {0}\r\n", DateTime.Now);
+                    LogMessage("Network", xmedianet.socketserver.MessageImportance.Medium, "Network was Disconnected at {0}\r\n", DateTime.Now);
                     if ((XMPPClient != null) && (XMPPClient.XMPPState != XMPPState.Unknown))
                     {
                         XMPPClient.Disconnect();
@@ -554,7 +554,7 @@ namespace XMPPClient
 
         static void DoConnect(object junk)
         {
-            App.XMPPClient.Connect((SocketServer.ILogInterface)Application.Current);
+            App.XMPPClient.Connect((xmedianet.socketserver.ILogInterface)Application.Current);
         }
 
         public static bool WasConnected = false;
@@ -651,37 +651,37 @@ namespace XMPPClient
 
         #region ILogInterface Members
 
-        public void LogMessage(string strCateogry, string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        public void LogMessage(string strCateogry, string strGuid, xmedianet.socketserver.MessageImportance importance, string strMessage, params object[] msgparams)
         {
             if (Options.LogDebug == true)
                 XMPPLogBuilder.AppendFormat(strMessage, msgparams);
         }
 
-        public void LogWarning(string strCateogry, string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        public void LogWarning(string strCateogry, string strGuid, xmedianet.socketserver.MessageImportance importance, string strMessage, params object[] msgparams)
         {
             if (Options.LogDebug == true)
                 XMPPLogBuilder.AppendFormat(strMessage, msgparams);
         }
 
-        public void LogError(string strCateogry, string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        public void LogError(string strCateogry, string strGuid, xmedianet.socketserver.MessageImportance importance, string strMessage, params object[] msgparams)
         {
             if (Options.LogDebug == true)
                 XMPPLogBuilder.AppendFormat(strMessage, msgparams);
         }
 
-        public void LogMessage(string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        public void LogMessage(string strGuid, xmedianet.socketserver.MessageImportance importance, string strMessage, params object[] msgparams)
         {
             if (Options.LogDebug == true)
                 XMPPLogBuilder.AppendFormat(strMessage, msgparams);
         }
 
-        public void LogWarning(string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        public void LogWarning(string strGuid, xmedianet.socketserver.MessageImportance importance, string strMessage, params object[] msgparams)
         {
             if (Options.LogDebug == true)
                 XMPPLogBuilder.AppendFormat(strMessage, msgparams);
         }
 
-        public void LogError(string strGuid, SocketServer.MessageImportance importance, string strMessage, params object[] msgparams)
+        public void LogError(string strGuid, xmedianet.socketserver.MessageImportance importance, string strMessage, params object[] msgparams)
         {
             if (Options.LogDebug == true)
                 XMPPLogBuilder.AppendFormat(strMessage, msgparams);

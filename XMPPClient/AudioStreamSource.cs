@@ -14,7 +14,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-using SocketServer;
+using xmedianet.socketserver;
 using RTP;
 
 namespace XMPPClient

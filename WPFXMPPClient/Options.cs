@@ -219,7 +219,10 @@ namespace WPFXMPPClient
         public string FileTransferDirectory
         {
             get { return m_strFileTransferDirectory; }
-            set { m_strFileTransferDirectory = value; }
+            set 
+            { 
+                m_strFileTransferDirectory = value; 
+            }
         }
 
         private bool m_bSingleRosterItemMap = true;

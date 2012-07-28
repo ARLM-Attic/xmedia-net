@@ -162,7 +162,7 @@ namespace WPFXMPPClient
                 blur.dwFlags = DwmBlurBehindFlags.DWM_BB_ENABLE;
                 blur.hRgnBlur = IntPtr.Zero;
                 blur.fTransitionOnMaximized = true;
-                DwmEnableBlurBehindWindow(mainWindowSrc.Handle, ref blur);
+             //   DwmEnableBlurBehindWindow(mainWindowSrc.Handle, ref blur);
 
                 //// Set Margins
                 //MARGINS margins = new MARGINS();
@@ -251,8 +251,8 @@ namespace WPFXMPPClient
                 XMPPClient.XMPPAccount.Capabilities = new Capabilities();
                 XMPPClient.XMPPAccount.Capabilities.Node = "http://xmedianet.codeplex.com/wpfclient/caps";
                 XMPPClient.XMPPAccount.Capabilities.Version = "1.0";
-                //XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1 video-v1 camera-v1"; /// google talk capabilities
-                XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1"; /// google talk capabilities
+                XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1 video-v1 camera-v1"; /// google talk capabilities
+                //XMPPClient.XMPPAccount.Capabilities.Extensions = "voice-v1"; /// google talk capabilities
                 
                 //XMPPClient.XMPPAccount.Capabilities.Node = "http://www.apple.com/ichat/caps";
                 //XMPPClient.XMPPAccount.Capabilities.Version = "800";
@@ -724,17 +724,18 @@ namespace WPFXMPPClient
             /// 
             if ( (trans != null) && (trans.Bytes != null) && (trans.Bytes.Length > 0) )
             {
-                string strDir = string.Format("{0}\\XMPPFiles\\", System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                //string strDir = string.Format("{0}\\XMPPFiles\\", System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
+                string strDir = Option.Options.FileTransferDirectory;
                 if (Directory.Exists(strDir) == false)
                     Directory.CreateDirectory(strDir);
-                string strFullFileName = string.Format("{0}{1}", strDir, trans.FileName);
+                string strFullFileName = System.IO.Path.Combine(strDir, trans.FileName);
                 if (File.Exists(strFullFileName) == false)
                 {
                     FileStream stream = new FileStream(strFullFileName, FileMode.Create, FileAccess.Write);
                     stream.Write(trans.Bytes, 0, trans.Bytes.Length);
                     stream.Close();
                     trans.FileName = strFullFileName;
-                }
+                } 
                 else
                 {
                     trans.FileName = strFullFileName;
@@ -1079,6 +1080,23 @@ namespace WPFXMPPClient
             }
         }
 
+ 	private void ButtonStartVideo_Click(object sender, RoutedEventArgs e)
+        {
+            /// Start audio on this resource... First find the resource that can do audio.
+            /// If there are multiple instances that can do audio, prompt the user for which one
+            /// 
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            RosterItemPresenceInstance inst = item.FindAudioPresenceInstance();
+            if (inst != null)
+            {
+               // ShowAudioMuxer();
+                //AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
+            }
+        }
+
         private void ListBoxRoster_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             RosterItem item = this.ListBoxRoster.SelectedItem as RosterItem;
@@ -1179,6 +1197,11 @@ namespace WPFXMPPClient
         private void ButtonMap_Click(object sender, RoutedEventArgs e)
         {
             ShowMapBrowserWindow();
+        }
+
+        private void ButtonMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = System.Windows.WindowState.Minimized;
         }
 
 
