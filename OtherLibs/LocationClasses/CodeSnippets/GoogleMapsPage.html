@@ -1,0 +1,290 @@
+﻿<html>
+   <head>
+       <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+       <script src="http://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>
+
+       <link href="http://www.google.com/latitude/apps/js/2284805162-all_css.css" type="text/css" rel="stylesheet"></link>
+       <link href="http://www.google.com/latitude/apps/js/1938267043-kennedy_gss.css" type="text/css" rel="stylesheet"></link>
+
+
+       <script type="text/javascript">
+           var map;
+           var infowindow = null;
+           var mapCenter;
+
+           var latLng = Array();
+           var marker = Array();
+           var infowindow = Array();
+           var contentString = Array();
+           var elevator;
+           var mapOptions;
+
+           var boundBox;
+           var southWest;
+           var southEast;
+           var northWest;
+           var northEast;
+           var north;
+           var south;
+           var east;
+           var west;
+           var lngSpan;
+           var latSpan;
+
+
+           var MarkerInfoWindowStyleType = {
+              "MarkerOnly" : 0, 
+              "InfoWindowWithAvatarOnly" : 1, 
+              "InfoWindowWithAvatarAndText" : 2, 
+              "InfoWindowWithTextOnly" : 3};  
+
+
+                                // Load the Visualization API and the columnchart package.
+                                   google.load("visualization", "1", {packages: ["columnchart"]});
+
+
+
+
+function initialize() {
+   elevator = new google.maps.ElevationService();
+   var mapDiv = document.getElementById('map-canvas');
+   map = new google.maps.Map(mapDiv, {
+                 center: new google.maps.LatLng(41.0812660586471, -82.0741858520378),
+                 zoom: 15,
+
+                 mapTypeId: google.maps.MapTypeId.ROADMAP
+
+      });
+
+
+   var latLngBounds = new google.maps.LatLngBounds();
+
+   // Marker Definitions
+
+
+   // Marker 0: brianbonnett@ninethumbs.com
+   latLng['brianbonnett@ninethumbs.com'] = new google.maps.LatLng(41.0812660586471, -82.0741858520378);
+   latLngBounds.extend(latLng['brianbonnett@ninethumbs.com']);
+   mapCenter = latLng['brianbonnett@ninethumbs.com'];
+var name="Brian";
+var timestamp="7/3/2012 7:43:56 AM";
+var fineGrainedAddress = codeLatLng(latLng['brianbonnett@ninethumbs.com']);
+var BareJID="brianbonnett@ninethumbs.com";
+var avatarPath="file://C:\\Users\\Jaime\\AppData\\Roaming\\WPFXMPPClient\\Avatars\\brianbonnett@ninethumbs.com.jpg";
+var markerImage = new google.maps.MarkerImage(avatarPath, 32, 32);
+       var strContent = '';
+       strContent += '<div class="friend-infowindow">';
+       strContent += '   <div class="info-window-content-container">'
+       strContent += '      <div class="info-window-left-content">';
+       strContent += '         <a class="friend-infowindow-name"><font color="royalblue">';
+       strContent += name;
+       strContent += '</font></a>';
+       strContent += '         <p class="friend-info-window-fine-grained">';
+       strContent += BareJID;       
+       //strContent += fineGrainedAddress;
+       strContent += '</p>';
+       strContent += '         <p class="friend-info-window-timestamp">';
+       strContent += timestamp;
+       strContent += '</p>';
+       strContent += '      </div>';
+       strContent += '      <div class="info-window-right-content">';
+       strContent += '         <img class="info-window-friend-image" src="';
+       strContent += avatarPath;
+       strContent += '">';
+       strContent += '      </div>';
+       strContent += '   </div>';
+       //strContent += '   <div class="info-window-links">';
+       //strContent += '      <ul class="info-window-action-bar">';
+       //strContent += '         <li class="zoom-here-link info-window-action-button">Zoom here</li>';
+       //strContent += '         <li class="ping-link info-window-action-button">Ping for check-in</li>';
+       //strContent += '         <li class="sharing-options-link info-window-action-button">';
+       //strContent += '            Actions';
+       //strContent += '         </li>';
+       //strContent += '      </ul>';
+       //strContent += '   </div>';
+       strContent += '</div>';
+
+
+     contentString['brianbonnett@ninethumbs.com'] = '<table><tr><td><h3><font color="royal blue">Brian</font></h3></td><td rowspan="3"><img height="40" src="file://C:\\Users\\Jaime\\AppData\\Roaming\\WPFXMPPClient\\Avatars\\brianbonnett@ninethumbs.com.jpg" /></td></tr><tr><td>brianbonnett@ninethumbs.com</td><td>7/3/2012 7:43:56 AM</td></tr></table>';
+
+   infowindow['brianbonnett@ninethumbs.com'] = new google.maps.InfoWindow({
+      ///content: strContent,
+      content: contentString['brianbonnett@ninethumbs.com'],
+      zindex: 0
+   });
+   marker['brianbonnett@ninethumbs.com'] = new google.maps.Marker({
+            position: latLng['brianbonnett@ninethumbs.com'],
+            map: map,
+            title: "brianbonnett@ninethumbs.com",
+            zindex: 0,
+            icon: markerImage
+            animation: google.maps.Animation.DROP
+   });
+
+   infowindow['brianbonnett@ninethumbs.com'].open(map, marker['brianbonnett@ninethumbs.com']);
+
+   google.maps.event.addListener(marker['brianbonnett@ninethumbs.com'], 'click', function() {
+      infowindow['brianbonnett@ninethumbs.com'].open(map, marker['brianbonnett@ninethumbs.com']);
+   });
+
+
+
+}
+
+
+
+                        function pick(arg, def) {
+                            return (typeof arg == 'undefined' ? def : arg);
+                        }
+
+
+
+    function JID(_User, _Domain, _Resource, _FullJID, _BareJID) {
+        var User = pick(_User, '');
+        var Domain = pick(_Domain, '');
+        var Resource = pick(_Resource, '');
+        var FullJID = pick(_FullJID, '');
+        var BareJID = pick(_BareJID, '');
+
+        function ToString() {
+            return FullJID;
+        } 
+    }
+
+
+
+    function GeoLoc(_lat, _lon, _TimeStamp, _bIsDirty) {
+        var lat = pick(_lat, 0.0);
+        var lon = pick(_lon, 0.0);
+        var TimeStamp = pick (_TimeStamp, new Date());
+        var bIsDirty = pick(_bIsDirty, false);
+    }
+
+
+
+    function RosterItem(_JID, _Name, _GeoLoc, _PresenceStatus, _Group, _AvatarImagePath, _HasNewMessages) {
+        var JID = pick(_JID, new JID());
+        var Name = pick(_Name, '');
+        var GeoLoc = pick(_GeoLoc, new GeoLoc());
+        var PresenceStatus = pick(_PresenceStatus, new PresenceStatus());
+        var Group = pick(_Group, '');
+        var AvatarImagePath = pick(_AvatarImagePath, '');
+        var HasNewMessages = pick(_HasNewMessages, false);
+
+        function ToString() {
+            return Name;
+        }
+    }
+
+
+
+    function MapRosterItem(_RosterItem, _zIndex, _CurrentLocation, _PreviousLocation, _CurrentMilesPerHour, 
+                           _AverageMilesPerHour, _MarkerInfoWindowStyleType) {
+        var RosterItem = pick(_RosterItem, new RosterItem());
+        var zIndex = pick(_zIndex, 0);
+        var CurrentLocation = pick(_CurrentLocation, new GeoLoc());
+        var PreviousLocation = pick(_PreviousLocation, new GeoLoc());
+        var CurrentMilesPerHour = pick(_CurrentMilesPerHour, 0.0);
+        var AverageMilesPerHour = pick(_AverageMilesPerHour, 0.0);
+        var MarkerInfoWindowStyleType = pick(_MarkerInfoWindowStyleType, MarkerInfoWindowStyleType.InfoWindowOnly);
+
+        function ToString() {
+            return RosterItem.ToString() + ' (' + RosterItem.GeoLoc.ToString() + ')';
+        }
+
+        function BuildContentString() {
+            var retStr = '';
+            return retStr;
+        }
+    }
+
+
+
+    // Function With Parameters
+    function moveMarker(BareJID, newLat, newLng, bPanTo) {
+        var newLatLng = new google.maps.LatLng(newLat, newLng );
+        var previousLatLng = latLng[BareJID];
+        latLng[BareJID] = newLatLng;
+
+        marker[BareJID].setPosition( latLng[BareJID] );
+        if (bPanTo == 1) {
+            mapCenter = latLng[BareJID];
+            map.panTo( mapCenter );
+        }
+        outputID.innerHTML = "moved marker for " + BareJID;
+    }
+
+
+
+    function addMarker(BareJID, name, lat, lng, timestamp, avatarPath, markerStyleType) {
+        // Marker 0: jaimejoyner@ninethumbs.com
+        latLng[BareJID] = new google.maps.LatLng(lat, lng);
+
+        // send in content string maybe... 
+        //contentString[BareJID]= '<table><tr><td><font family="Arial" size="+1"><b>Jaime</b></font></td></tr><tr><td>jaimejoyner@ninethumbs.com</td></tr><tr><td><font size="-1">7/2/2012 5:23:26 PM</font></td></tr></table>';
+        var strContent = buildInfoWindowContent(BareJID, name, latLng[BareJID], timestamp, '', markerStyleType); 
+        contentString[BareJID] = strContent;
+
+        infowindow[BareJID] = new google.maps.InfoWindow({
+            content: contentString[BareJID],
+            zindex: -2
+        });
+   
+        var title = BareJID + '<br>' + latLng[BareJID] + '<br>' + timestamp;
+
+        var markerImage = new google.maps.MarkerImage(avatarPath, new google.maps.Size(32, 32));
+
+        marker[BareJID] = new google.maps.Marker({
+            position: latLng[BareJID],
+            map: map,
+            title: title,
+            zindex: -2,
+            icon: markerImage,
+            animation: google.maps.Animation.DROP
+        });
+
+        infowindow[BareJID].open(map, marker[BareJID]);
+
+        google.maps.event.addListener(marker[BareJID], 'click', function() {
+            infowindow[BareJID].open(map, marker[BareJID]);
+        });
+
+        google.maps.event.addListener(infowindow[BareJID], 'dblclick', function() {
+            //map.setCenter(latLng[BareJID]);
+            map.panTo(latLng[BareJID]);
+            //infowindow[BareJID].open(map, marker[BareJID]);
+        });
+    }
+
+
+
+
+
+  function codeLatLng(latLng) {
+	var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({'latLng': latLng}, 
+       function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+             if (results[0]) {
+                return results[0];
+             } else {
+                 return "Geocoder failed due to: " + status;
+             }
+          }
+      });
+   }
+
+
+
+
+       google.maps.event.addDomListener(window, 'load', initialize);
+   </script>
+   </head>
+
+   <body scroll="no">
+
+<div>
+      <div id="map-canvas" style="height:100%; width:100%"></div>
+</div>
+   </body>
+</html>
