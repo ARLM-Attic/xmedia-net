@@ -82,6 +82,30 @@
                 </StackPanel>
 
             </TabItem>
+            <TabItem Header="Maps">
+                <StackPanel>
+                    <CheckBox Margin="0,5" IsChecked="{Binding SeparateMapForEachRosterItem}" x:Name="CheckBoxSeparateMapForEachRosterItem" Content="Show a separate map for each buddy" />
+                    
+                    
+                    <!--<CheckBox Margin="0,5" IsChecked="{Binding UseLocalSOCKS5Proxy}" x:Name="CheckBoxUseLocalSOCKS5Proxy" Content="Use Local SOCKS5 Proxy" />
+                    <StackPanel Margin="5,0" Orientation="Horizontal">
+                        <Label Width="160">SOCKS5 Proxy Public IP</Label>
+                        <TextBox Width="160" x:Name="TextBoxSocks5PublicIP" Text="{Binding ProxyPublicIP}" />
+                    </StackPanel>
+                    <StackPanel Margin="5,0" Orientation="Horizontal">
+                        <Label Width="160">SOCKS5 Proxy Port</Label>
+                        <TextBox Width="160" x:Name="TextBoxSocks5Port" Text="{Binding ProxyPort}" />
+                    </StackPanel>
+                    <CheckBox Margin="0,5" IsChecked="{Binding UseIBB}" x:Name="CheckBoxUseIBB" Content="Use Inband File Transfer Only" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">File Transfer Directory</Label>
+                        <TextBox Width="160" Text="{Binding FileTransferDirectory}" x:Name="TextBoxFileTransferDirectory" />
+                    </StackPanel>-->
+
+                </StackPanel>
+
+            </TabItem>
         </TabControl>
         
         <Button IsDefault="True" Grid.Row="1" x:Name="ButtonSave" Content="Save" HorizontalAlignment="Right" Width="80" Click="ButtonSave_Click" />
