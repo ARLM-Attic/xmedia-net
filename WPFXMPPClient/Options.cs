@@ -221,6 +221,18 @@ namespace WPFXMPPClient
             get { return m_strFileTransferDirectory; }
             set { m_strFileTransferDirectory = value; }
         }
+
+        private bool m_bSingleRosterItemMap = true;
+        [DataMember]
+        public bool SingleRosterItemMap
+        {
+            get { return m_bSingleRosterItemMap; }
+            set
+            {
+                m_bSingleRosterItemMap = value;
+                LocationClasses.MapManager.SingleRosterItemMap = value;
+            }
+        }
     }
 
 }
