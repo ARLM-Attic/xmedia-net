@@ -729,7 +729,6 @@ namespace WPFXMPPClient
             DateTime d2 = dt.ToUniversalTime();
             TimeSpan ts = new TimeSpan(d2.Ticks - d1.Ticks);
 
-
             return ts.TotalMilliseconds;
             // return dt.ToOADate();
                 
@@ -747,10 +746,12 @@ namespace WPFXMPPClient
             if (WebBrowserMain.Document == null)
                 return false;
             bool bResult = true;
-
+         
+            if (item.CurrentLocation.lat == 0 && item.CurrentLocation.lon == 0)
+                return false;
+           
             this.Dispatcher.Invoke((Action)delegate()
             {
-
                 // if text thing is empty then that's another way to know the code isn't there yet.... 
                 //if (TextBoxBrowserSourceCode.Text == null || TextBoxBrowserSourceCode.Text.Length < 1)
                 //    return false;
@@ -916,6 +917,9 @@ namespace WPFXMPPClient
 
         public void AddRosterItemBody()
         {
+            this.TextBoxTitle.Text = "Buddy Map - " + OurRosterItem.JID.BareJID;
+            this.Title = "Buddy Map - " + OurRosterItem.JID.BareJID;
+
             if (MapManager == null)
             {
                 MapManager = new MapManager(); // , m_OurRosterItem);
@@ -1803,4 +1807,5 @@ namespace WPFXMPPClient
         }
     }
         #endregion
+
 }

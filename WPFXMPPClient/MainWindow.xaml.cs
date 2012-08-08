@@ -348,7 +348,8 @@ namespace WPFXMPPClient
         }
 
         public Dictionary<string, ChatWindow> ChatWindows = new Dictionary<string, ChatWindow>();
-        //public Dictionary<string, BrowserPopupWindow> BrowserPopupWindows = new Dictionary<string, BrowserPopupWindow>();
+        public Dictionary<string, BrowserPopupWindow> BrowserPopupWindows = new Dictionary<string, BrowserPopupWindow>();
+        public Dictionary<string, MapWindow> MapWindows = new Dictionary<string, MapWindow>();
 
         void XMPPClient_OnNewConversationItem(RosterItem item, bool bReceived, TextMessage msg)
         {
@@ -405,6 +406,29 @@ namespace WPFXMPPClient
                 return win;
             }
         }
+
+        MapWindow FindOrCreateMapWIndow(RosterItem item)
+        {
+            if (item == null)
+                return null;
+
+            if (MapWindows.ContainsKey(item.JID.BareJID) == true)
+            {
+                MapWindow exwin = MapWindows[item.JID.BareJID];
+                return exwin;
+            }
+            else
+            {
+                MapWindow win = new MapWindow();
+                win.XMPPClient = this.XMPPClient;
+                win.OurRosterItem = item;
+                win.Closed += new EventHandler(win_Closed);
+                MapWindows.Add(item.JID.BareJID, win);
+                win.Show();
+                return win;
+            }
+        }
+
 
         [DllImport("user32.dll")]
         static extern bool FlashWindow(IntPtr hwnd, bool bInvert);
@@ -480,12 +504,18 @@ namespace WPFXMPPClient
             }
         }
 
+        private void AddPresenceUpdateLine()
+        {
+
+        }
 
         void SetRoster()
         {
             //this.ListBoxRoster.ItemsSource = null;
             CollectionViewSource source = FindResource("SortedRosterItems") as CollectionViewSource;
             source.View.Refresh();
+
+
             //source.Source = null;
             //source.Source = XMPPClient.RosterItems;
             //source.DeferRefresh();
@@ -500,6 +530,8 @@ namespace WPFXMPPClient
             //source.Source = XMPPClient.RosterItems;
             ////var selected = from c in XMPPClient.RosterItems group c by c.Group into n select new GroupingLayer<string, RosterItem>(n);
             //this.ListBoxRoster.ItemsSource = source;
+
+            AddPresenceUpdateLine();
         }
 
         public void XMPPStateChanged(object obj, EventArgs arg)
@@ -867,52 +899,125 @@ namespace WPFXMPPClient
         //}
 
 
-        //private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
-        //{
-        //    RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
-        //    if (item == null)
-        //        return;
+        private void ButtonViewMapBrowserWindow_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
 
-        //    if (BrowserPopupWindows.ContainsKey(item.JID.BareJID) == true)
-        //    {
-        //        BrowserPopupWindow exwin = BrowserPopupWindows[item.JID.BareJID];
-        //        exwin.Activate();
-        //        IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(BrowserPopupWindow).Handle;
-        //        FlashWindow(windowHandle, true);
-        //        return;
-        //    }
+            if (BrowserPopupWindows.ContainsKey(item.JID.BareJID) == true)
+            {
+                BrowserPopupWindow exwin = BrowserPopupWindows[item.JID.BareJID];
+                exwin.AddRosterItem(item);
+                exwin.AddRosterItemBody();
 
-        //    BrowserPopupWindow mapWin = new BrowserPopupWindow();
-        //    mapWin.XMPPClient = this.XMPPClient;
-        //    mapWin.OurRosterItem = item;
-        //    mapWin.Closed += new EventHandler(mapWin_Closed);
-        //    BrowserPopupWindows.Add(item.JID.BareJID, mapWin);
-        //    mapWin.Show();
+                exwin.Title = "Buddy Map - " + item.JID.BareJID;
 
-        //    //BrowserPopupWindow.XMPPClient = this.XMPPClient;
+                exwin.Activate();
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(exwin).Handle;
+                FlashWindow(windowHandle, true);
+                return;
+            }
 
-        //    //RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
-        //    //if (item == null)
-        //    //    return;
+            BrowserPopupWindow mapWin = new BrowserPopupWindow();
+            mapWin.XMPPClient = this.XMPPClient;
+            mapWin.OurRosterItem = item;
+            mapWin.Closed += new EventHandler(browserWin_Closed);
+            mapWin.AddRosterItem(item);
+            mapWin.AddRosterItemBody();
+            mapWin.Title = "Buddy Map - " + item.JID.BareJID;
 
-        //    //ShowBrowserPopupWindow(item);
-        //}
+           
+             // AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
 
-        //void mapWin_Closed(object sender, EventArgs e)
-        //{
-        //    ((BrowserPopupWindow)sender).Closed -= new EventHandler(mapWin_Closed);
-        //    string strRemove = null;
-        //    foreach (string strKey in BrowserPopupWindows.Keys)
-        //    {
-        //        if (BrowserPopupWindows[strKey] == sender)
-        //        {
-        //            strRemove = strKey;
-        //            break;
-        //        }
-        //    }
-        //    if (strRemove != null)
-        //        BrowserPopupWindows.Remove(strRemove);
-        //}
+            BrowserPopupWindows.Add(item.JID.BareJID, mapWin);
+            mapWin.Show();
+
+            mapWin.AddRosterItemBody();
+            //BrowserPopupWindow.XMPPClient = this.XMPPClient;
+
+            //RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            //if (item == null)
+            //    return;
+
+            //ShowBrowserPopupWindow(item);
+        }
+
+        private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
+        {
+            RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            if (item == null)
+                return;
+
+            if (MapWindows.ContainsKey(item.JID.BareJID) == true)
+            {
+                MapWindow exwin = MapWindows[item.JID.BareJID];
+                // his "RosterItem" should already be me.
+                if (exwin.OurRosterItem != item)
+                    exwin.OurRosterItem = item;
+
+                exwin.Title = "Buddy Map - " + item.JID.BareJID;
+
+                exwin.Activate();
+                IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(exwin).Handle;
+                FlashWindow(windowHandle, true);
+                return;
+            }
+
+            MapWindow mapWin = new MapWindow();
+            mapWin.XMPPClient = this.XMPPClient;
+            mapWin.OurRosterItem = item;
+            mapWin.Closed += new EventHandler(mapWin_Closed);
+            mapWin.OurRosterItem = item;
+            mapWin.Title = "Buddy Map - " + item.JID.BareJID;
+
+
+            // AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
+
+            MapWindows.Add(item.JID.BareJID, mapWin);
+            mapWin.Show();
+
+            //mapWin.AddRosterItemBody();
+            //BrowserPopupWindow.XMPPClient = this.XMPPClient;
+
+            //RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
+            //if (item == null)
+            //    return;
+
+            //ShowBrowserPopupWindow(item);
+        }
+
+        void mapWin_Closed(object sender, EventArgs e)
+        {
+            ((MapWindow)sender).Closed -= new EventHandler(mapWin_Closed);
+            string strRemove = null;
+            foreach (string strKey in MapWindows.Keys)
+            {
+                if (MapWindows[strKey] == sender)
+                {
+                    strRemove = strKey;
+                    break;
+                }
+            }
+            if (strRemove != null)
+                MapWindows.Remove(strRemove);
+        }
+
+        void browserWin_Closed(object sender, EventArgs e)
+        {
+            ((BrowserPopupWindow)sender).Closed -= new EventHandler(browserWin_Closed);
+            string strRemove = null;
+            foreach (string strKey in BrowserPopupWindows.Keys)
+            {
+                if (BrowserPopupWindows[strKey] == sender)
+                {
+                    strRemove = strKey;
+                    break;
+                }
+            }
+            if (strRemove != null)
+                BrowserPopupWindows.Remove(strRemove);
+        }
 
         //private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
         //{
@@ -1079,8 +1184,8 @@ namespace WPFXMPPClient
                 AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
             }
         }
-
- 	private void ButtonStartVideo_Click(object sender, RoutedEventArgs e)
+    
+        private void ButtonStartVideo_Click(object sender, RoutedEventArgs e)
         {
             /// Start audio on this resource... First find the resource that can do audio.
             /// If there are multiple instances that can do audio, prompt the user for which one
@@ -1170,7 +1275,7 @@ namespace WPFXMPPClient
             HyperlinkRosterItem_Click(sender, e);
         }
 
-        private void ButtonViewMap_Click(object sender, RoutedEventArgs e)
+        private void ButtonViewMapSingle_Click(object sender, RoutedEventArgs e)
         {
             /// Start audio on this resource... First find the resource that can do audio.
             /// If there are multiple instances that can do audio, prompt the user for which one

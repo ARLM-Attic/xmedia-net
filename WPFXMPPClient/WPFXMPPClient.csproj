@@ -133,6 +133,7 @@
     <Compile Include="CameraCaptureWindow.xaml.cs">
       <DependentUpon>CameraCaptureWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ConversationThreadManager.cs" />
     <Compile Include="DialogControl.xaml.cs">
       <DependentUpon>DialogControl.xaml</DependentUpon>
     </Compile>
@@ -146,6 +147,9 @@
     </Compile>
     <Compile Include="MapUserControl.xaml.cs">
       <DependentUpon>MapUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MapWindow.xaml.cs">
+      <DependentUpon>MapWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Options.cs" />
     <Compile Include="OptionsWindow.xaml.cs">
@@ -271,6 +275,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MapUserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MapWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

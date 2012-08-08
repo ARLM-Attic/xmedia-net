@@ -502,7 +502,7 @@ namespace WPFXMPPClient
 
             foreach (BuddyPosition buddy in BuddyPositions)
             {
-                if (buddy.bShowOnMap)
+                if (buddy.ShowOnMap)
                 {
                     MarkerLocation mLoc = new MarkerLocation();
                     mLoc.Location = MarkerLocation.GetLocationFromLatLon(buddy.RosterItem.GeoLoc.lat,
@@ -1030,14 +1030,14 @@ namespace WPFXMPPClient
             }
 
 
-            RosterItem MyRosterItem = new RosterItem(XMPPClient, XMPPClient.XMPPAccount.JID);
-            MyBuddyPosition = new BuddyPosition(MyRosterItem) { bIsMe = true };
+            //RosterItem MyRosterItem = new RosterItem(XMPPClient, XMPPClient.XMPPAccount.JID);
+            //MyBuddyPosition = new BuddyPosition(MyRosterItem) { bIsMe = true };
 
-            if (OurRosterItem == null)
-            {
-                MyBuddyPosition.bCenterOnBuddy = true;
-                MyBuddyPosition.bShowOnMap = true;
-            }
+            //if (OurRosterItem == null)
+            //{
+            //    MyBuddyPosition.bCenterOnBuddy = true;
+            //    MyBuddyPosition.bShowOnMap = true;
+            //}
 
             /* 
             XMPPClient.AutomaticallyDownloadAvatars = false;
@@ -1266,7 +1266,7 @@ namespace WPFXMPPClient
                 // clear all other buddies center on me fields
                 foreach (BuddyPosition buddyPosition in BuddyPositions)
                 {
-                    buddyPosition.bCenterOnBuddy = false;
+                    buddyPosition.CenterOnBuddy = false;
                 }
                 OurRosterItem = buddy.RosterItem;
                 ShowMapButton_Click(sender, e);
@@ -1877,11 +1877,13 @@ namespace WPFXMPPClient
                 // Build Javascript HTML
                 MapProperties.MapParameters.Size.Horizontal = Convert.ToInt32(GridBrowser.ActualHeight * .98);
                 MapProperties.MapParameters.Size.Vertical = Convert.ToInt32(GridBrowser.ActualWidth * .98);
+                if (MapBuilder.MapProvider == null)
+                    MapBuilder.MapProvider = new MapProvider();
 
                 if (ComboBoxMapProvider.SelectedValue.ToString() == "Google Earth")
-                    MapBuilder.MapProvider = MapProviderType.GoogleEarth;
+                    MapBuilder.MapProvider.MapProviderType = MapProviderType.GoogleEarth;
                 else if (ComboBoxMapProvider.SelectedValue.ToString() == "Google Maps")
-                    MapBuilder.MapProvider = MapProviderType.GoogleMaps;
+                    MapBuilder.MapProvider.MapProviderType = MapProviderType.GoogleMaps;
 
                 if (MapProperties.LocationParameters.CenterGeoCoordinate == null)
                     MapProperties.LocationParameters.CenterGeoCoordinate = new GeoCoordinate(OurRosterItem.GeoLoc.lat, OurRosterItem.GeoLoc.lon,
@@ -2069,14 +2071,14 @@ namespace WPFXMPPClient
                     ComboBoxMapFeature.ItemsSource = MapBuilder.MapExamples["GoogleEarth"];
 
                     ComboBoxMapFeature.SelectedIndex = 0;
-                    MapBuilder.MapProvider = MapProviderType.GoogleEarth;
+                    MapBuilder.MapProvider.MapProviderType = MapProviderType.GoogleEarth;
                 }
                 else if (cb.SelectedValue.ToString() == "Google Maps")
                 {
                     ComboBoxMapFeature.ItemsSource = MapBuilder.MapExamples["GoogleMaps"];
 
                     ComboBoxMapFeature.SelectedIndex = 0;
-                    MapBuilder.MapProvider = MapProviderType.GoogleMaps;
+                    MapBuilder.MapProvider.MapProviderType = MapProviderType.GoogleMaps;
                 }
                
                

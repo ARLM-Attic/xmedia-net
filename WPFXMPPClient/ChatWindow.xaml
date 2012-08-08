@@ -138,9 +138,12 @@
                 </s:SurfaceButton>
             </Grid>
 
-            <TabControl Grid.Row="1" Margin="5" x:Name="TabControlThreads">
+            <TabControl Grid.Row="1" Margin="5" x:Name="TabControlThreads" SelectionChanged="TabControlThreads_SelectionChanged">
                 <TabItem Header="Main Thread">
                     <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" ></local:DialogControl>
+                </TabItem>
+                <TabItem Header=" + ">
+                    <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlNewThreadTab" ></local:DialogControl>
                 </TabItem>
                 
             </TabControl>

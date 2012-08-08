@@ -256,6 +256,8 @@ namespace WPFXMPPClient
                     }
                     else
                     {
+                        ThreadedMessage threadedMessage = ConversationThreadManager.GetThreadedMessage(strText);
+                        PlaceChatInAppropriateStream(threadedMessage);    
                         XMPPClient.SendChatMessage(strText, instance.FullJID);
                     }
                 }
@@ -280,11 +282,53 @@ namespace WPFXMPPClient
                 }
                 else
                 {
+                    ThreadedMessage threadedMessage = ConversationThreadManager.GetThreadedMessage(this.TextBoxChatToSend.Text);
+                    PlaceChatInAppropriateStream(threadedMessage);    
                     OurRosterItem.SendChatMessage(this.TextBoxChatToSend.Text, MessageSendOption.SendToLastRecepient);
                 }
             }
 
+           
             this.TextBoxChatToSend.Text = "";
+        }
+
+        private void PlaceChatInAppropriateStream(ThreadedMessage threadedMessage)
+        {
+            TabItem tabItemThread = GetTabItemForThreadedMessage(threadedMessage);
+            if (tabItemThread == null)
+            {
+                // create it
+                tabItemThread = CreateTabItem(threadedMessage);
+            }
+            if (tabItemThread == null)
+            {
+                // error
+                return;
+            }
+            // Add text to this tab.
+
+
+        }
+
+        private TabItem CreateTabItem(ThreadedMessage threadedMessage)
+        {
+            TabItem newtabItem = new TabItem();
+            newtabItem.Header = threadedMessage.ThreadName;
+            return newtabItem;
+        }
+
+        private TabItem GetTabItemForThreadedMessage(ThreadedMessage threadedMessage)
+        {
+            var matchingItem =
+            from TabItem t in TabControlThreads.Items where t.Name == threadedMessage.ThreadName select t;
+
+            if (matchingItem.Count() != 0)
+            {
+                return matchingItem.FirstOrDefault();
+               //  TabControlThreads.SelectedItem = matchingItem.ElementAt(0);
+            }
+            // if it doesn't exist create it!
+            return null;
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -478,6 +522,11 @@ namespace WPFXMPPClient
                
                 }
             }
+        }
+
+        private void TabControlThreads_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
 
     
