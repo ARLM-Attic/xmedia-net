@@ -235,6 +235,9 @@ namespace RTP
 #if WINDOWS_PHONE
           WaitPacketWatch.Reset();
           WaitPacketWatch.Start();
+#elif MONO
+          WaitPacketWatch.Reset();
+          WaitPacketWatch.Start();
 #else
           WaitPacketWatch.Restart();
 #endif

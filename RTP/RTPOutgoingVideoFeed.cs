@@ -77,8 +77,11 @@ namespace RTP
                 }
             }
         }
+
+#if !MONO
         [System.Runtime.InteropServices.DllImport("msvcrt.dll", EntryPoint = "memcpy")]
         public unsafe static extern void CopyMemory(byte* pDest, byte* pSrc, int nLength);
+#endif
 
         public void SendFrame(int nWidth, int nHeight, byte [] bCompressedFrame)
         {
