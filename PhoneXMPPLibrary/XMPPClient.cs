@@ -491,7 +491,7 @@ namespace System.Net.XMPP
             }
         }
 
-        internal XMPPConnection XMPPConnection = null;
+        public XMPPConnection XMPPConnection = null;
 
 
         public JID JID

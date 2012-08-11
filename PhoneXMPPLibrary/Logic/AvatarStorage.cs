@@ -220,6 +220,7 @@ namespace System.Net.XMPP
 
                 
 #if WINDOWS_PHONE
+                objImage = new System.Windows.Media.Imaging.BitmapImage();
                 objImage.SetSource(stream);
 #else
 
@@ -245,8 +246,9 @@ namespace System.Net.XMPP
 #endif
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Threading.Thread.Sleep(0);
             }
             finally
             {
