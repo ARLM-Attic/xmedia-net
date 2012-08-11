@@ -98,6 +98,8 @@ namespace XMPPClient
 
             xmedianet.socketserver.SocketClient.ShowDebug = true;
 
+            App.XMPPClient.AutomaticallyDownloadAvatars = true;
+            App.XMPPClient.AutoQueryServerFeatures = true;
             App.XMPPClient.AutoReconnect = true;
             App.XMPPClient.OnNewConversationItem += new System.Net.XMPP.XMPPClient.DelegateNewConversationItem(XMPPClient_OnNewConversationItem);
             App.XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
