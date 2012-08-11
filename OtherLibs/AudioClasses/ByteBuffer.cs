@@ -327,6 +327,9 @@ namespace AudioClasses
         /// <param name="aData"></param>
         public int AppendData(byte[] aData)
         {
+            if (aData == null)
+                throw new Exception("Null data can't be appended");
+
             int nRet = 0;
             lock (BufferLock)
             {

@@ -64,6 +64,38 @@ namespace AudioClasses
             return sPayload;
         }
 
+        public short[] BuildTonePayload(int nSamples)
+        {
+
+            short[] sPayload = new short[nSamples]; /// 320 samples for 20 ms packets
+
+            if (w1 == w2)
+            {
+                double fAmplitude = Utils.SampleFromDb(short.MaxValue, m_fDecibels);
+                for (int i = 0; i < nSamples; i++)
+                {
+                    double t = (i + nSequence) / 16000.0f;
+
+                    sPayload[i] = (short)(fAmplitude * (Math.Sin(w1 * t)));
+                }
+            }
+            else
+            {
+                double fAmplitude = Utils.SampleFromDbDualFrequency(short.MaxValue, m_fDecibels);
+
+                for (int i = 0; i < nSamples; i++)
+                {
+                    double t = (i + nSequence) / 16000.0f;
+
+                    sPayload[i] = (short)(fAmplitude * (Math.Sin(w1 * t) + Math.Sin(w2 * t)));
+                }
+            }
+
+            nSequence += nSamples;
+            return sPayload;
+        }
+
+
         public MediaSample PullSample(AudioFormat format, TimeSpan tsDuration)
         {
             short[] sPayload = BuildTonePayload(format, tsDuration);
