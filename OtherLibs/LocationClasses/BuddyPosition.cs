@@ -64,6 +64,18 @@ namespace LocationClasses
             }
         }
 
+        private bool m_bCenterOnBuddy = false;
+
+        public bool CenterOnBuddy
+        {
+            get { return m_bCenterOnBuddy; }
+            set
+            {
+                m_bCenterOnBuddy = value;
+                FirePropertyChanged("CenterOnBuddy");
+            }
+        }
+
         private RosterItem m_objRosterItem = null;
 
         public RosterItem RosterItem
