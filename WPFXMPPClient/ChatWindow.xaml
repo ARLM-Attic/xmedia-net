@@ -142,7 +142,7 @@
                 <TabItem Header="Main Thread">
                     <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlLastMessage" ></local:DialogControl>
                 </TabItem>
-                <TabItem Header=" + ">
+                <TabItem Header=" + " Visibility="Collapsed">
                     <local:DialogControl Grid.Row="1" Grid.ColumnSpan="4" BorderBrush="{x:Null}" Foreground="{x:Null}" Background="{x:Null}" x:Name="DialogControlNewThreadTab" ></local:DialogControl>
                 </TabItem>
                 
