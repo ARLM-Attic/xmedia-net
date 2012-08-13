@@ -885,6 +885,7 @@ namespace WPFXMPPClient
             Properties.Settings.Default.LastMicrophoneDevice = micdevice.Guid;
             Properties.Settings.Default.LastSpeakerDevice = speakdevice.Guid;
             Properties.Settings.Default.Save();
+            Option.Save();
 
 
 

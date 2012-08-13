@@ -730,7 +730,7 @@ namespace RTP
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
                 else if (m_objAgreedPayload.Name == "G722_40")
                     AudioRTPStream.AudioCodec = new G722CodecWrapper();
-#if !WINDOWS_PHONE
+#if !(WINDOWS_PHONE || NOSPEEX)
                 else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "16000"))
                    AudioRTPStream.AudioCodec = new SpeexCodec(NSpeex.BandMode.Wide);
                 else if ((m_objAgreedPayload.Name == "speex") && (m_objAgreedPayload.ClockRate == "8000") )

@@ -136,12 +136,15 @@ namespace RTP
             if (AudioCodec == null)
                 return null;
 
-            int nSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(AudioCodec.ReceivePTime));
-            int nSizeBytes = nSamples * AudioCodec.AudioFormat.BytesPerSample;
+            //int nSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(AudioCodec.ReceivePTime));
+            //int nSizeBytes = nSamples * AudioCodec.AudioFormat.BytesPerSample;
+
 
             RTPPacket packet = IncomingRTPPacketBuffer.GetPacket();
-            if ( (packet == null) && (bReturnArrayOnNA == true) )
-                return new byte[nSizeBytes];
+            if ((packet == null) && (bReturnArrayOnNA == true))
+                return new byte[this.m_nPacketBytes];
+            else if (packet == null)
+                return null;
 
             return AudioCodec.DecodeToBytes(packet);
         }
@@ -156,12 +159,12 @@ namespace RTP
             if (AudioCodec == null)
                 return null;
 
-            int nSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(AudioCodec.ReceivePTime));
-            int nSizeBytes = nSamples * AudioCodec.AudioFormat.BytesPerSample;
+            //int nSamples = AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(AudioCodec.ReceivePTime));
+            //int nSizeBytes = nSamples * AudioCodec.AudioFormat.BytesPerSample;
 
             RTPPacket packet = IncomingRTPPacketBuffer.WaitPacket(nTimeOut, out nMsTook);
             if ( (packet == null) && (bReturnArrayOnNA == true))
-                return new byte[nSizeBytes];
+                return new byte[this.m_nPacketBytes];
 
             return AudioCodec.DecodeToBytes(packet);
         }

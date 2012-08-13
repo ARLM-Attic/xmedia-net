@@ -455,8 +455,6 @@ namespace WPFXMPPClient
 
         void rosterItem_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            this.Dispatcher.Invoke(new Action(() =>
-           {
                RosterItem item = sender as RosterItem;
                if (item == null)
                    return;
@@ -473,7 +471,10 @@ namespace WPFXMPPClient
                    // (AddMarker is used for Add/Move/Update, it's really all the same.)
                    if (AddOrMoveMarker(item))
                    {
-                       RefreshRosterItemList();
+                       this.Dispatcher.Invoke(new Action(() =>
+                       {
+                        RefreshRosterItemList();
+                       }));
                    }
 
                    //MapRosterItem mapRosterItem = null;
@@ -510,7 +511,6 @@ namespace WPFXMPPClient
                //{
                //    // update infowindow or marker
                //}
-           }));
             // throw new NotImplementedException();
         }
 

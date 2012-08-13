@@ -193,7 +193,9 @@ namespace RTP
             int nSequenceCompare = CompareSequence(packet.SequenceNumber, m_nNextExpectedSequence);
             if (nSequenceCompare < 0)
             {
+#if DEBUG
                System.Diagnostics.Debug.WriteLine("Discarding packet with seq {0}, because it's less than {1}", packet.SequenceNumber, m_nNextExpectedSequence);
+#endif
                DiscardedPackets++;
                return;
             }
@@ -212,7 +214,9 @@ namespace RTP
                 {
                     RTPPacket firstpacket = Packets[0];
                     Packets.RemoveAt(0);
+#if DEBUG
                     System.Diagnostics.Debug.WriteLine("Discarding overflow packet {0}, QueueCount is {1} (over {2})", firstpacket, Packets.Count+1, CurrentMaxQueueSize);
+#endif
                     DiscardedPackets++;
                 }
             }
@@ -290,14 +294,18 @@ namespace RTP
 
           if (Packets.Count < CurrentPacketQueueMinimumSize) // don't resize the min packet queue unless we were at that size and couldn't find the right packet
           {
+#if DEBUG
               System.Diagnostics.Debug.WriteLine("***RTPPacket not available (Not increasing size) Size is {0}, sequence expected is {1}, Queue size is {2}", CurrentQueueSize, m_nNextExpectedSequence, Packets.Count);
+#endif
               return;
           }
 
           if (CurrentPacketQueueMinimumSize < (this.InitialPacketQueueMinimumSize + this.PacketSizeShiftMax))
           {
               CurrentPacketQueueMinimumSize++;
+#if DEBUG
               System.Diagnostics.Debug.WriteLine("**********Increasing jitter buffer size to {0}=>{1}", CurrentPacketQueueMinimumSize, CurrentMaxQueueSize);
+#endif
           }
 
           
@@ -350,7 +358,9 @@ namespace RTP
                   // do this to decrease audio latency
                   m_nCorrectOrientedPackets = 0;
                   CurrentPacketQueueMinimumSize--;
+#if DEBUG
                   System.Diagnostics.Debug.WriteLine("**********Decreasing jitter buffer size to {0}=>{1}", CurrentPacketQueueMinimumSize, CurrentMaxQueueSize);
+#endif
 
                   Packets.RemoveAt(0);
                   m_nNextExpectedSequence = Packets[0].SequenceNumber;
@@ -372,7 +382,9 @@ namespace RTP
                   if (CurrentPacketQueueMinimumSize < (this.InitialPacketQueueMinimumSize + this.PacketSizeShiftMax))
                   {
                       CurrentPacketQueueMinimumSize++;
+#if DEBUG
                       System.Diagnostics.Debug.WriteLine("**********Increasing jitter buffer size to {0}=>{1}", CurrentPacketQueueMinimumSize, CurrentMaxQueueSize);
+#endif
                       m_bWaitingForQueueToGrow = true;
                   }
 

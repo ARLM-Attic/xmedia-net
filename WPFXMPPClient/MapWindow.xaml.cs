@@ -1262,7 +1262,7 @@ namespace WPFXMPPClient
                 // clear all other buddies center on me fields
                 foreach (BuddyPosition buddyPosition in BuddyPositions)
                 {
-                    buddyPosition.CenterOnBuddy = false;
+                  //  buddyPosition.CenterOnBuddy = false;
                 }
                 OurRosterItem = buddy.RosterItem;
                 ShowMapButton_Click(sender, e);
