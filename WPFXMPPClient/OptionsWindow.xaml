@@ -85,8 +85,9 @@
             <TabItem Header="Maps">
                 <StackPanel>
                     <CheckBox Margin="0,5" IsChecked="{Binding SeparateMapForEachRosterItem}" x:Name="CheckBoxSeparateMapForEachRosterItem" Content="Show a separate map for each buddy" />
-                    
-                    
+                    <CheckBox Margin="0,5" IsChecked="{Binding UseLegacyMapWindow}" x:Name="CheckBoxUseLegacyMapWindow" Content="Use legacy (original) map window" />
+
+
                     <!--<CheckBox Margin="0,5" IsChecked="{Binding UseLocalSOCKS5Proxy}" x:Name="CheckBoxUseLocalSOCKS5Proxy" Content="Use Local SOCKS5 Proxy" />
                     <StackPanel Margin="5,0" Orientation="Horizontal">
                         <Label Width="160">SOCKS5 Proxy Public IP</Label>
