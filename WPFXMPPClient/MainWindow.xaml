@@ -133,7 +133,7 @@
                             <ColumnDefinition Width="35" />
                         </Grid.ColumnDefinitions>
 
-                        <Button Grid.Column="0" Visibility="{Binding GeoVisible}" HorizontalAlignment="Stretch" Click="ButtonViewMap_Click" Width="30" Height="30"  RenderTransformOrigin=".5,.5" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonGlobe" ToolTip="Show location" >
+                        <Button Grid.Column="0" Visibility="{Binding GeoVisible}" HorizontalAlignment="Stretch" Click="ButtonViewMap_Click2" Width="30" Height="30"  RenderTransformOrigin=".5,.5" VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonGlobe" ToolTip="Show location" >
                             <Button.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform/>
