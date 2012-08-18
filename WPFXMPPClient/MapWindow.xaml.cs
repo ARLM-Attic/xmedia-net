@@ -172,12 +172,12 @@ namespace WPFXMPPClient
             InitializeComponent();
         }
 
-        //private bool m_bSingleRosterItemMap = true;
+        //private bool BSingleRosterItemMap = true;
 
         //public bool SingleRosterItemMap
         //{
-        //    get { return m_bSingleRosterItemMap; }
-        //    set { m_bSingleRosterItemMap = value; }
+        //    get { return BSingleRosterItemMap; }
+        //    set { BSingleRosterItemMap = value; }
         //}
 
         //// public XMPPClient XMPPClient = null;
