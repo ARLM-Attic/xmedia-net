@@ -236,6 +236,18 @@ namespace WPFXMPPClient
                 LocationClasses.MapManager.SingleRosterItemMap = value;
             }
         }
+
+        private bool m_bUseLegacyMapWindow = true;
+        [DataMember]
+        public bool UseLegacyMapWindow
+        {
+            get { return m_bUseLegacyMapWindow; }
+            set
+            {
+                m_bUseLegacyMapWindow = value;
+                
+            }
+        }
     }
 
 }
