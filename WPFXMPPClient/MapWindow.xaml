@@ -4,7 +4,7 @@
         xmlns:s="http://schemas.microsoft.com/surface/2008"
         xmlns:local="clr-namespace:WPFXMPPClient"
         AllowsTransparency="False" WindowStyle="None"
-        MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded" Width="800" Height="800"
+        MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded" Width="830" Height="800"
         Title="MapWindow" >
 
     <Window.Background>
