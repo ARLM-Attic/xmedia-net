@@ -201,6 +201,13 @@ namespace WPFXMPPClient
             set { m_MapProperties = value; }
         }
 
+        private bool m_bSingleRosterItemMap = true;
+
+        public bool SingleRosterItemMap
+        {
+            get { return m_bSingleRosterItemMap; }
+            set { m_bSingleRosterItemMap = value; }
+        }
 
         private RosterItem m_OurRosterItem = new RosterItem();
 
