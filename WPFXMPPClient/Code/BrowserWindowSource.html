@@ -216,7 +216,8 @@
         function buildInfoWindowContent(BareJID, name, lat, lng, avatarPath, strTimeStampString, bShowAvatar,
 		            bShowActionBar, bShowJIDOnly, bUseGoogleLatitudeStyles) {
             var strRet = '';
-         
+           
+
             //var timestamp = new Date();
             bShowAvatar = pick(bShowAvatar, false);
             bUseGoogleLatitudeStyles = pick(bUseGoogleLatitudeStyles, false);
@@ -420,9 +421,9 @@
         function getTimeStampString(timestamp) {
            var dateString = "";
            var newDate = new Date();
-	   // newDate.setTime(timestamp*1000  + timestamp.getTimezoneOffset() * 60000);
+           //	 newDate.setTime(timestamp*1000  + timestamp.getTimezoneOffset() * 60000);
+           newDate.setTime(timestamp);
            dateString = newDate.toLocaleString();
-
            return dateString;
         }
 
