@@ -1340,7 +1340,7 @@ namespace WPFXMPPClient
             if (ShowMapWindow())
             {
 
-                MapBrowserWindow.AddRosterItemBody();
+                //MapBrowserWindow.AddRosterItemBody();
             }  // AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
             //}
         }

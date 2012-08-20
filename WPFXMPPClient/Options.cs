@@ -237,7 +237,7 @@ namespace WPFXMPPClient
             }
         }
 
-        private bool m_bUseLegacyMapWindow = true;
+        private bool m_bUseLegacyMapWindow = false;
         [DataMember]
         public bool UseLegacyMapWindow
         {
@@ -246,6 +246,18 @@ namespace WPFXMPPClient
             {
                 m_bUseLegacyMapWindow = value;
                 
+            }
+        }
+
+        private bool m_bMapDebugOn = false;
+        [DataMember]
+        public bool MapDebugOn
+        {
+            get { return m_bMapDebugOn; }
+            set
+            {
+                m_bMapDebugOn = value;
+
             }
         }
     }

@@ -337,7 +337,7 @@ namespace WPFXMPPClient
 
             }
             // throw new NotImplementedException();
-        }
+        
 
         void MapManager_AddMarker(object sender, MarkerArgs e)
         {
