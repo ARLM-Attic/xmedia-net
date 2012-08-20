@@ -236,9 +236,10 @@ namespace LocationClasses
             sb.AppendLine("   var infoWindow = new google.maps.InfoWindow({");
             //sb.AppendLine(String.Format("      position: {0},{1},", rosterItem.GeoLoc.lat, rosterItem.GeoLoc.lat));
             // map.getCenter(),");
-            sb.AppendLine(String.Format("      content: '<table><tr><td><img height=\"40\" src=\"http://blog.greenearthbamboo.com/wp-content/uploads/2012/03/Miranda-Kerr.jpg\" /></td><td><h3>{0}</h3></td></tr><tr><td colspan=\"2\">{1}<br>{2}</td></tr></table>'", 
-                rosterItem.Name, rosterItem.JID.ToString(), rosterItem.GeoLoc.TimeStamp));
-            sb.AppendLine("   });");
+            //sb.AppendLine(String.Format("      content: '<table><tr><td><img height=\"40\" src=\"http://blog.greenearthbamboo.com/wp-content/uploads/2012/03/Miranda-Kerr.jpg\" /></td><td><h3>{0}</h3></td></tr><tr><td colspan=\"2\">{1}<br>{2}</td></tr></table>'", 
+            //    rosterItem.Name, rosterItem.JID.ToString(), rosterItem.GeoLoc.TimeStamp));
+            sb.AppendLine(String.Format("      content: '<table><tr><td><h3>{0}</h3></td></tr><tr><td colspan=\"2\">{1}<br>{2}</td></tr></table>'",
+               rosterItem.Name, rosterItem.JID.ToString(), rosterItem.GeoLoc.TimeStamp)); sb.AppendLine("   });");
 
             sb.AppendLine(String.Format("   var latLng = new google.maps.LatLng({0}, {1});", rosterItem.GeoLoc.lat, rosterItem.GeoLoc.lon));
       
