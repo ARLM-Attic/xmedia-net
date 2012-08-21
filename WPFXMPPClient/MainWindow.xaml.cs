@@ -1214,6 +1214,7 @@ namespace WPFXMPPClient
             {
                 BrowserPopupWindow exwin = BrowserPopupWindows[item.JID.BareJID];
                 exwin.AddRosterItem(item);
+
                 exwin.AddRosterItemBody();
 
                 exwin.Title = "Buddy Map - " + item.JID.BareJID;
@@ -1312,13 +1313,10 @@ namespace WPFXMPPClient
             MapBrowserWindow.SingleRosterItemMap = false;
             MapBrowserWindow.AddRosterItem(item);
 
-
             if (ShowMapBrowserWindow())
             {
-
                 MapBrowserWindow.AddRosterItemBody();
-            }  // AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
-            //}
+            } 
         }
  
         private void ButtonViewMapConsolidated_Click(object sender, RoutedEventArgs e)

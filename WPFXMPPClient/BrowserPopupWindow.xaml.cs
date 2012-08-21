@@ -753,8 +753,8 @@ namespace WPFXMPPClient
             if (WebBrowserMain.Document == null)
                 return false;
             bool bResult = true;
-         
-            if (item.CurrentLocation.lat == 0 && item.CurrentLocation.lon == 0)
+
+            if (item.RosterItem.GeoLoc.lat == 0 && item.RosterItem.GeoLoc.lon == 0)
                 return false;
            
             this.Dispatcher.Invoke((Action)delegate()
