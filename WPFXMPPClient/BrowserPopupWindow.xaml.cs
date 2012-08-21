@@ -466,8 +466,10 @@ namespace WPFXMPPClient
                if (item == null)
                    return;
 
-               // if (item != OurRosterItem)
-               //     return;
+               if (item != OurRosterItem && Option.Options.SingleRosterItemMap == true)
+               {
+                   return;
+               } 
 
                // WebBrowserMap.Navigate(strURL);
                if (e.PropertyName == "GeoLoc" || e.PropertyName == "Name" || e.PropertyName == "JID" || e.PropertyName == "Avatar" || e.PropertyName == "Presence")
@@ -574,7 +576,12 @@ namespace WPFXMPPClient
             {
                 TabItemKML.Visibility = System.Windows.Visibility.Visible;
                 TabItemSourceCode.Visibility = System.Windows.Visibility.Visible;
-                //if (SendRawXMLWindow.IsLoaded == false)
+                TabItemGoogleEarthFriends.Visibility = System.Windows.Visibility.Visible;
+
+                //foreach (TabItem tabItem in this.TabControl1.Items)
+                //{
+                //    tabItem.Visibility = System.Windows.Visibility.Visible;
+                //}
                 //    SendRawXMLWindow.Show();
                 //else if (this.SendRawXMLWindow.Visibility == System.Windows.Visibility.Hidden)
                 //    this.SendRawXMLWindow.Visibility = System.Windows.Visibility.Visible;
@@ -924,8 +931,8 @@ namespace WPFXMPPClient
 
         public void AddRosterItemBody()
         {
-            this.TextBoxTitle.Text = "Buddy Map - " + OurRosterItem.JID.BareJID;
-            this.Title = "Buddy Map - " + OurRosterItem.JID.BareJID;
+            this.TextBoxTitle.Text = "Buddy Map - " + OurRosterItem.JID.ToString();
+            this.Title = "Buddy Map - " + OurRosterItem.JID.ToString();
 
             if (MapManager == null)
             {

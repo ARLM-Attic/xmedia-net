@@ -37,7 +37,7 @@
         var bDebug = false;
         var variables = Array();
         var variableHash = Array();
-	 var primaryBareJID; 
+        var primaryBareJID;
         var MapAnnotationList = Array();
         var MapAnnotationHash = Array();
         var mapManager = new MapManager();
@@ -56,19 +56,19 @@
 
         var pinImageRed = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColorRed,
            new google.maps.Size(21, 34),
-           new google.maps.Point(0,0),
+           new google.maps.Point(0, 0),
            new google.maps.Point(10, 34));
 
         var pinImageGreen = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColorGreen,
            new google.maps.Size(21, 34),
-           new google.maps.Point(0,0),
+           new google.maps.Point(0, 0),
            new google.maps.Point(10, 34));
 
         var pinImageYellow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColorYellow,
            new google.maps.Size(21, 34),
-           new google.maps.Point(0,0),
+           new google.maps.Point(0, 0),
            new google.maps.Point(10, 34));
- 
+
         var pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
            new google.maps.Size(40, 37),
            new google.maps.Point(0, 0),
@@ -77,10 +77,10 @@
         // Load the Visualization API and the columnchart package.
         google.load("visualization", "1", { packages: ["columnchart"] });
 
-	 function MapManager() {
-           var center;
-           var buddyToFollow;
-           var bCenter = true;
+        function MapManager() {
+            var center;
+            var buddyToFollow;
+            var bCenter = true;
 
         }
 
@@ -110,18 +110,18 @@
         }
 
         function varExists(arg) {
-          //alert(arg);
-          //alert(typeof arg);
-          if (typeof arg == 'undefined') {
-              //alert('false');
-	       return false;
-          }
-          //alert('true');
-          return true;
+            //alert(arg);
+            //alert(typeof arg);
+            if (typeof arg == 'undefined') {
+                //alert('false');
+                return false;
+            }
+            //alert('true');
+            return true;
         }
 
-	 function setAsPrimaryJID() {
-           
+        function setAsPrimaryJID() {
+
         }
 
         function contains(a, obj) {
@@ -198,25 +198,25 @@
         }
 
         function MapAnnotation() {
-           var marker = new google.maps.Marker();
-           var latLng = new google.maps.LatLng();
-           var infoWindow = new google.maps.InfoWindow();
-           var title = "";
-           var subtitle = "";
-           var markerImage;
-           var BareJID;
+            var marker = new google.maps.Marker();
+            var latLng = new google.maps.LatLng();
+            var infoWindow = new google.maps.InfoWindow();
+            var title = "";
+            var subtitle = "";
+            var markerImage;
+            var BareJID;
         }
 
         function DumpMapAnnotationHash() {
-           for (annotation in MapAnnotationHash) {
-              alert(annotation);
-           }
+            for (annotation in MapAnnotationHash) {
+                alert(annotation);
+            }
         }
 
         function buildInfoWindowContent(BareJID, name, lat, lng, avatarPath, strTimeStampString, bShowAvatar,
 		            bShowActionBar, bShowJIDOnly, bUseGoogleLatitudeStyles) {
             var strRet = '';
-           
+
 
             //var timestamp = new Date();
             bShowAvatar = pick(bShowAvatar, true);
@@ -297,9 +297,9 @@
 
         function debug(strMsg) {
             if (bDebug) {
-               alert(strMsg);
-               insertText(strMsg, 'textIns');
-	     }
+                alert(strMsg);
+                insertText(strMsg, 'textIns');
+            }
         }
 
         function parseData() {
@@ -323,10 +323,10 @@
             }
         }
 
-          function addSerializedObjectToDictionary(strTypeName, strObjectJSONSerialized) {
+        function addSerializedObjectToDictionary(strTypeName, strObjectJSONSerialized) {
             var parsedData;
-            
-            try { 
+
+            try {
                 parseData(strObjectJSONSerialized);
             }
             catch (err) {
@@ -336,12 +336,12 @@
 
             variables.push(parsedData);
 
-            }
+        }
 
         function addSerializedObjectToArray(strTypeName, strObjectJSONSerialized) {
             var parsedData;
-            
-            try { 
+
+            try {
                 parseData(strObjectJSONSerialized);
             }
             catch (err) {
@@ -419,12 +419,12 @@
         }
 
         function getTimeStampString(timestamp) {
-           var dateString = "";
-           var newDate = new Date();
-           //	 newDate.setTime(timestamp*1000  + timestamp.getTimezoneOffset() * 60000);
-           newDate.setTime(timestamp);
-           dateString = newDate.toLocaleString();
-           return dateString;
+            var dateString = "";
+            var newDate = new Date();
+            //	 newDate.setTime(timestamp*1000  + timestamp.getTimezoneOffset() * 60000);
+            newDate.setTime(timestamp);
+            dateString = newDate.toLocaleString();
+            return dateString;
         }
 
         function addMarker(BareJID, name, lat, lng, timestamp, avatarPath, bShowInfoWindow, bSetAsCenter) {
@@ -433,33 +433,34 @@
             bShowInfoWindow = pick(bShowInfoWindow, false);
             bSetAsCenter = pick(bSetAsCenter, true);
             bShowInfoWindow = false;
-	     var strTimeStampString = getTimeStampString(timestamp);
-	     if (false) {
-	         if (varExists(MapAnnotationHash[BareJID])) {
-	             //alert('i exist in the hash : ' + BareJID);
-	             var newMapAnnotation = new MapAnnotation({
-	                 BareJID: BareJID,
-	                 latLng: new google.maps.LatLng(lat, lng),
-	                 infowindow: buildInfoWindowContent(BareJID, name, lat, lng, avatarPath, timestamp),
-	                 markerImage: new google.maps.MarkerImage(avatarPath, new google.maps.Size(32, 32))
-	             });
-	             newMapAnnotation.marker = new google.maps.Marker(lat, lng);
+            var strTimeStampString = getTimeStampString(timestamp);
 
-	             // MapAnnotationHash[BareJID];
-	             newMapAnnotation.title = BareJID + '\n' + newMapAnnotation.latLng + '\n' + strTimeStampString;
-	             newMapAnnotation.marker.setPosition(newMapAnnotation.marker.latLng);
-	             newMapAnnotation.marker.title =
+            if (false) {
+                if (varExists(MapAnnotationHash[BareJID])) {
+                    //alert('i exist in the hash : ' + BareJID);
+                    var newMapAnnotation = new MapAnnotation({
+                        BareJID: BareJID,
+                        latLng: new google.maps.LatLng(lat, lng),
+                        infowindow: buildInfoWindowContent(BareJID, name, lat, lng, avatarPath, timestamp),
+                        markerImage: new google.maps.MarkerImage(avatarPath, new google.maps.Size(32, 32))
+                    });
+                    newMapAnnotation.marker = new google.maps.Marker(lat, lng);
+
+                    // MapAnnotationHash[BareJID];
+                    newMapAnnotation.title = BareJID + '\n' + newMapAnnotation.latLng + '\n' + strTimeStampString;
+                    newMapAnnotation.marker.setPosition(newMapAnnotation.marker.latLng);
+                    newMapAnnotation.marker.title =
 			BareJID + '\n' + newMapAnnotation.latLng + '\n' + strTimeStampString;
 
 
-	             newMapAnnotation.marker.icon = pinImageYellow;
-	             newMapAnnotation.marker.shadow = pinShadow;
+                    newMapAnnotation.marker.icon = pinImageYellow;
+                    newMapAnnotation.marker.shadow = pinShadow;
 
-	             //map.setCenter(newMapAnnotation.latLng);
-	             return;
-	         }
-	     }
-            mapAnnotation = new MapAnnotation();   
+                    //map.setCenter(newMapAnnotation.latLng);
+                    return;
+                }
+            }
+            mapAnnotation = new MapAnnotation();
 
             // timestamp - add in later!
             // add in markerStyleType later
@@ -482,7 +483,7 @@
                 mapAnnotation.infoWindow = infowindow[BareJID];
 
                 var title = BareJID + '\n' + latLng[BareJID] + '\n' + strTimeStampString;
-		   mapAnnotation.title = title;
+                mapAnnotation.title = title;
 
                 var markerImage = new google.maps.MarkerImage(avatarPath, new google.maps.Size(32, 32));
                 mapAnnotation.markerImage = markerImage;
@@ -496,20 +497,21 @@
                     animation: google.maps.Animation.DROP
                 });
 
-		   mapAnnotation.marker = marker[BareJID];
+                mapAnnotation.marker = marker[BareJID];
 
                 // RIGGED FOR NOW.
                 mapCenter = latLng[BareJID];
                 if (mapManager.bCenter) {
-             	      mapManager.center = mapCenter;
-                  mapManager.bCenter = false;
-	         }
+                    mapManager.center = mapCenter;
+                    mapManager.bCenter = false;
+                }
 
-                if (bSetAsCenter) 
+                if (bSetAsCenter)
                     map.setCenter(mapAnnotation.latLng);
 
                 if (bShowInfoWindow) {
-                    mapAnnotation.infoWindow.open(map, marker[BareJID]);
+                    mapAnnotation.infoWindow.open(map, mapAnnotation.marker);
+                    // marker[BareJID]);
                 }
                 else {
                     mapAnnotation.marker.setMap(map);
@@ -521,16 +523,16 @@
                     mapAnnotation.infoWindow.open(map, mapAnnotation.marker);
                 });
 
-//                google.maps.event.addListener(infowindow[BareJID], 'dblclick', function () {
-//                    //map.setCenter(latLng[BareJID]);
-//                    map.panTo(latLng[BareJID]);
-//                    //infowindow[BareJID].open(map, marker[BareJID]);
-//                });
+                //                google.maps.event.addListener(infowindow[BareJID], 'dblclick', function () {
+                //                    //map.setCenter(latLng[BareJID]);
+                //                    map.panTo(latLng[BareJID]);
+                //                    //infowindow[BareJID].open(map, marker[BareJID]);
+                //                });
             }
             catch (err) {
                 debug(err);
             }
-            
+
             MapAnnotationHash[BareJID] = mapAnnotation;
 
 
@@ -545,7 +547,6 @@
         }
 
         function setBounds() {
-
             debug("=> entering setBounds");
             latLngBounds = new google.maps.LatLngBounds();
             for (latLongitude in latLng) {
@@ -566,15 +567,15 @@
         function codeLatLng(latLng) {
             var geocoder = new google.maps.Geocoder();
             geocoder.geocode({ 'latLng': latLng },
-       function (results, status) {
-           if (status == google.maps.GeocoderStatus.OK) {
-               if (results[0]) {
+            function (results, status) {
+              if (status == google.maps.GeocoderStatus.OK) {
+                if (results[0]) {
                    return results[0];
-               } else {
+                 } else {
                    return "Geocoder failed due to: " + status;
-               }
-           }
-       });
+                 }
+              }
+           });
         }
 
 

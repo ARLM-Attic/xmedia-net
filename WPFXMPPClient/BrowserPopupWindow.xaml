@@ -106,10 +106,10 @@
 
             <Grid Grid.Row="1" Background="Transparent" Margin="3,3,3,3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DataContext="{Binding MapManager}">
 
-                <TabControl Background="Beige" Margin="3,3,3,3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
- 
-                    
- 
+                <TabControl x:Name="TabControl1" Background="Beige" Margin="3,3,3,3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+
+
 
                     <TabItem x:Name="TabItemBrowser" Header="Google Maps" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <Grid x:Name="GridMap">
@@ -130,9 +130,9 @@
                             <Grid Name="ContentLeft" Grid.ColumnSpan="3" Grid.Row="3">
 
                                 <StackPanel>
-                                    
+
                                     <Label VerticalAlignment="Center" FontSize="14" FontWeight="Bold">Roster</Label>
-                                    
+
                                     <ListView MinHeight="100" Visibility="Visible" Loaded="ListViewRosterItems_Loaded" Grid.Row="3" 
                                               ItemsSource="{Binding MapManager.DictMapRosterItems.Values}"
                                               x:Name="ListViewRosterItems" SelectionChanged="ListViewRosterItems_SelectionChanged"
@@ -147,33 +147,33 @@
                                                         </DataTemplate>
                                                     </GridViewColumn.CellTemplate>
                                                 </GridViewColumn>
-                                                
+
                                                 <GridViewColumn Width="100">
-                                                        <GridViewColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <Image Source="{Binding RosterItem.Avatar}" Width="64" Height="64" />
-                                                                    
-                                                                    <StackPanel Orientation="Vertical">
-                                                                        <Label FontSize="10" VerticalAlignment="Center" FontWeight="Bold" Content="{Binding RosterItem.JID.BareJID}" />
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Image Source="{Binding RosterItem.Avatar}" Width="64" Height="64" />
 
-                                                                        <!--  PresenceType, PresenceShow, Status -->
+                                                                <StackPanel Orientation="Vertical">
+                                                                    <Label FontSize="10" VerticalAlignment="Center" FontWeight="Bold" Content="{Binding RosterItem.JID.BareJID}" />
 
-                                                                        <Label FontSize="8" VerticalAlignment="Center" Content="{Binding RosterItem.Presence.Status}" />
-                                                                        <!--<Label FontSize="8" VerticalAlignment="Center" Content="Show:     {Binding RosterItem.Presence.PresenceShow}" />
+                                                                    <!--  PresenceType, PresenceShow, Status -->
+
+                                                                    <Label FontSize="8" VerticalAlignment="Center" Content="{Binding RosterItem.Presence.Status}" />
+                                                                    <!--<Label FontSize="8" VerticalAlignment="Center" Content="Show:     {Binding RosterItem.Presence.PresenceShow}" />
                                                 <Label FontSize="8" VerticalAlignment="Center" Content="Status:   {Binding RosterItem.Presence.Status}" />-->
 
-                                                                        <!--<Label FontSize="8" VerticalAlignment="Center" Content="{Binding RosterItem.GeoString}" />
+                                                                    <!--<Label FontSize="8" VerticalAlignment="Center" Content="{Binding RosterItem.GeoString}" />
                                                         <Label FontSize="8" VerticalAlignment="Center" Content="{Binding RosterItem.GeoLoc.TimeStamp}" />-->
-                                                                    </StackPanel>
                                                                 </StackPanel>
-                                                          
- 
+                                                            </StackPanel>
+
+
 
                                                         </DataTemplate>
                                                     </GridViewColumn.CellTemplate>
                                                 </GridViewColumn>
-                                                
+
                                             </GridView>
                                         </ListView.View>
 
@@ -206,6 +206,7 @@
 
                         </Grid>
                     </TabItem>
+                    
                     <TabItem Header="KML" x:Name="TabItemKML" Visibility="Collapsed">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -226,6 +227,7 @@
                         </Grid>
 
                     </TabItem>
+ 
                     <TabItem Header="Source Code" x:Name="TabItemSourceCode" Visibility="Collapsed">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -301,7 +303,8 @@
                             </StackPanel>
                         </Grid>
                     </TabItem>
-                    <TabItem x:Name="TabItemMapView" Header="Map View" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+
+                    <TabItem Visibility="Collapsed"  x:Name="TabItemMapView" Header="Map View" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <Grid x:Name="GridMapView">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="600*"></RowDefinition>
@@ -471,6 +474,7 @@
 
                         </Grid>
                     </TabItem>
+
                     <TabItem Header="Maps" Visibility="Collapsed">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -563,13 +567,14 @@
                             <!--<ComboBox HorizontalAlignment="Left" Height="30" Margin="3,3,3,3" Width="200"  Grid.Row="3" Grid.Column="1" x:Name="ComboBoxCodeSnippets" SelectedValue="{Binding MapBuilder.MapProvider, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource mapProviderTypeData}}" SelectionChanged="ComboBoxMapProviderType_SelectionChanged"></ComboBox>-->
                         </Grid>
                     </TabItem>
-                    <TabItem Header="Google Earth Friends" Visibility="Collapsed">
+
+                    <TabItem x:Name="TabItemGoogleEarthFriends" Header="Google Earth Friends" Visibility="Collapsed">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="135" />
                                 <ColumnDefinition Width="730" />
                             </Grid.ColumnDefinitions>
-                            <ListView x:Name="ListViewBuddies" ItemsSource="{Binding Source={StaticResource SortedRosterItems}}" Grid.ColumnSpan="2">                              
+                            <ListView x:Name="ListViewBuddies" ItemsSource="{Binding Source={StaticResource SortedRosterItems}}" Grid.ColumnSpan="2">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
