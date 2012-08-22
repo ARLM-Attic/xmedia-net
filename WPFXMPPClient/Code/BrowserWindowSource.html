@@ -215,8 +215,8 @@
 
         function buildInfoWindowContent(BareJID, name, lat, lng, avatarPath, strTimeStampString, bShowAvatar,
 		            bShowActionBar, bShowJIDOnly, bUseGoogleLatitudeStyles) {
-            var strRet = '';
 
+            var strRet = '';
 
             //var timestamp = new Date();
             bShowAvatar = pick(bShowAvatar, true);
@@ -500,11 +500,11 @@
                 mapAnnotation.marker = marker[BareJID];
 
                 // RIGGED FOR NOW.
-                mapCenter = latLng[BareJID];
-                if (mapManager.bCenter) {
-                    mapManager.center = mapCenter;
-                    mapManager.bCenter = false;
-                }
+                //mapCenter = latLng[BareJID];
+                //if (mapManager.bCenter) {
+                //    mapManager.center = mapCenter;
+                //    mapManager.bCenter = false;
+                //}
 
                 if (bSetAsCenter)
                     map.setCenter(mapAnnotation.latLng);
