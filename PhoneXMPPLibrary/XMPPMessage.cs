@@ -508,8 +508,13 @@ namespace System.Net.XMPP
             set { m_strCode = value; }
         }
 
+#if !MONO
         [XmlAnyElement()]
         public ErrorDescription ErrorDescription = null;
+#else
+        [XmlIgnore]
+        public ErrorDescription ErrorDescription = null;
+#endif
 
 //#if WINDOWS_PHONE
 //#else

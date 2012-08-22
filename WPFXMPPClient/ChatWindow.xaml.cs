@@ -218,6 +218,7 @@ namespace WPFXMPPClient
             if (e.Key == Key.Return)
             {
                 DoSend();
+                e.Handled = true;
             }
 
         }

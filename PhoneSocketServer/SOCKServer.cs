@@ -281,7 +281,7 @@ namespace xmedianet.socketserver
                         }
                         else
                         {
-                            Console.WriteLine("SOCKS5 Bytestream connection for: {0}", reqmsg.DestinationDomain);
+                            Console.WriteLine("Incoming SOCKS5 Bytestream Connect command to domain: {0}, remote endppoint is: {1}", reqmsg.DestinationDomain, this.socket.RemoteEndPoint);
                             RemoteHost = reqmsg.DestinationDomain;
                             bConnected = true;
                             this.ServerSessionState = ServerSessionState.JustExisting;

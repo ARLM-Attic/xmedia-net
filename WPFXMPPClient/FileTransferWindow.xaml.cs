@@ -48,6 +48,11 @@ namespace WPFXMPPClient
 
         private void ButtonCancelSend_Click(object sender, RoutedEventArgs e)
         {
+            FileTransfer trans = ((FrameworkElement)sender).DataContext as FileTransfer;
+            if (trans != null)
+            {
+                XMPPClient.FileTransferManager.CancelSendFile(trans);
+            }
 
         }
 

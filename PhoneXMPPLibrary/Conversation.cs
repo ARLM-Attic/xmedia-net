@@ -18,6 +18,12 @@ using System.Xml.Serialization;
 
 namespace System.Net.XMPP
 {
+    public enum TextMessageType
+    {
+        ChatMessage,
+        Attachment,
+    }
+
     [DataContract]
     public class TextMessage : System.ComponentModel.INotifyPropertyChanged
     {
@@ -100,6 +106,27 @@ namespace System.Net.XMPP
             }
         }
 
+        private string m_strAttachment = "";
+        [DataMember]
+        public string Attachment
+        {
+            get { return m_strAttachment; }
+            set 
+            { 
+                m_strAttachment = value;
+                FirePropertyChanged("Attachment");
+            }
+        }
+
+
+        private FileTransfer m_objActiveFileTransfer = null;
+        [XmlIgnore]
+        public FileTransfer ActiveFileTransfer
+        {
+            get { return m_objActiveFileTransfer; }
+            set { m_objActiveFileTransfer = value; }
+        }
+
 
         private string m_strThread = "";
         [DataMember]
@@ -139,6 +166,18 @@ namespace System.Net.XMPP
             }
         }
 #endif
+
+        private TextMessageType m_eMessageType = TextMessageType.ChatMessage;
+        [DataMember]
+        public TextMessageType MessageType
+        {
+            get { return m_eMessageType; }
+            set 
+            { 
+                m_eMessageType = value;
+                FirePropertyChanged("MessageType");
+            }
+        }
 
         #region INotifyPropertyChanged Members
 

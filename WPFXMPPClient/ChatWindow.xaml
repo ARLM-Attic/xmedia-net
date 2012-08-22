@@ -178,7 +178,7 @@
                     <ColumnDefinition Width="80*" />
                     <ColumnDefinition Width="60" />
                 </Grid.ColumnDefinitions>
-                <s:SurfaceTextBox Grid.Column="0"  x:Name="TextBoxChatToSend" PreviewKeyDown="TextBoxChatToSend_PreviewKeyDown"></s:SurfaceTextBox>
+                <s:SurfaceTextBox Grid.Column="0"  x:Name="TextBoxChatToSend" PreviewKeyDown="TextBoxChatToSend_PreviewKeyDown" AcceptsReturn="True" MaxLines="50000" MaxHeight="38"></s:SurfaceTextBox>
                 <s:SurfaceButton ToolTip="Send Message" Grid.Column="1"  x:Name="ButtonSend" Click="ButtonSend_Click" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Width="20" Height="20" Source="Images/mail.png" />
                 </s:SurfaceButton>

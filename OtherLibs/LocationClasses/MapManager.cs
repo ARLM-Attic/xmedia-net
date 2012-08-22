@@ -587,7 +587,13 @@ namespace LocationClasses
                 //strFileName = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\" + "Avatars" + "\\" +
                 //    rosterItem.JID.BareJID.ToString() + ".jpg";  //file name 
 
-                encoder.Frames.Add(BitmapFrame.Create((BitmapImage)avatarImage));
+                try
+                {
+                    encoder.Frames.Add(BitmapFrame.Create((BitmapImage)avatarImage));
+                }
+                catch (Exception ex)
+                {
+                }
                 bool bFileExists = false;
 
                 // backup existing avatar
@@ -606,8 +612,14 @@ namespace LocationClasses
                 //hopefully this works.
                 if (!bFileExists)
                 {
-                    using (var filestream = new FileStream(strFileName, FileMode.Create))
-                        encoder.Save(filestream);
+                    try
+                    {
+                        using (var filestream = new FileStream(strFileName, FileMode.Create))
+                            encoder.Save(filestream);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
             return strFileName;

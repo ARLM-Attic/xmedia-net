@@ -38,17 +38,21 @@ namespace xmedianet.socketserver
             }
         }
 
+        public IPEndPoint BindPort = null;
+
 
         public bool EnableAccept(int nPort)
 		{
-			IPEndPoint ep = new IPEndPoint(System.Net.IPAddress.Any, nPort);
-			return EnableAccept(ep);
+            if (BindPort == null)
+                BindPort = new IPEndPoint(System.Net.IPAddress.Any, nPort);
+            return EnableAccept();
 		}
 
         public bool EnableAcceptIPV6(int nPort)
         {
-            IPEndPoint ep = new IPEndPoint(System.Net.IPAddress.IPv6Any, nPort);
-            return EnableAccept(ep);
+            if (BindPort == null)
+                BindPort = new IPEndPoint(System.Net.IPAddress.IPv6Any, nPort);
+            return EnableAccept();
         }
 
         private int m_nPortListeningOn = 0;
@@ -65,17 +69,15 @@ namespace xmedianet.socketserver
 		/// </summary>
 		/// <param name="ep"></param>
 		/// <param name="creator"></param>
-		public bool EnableAccept( IPEndPoint ep)
+		public bool EnableAccept()
 		{
             if (ListeningSocket != null)
                 throw new Exception("Already Listening");
 
-			System.Net.EndPoint epBind  = (EndPoint)ep;
-                
-		    ListeningSocket = new System.Net.Sockets.Socket(ep.AddressFamily/*AddressFamily.InterNetwork*/, SocketType.Stream, ProtocolType.IP);
+            ListeningSocket = new System.Net.Sockets.Socket(BindPort.AddressFamily/*AddressFamily.InterNetwork*/, SocketType.Stream, ProtocolType.IP);
 		    try
 		    {
-			    ListeningSocket.Bind(epBind);
+                ListeningSocket.Bind(BindPort);
                 PortListeningOn = ((IPEndPoint)ListeningSocket.LocalEndPoint).Port;
 		    }
          catch(SocketException e) /// winso

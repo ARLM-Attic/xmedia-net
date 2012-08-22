@@ -352,13 +352,13 @@ namespace System.Net.XMPP
                         return true;
                     }
 
-                    FileTransfer newreq = new FileTransfer(siiq.filename, siiq.filesize, siiq.From);
+                    FileTransfer newreq = new FileTransfer(siiq.filename, siiq.filesize, siiq.From, siiq.sid);
                     if ((siiq.StreamOptions & StreamOptions.bytestreams) == StreamOptions.bytestreams)
                         newreq.FileTransferType = FileTransferType.ByteStreams;
                     else if ((siiq.StreamOptions & StreamOptions.ibb) == StreamOptions.ibb)
                         newreq.FileTransferType = FileTransferType.IBB;
 
-                    newreq.sid = siiq.sid;
+                    //newreq.sid = siiq.sid;
 
 
                     FileDownloadRequests.Add(siiq.sid, siiq);
@@ -758,7 +758,7 @@ namespace System.Net.XMPP
                     }
                 }
             }
-            else
+            else  /// Receive IBB
             {
                 if (iq.InitalXMLElement != null)
                 {
@@ -770,6 +770,8 @@ namespace System.Net.XMPP
                             strStreamId = elem.Attribute("sid").Value;
                         if ((strStreamId == null) || (strStreamId != this.FileTransfer.sid))
                             return false;
+
+                        this.FileTransfer.FileTransferState = FileTransferState.Transferring;
 
                         FileBuffer.GetAllSamples();
 
@@ -1064,10 +1066,15 @@ namespace System.Net.XMPP
                 
                 
             }
-            else
+            else /// See if we are available to receive this file... Another transfer may be in progress
             {
                 if (iq is ByteStreamQueryIQ)
                 {
+                    if (this.FileTransfer.FileTransferState != FileTransferState.Preparing)
+                        return false;
+
+                    this.FileTransfer.FileTransferState = FileTransferState.Transferring;
+
                     ByteStreamQueryIQ bsiq = iq as ByteStreamQueryIQ;
  
                     if ( (bsiq.ByteStreamQuery != null) && (bsiq.ByteStreamQuery.Hosts != null) && (bsiq.ByteStreamQuery.Hosts.Length > 0) )
@@ -1304,11 +1311,14 @@ namespace System.Net.XMPP
                 ConnectSuccesful = false;
 
                 string strHost = string.Format("{0}{1}{2}", this.FileTransfer.sid, bsiq.From, bsiq.To);
+                /// Sid seems wrong sometimes.. maybe try this to find the bug??
+                //string strHost = string.Format("{0}{1}{2}", bsiq.ByteStreamQuery.SID, bsiq.From, bsiq.To);
+
                 System.Security.Cryptography.SHA1Managed sha = new System.Security.Cryptography.SHA1Managed();
                 byte [] bBytes = sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(strHost));
                 strHost = xmedianet.socketserver.TLS.ByteHelper.HexStringFromByte(bBytes, false, int.MaxValue).ToLower();
 
-                /// Connect parametrs are the sha1 hash and 0, the socks proxy will connect us to the correct place
+                /// Connect parameters are the sha1 hash and 0, the socks proxy will connect us to the correct place
                 client.StartReadOnConnect = true;
                 client.ConnectAsync(strHost, 0);
 

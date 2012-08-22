@@ -23,6 +23,7 @@ namespace System.Net.XMPP
     public enum FileTransferState
     {
         WaitingOnUserAccept,
+        Preparing,
         Transferring,
         Done,
         Error
@@ -46,12 +47,13 @@ namespace System.Net.XMPP
             this.FileTransferState = System.Net.XMPP.FileTransferState.WaitingOnUserAccept;
         }
 
-        public FileTransfer(string strFileName, int nBytesToBeReceived, JID remotejid)
+        public FileTransfer(string strFileName, int nBytesToBeReceived, JID remotejid, string strSID)
         {
             BytesTotal = nBytesToBeReceived;
             BytesRemaining = nBytesToBeReceived;
             FileName = strFileName;
             RemoteJID = remotejid;
+            this.sid = strSID;
             this.FileTransferDirection = System.Net.XMPP.FileTransferDirection.Receive;
             this.FileTransferState = System.Net.XMPP.FileTransferState.WaitingOnUserAccept;
         }
@@ -92,7 +94,7 @@ namespace System.Net.XMPP
         public string sid
         {
             get { return m_strsid; }
-            set { m_strsid = value; }
+            private set { m_strsid = value; }
         }
 
         private int m_nBytesRemaining = 0;
@@ -480,7 +482,7 @@ namespace System.Net.XMPP
         {
             if ( (trans != null) && (trans.ByteStreamLogic == null) )
             {
-                trans.FileTransferState = FileTransferState.Transferring;
+                trans.FileTransferState = FileTransferState.Preparing;
                 if (trans.FileTransferType == FileTransferType.IBB)
                     trans.ByteStreamLogic = new InbandByteStreamLogic(XMPPClient, trans);
                 else
