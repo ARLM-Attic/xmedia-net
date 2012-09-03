@@ -113,15 +113,24 @@ namespace AudioClasses
         }
 
 
-        public static bool operator ==(AudioFormat a, AudioFormat b)
-        {
-            return a.Equals(b);
-        }
+        //public static bool operator ==(AudioFormat a, AudioFormat b)
+        //{
+            
+        //    if ((a is null) && (b == null))
+        //        return true;
+        //    if (a == null)
+        //        return false;
+        //    if (b == null)
+        //        return false;
 
-        public static bool operator !=(AudioFormat a, AudioFormat b)
-        {
-            return !(a == b);
-        }
+
+        //    return a.Equals(b);
+        //}
+
+        //public static bool operator !=(AudioFormat a, AudioFormat b)
+        //{
+        //    return !(a == b);
+        //}
 
 
         public override bool Equals(object obj)
