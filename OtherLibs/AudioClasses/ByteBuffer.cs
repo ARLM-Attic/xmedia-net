@@ -14,8 +14,16 @@ using System.Threading;
 
 namespace AudioClasses
 {
+    public interface IAudioBuffer
+    {
+        int Size { get; }
+        byte[] GetNSamples(int nSamples);
+        int AppendData(byte[] aData);
+        int AppendData(byte[] aData, int nOffset, int nLength);
+        void Clear();
+    }
 
-    public class ByteBuffer
+    public class ByteBuffer : IAudioBuffer
     {
         public ByteBuffer()
         {
