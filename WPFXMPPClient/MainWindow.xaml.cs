@@ -1176,7 +1176,12 @@ namespace WPFXMPPClient
 
         private void ButtonMap_Click(object sender, RoutedEventArgs e)
         {
-            ShowMapBrowserWindow();
+            // View map window with all buddies shown
+            MessageBox.Show("Showing map window with all buddies shown...");
+
+
+
+            // ShowMapBrowserWindow();
         }
 
         private void ButtonMinimize_Click(object sender, RoutedEventArgs e)

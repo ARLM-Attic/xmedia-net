@@ -391,6 +391,24 @@ namespace WPFXMPPClient
             return null;
         }
 
+       
+        void PopulateBuddyPositionsList(object sender, EventArgs e)
+        {
+            /// bind to ourlist
+            /// 
+            foreach (RosterItem item in XMPPClient.RosterItems)
+            {
+                var q = from b in BuddyPositions where b.RosterItem == item select b;
+                if (q != null && q.Count() < 1)
+                    BuddyPositions.Add(new BuddyPosition(item));
+            }
+
+            this.Dispatcher.Invoke(new Action(() => { this.ListViewBuddies.ItemsSource = BuddyPositions; this.DataContext = this; this.ListViewBuddies.DataContext = BuddyPositions; }));
+
+
+        }
+
+
         void XMPPClient_OnRetrievedRoster(object sender, EventArgs e)
         {           
             #region Google Earth Friends
@@ -1222,31 +1240,38 @@ namespace WPFXMPPClient
 
         private void CheckBoxRosterShowAll_Checked(object sender, RoutedEventArgs e)
         {
-            // Add the rest of the roster into the list. Could also do on load. But rather not.
-            foreach (RosterItem rosterItem in XMPPClient.RosterItems)
+            MapManager.ShowAll = (bool)CheckBoxRosterShowAll.IsChecked;
+            //if (CheckBoxRosterShowAll.IsChecked == true)
             {
-                if (MapManager.DictMapRosterItems.ContainsKey(rosterItem.JID.ToString()) == false)
-                {
-                    MapManager.DictMapRosterItems.Add(rosterItem.JID.ToString(), new MapRosterItem()
-                    {
-                        RosterItem = rosterItem,
-                        DateTimeEnqueued = DateTime.Now,
-                        IsDisplayed = false,
-                        IsDisplayedInViewableWindow = false,
-                        IsTheMainRosterItem = false,
-                        IsMe = false,
-                        KMLBuilderForRosterItem = new KMLBuilderForRosterItem(),
-                        MarkerInfoWindowStyleType = MarkerInfoWindowStyleType.InfoWindowWithTextOnly
-                    });
 
+
+                // Add the rest of the roster into the list. Could also do on load. But rather not.
+                foreach (RosterItem rosterItem in XMPPClient.RosterItems)
+                {
+                    if (MapManager.DictMapRosterItems.ContainsKey(rosterItem.JID.ToString()) == false)
+                    {
+                        MapManager.DictMapRosterItems.Add(rosterItem.JID.ToString(), new MapRosterItem()
+                        {
+                            RosterItem = rosterItem,
+                            DateTimeEnqueued = DateTime.Now,
+                            IsDisplayed = (bool)CheckBoxRosterShowAll.IsChecked,
+                            // false,
+                            IsDisplayedInViewableWindow = false,
+                            IsTheMainRosterItem = false,
+                            IsMe = false,
+                            KMLBuilderForRosterItem = new KMLBuilderForRosterItem(),
+                            MarkerInfoWindowStyleType = MarkerInfoWindowStyleType.InfoWindowWithTextOnly
+                        });
+
+
+                    }
+                }
+
+                foreach (var kvp in MapManager.DictMapRosterItems)
+                {
+                    MapRosterItem item = kvp.Value;
 
                 }
-            }
-
-            foreach (var kvp in MapManager.DictMapRosterItems)
-            {
-                MapRosterItem item = kvp.Value;
-
             }
         }
 
@@ -1818,6 +1843,57 @@ namespace WPFXMPPClient
             {
 
             }
+        }
+
+        private void ButtonRefreshRoster_Click(object sender, RoutedEventArgs e)
+        {
+            // Examine the listview items. Are they correct? 
+
+            // ===========
+            // RosterItems
+            // ===========
+            // x:Name="ListViewRosterItems"
+            // ItemsSource="{Binding MapManager.DictMapRosterItems.Values}"
+            System.Diagnostics.Debug.WriteLine("\nThere are {0} items in the ListViewRosterItems Items list", ListViewRosterItems.Items.Count);
+            System.Diagnostics.Debug.WriteLine("There are {0} items in the MapManager.DictMapRosterItems.Values list", MapManager.DictMapRosterItems.Values.Count);
+            System.Diagnostics.Debug.WriteLine("   They are...");
+
+            int index = 0;
+            foreach (var kvp in MapManager.DictMapRosterItems)
+            { 
+                index++;
+                System.Diagnostics.Debug.WriteLine("      {0}. {1}: {2}", index, kvp.Key, kvp.Value);
+            }
+
+            // Re-bind the Roster Items listview to the XMPP roster
+            ListViewRosterItems.ItemsSource = MapManager.DictMapRosterItems.Values;
+            // ====================
+            // Google Earth Friends
+            // ====================
+            // x:Name="ListViewBuddies" ItemsSource="{Binding Source={StaticResource SortedRosterItems}}"
+
+            CollectionViewSource source = FindResource("SortedRosterItems") as CollectionViewSource;
+            // source.Source = BuddyPositions;
+
+            System.Diagnostics.Debug.WriteLine("There are {0} items in the ListViewBuddies Items list", ListViewBuddies.Items.Count);
+            System.Diagnostics.Debug.WriteLine("There are {0} items in the BuddyPositions list", BuddyPositions.Count());
+            System.Diagnostics.Debug.WriteLine("   They are...");
+
+            index = 0;
+
+
+            foreach (BuddyPosition buddy in BuddyPositions)
+            {
+                index++;
+                System.Diagnostics.Debug.WriteLine("      {0}. {1}", index, buddy.ToString());
+            }
+
+            // Re-bind the google earth items to the Buddy Position list
+            PopulateBuddyPositionsList(null, null);
+
+            // 1. Verify - Is it accurate/current?
+
+            // 2. Do I need to rebuild it? 
         }
     }
         #endregion

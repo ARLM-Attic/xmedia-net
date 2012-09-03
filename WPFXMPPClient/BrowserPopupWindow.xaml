@@ -116,30 +116,35 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="600*"></RowDefinition>
                                 <RowDefinition Height="Auto"></RowDefinition>
-                                <RowDefinition Height="0"></RowDefinition>
-                                <RowDefinition Height="0"></RowDefinition>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"></RowDefinition>
                             </Grid.RowDefinitions>
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="0"></ColumnDefinition>
-                                <ColumnDefinition Width="0"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
                                 <ColumnDefinition Width="*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
 
 
                             <Grid Name="ContentLeft" Grid.ColumnSpan="3" Grid.Row="3">
-
-                                <StackPanel>
-
-                                    <Label VerticalAlignment="Center" FontSize="14" FontWeight="Bold">Roster</Label>
-
-                                    <ListView MinHeight="100" Visibility="Visible" Loaded="ListViewRosterItems_Loaded" Grid.Row="3" 
+                                <Expander Header="Roster">
+                                    
+                              
+                                    <StackPanel>
+                                    <Grid>
+                                        <!--<Label HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" FontWeight="Bold">Roster</Label>-->
+                                        <CheckBox HorizontalAlignment="Right" Margin="4,4,4,4" VerticalAlignment="Center" x:Name="CheckBoxRosterShowAll" Content="Show All" Checked="CheckBoxRosterShowAll_Checked"></CheckBox>
+                                    </Grid>
+                                    
+                                    <ListView MinHeight="100" Visibility="Visible" Loaded="ListViewRosterItems_Loaded" 
                                               ItemsSource="{Binding MapManager.DictMapRosterItems.Values}"
                                               x:Name="ListViewRosterItems" SelectionChanged="ListViewRosterItems_SelectionChanged"
                                               MouseDoubleClick="ListViewRosterItems_MouseDoubleClick">
-                                        <ListView.View>
+
+                                        <ListView.View>                                          
                                             <GridView>
-                                                <GridViewColumn Width="20">
+                                                <GridViewColumn Width="Auto">
                                                     <GridViewColumn.CellTemplate>
                                                         <DataTemplate>
                                                             <CheckBox x:Name="CheckBoxIsDisplayed" IsChecked="{Binding IsDisplayed, Mode=TwoWay}"
@@ -148,18 +153,20 @@
                                                     </GridViewColumn.CellTemplate>
                                                 </GridViewColumn>
 
-                                                <GridViewColumn Width="100">
+                                                <GridViewColumn Width="Auto">
                                                     <GridViewColumn.CellTemplate>
                                                         <DataTemplate>
                                                             <StackPanel Orientation="Horizontal">
                                                                 <Image Source="{Binding RosterItem.Avatar}" Width="64" Height="64" />
 
                                                                 <StackPanel Orientation="Vertical">
-                                                                    <Label FontSize="10" VerticalAlignment="Center" FontWeight="Bold" Content="{Binding RosterItem.JID.BareJID}" />
+                                                                    <Label FontSize="10" VerticalAlignment="Center" FontWeight="Bold"
+                                                                           Content="{Binding RosterItem.JID.BareJID}" />
 
                                                                     <!--  PresenceType, PresenceShow, Status -->
 
-                                                                    <Label FontSize="8" VerticalAlignment="Center" Content="{Binding RosterItem.Presence.Status}" />
+                                                                    <Label FontSize="8" VerticalAlignment="Center" 
+                                                                           Content="{Binding RosterItem.Presence.Status}" />
                                                                     <!--<Label FontSize="8" VerticalAlignment="Center" Content="Show:     {Binding RosterItem.Presence.PresenceShow}" />
                                                 <Label FontSize="8" VerticalAlignment="Center" Content="Status:   {Binding RosterItem.Presence.Status}" />-->
 
@@ -167,20 +174,18 @@
                                                         <Label FontSize="8" VerticalAlignment="Center" Content="{Binding RosterItem.GeoLoc.TimeStamp}" />-->
                                                                 </StackPanel>
                                                             </StackPanel>
-
-
-
                                                         </DataTemplate>
                                                     </GridViewColumn.CellTemplate>
                                                 </GridViewColumn>
-
                                             </GridView>
                                         </ListView.View>
-
                                     </ListView>
-                                    <CheckBox Margin="4,4,4,4" VerticalAlignment="Center" x:Name="CheckBoxRosterShowAll" Content="Show All" Checked="CheckBoxRosterShowAll_Checked"></CheckBox>
+                                    
+                                    <StackPanel Orientation="Horizontal" x:Name="StackPanelRosterMenuButtons">
+                                        <Button x:Name="ButtonRefreshRoster" Click="ButtonRefreshRoster_Click" Content="Refresh"></Button>
+                                    </StackPanel>
                                 </StackPanel>
-
+                                </Expander>
 
 
                             </Grid>
@@ -200,9 +205,9 @@
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
             Margin="0" Visibility="Visible"></GridSplitter>-->
-                            <Expander Grid.Row="2" Visibility="Visible" Header="Roster" >
+                            <!--<Expander Grid.Row="2" Visibility="Visible" Header="Roster" >
 
-                            </Expander>
+                            </Expander>-->
 
                         </Grid>
                     </TabItem>
@@ -568,7 +573,7 @@
                         </Grid>
                     </TabItem>
 
-                    <TabItem x:Name="TabItemGoogleEarthFriends" Header="Google Earth Friends" Visibility="Collapsed">
+                    <TabItem x:Name="TabItemGoogleEarthFriends" Header="Google Earth Friends" Visibility="Visible">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="135" />

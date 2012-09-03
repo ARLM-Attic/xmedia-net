@@ -726,6 +726,19 @@
                     <s:SurfaceButton ToolBar.OverflowMode="Always" ToolTip="View Media Sessions" x:Name="ButtonMediaSessions" IsEnabled="True" Click="ButtonMediaSessions_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                         <Image Source="Images/volume.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </s:SurfaceButton>
+                    <Button ToolBar.OverflowMode="Always" Width="40" Height="40" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonMap_Click"  
+                            Background="{DynamicResource ButtonBrush}"
+                            VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonMap" ToolTip="Set General Options" >
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                        <Rectangle Width="28" Height="28" Stretch="UniformToFill" Fill="{DynamicResource globe}" />
+                    </Button>
 
                     <Button ToolBar.OverflowMode="Always" Width="40" Height="40" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonOptions_Click"  
                             Background="{DynamicResource ButtonBrush}"
