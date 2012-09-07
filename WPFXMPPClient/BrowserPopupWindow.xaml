@@ -127,15 +127,18 @@
                             </Grid.ColumnDefinitions>
 
 
-                            <Grid Name="ContentLeft" Grid.ColumnSpan="3" Grid.Row="3">
-                                <Expander Header="Roster">
-                                    
-                              
+                            <Grid Name="ContentLeft" Grid.ColumnSpan="3" Grid.Row="3" Height="100">
+                                <Expander Header="Roster" IsExpanded="False">
                                     <StackPanel>
-                                    <Grid>
+
+                                        <StackPanel HorizontalAlignment="Right" Height="Auto" Orientation="Horizontal" x:Name="StackPanelRosterMenuButtons">
+
                                         <!--<Label HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" FontWeight="Bold">Roster</Label>-->
-                                        <CheckBox HorizontalAlignment="Right" Margin="4,4,4,4" VerticalAlignment="Center" x:Name="CheckBoxRosterShowAll" Content="Show All" Checked="CheckBoxRosterShowAll_Checked"></CheckBox>
-                                    </Grid>
+                                        <CheckBox HorizontalAlignment="Right" Margin="5,5,5,5" VerticalAlignment="Center" x:Name="CheckBoxRosterShowAll" Content="Show All" Checked="CheckBoxRosterShowAll_Checked"></CheckBox>
+                                                 <Button Margin="5,5,5,5" x:Name="ButtonRefreshRoster" Click="ButtonRefreshRoster_Click" Content="Refresh"></Button>
+                                            </StackPanel>
+
+
                                     
                                     <ListView MinHeight="100" Visibility="Visible" Loaded="ListViewRosterItems_Loaded" 
                                               ItemsSource="{Binding MapManager.DictMapRosterItems.Values}"
@@ -181,9 +184,7 @@
                                         </ListView.View>
                                     </ListView>
                                     
-                                    <StackPanel Orientation="Horizontal" x:Name="StackPanelRosterMenuButtons">
-                                        <Button x:Name="ButtonRefreshRoster" Click="ButtonRefreshRoster_Click" Content="Refresh"></Button>
-                                    </StackPanel>
+                                  
                                 </StackPanel>
                                 </Expander>
 
@@ -573,7 +574,7 @@
                         </Grid>
                     </TabItem>
 
-                    <TabItem x:Name="TabItemGoogleEarthFriends" Header="Google Earth Friends" Visibility="Visible">
+                    <TabItem x:Name="TabItemGoogleEarthFriends" Header="Google Earth Friends" Visibility="Collapsed">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="135" />
