@@ -1017,7 +1017,7 @@ namespace WPFXMPPClient
                 {
                     WPFImageWindows.VideoCaptureSource devwrapper = new WPFImageWindows.VideoCaptureSource(dev);
                     devwrapper.ActiveVideoCaptureRate = rate;
-                    this.OurVideo.DataContext = devwrapper;
+                    //this.OurVideo.DataContext = devwrapper;
                     devwrapper.StartCapture();
                 }
             }

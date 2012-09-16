@@ -15,10 +15,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Microsoft.Surface;
-using Microsoft.Surface.Presentation;
-using Microsoft.Surface.Presentation.Controls;
-using Microsoft.Surface.Presentation.Input;
 
 using System.Net.XMPP;
 using System.Runtime.InteropServices;
@@ -1176,12 +1172,7 @@ namespace WPFXMPPClient
 
         private void ButtonMap_Click(object sender, RoutedEventArgs e)
         {
-            // View map window with all buddies shown
-            MessageBox.Show("Showing map window with all buddies shown...");
-
-
-
-            // ShowMapBrowserWindow();
+            ShowMapBrowserWindow();
         }
 
         private void ButtonMinimize_Click(object sender, RoutedEventArgs e)

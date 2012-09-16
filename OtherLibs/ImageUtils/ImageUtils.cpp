@@ -9,9 +9,14 @@
 
 #include "ImageUtils.h"
 
-
-#define IPPAPI(type,name,arg) extern type __STDCALL w7_##name arg;
-#define IPPCALL(name) w7_##name
+#ifdef USE_IPP
+#ifdef SIXTYFOURBIT
+	#define IPPAPI(type,name,arg) extern type __STDCALL y8_##name arg;
+	#define IPPCALL(name) y8_##name
+#else
+	#define IPPAPI(type,name,arg) extern type __STDCALL w7_##name arg;
+	#define IPPCALL(name) w7_##name
+#endif
 
 /// TODO... remove Intel Performance Primitive dependencies
 #include <ippcore.h>
@@ -677,3 +682,5 @@ done:
 }
 
 
+
+#endif

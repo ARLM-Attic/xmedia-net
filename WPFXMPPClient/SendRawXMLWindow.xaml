@@ -1,7 +1,6 @@
 ﻿<Window x:Class="WPFXMPPClient.SendRawXMLWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:s="http://schemas.microsoft.com/surface/2008"
         Loaded="Window_Loaded"
         Title="XML Debugger Window" Height="636" Width="606">
     <Grid>
@@ -16,9 +15,9 @@
             <RowDefinition Height="24" />
         </Grid.RowDefinitions>
 
-        <s:SurfaceButton Grid.Row="0" Grid.Column="1" ToolTip="Clear" x:Name="ButtonClear" Click="ButtonClear_Click"  Width="30" Height="30" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+        <Button Style="{DynamicResource ButtonSurface}" Grid.Row="0" Grid.Column="1" ToolTip="Clear" x:Name="ButtonClear" Click="ButtonClear_Click"  Width="30" Height="30" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
             <Image Source="Images/trash.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
-        </s:SurfaceButton>
+        </Button>
 
 
         <RichTextBox IsReadOnly="True" IsDocumentEnabled="True"  Background="Beige" Grid.Row="1" HorizontalAlignment="Stretch" Name="textBoxLog" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Grid.ColumnSpan="2" />

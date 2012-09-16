@@ -1,7 +1,6 @@
 ﻿<Window x:Class="WPFXMPPClient.BlankWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:s="http://schemas.microsoft.com/surface/2008"
         xmlns:sys="clr-namespace:System;assembly=mscorlib" 
         xmlns:location="clr-namespace:LocationClasses;assembly=LocationClasses"
         AllowsTransparency="True" WindowStyle="None"
@@ -55,14 +54,14 @@
                 <!--<s:SurfaceButton ToolTip="Save" IsEnabled="{Binding bDirty}" Grid.Column="1" x:Name="ButtonSave" Click="ButtonSave_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/check.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>-->
-                <s:SurfaceButton ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <Button Style="{DynamicResource ButtonSurface}" ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
+                </Button>
             </Grid>
 
-            <s:SurfaceListBox Visibility="Collapsed" SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+            <ListBox Visibility="Collapsed" SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                  DataContext="{Binding Conversation}" Background="Beige" x:Name="ListBoxConversation">
-                <s:SurfaceListBox.ItemTemplate>
+                <ListBox.ItemTemplate>
                     <DataTemplate>
 
                         <Grid>
@@ -86,18 +85,18 @@
                                 <Button x:Name="ButtonCancelSend" Click="ButtonCancelSend_Click">Cancel</Button>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Grid.Row="2"  Orientation="Horizontal">
-                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonAcceptTransfer" Click="ButtonAcceptTransfer_Click">Accept</s:SurfaceButton>
-                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonDeclineTransfer" Click="ButtonDeclineTransfer_Click">Decline</s:SurfaceButton>
+                                <Button Style="{DynamicResource ButtonSurface}" Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonAcceptTransfer" Click="ButtonAcceptTransfer_Click">Accept</Button>
+                                <Button Style="{DynamicResource ButtonSurface}" Margin="5,0" Visibility="{Binding IsAcceptCancelVisible, Mode=OneWay}" x:Name="ButtonDeclineTransfer" Click="ButtonDeclineTransfer_Click">Decline</Button>
                                 <!--<s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonSaveFile" Click="ButtonSaveFile_Click" Content="Save" />-->
-                                <s:SurfaceButton Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonOpenFile" Click="ButtonOpenFile_Click"  Content="Open" />
+                                <Button Style="{DynamicResource ButtonSurface}" Margin="5,0" Visibility="{Binding IsSaveVisible, Mode=OneWay}" x:Name="ButtonOpenFile" Click="ButtonOpenFile_Click"  Content="Open" />
                             </StackPanel>
 
                         </Grid>
 
                     </DataTemplate>
-                </s:SurfaceListBox.ItemTemplate>
+                </ListBox.ItemTemplate>
 
-            </s:SurfaceListBox>
+            </ListBox>
 
             <Grid Grid.Row="1" Background="Beige" Margin="3,3,3,3">
 
@@ -145,14 +144,15 @@
                         <ComboBox  Margin="3,3,3,3" Width="Auto"  Grid.Row="1" Grid.Column="1" x:Name="ComboBoxMapType" SelectedValue="{Binding MapParameters.Maptype, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource mapTypeData}}" SelectionChanged="ComboBoxMapType_SelectionChanged"></ComboBox>
 
                         <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right">
-                        <s:SurfaceButton Width="60" ToolTip="Save" IsEnabled="{Binding bDirty}" x:Name="ButtonSave" Click="ButtonSave_Click"  Height="40"  Padding="0" Margin="0,0,8,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                        <Button Style="{DynamicResource ButtonSurface}" Width="60" ToolTip="Save" IsEnabled="{Binding bDirty}" x:Name="ButtonSave" Click="ButtonSave_Click"  Height="40"  Padding="0" Margin="0,0,8,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                             <TextBlock Text="Save"></TextBlock>
                             <!-- <Image Source="Images/check.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" /> -->
-                        </s:SurfaceButton>
-                        <s:SurfaceButton Width="60" ToolTip="Cancel" x:Name="ButtonCancel" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                        </Button>
+                            
+                        <Button Style="{DynamicResource ButtonSurface}" Width="60" ToolTip="Cancel" x:Name="ButtonCancel" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                                 <TextBlock Text="Cancel"></TextBlock>
                             <!-- <Image Source="Images/check.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" /> -->
-                        </s:SurfaceButton>
+                        </Button>
                         </StackPanel>
 
                     </Grid>

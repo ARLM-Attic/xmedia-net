@@ -66,6 +66,7 @@ namespace RTP
             Bind();
         }
 
+        public object CustomObject = null;
 
         private RosterItem m_objRosterItem = null;
 
@@ -412,18 +413,18 @@ namespace RTP
 
         }
 
-      
-        AudioConferenceMixer AudioMixer = null;
-        public void SessionAccepted(IQ iq, AudioConferenceMixer objAudioMixer)
+
+        IAudioMixer AudioMixer = null;
+        public void SessionAccepted(IQ iq, IAudioMixer objAudioMixer)
         {
             AudioMixer = objAudioMixer;
             ParsePayloads(iq);
             StartAudio();
         }
 
-       
 
-        public virtual void GotAcceptSessionAck(AudioConferenceMixer objAudioMixer)
+
+        public virtual void GotAcceptSessionAck(IAudioMixer objAudioMixer)
         {
             AudioMixer = objAudioMixer;
             StartAudio();
@@ -441,7 +442,7 @@ namespace RTP
             AudioRTPStream.Start(RemoteEndpoint, AudioRTPStream.PTimeTransmit, AudioRTPStream.PTimeReceive);
         }
 
-        public void StopMedia(AudioConferenceMixer AudioMixer)
+        public void StopMedia(IAudioMixer AudioMixer)
         {
             SessionState = SessionState.TearingDown;
             if (AudioMixer != null)

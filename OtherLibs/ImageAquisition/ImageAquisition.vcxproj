@@ -141,8 +141,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;$(IncludePath)</IncludePath>
-    <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;C:\Program Files\Intel\IPP\6.1.0.032\em64t\include;$(IncludePath)</IncludePath>
+    <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;C:\Program Files\Intel\IPP\6.1.0.032\em64t\lib;C:\Program Files\Intel\IPP\6.1.0.032\em64t\stublib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Mono|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -197,12 +197,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;USE_IPP;SIXTYFOURBIT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ole32.lib;WiaGuid.Lib;Mfuuid.lib;Mfplat.lib;Mf.lib;Mfreadwrite.lib;Msdmo.lib;dmoguids.lib;uuid.lib;amstrmid.lib;avrt.lib;wmcodecdspuuid.lib;Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>ole32.lib;WiaGuid.Lib;Mfuuid.lib;Mfplat.lib;Mf.lib;Mfreadwrite.lib;Msdmo.lib;dmoguids.lib;uuid.lib;amstrmid.lib;avrt.lib;wmcodecdspuuid.lib;Shlwapi.lib;dsound.lib;dxguid.lib;ippcoreem64t_t.lib;ippsmergedem64t_t.lib;ippimergedem64t_t.lib;ippcvmergedem64t_t.lib;ippccmergedem64t_t.lib;ippscemergedem64t.lib;ippscmergedem64t.lib;ippscmergedem64t_t.lib;ippsemergedem64t.lib;ippsmergedem64t.lib;ippsremergedem64t.lib;ippsrmergedem64t.lib;ippsrmergedem64t_t.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Mono|x64'">

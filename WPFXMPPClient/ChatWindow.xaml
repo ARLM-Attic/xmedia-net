@@ -1,7 +1,6 @@
 ﻿<Window x:Class="WPFXMPPClient.ChatWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:s="http://schemas.microsoft.com/surface/2008"
         AllowsTransparency="True" WindowStyle="None"
         xmlns:local="clr-namespace:WPFXMPPClient"
         MouseDown="Window_MouseDown" ResizeMode="CanResizeWithGrip"
@@ -104,13 +103,13 @@
 
 
                 <CheckBox x:Name="CheckBoxUseSpeech" Grid.Column="1" HorizontalAlignment="Right" IsChecked="True">Speak</CheckBox>
-                <s:SurfaceButton ToolTip="Send File" Grid.Column="2" x:Name="ButtonSendFile" Click="ButtonSendFile_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                <Button Style="{DynamicResource ButtonSurface}" ToolTip="Send File" Grid.Column="2" x:Name="ButtonSendFile" Click="ButtonSendFile_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/mail - copy.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
-                 
-                <s:SurfaceButton ToolTip="Screen Capture" Grid.Column="3" x:Name="ButtonSendScreenCapture" Click="ButtonSendScreenCapture_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                </Button>
+
+                <Button Style="{DynamicResource ButtonSurface}" ToolTip="Screen Capture" Grid.Column="3" x:Name="ButtonSendScreenCapture" Click="ButtonSendScreenCapture_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/photo - crop.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
+                </Button>
 
                 <Button Grid.Column="4" Grid.RowSpan="2" Background="{StaticResource ButtonBrush}" 
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
@@ -128,14 +127,14 @@
                     <Rectangle Stretch="UniformToFill" Fill="{DynamicResource camera}" Width="28" Height="28" />
                 </Button>
 
-                
-                <s:SurfaceButton ToolTip="Clear" Grid.Column="5" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
-                    <Image Source="Images/trash.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
 
-                <s:SurfaceButton ToolTip="Close" Grid.Column="6" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                <Button Style="{DynamicResource ButtonSurface}" ToolTip="Clear" Grid.Column="5" x:Name="ButtonClear" Click="ButtonClear_Click"  Height="40" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
+                    <Image Source="Images/trash.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0" />
+                </Button>
+
+                <Button Style="{DynamicResource ButtonSurface}" ToolTip="Close" Grid.Column="6" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.RowSpan="2">
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
-                </s:SurfaceButton>
+                </Button>
             </Grid>
 
             <TabControl Grid.Row="1" Margin="5" x:Name="TabControlThreads" SelectionChanged="TabControlThreads_SelectionChanged">
@@ -178,10 +177,10 @@
                     <ColumnDefinition Width="80*" />
                     <ColumnDefinition Width="60" />
                 </Grid.ColumnDefinitions>
-                <s:SurfaceTextBox Grid.Column="0"  x:Name="TextBoxChatToSend" PreviewKeyDown="TextBoxChatToSend_PreviewKeyDown" AcceptsReturn="True" MaxLines="50000" MaxHeight="38"></s:SurfaceTextBox>
-                <s:SurfaceButton ToolTip="Send Message" Grid.Column="1"  x:Name="ButtonSend" Click="ButtonSend_Click" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <TextBox Grid.Column="0"  x:Name="TextBoxChatToSend" PreviewKeyDown="TextBoxChatToSend_PreviewKeyDown" AcceptsReturn="True" MaxLines="50000" MaxHeight="38"></TextBox>
+                 <Button Style="{DynamicResource ButtonSurface}" ToolTip="Send Message" Grid.Column="1"  x:Name="ButtonSend" Click="ButtonSend_Click" FontWeight="Normal" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Width="20" Height="20" Source="Images/mail.png" />
-                </s:SurfaceButton>
+                </Button>
             </Grid>
 
         </Grid>

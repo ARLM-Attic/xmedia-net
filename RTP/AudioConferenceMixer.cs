@@ -41,18 +41,32 @@ namespace RTP
         }
     }
 
+
+    public interface IAudioMixer
+    {
+        AudioFormat AudioFormat { get; set; }
+        PushPullObject AddInputOutputSource(IAudioSource source, IAudioSink sink);
+        void RemoveInputOutputSource(IAudioSource source, IAudioSink sink);
+
+    }
     /// <summary>
     ///  Combines audio from several sources into one stream, and ouputs that to all the listeners
     ///  Right now, supports 16x16 only
     /// </summary>
-    public class AudioConferenceMixer
+    public class AudioConferenceMixer : IAudioMixer
     {
         public AudioConferenceMixer(AudioFormat format)
         {
             AudioFormat = format;
         }
 
-        protected AudioFormat AudioFormat = AudioFormat.SixteenBySixteenThousandMono;
+        private AudioFormat m_objAudioFormat = AudioFormat.SixteenBySixteenThousandMono;
+
+        public AudioFormat AudioFormat
+        {
+          get { return m_objAudioFormat; }
+          set { m_objAudioFormat = value; }
+        }
 
         /// <summary>
         /// Adds a source/sink combination to this muxer

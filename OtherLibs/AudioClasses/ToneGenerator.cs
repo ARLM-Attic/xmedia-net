@@ -98,6 +98,8 @@ namespace AudioClasses
 
         public MediaSample PullSample(AudioFormat format, TimeSpan tsDuration)
         {
+            if (m_bIsSourceActive == false)
+                return null;
             short[] sPayload = BuildTonePayload(format, tsDuration);
             return new MediaSample(sPayload, AudioFormat.SixteenBySixteenThousandMono);
         }

@@ -51,7 +51,7 @@ namespace WPFImageWindows
         void CompositionTarget_Rendering(object sender, EventArgs e)
         {
             TimeSpan tsElapsed = DateTime.Now - dtLastUpdate;
-            if (tsElapsed.TotalMilliseconds < 200)
+            if (tsElapsed.TotalMilliseconds < 400)
                 return;
             dtLastUpdate = DateTime.Now;
 

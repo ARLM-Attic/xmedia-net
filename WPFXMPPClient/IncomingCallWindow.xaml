@@ -27,9 +27,9 @@
                 <ColumnDefinition Width="40" />
             </Grid.ColumnDefinitions>
             <Label FontWeight="Bold" x:Name="LabelIncomingCall" HorizontalAlignment="Center">Incoming Call</Label>
-            <s:SurfaceButton ToolTip="Close" Grid.Column="1" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
+            <Button Style="{DynamicResource ButtonSurface}" ToolTip="Close" Grid.Column="1" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.RowSpan="2">
                 <Image Source="Images/calculator - multiply.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </s:SurfaceButton>
+            </Button>
         </Grid>
 
         <Image Source="{Binding Avatar}" Width="100" Height="100" Grid.Row="1" />
@@ -37,8 +37,8 @@
         <StackPanel Grid.Row="2">
            
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                <s:SurfaceButton x:Name="ButtonAcceptCall" VerticalContentAlignment="Bottom" Click="ButtonAcceptCall_Click">Accept</s:SurfaceButton>
-                <s:SurfaceButton x:Name="ButtonRejectCall" VerticalContentAlignment="Bottom" Click="ButtonRejectCall_Click">Reject</s:SurfaceButton>
+                <Button Style="{DynamicResource ButtonSurface}" x:Name="ButtonAcceptCall" VerticalContentAlignment="Bottom" Click="ButtonAcceptCall_Click">Accept</Button>
+                <Button Style="{DynamicResource ButtonSurface}" x:Name="ButtonRejectCall" VerticalContentAlignment="Bottom" Click="ButtonRejectCall_Click">Reject</Button>
             </StackPanel>
         </StackPanel>
 

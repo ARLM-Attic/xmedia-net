@@ -13,6 +13,9 @@ using System.Windows.Threading;
 
 using System.IO;
 
+/// Need the windows api codepack to work with libraries
+/// http://archive.msdn.microsoft.com/WindowsAPICodePack/Release/ProjectReleases.aspx?ReleaseId=4906
+
 namespace AudioClasses
 {
     /// <summary>

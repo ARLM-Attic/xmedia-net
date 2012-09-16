@@ -114,17 +114,39 @@ namespace RTP
 
             if (bNewAudioData != null)
             {
-                ReceiveAudioQueue.AppendData(bNewAudioData);
-				if (ReceiveAudioQueue.Size > m_nPacketBytes*MaxAudioPacketsQueue)  // someone isn't taking our packets (either directly our through IAudioSource), so let's not get too big
-				{
-					ReceiveAudioQueue.GetNSamples(ReceiveAudioQueue.Size-m_nPacketBytes*MaxAudioPacketsQueue);
-				}
-
-                if (RenderSink != null)
+                if (ReceiveAudioQueueFormat == null) // queue using native format
                 {
-                    MediaSample samp = new MediaSample(bNewAudioData, AudioCodec.AudioFormat);
-                    RenderSink.PushSample(samp, this);
+                    ReceiveAudioQueue.AppendData(bNewAudioData);
+                    if (ReceiveAudioQueue.Size > m_nPacketBytes * MaxAudioPacketsQueue)  // someone isn't taking our packets (either directly our through IAudioSource), so let's not get too big
+                    {
+                        ReceiveAudioQueue.GetNSamples(ReceiveAudioQueue.Size - m_nPacketBytes * MaxAudioPacketsQueue);
+                    }
+
+                    if (RenderSink != null)
+                    {
+                        MediaSample samp = new MediaSample(bNewAudioData, AudioCodec.AudioFormat);
+                        RenderSink.PushSample(samp, this);
+                    }
                 }
+                else
+                {
+                    // Convert to the proper format before appending  (common example, RTP comes in g711 (16 bit, 8000Hz),  but the conference muxer is 16 bit 16000Hz)
+                    
+                    /// Incoming RTP packets' audio data is in the codecs native format, we may need to resample for our host (Our windows muxer always expects 16x16, so ulaw must be resampled)
+                    MediaSample currentsample = new MediaSample(bNewAudioData, AudioCodec.AudioFormat);
+                    MediaSample newsample = RecvResampler.Resample(currentsample, ReceiveAudioQueueFormat);
+                    ReceiveAudioQueue.AppendData(newsample.Data);
+                    if (ReceiveAudioQueue.Size > m_nPacketBytes * MaxAudioPacketsQueue)  // someone isn't taking our packets (either directly our through IAudioSource), so let's not get too big
+                    {
+                        ReceiveAudioQueue.GetNSamples(ReceiveAudioQueue.Size - m_nPacketBytes * MaxAudioPacketsQueue);
+                    }
+
+                    if (RenderSink != null)
+                    {
+                        RenderSink.PushSample(newsample, this);
+                    }
+                }
+
             }
         }
 
@@ -174,8 +196,16 @@ namespace RTP
         public IAudioSink RenderSink = null;
 
 
-        public AudioClasses.ByteBuffer SendAudioQueue = new AudioClasses.ByteBuffer();
-        public AudioClasses.ByteBuffer ReceiveAudioQueue = new AudioClasses.ByteBuffer();
+        /// <summary>
+        /// If the host uses our internal timers, they have the option to provide their own buffers to read and write from.  We will write incoming RTP data 
+        /// to the ReceiveAudioQueue, and read data when it is time to transmit a packet from the SendAudioQueue.  if SendAudioQueueFormat and ReceiveAudioQueueFormat
+        /// are null, we assume the audio is in the sampling rate provided by the codec.  If not and they do not match those of our codec,
+        /// we may try to do a conversion using our resamplers.
+        /// </summary>
+        public IAudioBuffer SendAudioQueue = new AudioClasses.ByteBuffer();
+        public AudioFormat SendAudioQueueFormat = null;
+        public IAudioBuffer ReceiveAudioQueue = new AudioClasses.ByteBuffer();
+        public AudioFormat ReceiveAudioQueueFormat = null;
 
         /// <summary>
         /// Sends the next sample directly.  A client can either do the default, with UseInternalTimersForPacketPushPull set to true, which uses timers and reads audio from the
@@ -209,16 +239,39 @@ namespace RTP
                 return;
 
 
-            if (SendAudioQueue.Size < m_nPacketBytes)
-                return;
+            if (SendAudioQueueFormat == null) /// The user's custom audio queue is the same format as our codec
+            {
+                if (SendAudioQueue.Size < m_nPacketBytes)
+                    return;
 
 
-            byte[] bUncompressedAudio = SendAudioQueue.GetNSamples(m_nPacketBytes);
+                byte[] bUncompressedAudio = SendAudioQueue.GetNSamples(m_nPacketBytes);
 
-            if (DestinationEndpoint == null)
-                return;
+                if (DestinationEndpoint == null)
+                    return;
 
-            SendAudio(bUncompressedAudio);
+                SendAudio(bUncompressedAudio);
+            }
+            else // User may be using a different format.  Convert
+            {
+                int nSamples = SendAudioQueueFormat.CalculateNumberOfSamplesForDuration(TimeSpan.FromMilliseconds(AudioCodec.TransmitPTime));
+                int nBytesNeeded = nSamples * SendAudioQueueFormat.BytesPerSample;
+
+                if (SendAudioQueue.Size < nBytesNeeded)
+                    return;
+
+                byte[] bUncompressedAudio = SendAudioQueue.GetNSamples(nBytesNeeded);
+
+                if (DestinationEndpoint == null)
+                    return;
+
+
+                MediaSample OrigSample = new MediaSample(bUncompressedAudio, SendAudioQueueFormat);
+
+                MediaSample newsample = SendResampler.Resample(OrigSample, AudioCodec.AudioFormat);
+
+                SendAudio(newsample.Data);
+            }
         }
 
         protected void SendAudio(byte[] bUncompressedAudio)

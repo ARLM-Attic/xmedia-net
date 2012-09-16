@@ -1,7 +1,6 @@
 ﻿<Window x:Class="WPFXMPPClient.FileTransferWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:s="http://schemas.microsoft.com/surface/2008"
         AllowsTransparency="True" WindowStyle="None"
         MouseDown="Window_MouseDown"  ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded"
         Title="FileTransferWindow" Height="383" Width="387">
@@ -46,9 +45,9 @@
                 </Button>
             </Grid>
 
-            <s:SurfaceListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+            <ListBox SelectionMode="Multiple" Grid.Row="1" Margin="3,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                  DataContext="{Binding Conversation}" Background="Beige" x:Name="ListBoxConversation">
-                <s:SurfaceListBox.ItemTemplate>
+                <ListBox.ItemTemplate>
                     <DataTemplate>
 
                         <Grid>
@@ -81,9 +80,9 @@
                         </Grid>
 
                     </DataTemplate>
-                </s:SurfaceListBox.ItemTemplate>
+                </ListBox.ItemTemplate>
 
-            </s:SurfaceListBox>
+            </ListBox>
 
            
 

@@ -348,7 +348,17 @@ namespace MusicServer
 
         private void ButtonRandom100_Click(object sender, RoutedEventArgs e)
         {
-            CurrentPlaylist.PopulateFromDirectory(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyMusic), 100);
+            //string strMusicDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyMusic);
+            string strMusicDirectory = "Music";
+            Microsoft.WindowsAPICodePack.Shell.ShellLibrary music = Microsoft.WindowsAPICodePack.Shell.ShellLibrary.Load(strMusicDirectory, true);
+            //string strDefault = music.DefaultSaveFolder;
+
+            for (int i=0; i<music.Count; i++)
+            {
+                string strNextFolder = music[i].Path;
+                CurrentPlaylist.PopulateFromDirectory(strNextFolder, 100);
+            }
+
             System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(TagThread), null);
         }
 

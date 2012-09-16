@@ -13,7 +13,7 @@ namespace SOCKS5Test
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            SocketServer.SOCKServer server = new SocketServer.SOCKServer();
+            xmedianet.socketserver.SOCKServer server = new xmedianet.socketserver.SOCKServer();
             server.Port = 8080;
             server.Start();
 
