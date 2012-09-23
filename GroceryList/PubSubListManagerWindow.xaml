@@ -22,6 +22,22 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
+        <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonConnect" HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" Click="ButtonConnect_Click" >
+            <Border Width="32" Height="32">
+                <Border.Style>
+                    <Style>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Ready}" Value="False">
+                                <Setter Property="Border.Background" Value="{DynamicResource disconnected}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Ready}" Value="True">
+                                <Setter Property="Border.Background" Value="{DynamicResource connected}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
+        </Button>
         <Label Margin="5,5,5,5" FontWeight="ExtraBold" FontSize="20" Content="Pub Sub List Manager" Grid.Row="0" MouseDoubleClick="Label_MouseDoubleClick"  ></Label>
 
         <Grid Grid.Row="1">

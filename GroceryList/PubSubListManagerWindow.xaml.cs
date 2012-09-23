@@ -136,6 +136,11 @@ namespace GroceryList
  
         }
 
+        private void ButtonConnect_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
       
     }
 
