@@ -16,6 +16,13 @@ namespace LocationClasses
             ((INotifyPropertyChanged)item).PropertyChanged += new PropertyChangedEventHandler(BuddyPosition_PropertyChanged);
         }
 
+        public override string ToString()
+        {
+            string ret = "";
+            ret += String.Format("{0} - Number of coordinates: {1}", this.RosterItem.ToString(), this.CoordinateList.Count);
+            return ret;
+        }
+
         void BuddyPosition_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "GeoLoc")
