@@ -134,7 +134,7 @@
 
                                         <!--<Label HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" FontWeight="Bold">Roster</Label>-->
                                         <CheckBox HorizontalAlignment="Right" Margin="5,5,5,5" VerticalAlignment="Center" x:Name="CheckBoxRosterShowAll" Content="Show All" Checked="CheckBoxRosterShowAll_Checked"></CheckBox>
-                                                 <Button Margin="5,5,5,5" x:Name="ButtonRefreshRoster" Click="ButtonRefreshRoster_Click" Content="Refresh"></Button>
+                                              <!--   <Button Margin="5,5,5,5" x:Name="ButtonRefreshRoster" Click="ButtonRefreshRoster_Click" Content="Refresh"></Button> -->
                                             </StackPanel>
 
 

@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "socketserver", "SocketServer\socketserver.csproj", "{77F78E2F-A04F-4823-A2A9-3F1F27D0F8B8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "phone.socketserver", "PhoneSocketServer\phone.socketserver.csproj", "{CCDE1A18-482A-469C-9115-3C51723026B7}"
@@ -339,6 +339,7 @@ Global
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug-Mono|x86.ActiveCfg = Debug|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug-Mono|x86.Build.0 = Debug|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Release|Any CPU.ActiveCfg = Release|x86
+		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Release|Any CPU.Build.0 = Release|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Release|Mixed Platforms.Build.0 = Release|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Release|Win32.ActiveCfg = Release|x86
@@ -484,6 +485,7 @@ Global
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Debug-Mono|x64.ActiveCfg = Debug-Mono|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Debug-Mono|x86.ActiveCfg = Debug-Mono|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Release|Any CPU.ActiveCfg = Release|Win32
+		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Release|Any CPU.Build.0 = Release|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Release|Win32.ActiveCfg = Release|Win32
@@ -514,6 +516,7 @@ Global
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Debug-Mono|x86.ActiveCfg = Debug-Mono|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Debug-Mono|x86.Build.0 = Debug-Mono|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Release|Any CPU.ActiveCfg = Release|x86
+		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Release|Any CPU.Build.0 = Release|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Release|Mixed Platforms.Build.0 = Release|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Release|Win32.ActiveCfg = Release|x86
@@ -573,7 +576,8 @@ Global
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug-Mono|x64.ActiveCfg = Debug|x64
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug-Mono|x64.Build.0 = Debug|x64
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug-Mono|x86.ActiveCfg = Debug|x64
-		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release|Any CPU.ActiveCfg = Release|x64
+		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release|Any CPU.ActiveCfg = Release|Win32
+		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release|Any CPU.Build.0 = Release|Win32
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release|Mixed Platforms.ActiveCfg = Release|x64
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release|Mixed Platforms.Build.0 = Release|x64
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release|Win32.ActiveCfg = Release|Win32
@@ -589,7 +593,6 @@ Global
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release-Mono|x64.Build.0 = Release|x64
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Release-Mono|x86.ActiveCfg = Release|x64
 		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Any CPU.Build.0 = Debug|x86
 		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{61482F5F-76E8-484B-BB0B-921C532D87BB}.Debug|Win32.ActiveCfg = Debug|x86
@@ -631,5 +634,8 @@ Global
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D} = {10512982-5268-4102-A137-C334F3ABF856}
 		{CB219B28-DC51-4E22-BC61-80B97D8A39C0} = {10512982-5268-4102-A137-C334F3ABF856}
 		{6D3414FC-4336-426A-BED4-814AB331FDF0} = {10512982-5268-4102-A137-C334F3ABF856}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

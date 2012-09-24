@@ -721,7 +721,7 @@ namespace xmedianet.socketserver
                     {
                         byte[] bData = null;
                         if (m_BufferPool != null)
-                            bData = m_BufferPool.Checkout();
+                            bData = m_BufferPool.Checkout(4096);
                         else
                             bData = new byte[4096];
 

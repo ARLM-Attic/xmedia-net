@@ -510,26 +510,6 @@ namespace WPFXMPPClient
 
         void SetRoster()
         {
-            //this.ListBoxRoster.ItemsSource = null;
-            CollectionViewSource source = FindResource("SortedRosterItems") as CollectionViewSource;
-            source.View.Refresh();
-
-
-            //source.Source = null;
-            //source.Source = XMPPClient.RosterItems;
-            //source.DeferRefresh();
-
-            //this.ListBoxRoster.ItemsSource = XMPPClient.RosterItems;
-
-            
-            //var source = new CollectionViewSource();
-            //source.SortDescriptions.Add(new System.ComponentModel.SortDescription("Name", System.ComponentModel.ListSortDirection.Ascending));
-            //source.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription("Group"));
-
-            //source.Source = XMPPClient.RosterItems;
-            ////var selected = from c in XMPPClient.RosterItems group c by c.Group into n select new GroupingLayer<string, RosterItem>(n);
-            //this.ListBoxRoster.ItemsSource = source;
-
             AddPresenceUpdateLine();
         }
 

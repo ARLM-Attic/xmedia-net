@@ -11,7 +11,7 @@ namespace xmedianet.socketserver
 {
     public interface IBufferPool
     {
-        byte[] Checkout();
+        byte[] Checkout(int nSize);
         void Checkin(byte[] buffer);
     }
 
@@ -45,7 +45,7 @@ namespace xmedianet.socketserver
         object SyncRoot = new object();
 
         // check out a buffer
-        public byte[] Checkout()
+        public byte[] Checkout(int nSize)
         {
             if (m_FreeBuffers.Count > 0)
             {
@@ -67,6 +67,70 @@ namespace xmedianet.socketserver
             lock (SyncRoot)
             {
                 m_FreeBuffers.Enqueue(buffer);
+            }
+        }
+    }
+
+    public class DynamicBufferPool : IBufferPool
+    {
+        private int m_nPoolSize = 512; // initial size of the pool
+
+        // pool of buffers
+        private Dictionary<int, Queue<byte[]>> m_FreeBuffers = new Dictionary<int, Queue<byte[]>>();
+
+        public DynamicBufferPool(int nInitialBufferSize)
+        {
+            m_nPoolSize = nInitialBufferSize;
+        }
+        object SyncRoot = new object();
+
+        // check out a buffer
+        public byte[] Checkout(int nSize)
+        {
+            if (m_FreeBuffers.Count > 0)
+            {
+                lock (SyncRoot)
+                {
+                    Queue<byte[]> bufferqueue = null;
+                    if (m_FreeBuffers.ContainsKey(nSize) == false)
+                    {
+                        bufferqueue = new Queue<byte[]>();
+                        m_FreeBuffers.Add(nSize, bufferqueue);
+                        for (int i = 0; i < m_nPoolSize; i++)
+                            bufferqueue.Enqueue(new byte[nSize]);
+                    }
+                    else
+                    {
+                        bufferqueue = m_FreeBuffers[nSize];
+                    }
+
+
+                    if (bufferqueue.Count > 0)
+                        return bufferqueue.Dequeue();
+                }
+            }
+
+            // instead of creating new buffer, 
+            // blocking waiting or refusing request may be better
+            return new byte[nSize]; /// add one so we know if we've been newed
+        }
+
+        // check in a buffer
+        public void Checkin(byte[] buffer)
+        {
+            lock (SyncRoot)
+            {
+                Queue<byte[]> bufferqueue = null;
+                if (m_FreeBuffers.ContainsKey(buffer.Length) == false)
+                {
+                    return;
+                }
+                else
+                {
+                    bufferqueue = m_FreeBuffers[buffer.Length];
+                }
+
+                bufferqueue.Enqueue(buffer);
             }
         }
     }

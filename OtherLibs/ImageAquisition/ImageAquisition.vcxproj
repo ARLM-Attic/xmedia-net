@@ -50,7 +50,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Mono|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -64,7 +64,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Mono|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -78,7 +78,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Mono|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -143,6 +143,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;C:\Program Files\Intel\IPP\6.1.0.032\em64t\include;$(IncludePath)</IncludePath>
     <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;C:\Program Files\Intel\IPP\6.1.0.032\em64t\lib;C:\Program Files\Intel\IPP\6.1.0.032\em64t\stublib;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x64;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Mono|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -153,6 +154,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\inc;C:\Program Files %28x86%29\Intel\IPP\6.1.0.032\ia32\include;$(IncludePath)</IncludePath>
     <LibraryPath>c:\Program Files\Microsoft SDKs\Kinect\v1.0 Beta2\lib;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\Program Files %28x86%29\Intel\IPP\6.1.0.032\ia32\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Mono|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -308,9 +310,6 @@
   <ItemGroup>
     <ProjectReference Include="..\AudioClasses\AudioClasses.csproj">
       <Project>{cb219b28-dc51-4e22-bc61-80b97d8a39c0}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LowLevelAudioLibrary\LowLevelAudioLibrary.vcxproj">
-      <Project>{3e232c6b-4046-4515-9aee-128ec7697290}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

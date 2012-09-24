@@ -78,7 +78,7 @@ namespace RTP
 
                 try
                 {
-                    byte [] bBuffer = BufferPool.Checkout();
+                    byte [] bBuffer = BufferPool.Checkout(4096);
                    MultiCastRecvSocket.BeginReceiveFrom(bBuffer, 0, bBuffer.Length, SocketFlags.None, ref ep, new AsyncCallback(OnRecvSocket), bBuffer);
                 }
                 catch(Exception)

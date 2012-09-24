@@ -22,6 +22,11 @@ namespace RTP
             AudioCodec = codec;
         }
 
+        static RTPAudioStream()
+        {
+            UDPSocketClient.m_BufferPool = new DynamicBufferPool(32);
+        }
+
         Codec m_objAudioCodec = null;
 
         public Codec AudioCodec
