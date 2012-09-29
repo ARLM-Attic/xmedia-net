@@ -168,14 +168,14 @@ namespace WPFXMPPClient
                 {
                     if (this.CheckBoxUseSpeech.IsChecked == true)
                     {
-                        if ((msg.Thread.ToLower() == "quiet" || msg.Thread.ToLower() == "silent" || msg.Thread.ToLower() == "nospeak") == false)
+                        if ((msg.Thread.ToLower() == "unseen" || msg.Thread.ToLower() == "quiet" || msg.Thread.ToLower() == "silent" || msg.Thread.ToLower() == "nospeak") == false)
                         {
                             PhrasesToSpeak.Enqueue(DialogControl.ReplaceWebLinksWithPhrase(msg.Message, "hyperlink specified here"));
                         }
                     }
                     else
                     {
-                        if ((msg.Thread.ToLower() == "quiet" || msg.Thread.ToLower() == "silent") == false)
+                        if ((msg.Thread.ToLower() == "unseen" || msg.Thread.ToLower() == "quiet" || msg.Thread.ToLower() == "silent") == false)
                         {
                             System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/ding.wav");
                             player.Play();
