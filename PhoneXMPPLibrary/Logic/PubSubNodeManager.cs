@@ -15,7 +15,7 @@ namespace System.Net.XMPP
     /// Manages adding and removing items from a pub sub node of type 'T'.  Node must already exist
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class PubSubNodeManager<T> : Logic
+    public class PubSubNodeManager<T> : Logic, IPubSubNodeManager
     {
         public PubSubNodeManager(string strNode, XMPPClient client) : base(client)
         {
@@ -264,6 +264,13 @@ namespace System.Net.XMPP
             }
             return base.NewMessage(iq);
         }
+
+    }
+
+    public interface IPubSubNodeManager
+    {
+        // public void AddItem(string strItemId, T item);
+
 
     }
 }

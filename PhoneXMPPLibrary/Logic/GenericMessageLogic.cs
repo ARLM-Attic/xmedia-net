@@ -39,6 +39,12 @@ namespace System.Net.XMPP
             msg.To = txtmsg.To;
             msg.Type = "chat";
             msg.Body = txtmsg.Message;
+
+            if (txtmsg.Thread == null || txtmsg.Thread.Length < 1)
+                txtmsg = ExtractThread(txtmsg);
+             
+            msg.Thread = txtmsg.Thread;
+            
             //msg.InnerXML = string.Format(@"<body>{0}</body>", txtmsg.Message);
 
             /// Find the roster guy for this message and add it to their conversation
@@ -74,6 +80,7 @@ namespace System.Net.XMPP
                         if (chatmsg.Delivered.HasValue == true)
                             txtmsg.Received = chatmsg.Delivered.Value; /// May have been a server stored message
                         txtmsg.Message = chatmsg.Body;
+                        txtmsg = ExtractThread(txtmsg);
                         txtmsg.Sent = false;
                         item.AddRecvTextMessage(txtmsg);
                         item.HasNewMessages = true;
@@ -92,5 +99,32 @@ namespace System.Net.XMPP
 
             return false;
         }
+
+        public TextMessage ExtractThread(TextMessage txtmsg)
+        {
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(strThreadPattern);
+            System.Text.RegularExpressions.MatchCollection matchCollection = regex.Matches(txtmsg.Message);
+            if (matchCollection.Count > 0)
+            {
+                foreach (System.Text.RegularExpressions.Match match in matchCollection)
+                {
+                    if (match.Groups["threadName"] != null)
+                    {
+                        txtmsg.Thread = match.Groups["threadName"].Value;
+                        txtmsg.Thread.Trim();
+                    }
+                    if (match.Groups["messageText"] != null)
+                    {
+                        txtmsg.Message = match.Groups["messageText"].Value;
+                        txtmsg.Message = txtmsg.Message.Trim();
+                    }
+
+                }
+            }
+            return txtmsg;
+        }
+
+        public static string strThreadPattern =
+     @"[\s]*\[(?<threadName>[^\]]*)\](?<messageText>.*)";
     }
 }

@@ -159,6 +159,8 @@ namespace LocationClasses
 
         #region Properties
 
+        public static bool ShowAll = true;
+
         public static bool SingleRosterItemMap = true;
 
         public static bool SeparateMapForEachRosterItem = true;

@@ -665,6 +665,10 @@ namespace System.Net.XMPP
             {
                 elemMessage.Add(new XElement("body", new XText(Body)));
             }
+            if ((Thread != null) && (Thread.Length > 0))
+            {
+                elemMessage.Add(new XElement("thread", new XText(Thread)));
+            }
             base.AddInnerXML(elemMessage);
         }
 
@@ -688,6 +692,10 @@ namespace System.Net.XMPP
                 {
                     ConversationState = ConversationState.composing;
                 }
+                else if (node.Name == "thread")
+                {
+                    Thread = node.Value;
+                }
             }
             base.ParseInnerXML(elem);
         }
@@ -707,8 +715,32 @@ namespace System.Net.XMPP
             get { return m_strBody; }
             set { m_strBody = value; }
         }
+
+        // Thread should be the class, since it optionally has a parent
+        private string m_strThread = null;
+
+        public string Thread
+        {
+            get { return m_strThread; }
+            set { m_strThread = value; }
+        }
     }
 
+    //[XmlRoot(ElementName = "thread")]
+    //public class Thread
+    //{
+    //    public Thread()
+    //    {
+    //    }
+
+    //    private string m_strParent = null;
+    //    [XmlElement(ElementName = "parent")]
+    //    public string Parent
+    //    {
+    //        get { return m_strParent; }
+    //        set { m_strParent = value; }
+    //    }
+    //}
 
     [XmlRoot(ElementName = "bind")]
     public class Bind
