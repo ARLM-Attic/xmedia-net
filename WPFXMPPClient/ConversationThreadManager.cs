@@ -8,13 +8,13 @@ namespace WPFXMPPClient
     public class ConversationThreadManager
     {
         public static string strThreadPattern =
-            @"\[(?<threadName>)[^\]]*\][\s](?<messageText>.*)";
+            @"[\s]*\[(?<threadName>[^\]]*)\](?<messageText>.*)";
 
         public static ThreadedMessage GetThreadedMessage(string strText)
         {
             ThreadedMessage threadedMessage = new ThreadedMessage();
             System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(strThreadPattern);
-            System.Text.RegularExpressions.MatchCollection matchCollection = regex.Matches(strThreadPattern);
+            System.Text.RegularExpressions.MatchCollection matchCollection = regex.Matches(strText);
             if (matchCollection.Count > 0)
             {
                 foreach (System.Text.RegularExpressions.Match match in matchCollection)
@@ -22,10 +22,12 @@ namespace WPFXMPPClient
                     if (match.Groups["threadName"] != null)
                     {
                         threadedMessage.ThreadName = match.Groups["threadName"].Value;
+                        threadedMessage.ThreadName.Trim();
                     }
                     if (match.Groups["messageText"] != null)
                     {
                         threadedMessage.Text = match.Groups["messageText"].Value;
+                        threadedMessage.Text.Trim();
                     }
                     if (threadedMessage.IsPopulated)
                     {

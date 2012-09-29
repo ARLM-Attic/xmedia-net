@@ -168,17 +168,24 @@ namespace WPFXMPPClient
                 {
                     if (this.CheckBoxUseSpeech.IsChecked == true)
                     {
-                        PhrasesToSpeak.Enqueue(DialogControl.ReplaceWebLinksWithPhrase(msg.Message, "hyperlink specified here"));
-                        
+                        if ((msg.Thread.ToLower() == "quiet" || msg.Thread.ToLower() == "silent" || msg.Thread.ToLower() == "nospeak") == false)
+                        {
+                            PhrasesToSpeak.Enqueue(DialogControl.ReplaceWebLinksWithPhrase(msg.Message, "hyperlink specified here"));
+                        }
                     }
                     else
                     {
-                        System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/ding.wav");
-                        player.Play();
+                        if ((msg.Thread.ToLower() == "quiet" || msg.Thread.ToLower() == "silent") == false)
+                        {
+                            System.Media.SoundPlayer player = new System.Media.SoundPlayer("Sounds/ding.wav");
+                            player.Play();
+                        }
                     }
-                    IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-                    FlashWindow(windowHandle, true);
-
+                    if ((msg.Thread.ToLower() == "noflash" || msg.Thread.ToLower() == "unseen") == false)
+                    {
+                        IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                        FlashWindow(windowHandle, true);
+                    }
                 }
 
                 /// Clear our new message flag for this roster user as long as this window is open
