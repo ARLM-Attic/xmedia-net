@@ -295,10 +295,6 @@
     <None Include="WPFXMPPClient_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GroceryList\GroceryList.csproj">
-      <Project>{7A6DED26-F6C0-4348-B7C8-31681236EBFD}</Project>
-      <Name>GroceryList</Name>
-    </ProjectReference>
     <ProjectReference Include="..\OtherLibs\AudioClasses\AudioClasses.csproj">
       <Project>{CB219B28-DC51-4E22-BC61-80B97D8A39C0}</Project>
       <Name>AudioClasses</Name>
