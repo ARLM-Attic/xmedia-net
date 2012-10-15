@@ -237,7 +237,7 @@ namespace WPFXMPPClient
             }
         }
 
-        private bool m_bUseLegacyMapWindow = false;
+        private bool m_bUseLegacyMapWindow = true;
         [DataMember]
         public bool UseLegacyMapWindow
         {
