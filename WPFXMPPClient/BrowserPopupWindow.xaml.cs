@@ -1240,7 +1240,7 @@ namespace WPFXMPPClient
 
         private void CheckBoxRosterShowAll_Checked(object sender, RoutedEventArgs e)
         {
-            MapManager.ShowAll = (bool)CheckBoxRosterShowAll.IsChecked;
+            //MapManager.ShowAll = (bool)CheckBoxRosterShowAll.IsChecked;
             //if (CheckBoxRosterShowAll.IsChecked == true)
             {
 
