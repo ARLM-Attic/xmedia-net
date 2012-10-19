@@ -73,13 +73,13 @@ namespace RTP
             if (DestinationEndpoint == null)
                 return;
 
-            SendVideo(bUncompressedVideo);
+            SendVideo(bUncompressedVideo, this.VideoFormat.Width, this.VideoFormat.Height, this.VideoFormat.Width*3);
         }
 
         object SendLock = new object();
 
 
-        protected void SendVideo(byte[] bUncompressedVideo)
+        protected void SendVideo(byte[] bUncompressedVideo, int nWidth, int nHeight, int ScanLineSize)
         {
 
 
@@ -131,6 +131,11 @@ namespace RTP
             }
         }
 
+        public MediaSample PullFrame()
+        {
+            return null;
+        }
+
         public List<VideoCaptureRate> VideoFormats
         {
             get { throw new NotImplementedException(); }
@@ -152,10 +157,10 @@ namespace RTP
         #region IVideoSink Members
 
 
-        public void NewRawFrame(byte[] bVideoData)
+        public void PushFrame(MediaSample sample)
         {
             /// New uncompressed data, send it
-            SendVideo(bVideoData);
+            SendVideo(sample.Data, sample.VideoFormat.Width, sample.VideoFormat.Height, sample.VideoFormat.Width*3);
         }
 
         #endregion

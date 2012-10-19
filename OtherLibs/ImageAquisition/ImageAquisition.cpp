@@ -934,7 +934,7 @@ void MFVideoCaptureDevice::OurCaptureThread()
 				AM_MEDIA_TYPE *type = NULL;
 				pNativeType->GetRepresentation(FORMAT_MFVideoFormat, (void **)&type);
 				vf = (MFVIDEOFORMAT *)type->pbFormat;
-				//LogMediaType(pNativeType);
+				LogMediaType(pNativeType);
 
 					/// See if this one matches the video format we have choosen
 				if ( (vf->videoInfo.dwWidth == ActiveVideoFormat->Width) &&

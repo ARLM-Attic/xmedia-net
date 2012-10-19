@@ -45,6 +45,10 @@ namespace ImageAquisition
 			return Name;
 		}
 
+		virtual MediaSample^ PullFrame() override
+		{
+			return nullptr; /// Only a push filter
+		}
 
 		delegate void DelegateError(String ^strError);
 		event DelegateError ^OnFailStartCapture;

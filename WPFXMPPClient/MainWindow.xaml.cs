@@ -516,6 +516,9 @@ namespace WPFXMPPClient
 
         void SetRoster()
         {
+        //    CollectionViewSource source = FindResource("SortedRosterItems") as CollectionViewSource;
+          //  source.View.Refresh();
+
             AddPresenceUpdateLine();
         }
 

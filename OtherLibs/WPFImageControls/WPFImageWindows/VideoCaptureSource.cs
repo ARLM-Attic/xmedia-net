@@ -261,12 +261,18 @@ namespace WPFImageWindows
             }
         }
 
-        
+
+        object CurrentFrameLock = new object();
+        MediaSample CurrentFrame = null;
 
         void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat)
         {
             m_nNumberFramesCaptures++;
 
+            lock (CurrentFrameLock)
+            {
+                CurrentFrame = new MediaSample(pFrame, videoformat);
+            }
 
             if (ActualFramesProcessedPerSecond > DesiredFramesPerSecond) // User wants to analyze less than what the camera is providing
                 return;
@@ -518,6 +524,15 @@ namespace WPFImageWindows
 
         public event DelegateRawFrame OnNewFrame = null;
 
+        public MediaSample PullFrame()
+        {
+            lock (CurrentFrameLock)
+            {
+                MediaSample sample = CurrentFrame;
+                CurrentFrame = null; /// null this out so if they ask again on the same frame they get nutin
+                return sample;
+            }
+        }
       
         #endregion
     }

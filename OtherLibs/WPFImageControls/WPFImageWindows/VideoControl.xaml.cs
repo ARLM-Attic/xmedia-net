@@ -219,6 +219,86 @@ namespace WPFImageWindows
             }
         }
 
+        public void NewImageSegment(byte[] bRGBFrame, int nXAt, int nYAt, int nWidth, int nHeight)
+        {
+            lock (CurrentDataLock)
+            {
+                if (CurrentBytes == null)
+                    return;
+
+                ImageUtils.ImageWithPosition imagedest = new ImageUtils.ImageWithPosition(CurrentWidth, CurrentHeight, CurrentBytes);
+                ImageUtils.ImageWithPosition imagesource = new ImageUtils.ImageWithPosition(nWidth, nHeight, bRGBFrame);
+                imagesource.X = nXAt;
+                imagesource.Y = nYAt;
+                ImageUtils.Utils.BitBlt32(imagesource, imagedest);
+
+                CheckRecord(CurrentBytes, CurrentWidth, CurrentHeight);
+                //CurrentBytes = bRGBFrame;
+                m_bNewData = true;
+            }
+        }
+
+        ImageAquisition.MFVideoEncoder Recorder = null;
+        AudioClasses.VideoCaptureRate rate = null;
+        public bool Record
+        {
+            get
+            {
+                if (Recorder == null)
+                    return false;
+                return true;
+            }
+            set
+            {
+                if (Recorder != null)
+                {
+                    Recorder.Stop();
+                    Recorder = null;
+                }
+
+                if (value == true)
+                {
+                    ImageAquisition.MFVideoEncoder tempRecorder = new ImageAquisition.MFVideoEncoder();
+                    string strFileName = string.Format("{0}/{1}.wmv", System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyVideos), Guid.NewGuid().ToString());
+                    rate = new VideoCaptureRate(this.VideoWidth, this.VideoHeight, 5, 3000000);
+                    rate.CompressedFormat = AudioClasses.VideoDataFormat.WMV9;
+                    tempRecorder.Start(strFileName, rate, DateTime.Now, false);
+                    Recorder = tempRecorder;
+                }
+                else
+                {
+                    if (Recorder != null)
+                    {
+                        Recorder.Stop();
+                        Recorder = null;
+                    }
+                }
+            }
+        }
+
+
+        void CheckRecord(byte[] bRGBData, int nWidth, int nHeight)
+        {
+            if (bRGBData == null)
+                return;
+            if (nWidth <= 0)
+                return;
+            if (nHeight <= 0)
+                return;
+
+            if (Recorder != null)
+            {
+                if ((nWidth == rate.Width) && (nHeight == rate.Height))
+                {
+                    byte[] bRGB32Data = ImageUtils.Utils.Convert24BitImageTo32BitImage(bRGBData, nWidth, nHeight);
+                    Recorder.AddVideoFrame(bRGB32Data, DateTime.Now);
+                }
+                else
+                    Record = false;
+            }
+        }
+
+     
 
         object CurrentDataLock = new object();
         byte [] CurrentBytes = null;
@@ -327,15 +407,24 @@ namespace WPFImageWindows
                 AllowPanning = !value;
                 if (value == true)
                 {
+                    m_bSafePreventImageResizing = true;
                     Dispatcher.Invoke(new DelegateVoid(SetImageToActualSize), null);
                 }
                 else
                 {
+                    m_bSafePreventImageResizing = false;
                     Dispatcher.Invoke(new DelegateVoid(DoSizeChange), null);
                 }
 
                 FirePropertyChanged("PreventImageResizing");
             }
+        }
+
+        bool m_bSafePreventImageResizing = false;
+
+        public bool SafePreventImageResizing
+        {
+            get { return m_bSafePreventImageResizing; }
         }
 
         delegate void DelegateDoSizeChange(Size NewSize);

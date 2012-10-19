@@ -200,12 +200,14 @@ namespace AudioClasses
 
         string Name { get; }
 
+        MediaSample PullFrame();
+
     }
 
     public interface IVideoSink
     {
         string Name { get; set; }
-        void NewRawFrame(byte[] bVideoData);
+        void PushFrame(MediaSample sample);
     }
 
     public interface IVideoCompressor

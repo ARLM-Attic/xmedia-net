@@ -99,6 +99,8 @@ namespace ImageUtils
 
 		static void BitBlt(ImageWithPosition ^RGB24SourceWithLocation, ImageWithPosition ^RGB24Destination);
 
+		static void BitBlt32(ImageWithPosition ^RGB32SourceWithLocation, ImageWithPosition ^RGB32Destination);
+
 		static array<unsigned char> ^CopyImageBits(System::Drawing::Bitmap ^image, int nWidth, int nHeight, int ImageSizeBytes);
 
 		static array<unsigned char> ^Convert24BitImageTo32BitImage(array<unsigned char> ^bData, int nWidth, int nHeight);

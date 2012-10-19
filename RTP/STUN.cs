@@ -75,8 +75,29 @@ namespace RTP
 
             byte [] bMessage = msgRequest.Bytes;
             client.SendUDP(bMessage, bMessage.Length, epStun);
-            
+        }
 
+        public IPEndPoint PerformRequest(int nTimeout)
+        {
+            IPEndPoint retep = null;
+            PerformRequest();
+            WaitHandle.WaitOne(nTimeout);
+
+            if (ResponseMessage != null)
+            {
+                foreach (STUNAttributeContainer cont in ResponseMessage.Attributes)
+                {
+                    if (cont.ParsedAttribute.Type == StunAttributeType.MappedAddress)
+                    {
+
+                        MappedAddressAttribute attrib = cont.ParsedAttribute as MappedAddressAttribute;
+                        retep = new IPEndPoint(attrib.IPAddress, attrib.Port);
+                        break;
+                    }
+                }
+            }
+
+            return retep;
         }
 
         void client_OnReceivePacket3(byte[] bData, int nLength, IPEndPoint epfrom, IPEndPoint epthis, DateTime dtReceived)

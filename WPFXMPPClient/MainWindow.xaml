@@ -60,7 +60,7 @@
 
 
                 <Grid.Triggers>
-                    <!--<EventTrigger RoutedEvent="Mouse.MouseEnter" SourceName="ButtonGlobe">
+                    <EventTrigger RoutedEvent="Mouse.MouseEnter" SourceName="ButtonGlobe">
                         <BeginStoryboard x:Name="StoryBoardMakeBigGlobe_BeginStoryboard" Storyboard="{StaticResource StoryBoardMakeBigGlobe}"/>
                     </EventTrigger>
                     <EventTrigger RoutedEvent="Mouse.MouseLeave" SourceName="ButtonGlobe">
@@ -79,7 +79,7 @@
                     </EventTrigger>
                     <EventTrigger RoutedEvent="Mouse.MouseLeave" SourceName="ToggleButtonChat">
                         <StopStoryboard BeginStoryboardName="StoryBoardMakeBigChat_BeginStoryboard"/>
-                    </EventTrigger>-->
+                    </EventTrigger>
                 </Grid.Triggers>
                 
                 <Rectangle VerticalAlignment="Top" Stroke="{Binding Presence.PresenceBrush}" Grid.RowSpan="1" StrokeThickness="1" Stretch="Uniform"  Fill="{Binding Presence.PresenceBrush}" Grid.Column="0" Grid.Row="0" />
@@ -312,13 +312,13 @@
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorLevel=1, AncestorType={x:Type ListBoxItem}, Mode=FindAncestor}}" Value="True">
                     <!--<DataTrigger Binding="{Binding ElementName=ButtonExpandChat, Path=IsChecked}" Value="True">-->
-                        <!--<DataTrigger.EnterActions>
+                        <DataTrigger.EnterActions>
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetName="GridMoreUserOptions" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"  From="-48" To="0" DecelerationRatio="0.5" Duration="0:0:0.1"/>
                             </Storyboard>
                         </BeginStoryboard>
-                    </DataTrigger.EnterActions>-->
+                    </DataTrigger.EnterActions>
                     <Setter Property="Visibility" Value="Visible" TargetName="GridMoreUserOptions" />
                     <Setter Property="Height" Value="120" TargetName="DialogControlLastMessage" />
                     <Setter Property="Background" Value="White" TargetName="DialogControlLastMessage" />

@@ -203,6 +203,27 @@ void ImageUtils::Utils::BitBlt(ImageWithPosition ^RGB24SourceWithLocation, Image
 	
 }
 
+/// Copys the 32 bit bmp specified in RGB24SourceWithLocation to RGB24Destination at the x, y location specified in RGB32SourceWithLocation
+void ImageUtils::Utils::BitBlt32(ImageWithPosition ^RGB24SourceWithLocation, ImageWithPosition ^RGB24Destination)
+{
+	
+	pin_ptr<unsigned char> ppSource = &RGB24SourceWithLocation->ImageBytes[0];
+   Ipp8u *pSource = (Ipp8u *) ppSource;
+
+   pin_ptr<unsigned char> ppDest = &RGB24Destination->ImageBytes[0];
+   Ipp8u *pDest = (Ipp8u *) ppDest;
+
+	IppiSize size;
+	size.width = RGB24SourceWithLocation->Width;
+	size.height = RGB24SourceWithLocation->Height;
+
+	Ipp8u *pDestLocation = pDest + RGB24SourceWithLocation->Y*RGB24Destination->RowLengthBytes +  4*RGB24SourceWithLocation->X;
+
+	IPPCALL(ippiCopy_8u_C3R(pSource, RGB24SourceWithLocation->RowLengthBytes, 
+							pDestLocation,  RGB24Destination->RowLengthBytes,
+							size));
+	
+}
 
 array<unsigned char> ^ImageUtils::Utils::CopyImageBits(System::Drawing::Bitmap ^image, int nWidth, int nHeight, int ImageSizeBytes)
 {
