@@ -47,9 +47,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationClasses", "OtherLib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XMPPClientService", "Examples\XMPPClientService\XMPPClientService.csproj", "{8D12A1E1-1441-45D8-A834-8DE44F55ED24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XMPPManagement", "OtherLibs\XMPPManagement\XMPPManagement.csproj", "{91DF9548-441D-4FD9-B9D1-928794B2BAEB}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 21
+		SccNumberOfProjects = 22
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs26
 		SccLocalPath0 = .
@@ -125,6 +127,10 @@ Global
 		SccProjectTopLevelParentUniqueName20 = xmedianet.sln
 		SccProjectName20 = Examples/XMPPClientService
 		SccLocalPath20 = Examples\\XMPPClientService
+		SccProjectUniqueName21 = OtherLibs\\XMPPManagement\\XMPPManagement.csproj
+		SccProjectTopLevelParentUniqueName21 = xmedianet.sln
+		SccProjectName21 = OtherLibs/XMPPManagement
+		SccLocalPath21 = OtherLibs\\XMPPManagement
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -722,6 +728,34 @@ Global
 		{8D12A1E1-1441-45D8-A834-8DE44F55ED24}.Release-Mono|x64.ActiveCfg = Release|x86
 		{8D12A1E1-1441-45D8-A834-8DE44F55ED24}.Release-Mono|x86.ActiveCfg = Release|x86
 		{8D12A1E1-1441-45D8-A834-8DE44F55ED24}.Release-Mono|x86.Build.0 = Release|x86
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug-Mono|Any CPU.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug-Mono|Any CPU.Build.0 = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug-Mono|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug-Mono|Mixed Platforms.Build.0 = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug-Mono|Win32.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug-Mono|x64.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Debug-Mono|x86.ActiveCfg = Debug|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release|Win32.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release|x64.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release|x86.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release-Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release-Mono|Any CPU.Build.0 = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release-Mono|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release-Mono|Mixed Platforms.Build.0 = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release-Mono|Win32.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release-Mono|x64.ActiveCfg = Release|Any CPU
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB}.Release-Mono|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -739,6 +773,7 @@ Global
 		{CB219B28-DC51-4E22-BC61-80B97D8A39C0} = {10512982-5268-4102-A137-C334F3ABF856}
 		{6D3414FC-4336-426A-BED4-814AB331FDF0} = {10512982-5268-4102-A137-C334F3ABF856}
 		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4} = {10512982-5268-4102-A137-C334F3ABF856}
+		{91DF9548-441D-4FD9-B9D1-928794B2BAEB} = {10512982-5268-4102-A137-C334F3ABF856}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

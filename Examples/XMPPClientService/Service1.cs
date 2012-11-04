@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
+using System.Net.XMPP;
 
 namespace XMPPClientService
 {
@@ -16,6 +17,8 @@ namespace XMPPClientService
             InitializeComponent();
         }
 
+        public XMPPClient XMPPClient = null;
+
         protected override void OnStart(string[] args)
         {
         }
@@ -23,5 +26,13 @@ namespace XMPPClientService
         protected override void OnStop()
         {
         }
+
+        protected bool Startup()
+        {
+            bool bRes = true;
+
+            return bRes;
+        }
+
     }
 }

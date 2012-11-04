@@ -213,21 +213,27 @@ namespace GroceryList
         public bool PopulatePubSubManager()
         {
             string[] nodeNames = PubSubOperation.GetRootNodes(XMPPClient);
-            RootNodeNames = new ObservableCollection<string>(nodeNames);
-            foreach (string name in nodeNames)
+            try
             {
-                if (PubSubDictionary.ContainsKey(name) == false)
-                    PubSubDictionary.Add(name, null);
-
-                item[] subNodeItems = GetSubNodeItems(name);
-                foreach (item item in subNodeItems)
+                RootNodeNames = new ObservableCollection<string>(nodeNames);
+                foreach (string name in nodeNames)
                 {
-                    PubSubDictionary[name] = item;
+                    if (PubSubDictionary.ContainsKey(name) == false)
+                        PubSubDictionary.Add(name, null);
+
+                    item[] subNodeItems = GetSubNodeItems(name);
+                    foreach (item item in subNodeItems)
+                    {
+                        PubSubDictionary[name] = item;
+                    }
                 }
+
+                PubSubItems = new ObservableCollection<item>(PubSubDictionary.Values);
             }
-
-            PubSubItems = new ObservableCollection<item>(PubSubDictionary.Values);
-
+            catch (Exception e)
+            {
+                MessageBox.Show("Error retrieving root node names: " + e.Message);
+            }
             return true;
         }
 
