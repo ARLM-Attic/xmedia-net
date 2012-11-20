@@ -189,9 +189,10 @@ namespace XMPPClient
 
             XMPPAccount XMPPAccount = new XMPPAccount();
             XMPPAccount.JID = "user@gmail.com/phone";
+            XMPPAccount.Domain = "gmail.com";
             XMPPAccount.Server = "talk.google.com";
-            XMPPAccount.Port = 5223;
-            XMPPAccount.UseOldSSLMethod = true;
+            XMPPAccount.Port = 5222;
+            XMPPAccount.UseOldSSLMethod = false;
             XMPPAccount.UseTLSMethod = true;
             XMPPAccount.AccountName = AccountNameInputControl.InputValue;
             Accounts.Add(XMPPAccount);

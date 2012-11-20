@@ -260,6 +260,28 @@ namespace WPFXMPPClient
 
             }
         }
+
+        [DataMember]
+        public int StartPort
+        {
+            get { return AudioMuxerWindow.FirstPort; }
+            set 
+            { 
+                AudioMuxerWindow.FirstPort = value;
+                AudioMuxerWindow.PortOn = value;
+
+            }
+        }
+
+        [DataMember]
+        public int EndPort
+        {
+            get { return AudioMuxerWindow.LastPort; }
+            set 
+            { 
+                AudioMuxerWindow.LastPort = value;
+            }
+        }
     }
 
 }

@@ -88,7 +88,6 @@ namespace ImageAquisition
 			void set(int nValue)
 			{
 				m_nMaxFrameRate = nValue;
-				m_dtLastFrameSent = DateTime::MinValue;
 			}
 
 		}
@@ -118,6 +117,104 @@ namespace ImageAquisition
 		int m_nMaxFrameRate;
 		DateTime m_dtLastFrameSent;
 	};
+
+	
+	public ref class MFVideoFile : public AudioClasses::IVideoSource
+	{
+	public:
+		MFVideoFile();
+		~MFVideoFile();
+
+
+		virtual bool Start(String ^strFileName);
+		virtual void Stop();
+
+		event AudioClasses::DelegateRawFrame ^OnNewFrame
+		{
+		public :
+			virtual void add(AudioClasses::DelegateRawFrame ^del)
+			{
+				delNewFrame += del;
+			}
+			virtual void remove(AudioClasses::DelegateRawFrame ^del)
+			{
+				delNewFrame -= del;
+			} 
+			void raise(array<unsigned char> ^data, AudioClasses::VideoCaptureRate ^videoformat)
+			{
+				delNewFrame(data, videoformat);
+			}
+		}
+
+		virtual System::String ^ToString() override
+		{
+			return Name;
+		}
+
+		virtual MediaSample^ PullFrame() override
+		{
+			return nullptr; /// Only a push filter
+		}
+
+		delegate void DelegateError(String ^strError);
+		event DelegateError ^OnFailStartCapture;
+
+		property System::Collections::Generic::List<VideoCaptureRate  ^> ^VideoFormats
+		{
+			virtual System::Collections::Generic::List<VideoCaptureRate  ^> ^get()
+			{
+				return nullptr;
+			}
+		}
+
+		property VideoCaptureRate  ^ActiveVideoCaptureRate
+		{
+			virtual VideoCaptureRate  ^get() 
+			{
+				return ActiveVideoFormat;
+			}
+		}
+
+		property String ^Name
+		{
+			virtual String ^get()
+			{
+				return FileName;
+			}
+
+		}
+
+		property int MaxFrameRate
+		{
+			int get()
+			{
+				return m_nMaxFrameRate;
+			}
+
+			void set(int nValue)
+			{
+				m_nMaxFrameRate = nValue;
+			}
+
+		}
+
+		IntPtr SourceDevice; //webcam, file, etc
+
+	protected:
+
+		event AudioClasses::DelegateRawFrame ^delNewFrame;
+		VideoCaptureRate ^ActiveVideoFormat;
+		System::Threading::Thread ^CaptureThread;
+		void OurCaptureThread();
+		bool quit;
+
+		String ^FileName;
+		IntPtr SourceReader;
+
+		int m_nMaxFrameRate;
+		DateTime m_dtLastFrameSent;
+	};
+
 
 	public ref class MFAudioDevice
 	{

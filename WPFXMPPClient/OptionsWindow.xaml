@@ -32,6 +32,14 @@
                         <Label Width="160">Preferred Codec</Label>
                         <ComboBox Width="160" x:Name="ComboBoxAudioCodec" SelectedItem="{Binding AudioCodec}" />
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">First RTP Port</Label>
+                        <TextBox Width="160"  Text="{Binding StartPort}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Width="160">Last RTP Port</Label>
+                        <TextBox Width="160"  Text="{Binding EndPort}" />
+                    </StackPanel>
                 </StackPanel>
 
             </TabItem>

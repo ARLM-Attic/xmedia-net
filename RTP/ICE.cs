@@ -113,6 +113,9 @@ namespace RTP
             return nPriority;
         }
 
+        public bool HasSentCheckThisRound = false;
+        public bool FlagAsNext = false; /// Put us to the top of the next check list
+
         private bool m_bHasReceivedSuccessfulIncomingSTUNCheck = false;
         public bool HasReceivedSuccessfulIncomingSTUNCheck
         {
@@ -200,6 +203,7 @@ namespace RTP
                     this.CandidatePairState = RTP.CandidatePairState.Failed;
                 }
             }
+            HasSentCheckThisRound = true;
         }
 
         public void PerformOutgoingSTUNCheckGoogle(RTPStream stream, string strUsername, string strPassword)
@@ -240,6 +244,7 @@ namespace RTP
                     this.CandidatePairState = RTP.CandidatePairState.Failed;
                 }
             }
+            HasSentCheckThisRound = true;
         }
 
         public void TellRemoteEndToUseThisPair(RTPStream stream, string strUsername, string strPassword)
@@ -380,7 +385,7 @@ namespace RTP
 
             STUNMessage ResponseMessage = stream.SendRecvSTUN(this.RemoteCandidate.IPEndPoint, msgRequest, 0);
         }
-        public int[] Timeouts = new int[] { 200, 500, 800, 1200 };
-
+        //public int[] Timeouts = new int[] { 200, 500, 800, 1200 };
+        public int[] Timeouts = new int[] { 200, 500};
     }
 }

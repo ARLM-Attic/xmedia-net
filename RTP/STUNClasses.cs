@@ -40,6 +40,7 @@ namespace RTP
         Realm = 0x0014,
         Nonce = 0x0015,
         XorMappedAddress = 0x0020,
+        XorMappedAddress2 = 0x8020,
         Software = 0x8022,
         AlternateServer = 0x8023,
         Fingerprint = 0x8028,
@@ -928,6 +929,11 @@ namespace RTP
                 m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
             }
             else if (nType == (ushort)StunAttributeType.XorMappedAddress)
+            {
+                m_objParsedAttribute = new XORMappedAddressAttribute();
+                m_objParsedAttribute.SetBytes(bAttribute, parentmessage);
+            }
+            else if (nType == (ushort)StunAttributeType.XorMappedAddress2)
             {
                 m_objParsedAttribute = new XORMappedAddressAttribute();
                 m_objParsedAttribute.SetBytes(bAttribute, parentmessage);

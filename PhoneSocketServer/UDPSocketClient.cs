@@ -34,7 +34,7 @@ namespace xmedianet.socketserver
 
          /// See if we are using our pinned-memory protection, if we are use from the pool, if not, just new it
          if (UDPSocketClient.m_BufferPool != null)
-            bRecv = UDPSocketClient.m_BufferPool.Checkout();
+             bRecv = UDPSocketClient.m_BufferPool.Checkout(UDPSocketClient.m_nBufferSize);
          else
             bRecv = new byte[UDPSocketClient.m_nBufferSize];
       }

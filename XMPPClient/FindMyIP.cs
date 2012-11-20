@@ -36,7 +36,7 @@ namespace FindMyIP
             },
                 null);
 
-            WaitEvent.WaitOne();
+            WaitEvent.WaitOne(4000);
 
             return FoundIPAddress;
         }
@@ -54,12 +54,24 @@ namespace FindMyIP
             keepsearching = true;
             MulticastSocket.BeginSendToGroup(MulticastData, 0, MulticastData.Length, callback_send, null);
 
+            int nCount = 0;
             while (keepsearching)
             {
+                if (nCount == 5)
+                    MulticastSocket.BeginSendToGroup(MulticastData, 0, MulticastData.Length, callback_send, null);
+                if (nCount == 10)
+                {
+                    Debug.WriteLine("Stopped Group because no response was received");
+                    keepsearching = false;
+                    WaitEvent.Set();
+                    break;
+                }
                 try
                 {
                     byte[] buffer = new byte[MulticastData.Length];
                     MulticastSocket.BeginReceiveFromGroup(buffer, 0, buffer.Length, DoneReceiveFromGroup, buffer);
+                    System.Threading.Thread.Sleep(20);
+                    nCount++;
                 }
                 catch (Exception ex)
                 {
@@ -74,16 +86,24 @@ namespace FindMyIP
         void DoneReceiveFromGroup(IAsyncResult result)
         {
             IPEndPoint where;
-            int responselength = MulticastSocket.EndReceiveFromGroup(result, out where);
-            byte[] buffer = result.AsyncState as byte[];
-            if (responselength == MulticastData.Length && buffer.SequenceEqual(MulticastData))
+            try
             {
-                Debug.WriteLine("FOUND myself at " + where.Address.ToString());
-                keepsearching = false;
-                FoundIPAddress = where.Address;
+                int responselength = MulticastSocket.EndReceiveFromGroup(result, out where);
+                byte[] buffer = result.AsyncState as byte[];
+                if (responselength == MulticastData.Length && buffer.SequenceEqual(MulticastData))
+                {
+                    Debug.WriteLine("FOUND myself at " + where.Address.ToString());
+                    keepsearching = false;
+                    FoundIPAddress = where.Address;
+                }
             }
-
-            WaitEvent.Set();
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                WaitEvent.Set();
+            }
         }
     }
 }

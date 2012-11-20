@@ -1220,6 +1220,289 @@ void MFVideoCaptureDevice::OurCaptureThread()
 
 
 
+
+
+MFVideoFile::MFVideoFile()
+{
+	m_nMaxFrameRate = -1;
+	m_dtLastFrameSent = DateTime::MinValue;
+	quit = true;
+	SourceDevice = IntPtr::Zero;
+	SourceReader = IntPtr::Zero;
+	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+	hr = MFStartup(MF_VERSION);
+
+}
+
+MFVideoFile::~MFVideoFile()
+{
+	if (SourceReader != IntPtr::Zero)
+	{
+		IMFSourceReader *pReader  = (IMFSourceReader *) SourceReader.ToPointer();
+		pReader->Release();
+		pReader = NULL;
+		SourceReader = IntPtr::Zero;
+	}
+
+	if (SourceDevice != IntPtr::Zero)
+	{
+		IMFMediaSource *pMediaSource = (IMFMediaSource *) SourceDevice.ToPointer();
+		pMediaSource->Release();
+		pMediaSource = NULL;
+		SourceDevice = IntPtr::Zero;
+	}
+
+}
+
+
+bool MFVideoFile::Start(String ^strFileName)
+{
+	if (quit == false)
+		return false;
+
+   FileName = strFileName;
+   quit = false;
+   CaptureThread = gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(this, &MFVideoFile::OurCaptureThread));
+   CaptureThread->Name = "Video File Thread";
+   CaptureThread->IsBackground = true;
+   CaptureThread->Start();
+
+   return true;
+}
+
+void MFVideoFile::Stop()
+{
+	quit = true;
+}
+
+void MFVideoFile::OurCaptureThread()
+{
+	IMFSourceReader *pReader = NULL;
+	HRESULT hr;
+
+	IMFAttributes *pAttributes2 = NULL;
+    hr = MFCreateAttributes(&pAttributes2, 1);
+	hr = pAttributes2->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, 1);
+
+	System::IntPtr ptrstring = System::Runtime::InteropServices::Marshal::StringToHGlobalUni(FileName);
+
+	hr = MFCreateSourceReaderFromURL((LPCWSTR) ptrstring.ToPointer(), pAttributes2, &pReader);
+
+	System::Runtime::InteropServices::Marshal::FreeHGlobal(ptrstring);
+
+    if (FAILED(hr))
+		return;
+	SourceReader = IntPtr(pReader);
+
+	pAttributes2->Release();
+	pAttributes2 = NULL;
+
+
+	IMFMediaType *pMediaTypeOut = NULL;
+	hr = MFCreateMediaType(&pMediaTypeOut);   
+	hr = pMediaTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);   
+	hr = pMediaTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);     
+	hr = pMediaTypeOut->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive);   
+	//hr = MFSetAttributeSize(pMediaTypeOut, MF_MT_FRAME_SIZE, videoformat->Width, videoformat->Height);   
+	//hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_FRAME_RATE, videoformat->FrameRate, 1);   
+	//hr = MFSetAttributeRatio(pMediaTypeOut, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);   
+	//hr = pMediaTypeOut->SetUINT32(MF_MT_DEFAULT_STRIDE, videoformat->Width*4);   
+
+	hr = pReader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pMediaTypeOut);
+
+
+
+	ActiveVideoFormat = gcnew VideoCaptureRate();
+
+
+	 DWORD dwMediaTypeIndex = 0;
+	 GUID loopmajortype;
+
+	 IMFSample *pSample = NULL;
+	 IMFMediaBuffer *pBuffer = NULL;
+
+	 array<unsigned char> ^ arrayBytesRet = nullptr;
+
+	 bool bGotFormat = false;
+
+	 hr = pReader->SetStreamSelection(0, TRUE);
+	  
+    while (!quit)
+    {
+	  DWORD streamIndex=0;
+	  DWORD flags= 0;
+      LONGLONG llTimeStamp = 0;
+
+	 
+        hr = pReader->ReadSample(
+            MF_SOURCE_READER_FIRST_VIDEO_STREAM, //MF_SOURCE_READER_FIRST_VIDEO_STREAM, //MF_SOURCE_READER_ANY_STREAM,    // Stream index.
+            0,                              // Flags.
+            &streamIndex,                   // Receives the actual stream index. 
+            &flags,                         // Receives status flags.
+            &llTimeStamp,                   // Receives the time stamp.
+            &pSample                        // Receives the sample or NULL.
+            );
+
+		/*}
+		catch (std::bad_alloc& b)
+		{
+			Sleep(0); /// This exception was called by the Axis mjpeg decoder filter.  I un-registered it and the bug went away
+		}
+*/
+		if ((hr == 0) && (bGotFormat == false) )
+		{
+
+			//IMFMediaType *pNativeType = NULL;
+			//hr = pReader->GetNativeMediaType(streamIndex, 0, &pNativeType);
+
+			IMFMediaType *pType = NULL;
+			hr = pReader->GetCurrentMediaType(streamIndex, &pType);
+			LogMediaType(pType);
+			UINT32 pWidth;
+			UINT32 pHeight;
+			hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &pWidth, &pHeight);
+
+			this->ActiveVideoFormat->Width = pWidth;
+			this->ActiveVideoFormat->Height = pHeight;
+
+			//pNativeType->Release();
+			pType->Release();
+			bGotFormat = true;
+		}
+
+
+		if (hr == MF_E_HW_MFT_FAILED_START_STREAMING)
+		{
+			OnFailStartCapture("Capture failed: Failed to start streaming");
+			break;
+		}
+
+		if (hr == MF_E_INVALIDREQUEST)
+        {
+			OnFailStartCapture(String::Format("Capture failed, Invalid Request: {0}", hr));
+            break;
+        }
+		if (FAILED(hr))
+        {
+			OnFailStartCapture(String::Format("Capture failed: {0}", hr));
+            break;
+        }
+
+        if (flags & MF_SOURCE_READERF_ENDOFSTREAM)
+        {
+            //wprintf(L"\tEnd of stream\n");
+            quit = true;
+        }
+        if (flags & MF_SOURCE_READERF_NEWSTREAM)
+        {
+            //wprintf(L"\tNew stream\n");
+        }
+        if (flags & MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED)
+        {
+            //wprintf(L"\tNative type changed\n");
+        }
+        if (flags & MF_SOURCE_READERF_CURRENTMEDIATYPECHANGED)
+        {
+            //wprintf(L"\tCurrent type changed\n");
+        }
+        if (flags & MF_SOURCE_READERF_STREAMTICK)
+        {
+            //wprintf(L"\tStream tick\n");
+        }
+
+        if (flags & MF_SOURCE_READERF_NATIVEMEDIATYPECHANGED)
+        {
+            //// The format changed. Reconfigure the decoder.
+            //hr = ConfigureDecoder(pReader, streamIndex);
+            //if (FAILED(hr))
+            //{
+            //    break;
+            //}
+        }
+
+        if (pSample != NULL)
+        {
+			//DWORD dwBufferCount = 0;
+			//pSample->GetBufferCount(&dwBufferCount);
+			bool bSendFrame = true;
+
+			/// Some clients can't handle our full frame rate, for these we'll throttle the
+			/// events to the max framerate they ask for (well, interframe time anyways)
+			if (m_nMaxFrameRate > 0)
+			{
+				TimeSpan tsDif = DateTime::Now - m_dtLastFrameSent;
+				double fTsMaxFreq = 1.0f/m_nMaxFrameRate;
+				if (tsDif.TotalMilliseconds < fTsMaxFreq)
+					bSendFrame = false;
+			}
+		
+			if (bSendFrame == true)
+			{
+				DWORD dwLength = 0;
+				pSample->GetTotalLength(&dwLength);
+			
+				if (pBuffer == NULL)
+				{
+				   MFCreateMemoryBuffer(dwLength, &pBuffer);
+				   arrayBytesRet = gcnew array<unsigned char>(dwLength);
+				}
+				else
+				{
+					DWORD dwCurrentLen = 0;
+					pBuffer->GetCurrentLength(&dwCurrentLen);
+					if (dwCurrentLen != dwLength)
+					{
+						pBuffer->SetCurrentLength(dwLength);
+						arrayBytesRet = gcnew array<unsigned char>(dwLength);
+					}
+				}
+
+				pSample->CopyToBuffer(pBuffer);
+
+				/// Lock our buffer so we can copy our data
+				BYTE *pBytes = NULL;
+				pBuffer->Lock(&pBytes, NULL, NULL);
+
+				pin_ptr<unsigned char> ppBytesRet = &arrayBytesRet[0];
+				unsigned char *pBytesRet = (unsigned char *)ppBytesRet;
+
+				memcpy(pBytesRet, pBytes, dwLength);
+				pBuffer->Unlock();
+
+
+				OnNewFrame(arrayBytesRet, ActiveVideoFormat);
+
+				m_dtLastFrameSent = DateTime::Now;
+			}
+
+        
+			pSample->Release();
+			pSample = NULL;
+
+        }
+    }
+
+
+	if (pBuffer != NULL)
+	{
+		pBuffer->Release();
+		pBuffer = NULL;
+	}
+	hr = pReader->Flush(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
+
+	 if (SourceReader != IntPtr::Zero)
+	{
+		IMFSourceReader *pReader  = (IMFSourceReader *) SourceReader.ToPointer();
+		pReader->Release();
+		pReader = NULL;
+		SourceReader = IntPtr::Zero;
+	}
+
+}
+
+
+
+
 MFVideoEncoder::MFVideoEncoder()
 {
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);

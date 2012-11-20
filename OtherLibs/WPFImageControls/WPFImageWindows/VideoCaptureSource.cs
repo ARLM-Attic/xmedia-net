@@ -20,7 +20,7 @@ using System.IO;
 namespace WPFImageWindows
 {
 
-    public partial class VideoCaptureSource : System.ComponentModel.INotifyPropertyChanged, IVideoSource
+    public partial class VideoCaptureSource : System.ComponentModel.INotifyPropertyChanged, IVideoSource, ICameraController
     {
         public VideoCaptureSource(ImageAquisition.MFVideoCaptureDevice dev)
         {
@@ -297,7 +297,7 @@ namespace WPFImageWindows
               /// <summary>
         /// Pans the camera left -5 units, if supported
         /// </summary>
-        public void PanLeft()
+        public virtual void PanLeft()
         {
             PanRelative(-5);
         }
@@ -305,7 +305,7 @@ namespace WPFImageWindows
         /// <summary>
         /// Pans the camera right -5 units, if supported
         /// </summary>
-        public void PanRight()
+        public virtual void PanRight()
         {
             PanRelative(5);
         }
@@ -327,12 +327,12 @@ namespace WPFImageWindows
             }
         }
 
-        public void TiltUp()
+        public virtual void TiltUp()
         {
             TiltRelative(5);
         }
 
-        public void TiltDown()
+        public virtual void TiltDown()
         {
             TiltRelative(-5);
         }
@@ -341,7 +341,7 @@ namespace WPFImageWindows
         /// Tilts the camera up and down relative to the current position
         /// </summary>
         /// <param name="nUnits"></param>
-        public void TiltRelative(int nUnits)
+        public virtual void TiltRelative(int nUnits)
         {
             if (VideoCaptureDevice.SourceDevice == IntPtr.Zero)
                 return;
@@ -373,7 +373,7 @@ namespace WPFImageWindows
             }
         }
 
-        public void SetFocus(int nFocus)
+        public virtual void SetFocus(int nFocus)
         {
             if (VideoCaptureDevice.SourceDevice == IntPtr.Zero)
                 return;
@@ -451,7 +451,7 @@ namespace WPFImageWindows
         /// Zooms the camera in... still need to get this working
         /// </summary>
         /// <param name="nFactor"></param>
-        public void Zoom(int nFactor)
+        public virtual void Zoom(int nFactor)
         {
             if (VideoCaptureDevice.SourceDevice == IntPtr.Zero)
                 return;
@@ -538,5 +538,15 @@ namespace WPFImageWindows
     }
 
 
+    public interface ICameraController
+    {
+        void PanLeft();
+        void PanRight();
+        void TiltUp();
+        void TiltDown();
+        void SetFocus(int nFocus);
+        void SetExposure(int nExposure);
+
+    }
 
 }

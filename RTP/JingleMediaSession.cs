@@ -444,6 +444,7 @@ namespace RTP
 
         public void StopMedia(IAudioMixer AudioMixer)
         {
+            m_bAbortICEThread = false;
             SessionState = SessionState.TearingDown;
             if (AudioMixer != null)
                 AudioMixer.RemoveInputOutputSource(AudioRTPStream, AudioRTPStream);
@@ -575,7 +576,10 @@ namespace RTP
             {
                 try
                 {
-                    PublicIPEndpoint = this.PerformSTUNRequest(STUNServer, 4000);
+                    PublicIPEndpoint = this.PerformSTUNRequest(STUNServer, 1000, 2);
+                    if (PublicIPEndpoint == null)
+                        PublicIPEndpoint = this.PerformSTUNRequest(STUNServer2, 1000, 2);
+                        
                     if (PublicIPEndpoint != null)
                     {
 
@@ -599,6 +603,18 @@ namespace RTP
 
                         CalculatePriority(100, 10, stuncand);
                         LocalCandidates.Add(stuncand);
+
+
+                        // Added bb 11-3-2012 to try main port with reflex address as well
+                        Candidate tstuncand = new Candidate() { ipaddress = PublicIPEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port, type = "srflx", component = 1 };
+                        tstuncand.IPEndPoint = PublicIPEndpoint;
+                        tstuncand.foundation = "1";
+                        tstuncand.id = "5";
+                        tstuncand.preference = null;
+                        tstuncand.name = null;
+                        CalculatePriority(100, 10, tstuncand);
+                        LocalCandidates.Add(tstuncand);
+
 
                         if (UseGoogleTalkProtocol == false)
                         {
@@ -665,6 +681,16 @@ namespace RTP
                 CalculatePriority(126, 10, rtcpcand);
                 LocalCandidates.Add(rtcpcand);
             }
+
+            LocalCandidates.Sort(new Comparison<Candidate>(CompareCandidates));
+        }
+
+        public static int CompareCandidates(Candidate cand1, Candidate cand2)
+        {
+            int nRet = cand1.priority.CompareTo(cand2.priority);
+            //if (nRet == 0)
+              //  nRet = cand1.component.CompareTo(cand2.component);
+            return nRet;
         }
 
         protected void SetCodecsFromPayloads()
@@ -757,7 +783,10 @@ namespace RTP
         }
 
 
-        public static string STUNServer = "stun.ekiga.net";
+        public static string STUNServer = "stun.counterpath.net";
+        public static string STUNServer2 = "stun.sipgate.net";
+        //public static string STUNServer = "stun.ekiga.net";
+        
 
 
         static Random rand = new Random();
@@ -788,7 +817,7 @@ namespace RTP
         System.Threading.ManualResetEvent EventWaitForInitiatedToRespond = new System.Threading.ManualResetEvent(false);
         protected virtual void PerformICEStunProcedures()
         {
-          
+            m_bAbortICEThread = false;
             System.Threading.ThreadPool.QueueUserWorkItem(new System.Threading.WaitCallback(DoICEStunProcedures), this);
         }
 
@@ -799,13 +828,13 @@ namespace RTP
                 // Now perform ICE tests to each of our candidates, see which one we get a response from.
                 foreach (Candidate nextcand in this.RemoteCandidates)
                 {
-                    AddLocalPairsForRemoteCandidate(nextcand);
+                    AddLocalPairsForRemoteCandidate(nextcand, false);
                 }
             }
         }
 
         // must be locked before calling
-        void AddLocalPairsForRemoteCandidate(Candidate nextcand)
+        void AddLocalPairsForRemoteCandidate(Candidate nextcand, bool bFlagAsNext)
         {
             if (nextcand.name == "rtcp")
                 return;
@@ -819,10 +848,25 @@ namespace RTP
             foreach (Candidate nextlocalcand in this.LocalCandidates)
             {
                 if (nextlocalcand.component == 1)  // May need stun checks on rtcp
-                    CandidatePairs.Add(new CandidatePair(nextlocalcand, nextcand, this.Initiator));
+                {
+                    CandidatePair pair = new CandidatePair(nextlocalcand, nextcand, this.Initiator);
+                    pair.FlagAsNext = bFlagAsNext;
+                    CandidatePairs.Add(pair);
+                }
             }
         }
 
+        public static int CompareCandidatePairs(CandidatePair cand1, CandidatePair cand2)
+        {
+            int nRet = cand1.FlagAsNext.CompareTo(cand2.FlagAsNext);
+            if (nRet == 0)
+                nRet = cand1.Priority.CompareTo(cand2.Priority);
+            //if (nRet == 0)
+            //  nRet = cand1.component.CompareTo(cand2.component);
+            return nRet;
+        }
+
+        protected bool m_bAbortICEThread = false;
         void DoICEStunProcedures(object obj)
         {
             IceDone = false;
@@ -831,9 +875,19 @@ namespace RTP
             string strUserName = string.Format("{0}:{1}", this.RemoteUserName, this.UserName);
             string strPassword = this.RemotePassword;
 
+            lock (CandidatePairsLock)
+            {
+                foreach (CandidatePair pair in CandidatePairs)
+                    pair.HasSentCheckThisRound = false;
+            }
 
+
+            int nLoopCount = 0;
             while (true)
             {
+                if (m_bAbortICEThread == true)
+                    return;
+
                 CandidatePair pairchecked = CheckNextPair();
                 if (pairchecked != null)
                 {
@@ -842,7 +896,7 @@ namespace RTP
                     if (Initiator == true)
                     {
                         CandidatePair[] pairs = new CandidatePair[] { };
-                        lock (CandidatePairsLock) 
+                        lock (CandidatePairsLock)
                             pairs = CandidatePairs.ToArray();
                         foreach (CandidatePair nextpair2 in pairs)
                         {
@@ -873,10 +927,20 @@ namespace RTP
                         /// Succeeded here, may not succeed the other way though.  Still, store this as a last resort
                     }
                 }
-                else
-                    break;
+                else /// Check again if we get no response
+                {
+                    lock (CandidatePairsLock)
+                    {
+                        foreach (CandidatePair pair in CandidatePairs)
+                            pair.HasSentCheckThisRound = false;
+                    }
+
+                    nLoopCount++;
+                    if (nLoopCount > 2) 
+                        break;
+                }
+             
             }
-           
               
         
             if (this.RemoteEndpoint == null)
@@ -897,7 +961,10 @@ namespace RTP
 
             CandidatePair[] pairs = new CandidatePair[] { };
             lock (CandidatePairsLock)
+            {
+                CandidatePairs.Sort(new Comparison<CandidatePair>(CompareCandidatePairs));
                 pairs = CandidatePairs.ToArray();
+            }
 
             foreach (CandidatePair nextpair in pairs)
             {
@@ -910,7 +977,9 @@ namespace RTP
                 if (epDefault == null)
                     epDefault = nextpair.RemoteCandidate.IPEndPoint;
 
-                if (!((nextpair.CandidatePairState == CandidatePairState.Succeeded) || (nextpair.CandidatePairState == CandidatePairState.Failed)))
+                //if (!((nextpair.CandidatePairState == CandidatePairState.Succeeded) || (nextpair.CandidatePairState == CandidatePairState.Failed)))
+                //{
+                if (nextpair.HasSentCheckThisRound == false)
                 {
                     if (UseGoogleTalkProtocol == false)
                         nextpair.PerformOutgoingSTUNCheck(this.AudioRTPStream, strUserName, strPassword);
@@ -960,7 +1029,7 @@ namespace RTP
                                 Candidate newcand = new Candidate();
                                 newcand.IPEndPoint = epfrom;
                                 newcand.priority = (int)CalculatePriority(110, 10, 1);
-                                AddLocalPairsForRemoteCandidate(newcand);
+                                AddLocalPairsForRemoteCandidate(newcand, true);
                             }
                         }
                         else if (IncomingUserNameAttribute != null)
@@ -1175,10 +1244,17 @@ namespace RTP
 
 
         public const ushort StunPort = 3478;
-        public IPEndPoint PerformSTUNRequest(string strStunServer, int nTimeout)
+        public IPEndPoint PerformSTUNRequest(string strStunServer, int nTimeout, int nCount)
         {
             EndPoint epStun = ConnectMgr.GetIPEndpoint(strStunServer, StunPort);
-            return PerformSTUNRequest(epStun, nTimeout);
+            while (nCount > 0)
+            {
+                IPEndPoint epRet = PerformSTUNRequest(epStun, nTimeout);
+                if (epRet != null)
+                    return epRet;
+                nCount--;
+            }
+            return null;
         }
 
         public IPEndPoint PerformSTUNRequest(EndPoint epStun, int nTimeout)
@@ -1198,11 +1274,11 @@ namespace RTP
             msgRequest.Class = StunClass.Request;
 
 
-            MappedAddressAttribute mattr = new MappedAddressAttribute();
-            mattr.IPAddress = LocalEndpoint.Address;
-            mattr.Port = (ushort)LocalEndpoint.Port;
+            //MappedAddressAttribute mattr = new MappedAddressAttribute();
+            //mattr.IPAddress = LocalEndpoint.Address;
+            //mattr.Port = (ushort)LocalEndpoint.Port;
 
-            msgRequest.AddAttribute(mattr);
+            //msgRequest.AddAttribute(mattr);
 
             if (bICE == true)
             {

@@ -43,6 +43,14 @@ namespace WPFImageWindows
         }
 
 
+        private ICameraController m_objController = null;
+
+        public ICameraController Controller
+        {
+            get { return m_objController; }
+            set { m_objController = value; }
+        }
+
 
         private IVideoSource m_objCamera = null;
 
@@ -52,6 +60,9 @@ namespace WPFImageWindows
             get { return m_objCamera; }
             set 
             {
+                if (m_objCamera is ICameraController)
+                    Controller = m_objCamera as ICameraController;
+
                 if (m_objCamera != null)
                 {
                     m_objCamera.OnNewFrame -= new DelegateRawFrame(m_objCamera_NewRawFrame);
@@ -589,9 +600,30 @@ namespace WPFImageWindows
         {
             if (System.Windows.Input.Keyboard.Modifiers == ModifierKeys.Control)
             {
-
+                if (e.Key == Key.Left)
+                {
+                    if (this.Controller != null)
+                        Controller.PanLeft();
+                }
+                else if (e.Key == Key.Right)
+                {
+                    if (this.Controller != null)
+                        Controller.PanRight();
+                }
+                else if (e.Key == Key.Up)
+                {
+                    if (this.Controller != null)
+                        Controller.TiltUp();
+                }
+                else if (e.Key == Key.Down)
+                {
+                    if (this.Controller != null)
+                        Controller.TiltDown();
+                }
             }
-            else if (this.PreventImageResizing == false)
+
+
+            if (this.PreventImageResizing == false)
             {
                 if (e.Key == Key.OemPlus)
                 {
@@ -620,6 +652,7 @@ namespace WPFImageWindows
                     }
                 }
             }
+          
             base.OnPreviewKeyDown(e);
         }
 
@@ -683,28 +716,24 @@ namespace WPFImageWindows
        
         void DoMove(Point Endpoint)
         {
-            if (Camera == null)
-                return;
             int nXDif = (int) (Endpoint.X - StartingPoint.X);
             int nYDif = (int) (Endpoint.Y - StartingPoint.Y);
 
-            if (this.Camera is VideoCaptureSource)
+            if (this.Controller != null)
             {
-                VideoCaptureSource VCamera = Camera as VideoCaptureSource;
-
-                if (Math.Abs(nXDif) > this.Camera.ActiveVideoCaptureRate.Width/10)
+                if (Math.Abs(nXDif) > this.VideoWidth / 10)
                 {
                     if (nXDif > 0)
-                        VCamera.PanLeft();
+                        Controller.PanLeft();
                     else
-                        VCamera.PanRight();
-                 }
-                if (Math.Abs(nYDif) > this.Camera.ActiveVideoCaptureRate.Height/ 10)
+                        Controller.PanRight();
+                }
+                if (Math.Abs(nYDif) > this.VideoHeight / 10)
                 {
                     if (nYDif > 0)
-                        VCamera.TiltUp();
+                        Controller.TiltUp();
                     else
-                        VCamera.TiltDown();
+                        Controller.TiltDown();
                 }
             }
         }

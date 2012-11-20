@@ -741,10 +741,10 @@ namespace WPFXMPPClient
 
         #endregion
 
-        static int FirstPort = 30000;
-        static int LastPort = 30100;
+        public static int FirstPort = 30000;
+        public static int LastPort = 30100;
 
-        static int PortOn = 30000;
+        public static int PortOn = 30000;
 
         static AudioMuxerWindow()
         {

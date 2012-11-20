@@ -24,7 +24,7 @@
 
         <!--TitlePanel contains the name of the application and page title-->
         <toolkit:ListPicker Background="#FFDEFFFF" SelectionChanged="AccountPicker_SelectionChanged" x:Name="AccountPicker" 
-                            Header="Pick Account" ItemsSource="Account">
+                            Header="Pick Account" ItemsSource="{Binding Account}">
             <toolkit:ListPicker.FullModeItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Margin="16 21 0 20">
