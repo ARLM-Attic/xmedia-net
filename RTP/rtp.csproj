@@ -124,6 +124,14 @@
       <Name>xmpp</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Binaries\NSpeex.dll" />
+    <Content Include="Binaries\NSpeex.pdb" />
+    <Content Include="Binaries\NSpeex.Silverlight.dll" />
+    <Content Include="Binaries\NSpeex.Silverlight.pdb" />
+    <Content Include="Binaries\NSpeex.Silverlight.XML" />
+    <Content Include="Binaries\NSpeex.XML" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
