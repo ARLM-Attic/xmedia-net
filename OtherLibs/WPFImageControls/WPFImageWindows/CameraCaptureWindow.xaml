@@ -1,0 +1,11 @@
+﻿<Window x:Class="WPFImageWindows.CameraCaptureWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WPFImageWindows"
+        Title="CameraCaptureWindow" Height="300" Width="300">
+    <Grid>
+        <Grid Background="Black">
+            <local:CameraControl x:Name="CameraControl" OnAccept="CameraControl_OnAccept"  />
+        </Grid>
+    </Grid>
+</Window>

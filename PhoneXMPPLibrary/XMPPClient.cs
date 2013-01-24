@@ -133,11 +133,11 @@ namespace System.Net.XMPP
         private GenericIQLogic GenericIQLogic = null;
         private RosterLogic RosterLogic = null;
         public PresenceLogic PresenceLogic = null;
-        private GenericMessageLogic GenericMessageLogic = null;
-        private ServiceDiscoveryLogic ServiceDiscoveryLogic = null;
+        protected GenericMessageLogic GenericMessageLogic = null;
+        protected ServiceDiscoveryLogic ServiceDiscoveryLogic = null;
         public Jingle.JingleSessionManager JingleSessionManager = null;
-        internal StreamInitiationAndTransferLogic StreamInitiationAndTransferLogic = null;
-        private PersonalEventingLogic PersonalEventingLogic = null;
+        public StreamInitiationAndTransferLogic StreamInitiationAndTransferLogic = null;
+        protected PersonalEventingLogic PersonalEventingLogic = null;
 
         public ServiceDiscoveryFeatureList OurServiceDiscoveryFeatureList = new ServiceDiscoveryFeatureList();
         public ServiceDiscoveryFeatureList ServerServiceDiscoveryFeatureList = new ServiceDiscoveryFeatureList();

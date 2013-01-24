@@ -873,15 +873,20 @@ void MFVideoCaptureDevice::OurCaptureThread()
 
     pAttributes->Release();
 	pAttributes = NULL;
-	CoTaskMemFree(ppDevices);
 	
 	if (pActivateDevice == NULL)
+	{
+		CoTaskMemFree(ppDevices);
 		return;
+	}
 
 
 
     // Create the media source object.
     hr = pActivateDevice->ActivateObject(IID_PPV_ARGS(&pMediaSource));
+
+	CoTaskMemFree(ppDevices);
+
     if (FAILED(hr))
 		return;
 
@@ -960,6 +965,9 @@ void MFVideoCaptureDevice::OurCaptureThread()
 						UINT32 pHeight;
 						hr = MFGetAttributeSize(pNativeType, MF_MT_FRAME_SIZE, &pWidth, &pHeight);
 
+
+						hr = MFSetAttributeSize(pType, MF_MT_FRAME_SIZE, pWidth, pHeight);
+
 						LogMediaType(pType);
 						hr = pReader->SetCurrentMediaType(dwStreamIndex, NULL, pType);
 						pType->Release();
@@ -988,11 +996,14 @@ void MFVideoCaptureDevice::OurCaptureThread()
 						UINT32 pHeight;
 						hr = MFGetAttributeSize(pNativeType, MF_MT_FRAME_SIZE, &pWidth, &pHeight);
 
+						hr = MFSetAttributeSize(pType, MF_MT_FRAME_SIZE, pWidth, pHeight);
+
 						LogMediaType(pType);
 						hr = pReader->SetCurrentMediaType(dwStreamIndex, NULL, pType);
 						pType->Release();
 						hr = pReader->GetCurrentMediaType(dwStreamIndex, &pType);
 						LogMediaType(pType);
+						hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &pWidth, &pHeight);
 
 						break;
 					}

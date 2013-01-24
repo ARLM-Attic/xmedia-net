@@ -93,8 +93,74 @@ namespace XMPPClient
             MediaSession.AddKnownAudioPayload(KnownAudioPayload.G722_40); // Only g711, speex can't be encoded real time on the xoom (oops, this is the windows phone, we'll have to try that later)
 
             MediaSession.SendInitiateSession();
+            //FirePropertyChanged("CallState");
         }
 
+
+        public bool m_bIncomingCallWaiting = false;
+
+        public bool IncomingCallWaiting
+        {
+            get
+            {
+                return m_bIncomingCallWaiting;
+            }
+            set
+            {
+                m_bIncomingCallWaiting = value;
+            }
+        }
+
+        public RosterItem OurItem = null;
+        public string IncomingCallSession = null;
+        public JingleIQ IncomingCallIQ = null;
+
+        public void AcceptCall()
+        {
+            if (IncomingCallSession == null)
+                return;
+
+            addresses = FindAddresses();
+            if (addresses.Length <= 0)
+                throw new Exception("No IP addresses on System");
+
+            int nPort = GetNextPort();
+            IPEndPoint ep = new IPEndPoint(addresses[0], nPort);
+
+            MediaSession = new JingleMediaSession(IncomingCallSession, IncomingCallIQ, KnownAudioPayload.G722, //| KnownAudioPayload.Speex16000 | KnownAudioPayload.Speex8000 | KnownAudioPayload.G711
+                                                 ep, App.XMPPClient);
+            MediaSession.UseStun = true;
+            MediaSession.AudioRTPStream.UseInternalTimersForPacketPushPull = false;
+            MediaSession.StartIncoming(IncomingCallIQ);
+            MediaSession.UserAcceptSession();
+
+            OurItem = App.XMPPClient.FindRosterItem(IncomingCallIQ.From);
+
+            IncomingCallWaiting = false;
+            IncomingCallSession = null;
+            IncomingCallIQ = null;
+            //FirePropertyChanged("CallState");
+
+        }
+
+        public void RejectCall(TerminateReason reason)
+        {
+            if (IncomingCallSession == null)
+                return;
+
+            App.XMPPClient.JingleSessionManager.TerminateSession(IncomingCallSession, reason);
+            IncomingCallWaiting = false;
+            IncomingCallSession = null;
+            IncomingCallIQ = null;
+        }
+
+
+        /// <summary>
+        ///  TODO.. move this to the application class
+        /// </summary>
+        /// <param name="strSession"></param>
+        /// <param name="iq"></param>
+        /// <param name="client"></param>
         void JingleSessionManager_OnNewSession(string strSession, System.Net.XMPP.Jingle.JingleIQ iq, System.Net.XMPP.XMPPClient client)
         {
             App.XMPPClient.JingleSessionManager.TerminateSession(strSession, TerminateReason.Decline);
@@ -123,6 +189,7 @@ namespace XMPPClient
             if ((MediaSession != null) && (MediaSession.Session == strSession))
             {
                 MediaSession.GotNewSessionAck();
+                //FirePropertyChanged("CallState");
             }
         }
 
@@ -131,6 +198,7 @@ namespace XMPPClient
             if ((MediaSession != null) && (MediaSession.Session == strSession))
             {
                 MediaSession.GotTransportInfo(jingle);
+                //FirePropertyChanged("CallState");
 
             }
         }
@@ -140,6 +208,7 @@ namespace XMPPClient
             if ((MediaSession != null) && (MediaSession.Session == strSession))
             {
                 MediaSession.GotSendTransportInfoAck();
+                //FirePropertyChanged("CallState");
             }
         }
 
@@ -151,6 +220,7 @@ namespace XMPPClient
             {
                 MediaSession.StopMedia(null);
                 StopCall();
+                //FirePropertyChanged("CallState");
             }
         }
 
@@ -161,6 +231,7 @@ namespace XMPPClient
             {
                 MediaSession.SessionAccepted(jingle, null);
                 StartMedia();
+                //FirePropertyChanged("CallState");
             }
         }
 
@@ -172,6 +243,7 @@ namespace XMPPClient
                 if ((MediaSession != null) && (MediaSession.Session == strSession))
                 {
                     MediaSession.GotAcceptSessionAck(null);
+                    //FirePropertyChanged("CallState");
                 }
             }
 
@@ -209,19 +281,56 @@ namespace XMPPClient
             }
         }
 
+
+        public DateTime m_dtCallEnded = DateTime.MinValue;
+
+        public DateTime CallEnded
+        {
+            get
+            {
+                return m_dtCallEnded;
+            }
+            protected set
+            {
+                m_dtCallEnded = value;
+            }
+        }
+        public DateTime m_dtCallStarted = DateTime.MinValue;
+
+        public DateTime CallStarted
+        {
+            get
+            {
+                return m_dtCallStarted;
+            }
+            protected set
+            {
+                m_dtCallStarted = value;
+            }
+        }
+
+
         void StartMedia()
         {
             m_bCallActive = true;
 
+            CallStarted = DateTime.Now;
+
             // Don't really need to use the mixer in android since we won't be conferencing people... go directly to the RTP buffer
             //PushPullObject thismember = AudioMixer.AddInputOutputSource(this, this);
-            
 
-            /// Start our speaker play thread
-            SpeakerThread = new Thread(new ThreadStart(SpeakerThreadFunction));
-            SpeakerThread.IsBackground = true;
-            SpeakerThread.Name = "Speaker Write Thread";
-            SpeakerThread.Start();
+
+            source.RTPAudioStream = this.MediaSession.AudioRTPStream;
+            MediaSession.AudioRTPStream.IncomingRTPPacketBuffer.InitialPacketQueueMinimumSize = 4;
+            MediaSession.AudioRTPStream.IncomingRTPPacketBuffer.PacketSizeShiftMax = 10;
+
+            Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStartMediaElement), null, null);
+
+            ///// Start our speaker play thread
+            //SpeakerThread = new Thread(new ThreadStart(SpeakerThreadFunction));
+            //SpeakerThread.IsBackground = true;
+            //SpeakerThread.Name = "Speaker Write Thread";
+            //SpeakerThread.Start();
 
 
             /// Start our microphone read thread
@@ -244,8 +353,14 @@ namespace XMPPClient
         void StopCall(bool bSendTerminate)
         {
             m_bCallActive = false;
+
+            CallEnded = DateTime.Now;
+            //FirePropertyChanged("CallState");
+
             if (MediaSession != null)
             {
+                Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStopMediaElement), null, null);
+
                 App.XMPPClient.JingleSessionManager.TerminateSession(MediaSession.Session, TerminateReason.Gone);
                 MediaSession = null;
             }
@@ -270,75 +385,77 @@ namespace XMPPClient
         {
             AudioStream.Stop();
         }
-        public void SpeakerThreadFunction()
-        {
-            /// Send the data to our AudioStreamSource
-            /// 
-            TimeSpan tsPTime = TimeSpan.FromMilliseconds(MediaSession.AudioRTPStream.PTimeReceive);
-            int nSamplesPerPacket = MediaSession.AudioRTPStream.AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(tsPTime);
-            int nBytesPerPacket = nSamplesPerPacket * MediaSession.AudioRTPStream.AudioCodec.AudioFormat.BytesPerSample;
+        //public void SpeakerThreadFunction()
+        //{
+        //    /// Send the data to our AudioStreamSource
+        //    /// 
+        //    TimeSpan tsPTime = TimeSpan.FromMilliseconds(MediaSession.AudioRTPStream.PTimeReceive);
+        //    int nSamplesPerPacket = MediaSession.AudioRTPStream.AudioCodec.AudioFormat.CalculateNumberOfSamplesForDuration(tsPTime);
+        //    int nBytesPerPacket = nSamplesPerPacket * MediaSession.AudioRTPStream.AudioCodec.AudioFormat.BytesPerSample;
 
-            JingleMediaSession session = MediaSession;
-            if (session == null)
-                return;
+        //    JingleMediaSession session = MediaSession;
+        //    if (session == null)
+        //        return;
 
-            byte[] bDummySample = new byte[nBytesPerPacket];
+        //    byte[] bDummySample = new byte[nBytesPerPacket];
 
-            source.PacketSize = nBytesPerPacket;
+        //    source.PacketSize = nBytesPerPacket;
 
-            session.AudioRTPStream.IncomingRTPPacketBuffer.InitialPacketQueueMinimumSize = 4;
-            session.AudioRTPStream.IncomingRTPPacketBuffer.PacketSizeShiftMax = 10;
 
-            Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStartMediaElement), null, null);
+        //    session.AudioRTPStream.IncomingRTPPacketBuffer.InitialPacketQueueMinimumSize = 4;
+        //    session.AudioRTPStream.IncomingRTPPacketBuffer.PacketSizeShiftMax = 10;
 
-            int nMsTook = 0;
-            /// Get first packet... have to wait for our rtp buffer to fill
-            byte[] bData = session.AudioRTPStream.WaitNextPacketSample(true, MediaSession.AudioRTPStream.PTimeReceive*5, out nMsTook);
-            if ((bData != null) && (bData.Length > 0))
-                source.Write(bData);
+        //    Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStartMediaElement), null, null);
 
-            DateTime dtNextPacketExpected = DateTime.Now + tsPTime;
+        //    int nMsTook = 0;
+        //    /// Get first packet... have to wait for our rtp buffer to fill
+        //    byte[] bData = session.AudioRTPStream.WaitNextPacketSample(true, MediaSession.AudioRTPStream.PTimeReceive*5, out nMsTook);
+        //    if ((bData != null) && (bData.Length > 0))
+        //        source.Write(bData);
 
-            System.Diagnostics.Stopwatch WaitPacketWatch = new System.Diagnostics.Stopwatch();
-            int nDeficit = 0;
-            while (m_bCallActive == true)
-            {
-                bData = session.AudioRTPStream.WaitNextPacketSample(true, MediaSession.AudioRTPStream.PTimeReceive, out nMsTook);
-                if ((bData != null) && (bData.Length > 0))
-                    source.Write(bData);
+        //    DateTime dtNextPacketExpected = DateTime.Now + tsPTime;
 
-                //int nRemaining = MediaSession.AudioRTPStream.PTimeReceive - nMsTook;
-                //if (nRemaining > 0)
-                //    System.Threading.Thread.Sleep(nRemaining);
+        //    System.Diagnostics.Stopwatch WaitPacketWatch = new System.Diagnostics.Stopwatch();
+        //    int nDeficit = 0;
+        //    while (m_bCallActive == true)
+        //    {
+        //        
+        //        bData = session.AudioRTPStream.WaitNextPacketSample(true, MediaSession.AudioRTPStream.PTimeReceive, out nMsTook);
+        //        if ((bData != null) && (bData.Length > 0))
+        //            source.Write(bData);
 
-                //dtNextPacketExpected = dtLastPacket + tsPTime;
-                //byte[] bData = session.AudioRTPStream.GetNextPacketSample(false);
-                //if ((bData != null) && (bData.Length > 0))
-                //    source.Write(bData);
-                //else
-                //    source.Write(bDummySample);
+        //        //int nRemaining = MediaSession.AudioRTPStream.PTimeReceive - nMsTook;
+        //        //if (nRemaining > 0)
+        //        //    System.Threading.Thread.Sleep(nRemaining);
 
-                TimeSpan tsRemaining = dtNextPacketExpected - DateTime.Now;
-                int nMsRemaining = (int)tsRemaining.TotalMilliseconds;
-                if (nMsRemaining > 0)
-                {
-                    nMsRemaining += nDeficit;
-                    if (nMsRemaining > 0)
-                        System.Threading.Thread.Sleep(nMsRemaining);
-                    else
-                    {
-                        nDeficit = nMsRemaining;
-                    }
-                }
-                else
-                    nDeficit += nMsRemaining;
+        //        //dtNextPacketExpected = dtLastPacket + tsPTime;
+        //        //byte[] bData = session.AudioRTPStream.GetNextPacketSample(false);
+        //        //if ((bData != null) && (bData.Length > 0))
+        //        //    source.Write(bData);
+        //        //else
+        //        //    source.Write(bDummySample);
 
-                dtNextPacketExpected += tsPTime;
-            }
+        //        TimeSpan tsRemaining = dtNextPacketExpected - DateTime.Now;
+        //        int nMsRemaining = (int)tsRemaining.TotalMilliseconds;
+        //        if (nMsRemaining > 0)
+        //        {
+        //            nMsRemaining += nDeficit;
+        //            if (nMsRemaining > 0)
+        //                System.Threading.Thread.Sleep(nMsRemaining);
+        //            else
+        //            {
+        //                nDeficit = nMsRemaining;
+        //            }
+        //        }
+        //        else
+        //            nDeficit += nMsRemaining;
 
-            Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStopMediaElement), null, null);
+        //        dtNextPacketExpected += tsPTime;
+        //    }
 
-        }
+        //    Deployment.Current.Dispatcher.BeginInvoke(new EventHandler(SafeStopMediaElement), null, null);
+
+        //}
 
         bool UseEchoCanceller = false;
 

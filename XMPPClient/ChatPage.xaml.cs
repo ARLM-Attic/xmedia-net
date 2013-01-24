@@ -398,15 +398,31 @@ namespace XMPPClient
         {
             try
             {
-                if (OurRosterItem.LastFullJIDToGetMessageFrom.Resource.Length <= 0)
+                JID jidto = OurRosterItem.LastFullJIDToGetMessageFrom;
+                /// See if the user has specified a specific jid to send this message to
+                if (m_strCurrentResource != null)
                 {
-                    if (OurRosterItem.ClientInstances.Count > 0)
+                    foreach (RosterItemPresenceInstance instance in OurRosterItem.ClientInstances)
                     {
-                        LastFullJIDBeforeMSDecidedToScrewUs = OurRosterItem.ClientInstances[0].FullJID;
+                        if (instance.FullJID.Resource == m_strCurrentResource)
+                        {
+                            jidto = instance.FullJID;
+                            break;
+                        }
                     }
                 }
-                else
-                    LastFullJIDBeforeMSDecidedToScrewUs = OurRosterItem.LastFullJIDToGetMessageFrom;
+
+                LastFullJIDBeforeMSDecidedToScrewUs = jidto;
+
+                //if (OurRosterItem.LastFullJIDToGetMessageFrom.Resource.Length <= 0)
+                //{
+                //    if (OurRosterItem.ClientInstances.Count > 0)
+                //    {
+                //        LastFullJIDBeforeMSDecidedToScrewUs = OurRosterItem.ClientInstances[0].FullJID;
+                //    }
+                //}
+                //else
+                //    LastFullJIDBeforeMSDecidedToScrewUs = OurRosterItem.LastFullJIDToGetMessageFrom;
 
                 App.XMPPClient.Disconnect(); // We're going to get disconnected any way
                 photoChooserTask.ShowCamera = true;
@@ -419,30 +435,56 @@ namespace XMPPClient
 
         }
 
+        byte [] bStream = null;
         void photoChooserTask_Completed(object sender, PhotoResult e)
         {
-            App.XMPPClient.Connect();
-            App.WaitReady();
-            System.Threading.Thread.Sleep(2000);
-
             if (e.TaskResult == TaskResult.OK)
             {
-                byte[] bStream = new byte[e.ChosenPhoto.Length];
+                bStream = new byte[e.ChosenPhoto.Length];
                 e.ChosenPhoto.Read(bStream, 0, bStream.Length);
 
                 this.InFileTransferMode = true;
-                this.FileTransferSID = App.XMPPClient.FileTransferManager.SendFile(e.OriginalFileName, bStream, LastFullJIDBeforeMSDecidedToScrewUs);
-
-                //Code to display the photo on the page in an image control named myImage.
-                //System.Windows.Media.Imaging.BitmapImage bmp = new System.Windows.Media.Imaging.BitmapImage();
-                //bmp.SetSource(e.ChosenPhoto);
-                //myImage.Source = bmp;
             }
+            else
+                return;
 
+
+            System.Threading.ThreadPool.QueueUserWorkItem(new WaitCallback(DoSendPhoto), e);
+            
             /// know bug occurs sometimes when re-opening this app, this fixes it:
             /// http://social.msdn.microsoft.com/Forums/en-US/windowsphone7series/thread/e079d99e-d2ac-47ab-a87e-f4ce0d3660d5
             NavigationService.Navigated += new NavigatedEventHandler(navigateCompleted);
 
+        }
+
+        void DoSendPhoto(object obje)
+        {
+            PhotoResult e = obje as PhotoResult;
+            if (App.XMPPClient.XMPPState == XMPPState.Unknown)
+            {
+                App.XMPPClient.Connect();
+                App.WaitReady();
+                System.Threading.Thread.Sleep(2000);
+            }
+            else if (App.XMPPClient.XMPPState != XMPPState.Ready)
+            {
+                App.WaitReady();
+                System.Threading.Thread.Sleep(2000);
+            }
+
+
+            Deployment.Current.Dispatcher.BeginInvoke(new DelegateSafeStartSendFile(SafeStartSendFile), e.OriginalFileName, LastFullJIDBeforeMSDecidedToScrewUs);
+
+            //Code to display the photo on the page in an image control named myImage.
+            //System.Windows.Media.Imaging.BitmapImage bmp = new System.Windows.Media.Imaging.BitmapImage();
+            //bmp.SetSource(e.ChosenPhoto);
+            //myImage.Source = bmp;
+        }
+
+        delegate void DelegateSafeStartSendFile(string strName, string strJID);
+        void SafeStartSendFile(string strName, string strJID)
+        {
+            this.FileTransferSID = App.XMPPClient.FileTransferManager.SendFile(strName, bStream, strJID);
         }
 
         void navigateCompleted(object sender, EventArgs e)
@@ -462,7 +504,21 @@ namespace XMPPClient
                 return;
             }
 
-            App.XMPPClient.SendChatMessage(strMessage, OurRosterItem.JID);
+            JID jidto = OurRosterItem.JID;
+            /// See if the user has specified a specific jid to send this message to
+            if (m_strCurrentResource != null)
+            {
+                foreach (RosterItemPresenceInstance instance in OurRosterItem.ClientInstances)
+                {
+                    if (instance.FullJID.Resource == m_strCurrentResource)
+                    {
+                        jidto = instance.FullJID;
+                        break;
+                    }
+                }
+            }
+
+            App.XMPPClient.SendChatMessage(strMessage, jidto);
             this.TextBoxChatToSend.Text = "";
             this.Focus();
         }
@@ -485,10 +541,25 @@ namespace XMPPClient
             if (ButtonStartVoice.Content.ToString() == "Start Voice Call")
             {
                 AudioStream.Stop();
+
+                JID jidto = OurRosterItem.LastFullJIDToGetMessageFrom;
+                /// See if the user has specified a specific jid to send this message to
+                if (m_strCurrentResource != null)
+                {
+                    foreach (RosterItemPresenceInstance instance in OurRosterItem.ClientInstances)
+                    {
+                        if (instance.FullJID.Resource == m_strCurrentResource)
+                        {
+                            jidto = instance.FullJID;
+                            break;
+                        }
+                    }
+                }
+
                 VoiceCall.AudioStream = this.AudioStream;
                 VoiceCall.OnCallStopped -= new EventHandler(VoiceCall_OnCallStopped);
                 VoiceCall.OnCallStopped += new EventHandler(VoiceCall_OnCallStopped);
-                VoiceCall.StartCall(OurRosterItem.LastFullJIDToGetMessageFrom);
+                VoiceCall.StartCall(jidto);
                 ButtonStartVoice.Content = "Stop Call";
             }
             else
@@ -506,6 +577,95 @@ namespace XMPPClient
         void SafeStopCall(object obj, EventArgs args)
         {
             ButtonStartVoice.Content = "Start Voice Call";
+        }
+
+        string m_strCurrentResource = null;
+
+        protected int GetResourceIndex(string strResourceName)
+        {
+            if (strResourceName == null)
+                return -1;
+            int nInstances = this.OurRosterItem.ClientInstances.Count;
+            for (int i = 0; i < nInstances; i++)
+            {
+                if (strResourceName == this.OurRosterItem.ClientInstances[i].FullJID.Resource)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void ButtonPreviousResource_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (this.OurRosterItem == null)
+                return;
+
+            /// Find our current index
+            /// 
+            int nInstances = this.OurRosterItem.ClientInstances.Count;
+            if (nInstances <= 0)
+                return;
+
+            int nInstanceOn = GetResourceIndex(m_strCurrentResource);
+            if (nInstanceOn > 0)
+            {
+                nInstanceOn -= 1;
+                m_strCurrentResource = this.OurRosterItem.ClientInstances[nInstanceOn].FullJID.Resource;
+            }
+            else if (nInstanceOn == 0)
+            {
+                m_strCurrentResource = null;
+                this.TextBlockResource.Text = "priority";
+                nInstanceOn = -1;
+                return;
+            }
+            else if (nInstanceOn == -1)
+            {
+                nInstanceOn = nInstances - 1;
+                m_strCurrentResource = this.OurRosterItem.ClientInstances[nInstanceOn].FullJID.Resource;
+
+            }
+
+            this.TextBlockResource.Text = m_strCurrentResource;
+
+
+        }
+
+        private void ButtonNextResource_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (this.OurRosterItem == null)
+                return;
+
+            /// Find our current index
+            /// 
+            int nInstances = this.OurRosterItem.ClientInstances.Count;
+            if (nInstances <= 0)
+                return;
+
+            int nInstanceOn = GetResourceIndex(m_strCurrentResource);
+            if (nInstanceOn < (nInstances-1))
+            {
+                nInstanceOn += 1;
+                m_strCurrentResource = this.OurRosterItem.ClientInstances[nInstanceOn].FullJID.Resource;
+            }
+            else if (nInstanceOn == (nInstances - 1))
+            {
+                m_strCurrentResource = null;
+                this.TextBlockResource.Text = "priority";
+                nInstanceOn = -1;
+                return;
+            }
+            else if (nInstanceOn == -1)
+            {
+                nInstanceOn = 0;
+                m_strCurrentResource = this.OurRosterItem.ClientInstances[nInstanceOn].FullJID.Resource;
+
+            }
+
+            this.TextBlockResource.Text = m_strCurrentResource;
+
         }
 
     }

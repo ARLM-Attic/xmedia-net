@@ -27,6 +27,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using System.Windows.Resources;
 using Microsoft.Phone.BackgroundAudio;
+using Microsoft.Xna.Framework.Media;
 
 namespace XMPPClient
 {
@@ -96,7 +97,7 @@ namespace XMPPClient
             GeoTimer.Tick += new EventHandler(GeoTimer_Tick);
             GeoTimer.Start();
 
-            xmedianet.socketserver.SocketClient.ShowDebug = true;
+            xmedianet.socketserver.SocketClient.ShowDebug = false;
 
             App.XMPPClient.AutomaticallyDownloadAvatars = true;
             App.XMPPClient.AutoQueryServerFeatures = true;
@@ -137,10 +138,19 @@ namespace XMPPClient
 
         void FileTransferManager_OnTransferFinished(FileTransfer trans)
         {
+            if ( (trans != null) && (trans.FileTransferDirection == FileTransferDirection.Receive) )
+            {
+                var library = new MediaLibrary();
+                library.SavePicture(trans.FileName, trans.Bytes);
+                trans.FileTransferState = FileTransferState.Done;
+                trans.Close();
+                //MessageBox.Show("File saved to 'Saved Pictures'", "File Saved", MessageBoxButton.OK);
+            }
         }
 
         void FileTransferManager_OnNewIncomingFileTransferRequest(FileTransfer trans, RosterItem itemfrom)
         {
+            App.XMPPClient.FileTransferManager.AcceptFileDownload(trans);
             Deployment.Current.Dispatcher.BeginInvoke(new FileTransferManager.DelegateIncomingFile(SafeOnNewIncomingFileTransferRequest), trans, itemfrom);
         }
 

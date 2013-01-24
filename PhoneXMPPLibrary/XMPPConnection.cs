@@ -86,8 +86,9 @@ namespace System.Net.XMPP
 
         protected override void OnConnected(bool bSuccess, string strErrors)
         {
-            if (bSuccess == true)
+            if (( bSuccess == true) && (Client.Connected == true) )
             {
+                
                 this.Client.NoDelay = true;
                 XMPPClient.XMPPState = XMPPState.Connected;
                 XMPPClient.FireConnectAttemptFinished(true);

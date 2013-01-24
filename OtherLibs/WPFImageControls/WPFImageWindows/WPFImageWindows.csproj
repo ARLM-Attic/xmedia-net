@@ -176,6 +176,9 @@
     <Compile Include="AudioViewerControl.xaml.cs">
       <DependentUpon>AudioViewerControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CameraCaptureWindow.xaml.cs">
+      <DependentUpon>CameraCaptureWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CameraControl.xaml.cs">
       <DependentUpon>CameraControl.xaml</DependentUpon>
     </Compile>
@@ -195,6 +198,10 @@
     <Page Include="AudioViewerControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="CameraCaptureWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CameraControl.xaml">
       <SubType>Designer</SubType>

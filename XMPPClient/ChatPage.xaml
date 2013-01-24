@@ -59,7 +59,7 @@
             <ColumnDefinition Width="340*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="150"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -70,17 +70,22 @@
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Column="1">
             <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="ApplicationTitle" Text="Conversation" Style="{StaticResource PhoneTextNormalStyle}"/>
-                <TextBlock Text="-" />
+                <!--<TextBlock x:Name="ApplicationTitle" Text="Conversation" Style="{StaticResource PhoneTextNormalStyle}"/>
+                <TextBlock Text="-" />-->
                 <TextBlock Text="" x:Name="TextBlockConversationTitle" Style="{StaticResource PhoneTextNormalStyle}"/>
             </StackPanel>
             <Button x:Name="ButtonStartVoice" Click="ButtonStartVoice_Click">Start Voice Call</Button>
             <MediaElement x:Name="AudioStream" Stretch="Uniform" />
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="ButtonPreviousResource" Click="ButtonPreviousResource_Click_1">&lt;</Button>
+                <TextBlock x:Name="TextBlockResource" Width="220" VerticalAlignment="Center" TextAlignment="Center" Style="{StaticResource PhoneTextNormalStyle}">priority</TextBlock>
+                <Button x:Name="ButtonNextResource" Click="ButtonNextResource_Click_1">&gt;</Button>
+            </StackPanel>
         </StackPanel>
 
 
-        <ScrollViewer Background="White"  x:Name="ScrollChat" Margin="5,0" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Visible" >
-            <RichTextBox Background="White" IsReadOnly="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Top" 
+        <ScrollViewer Background="Black"  x:Name="ScrollChat" Margin="5,0" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Visible" >
+            <RichTextBox Background="Black" IsReadOnly="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Top" 
                          VerticalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible"  AcceptsReturn="True"
                          x:Name="TextBlockChat" ScrollViewer.HorizontalScrollBarVisibility="Visible" Foreground="Black" 
                          Margin="5,5,5,10" Padding="0" Style="{StaticResource RichTextBoxStyle1}" />
