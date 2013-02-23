@@ -1198,13 +1198,23 @@ namespace WPFXMPPClient
             if (BrowserPopupWindows.ContainsKey(item.JID.BareJID) == true)
             {
                 BrowserPopupWindow exwin = BrowserPopupWindows[item.JID.BareJID];
-                exwin.AddRosterItem(item);
+                //exwin.AddRosterItem(item);
 
-                exwin.AddRosterItemBody();
+                //exwin.AddRosterItemBody();
 
-                exwin.Title = "Buddy Map - " + item.JID.BareJID;
+                //exwin.Title = "Buddy Map - " + item.JID.BareJID;
 
-                exwin.Activate();
+                //exwin.Activate();
+                try
+                {
+
+                    exwin.Show();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error showing map window: " + ex.Message);
+                }
+
                 IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(exwin).Handle;
                 FlashWindow(windowHandle, true);
                 return;
