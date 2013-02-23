@@ -126,8 +126,8 @@
                             </Grid.ColumnDefinitions>
 
 
-                            <Grid Name="ContentLeft" Grid.ColumnSpan="3" Grid.Row="3" Height="100">
-                                <Expander Header="Roster" IsExpanded="False">
+                            <Grid Name="ContentLeft" Grid.ColumnSpan="3" Grid.Row="3" Height="100" Visibility="Collapsed">
+                                <Expander Header="Roster" IsExpanded="False" Visibility="Collapsed">
                                     <StackPanel>
 
                                         <StackPanel HorizontalAlignment="Right" Height="Auto" Orientation="Horizontal" x:Name="StackPanelRosterMenuButtons">
@@ -556,7 +556,7 @@
                                         <RowDefinition Height="Auto"></RowDefinition>
                                         <RowDefinition Height="*"></RowDefinition>
                                     </Grid.RowDefinitions>
-                                    <TextBox MinHeight="200" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" Margin="3,3,3,3" x:Name="TextBoxHtml" Text="{Binding ListViewCodeSnippets.SelectedValue,Path=Html}"></TextBox>
+                         <!--           <TextBox MinHeight="200" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" Margin="3,3,3,3" x:Name="TextBoxHtml" Text="{Binding ListViewCodeSnippets.SelectedValue,Path=Html}"></TextBox> -->
                                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
 
                                         <Button Style="{DynamicResource ButtonSurface}" Width="100" ToolTip="Load HTML" IsEnabled="{Binding bDirty}" x:Name="ButtonLoadHTML" Click="ButtonLoadHTML_Click"  Height="40"  Padding="0" Margin="0,0,8,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >

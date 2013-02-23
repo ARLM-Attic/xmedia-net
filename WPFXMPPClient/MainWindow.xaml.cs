@@ -1234,7 +1234,7 @@ namespace WPFXMPPClient
             BrowserPopupWindows.Add(item.JID.BareJID, mapWin);
             mapWin.Show();
 
-            mapWin.AddRosterItemBody();
+            //mapWin.AddRosterItemBody();
             //BrowserPopupWindow.XMPPClient = this.XMPPClient;
 
             //RosterItem item = ((FrameworkElement)sender).DataContext as RosterItem;
