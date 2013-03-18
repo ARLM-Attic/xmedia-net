@@ -104,6 +104,7 @@ namespace ImageUtils
 		static array<unsigned char> ^CopyImageBits(System::Drawing::Bitmap ^image, int nWidth, int nHeight, int ImageSizeBytes);
 
 		static array<unsigned char> ^Convert24BitImageTo32BitImage(array<unsigned char> ^bData, int nWidth, int nHeight);
+		static array<unsigned char> ^Convert32BitImageTo24BitImage(array<unsigned char> ^bData, int nWidth, int nHeight);
 
 		static ImageWithPosition ^GetWindowBytes(System::IntPtr ptrWnd);
 		static ImageWithPosition^ GetDesktopWindowBytes(int nX, int nY, int nW, int nH);

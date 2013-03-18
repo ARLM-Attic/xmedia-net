@@ -265,6 +265,27 @@ array<unsigned char> ^ImageUtils::Utils::Convert24BitImageTo32BitImage(array<uns
    return bRetData;
 }
 
+array<unsigned char> ^ImageUtils::Utils::Convert32BitImageTo24BitImage(array<unsigned char> ^bSourceImage, int nWidth, int nHeight)
+{
+	array<unsigned char> ^bRetData = gcnew array<unsigned char>(nWidth*4*nHeight);
+
+	pin_ptr<unsigned char> ppDest = &bRetData[0];
+	unsigned char *pDest = (unsigned char *)ppDest;
+
+	pin_ptr<unsigned char> ppSource = &bSourceImage[0];
+	unsigned char *pSource = (unsigned char *)ppSource;
+	
+
+	//IPPCALL(ippsCopy_8u(pSource, pDest, ImageSizeBytes));
+
+	int dstOrder[] = {0,1,2}; /// copy r, then g, then b, then r (last r is ignored and replaced with 255) to the destination image;
+	IppiSize roiSize = { nWidth, nHeight };
+
+    IPPCALL(ippiSwapChannels_8u_C4C3R(pSource, nWidth*4, pDest, nWidth*3, roiSize, dstOrder));
+
+   return bRetData;
+}
+
 //
 //System::Drawing::Bitmap ^RawImageSearch::BitmapSearcher::GetDesktopWindow()
 //{

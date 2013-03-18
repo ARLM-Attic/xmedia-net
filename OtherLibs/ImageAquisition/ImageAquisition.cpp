@@ -985,25 +985,51 @@ void MFVideoCaptureDevice::OurCaptureThread()
 						//((IMFAttributes *)pNativeType)->CopyAllItems((IMFAttributes *)pType);
 
 						hr = pReader->SetCurrentMediaType(dwStreamIndex, NULL, pNativeType);
-
-						hr = pNativeType->GetGUID(MF_MT_MAJOR_TYPE, &majorType);
-						hr = MFCreateMediaType(&pType);
-						hr = pType->SetGUID(MF_MT_MAJOR_TYPE, majorType);
 						subtype= MFVideoFormat_RGB32;
-						hr = pType->SetGUID(MF_MT_SUBTYPE, subtype);
+						hr = pNativeType->SetGUID(MF_MT_SUBTYPE, subtype);
+						//hr = MFSetAttributeSize(pNativeType, MF_MT_FRAME_SIZE, ActiveVideoFormat->Width, ActiveVideoFormat->Height);
+						hr = pReader->SetCurrentMediaType(dwStreamIndex, NULL, pNativeType);
+						
+						//hr = MFCreateMediaType(&pType);
 
-						UINT32 pWidth;
+
+						/// Copy all existing types
+						//hr = pNativeType->CopyAllItems(pType);
+
+
+						//hr = pNativeType->GetGUID(MF_MT_MAJOR_TYPE, &majorType);
+						//hr = pType->SetGUID(MF_MT_MAJOR_TYPE, majorType);
+					//	subtype= MFVideoFormat_RGB32;
+					//	hr = pType->SetGUID(MF_MT_SUBTYPE, subtype);
+
+						//UINT32 pAspectA, pAspectB;
+						//hr = MFGetAttributeRatio(pNativeType, MF_MT_PIXEL_ASPECT_RATIO, &pAspectA, &pAspectB);
+						//hr = MFSetAttributeRatio(pType, MF_MT_PIXEL_ASPECT_RATIO, pAspectA, pAspectB);
+						
+						/// (returning attribute not found) hr = pNativeType->GetUINT32(MF_MT_PAN_SCAN_ENABLED, &pAspectA); 
+						//hr = pType->SetUINT32(MF_MT_PAN_SCAN_ENABLED, 0); 
+
+						//MF_MT_PICTURE_ASPECT_RATIO - not sure exists
+						/// Pan and scan
+						//MFVideoArea area[1];
+						//UINT pSize;
+						//hr = pNativeType->GetBlob(MF_MT_MINIMUM_DISPLAY_APERTURE, (UINT8 *) area, sizeof(MFVideoArea), &pSize);
+						
+						//MF_MT_GEOMETRIC_APERTURE
+						//MF_MT_PAN_SCAN_APERTURE 
+
+						/*UINT32 pWidth;
 						UINT32 pHeight;
 						hr = MFGetAttributeSize(pNativeType, MF_MT_FRAME_SIZE, &pWidth, &pHeight);
 
 						hr = MFSetAttributeSize(pType, MF_MT_FRAME_SIZE, pWidth, pHeight);
 
-						LogMediaType(pType);
-						hr = pReader->SetCurrentMediaType(dwStreamIndex, NULL, pType);
-						pType->Release();
-						hr = pReader->GetCurrentMediaType(dwStreamIndex, &pType);
-						LogMediaType(pType);
-						hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &pWidth, &pHeight);
+						LogMediaType(pType);*/
+					//	hr = pReader->SetCurrentMediaType(dwStreamIndex, NULL, pType);
+					//	pType->Release();
+						//hr = pReader->GetCurrentMediaType(dwStreamIndex, &pType);
+						//LogMediaType(pType);
+						//hr = MFGetAttributeSize(pType, MF_MT_FRAME_SIZE, &pWidth, &pHeight);
 
 						break;
 					}
@@ -1058,6 +1084,8 @@ void MFVideoCaptureDevice::OurCaptureThread()
 
 	 bool bGotFormat = false;
 
+	 
+	 //dwMediaTypeIndex
 	 hr = pReader->SetStreamSelection(ActiveVideoFormat->StreamIndex, TRUE);
 	  
     while (!quit)
