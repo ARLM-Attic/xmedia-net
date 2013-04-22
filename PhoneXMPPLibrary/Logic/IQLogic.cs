@@ -16,7 +16,64 @@ using System.Text.RegularExpressions;
 
 namespace System.Net.XMPP
 {
-    public class GenericIQLogic : Logic
+    [XmlRoot(ElementName = "ping", Namespace="urn:xmpp:ping")]
+    public class PingParameter
+    {
+        public PingParameter()
+        {
+        }
+
+    }
+
+
+    [XmlRoot(ElementName = "iq")]
+    public class PingIQ : IQ
+    {
+        public PingIQ()
+            : base()
+        {
+        }
+
+        private PingParameter m_objPing = new PingParameter();
+        [XmlElement("ping", Namespace = "urn:xmpp:ping")]
+        public PingParameter Ping
+        {
+            get { return m_objPing; }
+            set { m_objPing = value; }
+        }
+    }
+
+    [XmlRoot(ElementName = "session", Namespace = "urn:ietf:params:xml:ns:xmpp-session")]
+    public class SessionParameter
+    {
+        public SessionParameter()
+        {
+        }
+
+    }
+
+
+    [XmlRoot(ElementName = "iq")]
+    public class SessionIQ : IQ
+    {
+        public SessionIQ()
+            : base()
+        {
+            this.Type = IQType.set.ToString();
+        }
+
+        private SessionParameter m_objSession = new SessionParameter();
+        [XmlElement("session", Namespace = "urn:ietf:params:xml:ns:xmpp-session")]
+        public SessionParameter Session
+        {
+            get { return m_objSession; }
+            set { m_objSession = value; }
+        }
+    }
+
+   
+
+    public class GenericIQLogic : Logic, IXMPPMessageBuilder
     {
         public GenericIQLogic(XMPPClient client)
             : base(client)
@@ -25,7 +82,50 @@ namespace System.Net.XMPP
             BindIQ.Type = IQType.set.ToString();
             BindIQ.To = null;
             BindIQ.From = null;
+
+            XMPPClient.XMPPMessageFactory.AddMessageBuilder(this);
+            
+            /// Already added by default
+            //XMPPClient.AddLogic(this);
+
         }
+
+        #region IXMPPMessageBuilder Members
+
+        public Message BuildMessage(System.Xml.Linq.XElement elem, string strXML)
+        {
+            return null;
+        }
+
+        public IQ BuildIQ(System.Xml.Linq.XElement elem, string strXML)
+        {
+            if ((elem.FirstNode != null) && (elem.FirstNode is XElement) &&
+                (((XElement)(elem.FirstNode)).Name == "{urn:xmpp:ping}ping"))
+            {
+                PingIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(PingIQ)) as PingIQ;
+                return query;
+            }
+            else if ((elem.FirstNode != null) && (elem.FirstNode is XElement) &&
+                (((XElement)(elem.FirstNode)).Name == "{urn:ietf:params:xml:ns:xmpp-session}session"))
+            {
+                SessionIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(SessionIQ)) as SessionIQ;
+                return query;
+            }
+            else if ((elem.FirstNode != null) && (elem.FirstNode is XElement) &&
+           (((XElement)(elem.FirstNode)).Name == "{urn:ietf:params:xml:ns:xmpp-bind}bind"))
+            {
+                BindIQ query = Utility.ParseObjectFromXMLString(strXML, typeof(BindIQ)) as BindIQ;
+                return query;
+            }
+            return null;
+        }
+
+
+        public PresenceMessage BuildPresence(XElement elem, string strXML)
+        {
+            return null;
+        }
+        #endregion
 
         private string m_strInnerXML = "";
 
@@ -53,15 +153,17 @@ namespace System.Net.XMPP
             XMPPClient.SendXMPP(BindIQ);
         }
 
-        IQ sessioniq = null;
+        SessionIQ sessioniq = null;
         internal void StartSession()
         {
-            sessioniq = new IQ();
-            sessioniq.InnerXML = "<session xmlns='urn:ietf:params:xml:ns:xmpp-session'/>";
+            sessioniq = new SessionIQ();
+            //sessioniq = new IQ();
+            //sessioniq.InnerXML = "<session xmlns='urn:ietf:params:xml:ns:xmpp-session'/>";
             sessioniq.From = null;
             sessioniq.To = null;
             sessioniq.Type = IQType.set.ToString();
-            XMPPClient.SendXMPP(sessioniq);
+            //XMPPClient.SendXMPP(sessioniq);
+            XMPPClient.SendObject(sessioniq);
         }
 
         
@@ -78,11 +180,15 @@ namespace System.Net.XMPP
                     {
                         /// bound, now do toher things
                         /// 
-                        XElement elembind = XElement.Parse(iq.InnerXML);
-                        XElement nodejid = elembind.FirstNode as XElement;
-                        if ((nodejid != null) && (nodejid.Name == "{urn:ietf:params:xml:ns:xmpp-bind}jid"))
+                        if (iq is BindIQ)
                         {
-                            XMPPClient.JID = nodejid.Value;
+                            XMPPClient.JID = ((BindIQ)iq).Bind.JID;
+                            //XElement elembind = XElement.Parse(iq.InnerXML);
+                            //XElement nodejid = elembind.FirstNode as XElement;
+                            //if ((nodejid != null) && (nodejid.Name == "{urn:ietf:params:xml:ns:xmpp-bind}jid"))
+                            //{
+                            //    XMPPClient.JID = nodejid.Value;
+                            //}
                         }
                         XMPPClient.XMPPState = XMPPState.Bound;
                     }
@@ -94,25 +200,34 @@ namespace System.Net.XMPP
                     return true;
                 }
 
-                if ((iq.InnerXML != null) && (iq.InnerXML.Length > 0))
+                if (iq is PingIQ)
                 {
-
-                    XElement elem = XElement.Parse(iq.InnerXML);
-                    if (elem.Name == "{urn:xmpp:ping}ping")
-                    {
-                        iq.Type = IQType.result.ToString();
-                        iq.To = iq.From;
-                        iq.From = XMPPClient.JID.BareJID;
-                        iq.InnerXML = "";
-                        XMPPClient.SendXMPP(iq);
-                    }
-
+                    // Send pong
+                    iq.Type = IQType.result.ToString();
+                    iq.To = iq.From;
+                    iq.From = XMPPClient.JID.BareJID;
+                    iq.InnerXML = "";
+                    XMPPClient.SendXMPP(iq);
+                    return true;
                 }
             }
             catch (Exception)
             {
             }
             return false;
+        }
+
+        public IQ SendPing(JID to, bool bWaitForResponse, int nTimeOutMs)
+        {
+            PingIQ iq = new PingIQ();
+            iq.Type = IQType.get.ToString();
+            iq.From = XMPPClient.JID.BareJID;
+            iq.To = to;
+            if (bWaitForResponse == true)
+                return XMPPClient.SendRecieveIQ(iq, nTimeOutMs, SerializationMethod.XMLSerializeObject);
+            else
+                XMPPClient.SendObject(iq);
+            return null;
         }
 
     }

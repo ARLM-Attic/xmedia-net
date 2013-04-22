@@ -88,6 +88,7 @@ namespace System.Net.XMPP
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("http://jabber.org/protocol/disco#items"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("http://jabber.org/protocol/disco#info"));
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("jabber:x:data"));
+            this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:ping"));
 
             // Jingle features
             this.OurServiceDiscoveryFeatureList.AddFeature(new feature("urn:xmpp:jingle:1"));
@@ -119,7 +120,7 @@ namespace System.Net.XMPP
 
         }
 
-        void LogMessage(string strMsg, params object [] msgparams)
+        protected void LogMessage(string strMsg, params object [] msgparams)
         {
             if (LogInterface != null)
                 LogInterface.LogMessage(this.JID, MessageImportance.Medium, strMsg, msgparams);
@@ -176,6 +177,7 @@ namespace System.Net.XMPP
         }
 
         private System.Threading.Timer m_objReconnectTimer = null;
+        
         private int m_nAutoReconnectAttempts = 0;
         private bool m_bAutoReconnect = false;
         /// <summary>
@@ -213,6 +215,35 @@ namespace System.Net.XMPP
                Connect();
         }
 
+        private System.Threading.Timer m_objPingTimer = null;
+        public void StartPinging(int nPingTimeMs)
+        {
+            if (m_objPingTimer == null)
+            {
+                LogMessage("Starting timer to ping server (every {0} ms)", nPingTimeMs);
+                m_objPingTimer = new System.Threading.Timer(new System.Threading.TimerCallback(OnTimePing), this, 0, nPingTimeMs);
+            }
+        }
+
+        private bool m_bAttemptReconnectOnBadPing = true;
+        public bool AttemptReconnectOnBadPing
+        {
+            get { return m_bAttemptReconnectOnBadPing; }
+            set { m_bAttemptReconnectOnBadPing = value; }
+        }
+        void OnTimePing(object obj)
+        {
+            if (XMPPState == XMPP.XMPPState.Ready)
+            {
+                IQ response = GenericIQLogic.SendPing(this.Domain, true, 20000);
+                if ( (response == null) && (XMPPState == XMPP.XMPPState.Ready) && (AttemptReconnectOnBadPing == true) )
+                {
+                    Disconnect();
+                    System.Threading.Thread.Sleep(2000);
+                    Connect();
+                }
+            }
+        }
 
         public bool ShouldDoSession = false;
 
@@ -1059,7 +1090,7 @@ namespace System.Net.XMPP
         public event DelegateString OnXMLSent = null;
         public event DelegateString OnXMLReceived = null;
 
-        internal virtual void FireXMLSent(string strXML)
+        protected internal virtual void FireXMLSent(string strXML)
         {
             System.Diagnostics.Debug.WriteLine("-->" + strXML);
 
@@ -1067,7 +1098,7 @@ namespace System.Net.XMPP
                 OnXMLSent(this, strXML);
         }
 
-        internal virtual void FireXMLReceived(string strXML)
+        protected internal virtual void FireXMLReceived(string strXML)
         {
             System.Diagnostics.Debug.WriteLine("<--" + strXML);
 
