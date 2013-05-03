@@ -72,6 +72,10 @@
       <Project>{b914ee15-6a3c-4baa-ab12-932d1325c86d}</Project>
       <Name>WPFImageWindows</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\XMPPLibrary\xmpp.csproj">
+      <Project>{8de3a173-a7a8-447f-846e-16c95f9c22ae}</Project>
+      <Name>xmpp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

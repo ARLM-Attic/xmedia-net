@@ -551,6 +551,8 @@ namespace WPFXMPPClient
                 ComboBoxPresence.IsEnabled = true;
                 ButtonAddBuddy.IsEnabled = true;
                 this.ImageAvatar.Source = XMPPClient.Avatar;
+
+                XMPPClient.StartPinging(120000);
                 //XMPPClient.SetGeoLocation(0, 0);
 
 

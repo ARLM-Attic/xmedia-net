@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Net.XMPP;
 namespace Tests
 {
     class Program
@@ -11,7 +12,8 @@ namespace Tests
         [STAThread]
         static void Main(string[] args)
         {
-            TestCamera();
+            //TestCamera();
+            TestSerialization();
         }
 
         
@@ -20,6 +22,12 @@ namespace Tests
             WPFImageWindows.CameraCaptureWindow win = new WPFImageWindows.CameraCaptureWindow();
             win.ShowDialog();
             
+        }
+
+        static void TestSerialization()
+        {
+         
+
         }
     }
 }
