@@ -56,6 +56,9 @@ namespace WPFXMPPClient
             PrivService.OnMustClearUserHistory += new DelegateRosterItemAction(PrivService_OnMustClearUserHistory);
             PrivService.OnMustHideMyChatWindow += new DelegateRosterItemAction(PrivService_OnMustHideMyChatWindow);
 
+            SensorMessageBuilder = new SensorLibrary.SensorMessagBuilder(XMPPClient);
+            SensorMessageBuilder.OnSensorEvent += SensorMessageBuilder_OnSensorEvent;
+
             //this.RectangleConnect.DataContext = this;
             this.DataContext = XMPPClient;
             this.ListBoxRoster.DataContext = this;
@@ -74,6 +77,7 @@ namespace WPFXMPPClient
             XMPPClient.FileTransferManager.OnNewIncomingFileTransferRequest += new FileTransferManager.DelegateIncomingFile(FileTransferManager_OnNewIncomingFileTransferRequest);
             XMPPClient.FileTransferManager.OnTransferFinished += new FileTransferManager.DelegateDownloadFinished(FileTransferManager_OnTransferFinished);
 
+
             AudioMuxerWindow.RegisterXMPPClient(XMPPClient);
             MapBrowserWindow.RegisterXMPPClient(XMPPClient);
             MapBrowserWindow.Closed += new EventHandler(browserWin_Closed);
@@ -88,6 +92,21 @@ namespace WPFXMPPClient
  
         }
 
+        void SensorMessageBuilder_OnSensorEvent(SensorLibrary.SensorEvent sevent, RosterItem item, XMPPClient client)
+        {
+            /// New sensor event, report it
+            /// 
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                string strMessage = string.Format("Sensor Event {0} from {1}, Value {2}", sevent.Event, sevent.Source, sevent.Value);
+                item.Conversation.AddMessage(new TextMessage() { From = item.JID, To=XMPPClient.JID, MessageType= TextMessageType.ChatMessage, Received=DateTime.Now, Sent=false, Message=strMessage});
+                
+            })
+            );
+
+        }
+
+        SensorLibrary.SensorMessagBuilder SensorMessageBuilder = null;
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {

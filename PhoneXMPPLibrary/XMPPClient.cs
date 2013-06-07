@@ -191,7 +191,8 @@ namespace System.Net.XMPP
 
         void StartAutoReconnectTimer()
         {
-            int DueTimeMs = 15000;
+            Random rand = new Random();
+            int DueTimeMs = 15000 + rand.Next(30000);
             if (m_nAutoReconnectAttempts > 2)
                 DueTimeMs = 30000;
             else if (m_nAutoReconnectAttempts > 4)
@@ -235,8 +236,17 @@ namespace System.Net.XMPP
         {
             if (XMPPState == XMPP.XMPPState.Ready)
             {
-                IQ response = GenericIQLogic.SendPing(this.Domain, true, 20000);
-                if ( (response == null) && (XMPPState == XMPP.XMPPState.Ready) && (AttemptReconnectOnBadPing == true) )
+                try
+                {
+                    IQ response = GenericIQLogic.SendPing(this.Domain, true, 20000);
+                    if ((response == null) && (XMPPState == XMPP.XMPPState.Ready) && (AttemptReconnectOnBadPing == true))
+                    {
+                        Disconnect();
+                        System.Threading.Thread.Sleep(2000);
+                        Connect();
+                    }
+                }
+                catch (Exception ex)
                 {
                     Disconnect();
                     System.Threading.Thread.Sleep(2000);
