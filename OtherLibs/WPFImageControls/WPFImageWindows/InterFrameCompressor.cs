@@ -98,6 +98,37 @@ namespace WPFImageWindows
             return null;
         }
 
+        public byte[] DecompressFrameWithDimensions(byte[] bCompressedFrame, out int nWidth, out int nHeight, out int nBytesPerPixel)
+        {
+            nWidth = 0;
+            nHeight = 0;
+            nBytesPerPixel = 0;
+
+            MemoryStream stream = new MemoryStream(bCompressedFrame);
+
+            BitmapDecoder pngDecoder = null;
+            if (VideoDataFormat.CompressedFormat == AudioClasses.VideoDataFormat.MPNG)
+                pngDecoder = new PngBitmapDecoder(stream, BitmapCreateOptions.None, BitmapCacheOption.None);
+            else
+                pngDecoder = new JpegBitmapDecoder(stream, BitmapCreateOptions.None, BitmapCacheOption.None);
+
+            if (pngDecoder.Frames.Count > 0)
+            {
+                BitmapFrame frame = pngDecoder.Frames[0];
+                nWidth = frame.PixelWidth;
+                nHeight = frame.PixelHeight;
+                nBytesPerPixel = 3;
+                byte[] bRGBData = new byte[frame.PixelWidth * 3 * frame.PixelHeight];
+
+                frame.CopyPixels(bRGBData, frame.PixelWidth * 3, 0);
+                stream.Close();
+
+                return bRGBData;
+                //return new ImageWithPosition((int)frame.PixelWidth, (int)frame.PixelHeight, bRGBData);
+            }
+            return null;
+        }
+
         #endregion
     }
 }

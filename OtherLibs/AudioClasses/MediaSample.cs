@@ -211,6 +211,14 @@ namespace AudioClasses
 
         public bool LastSample = false;
 
+
+        private int m_nSequenceNumber = 0;
+
+        public int SequenceNumber
+        {
+            get { return m_nSequenceNumber; }
+            set { m_nSequenceNumber = value; }
+        }
     }
 
 }

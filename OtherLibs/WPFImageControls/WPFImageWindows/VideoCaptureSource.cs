@@ -169,13 +169,22 @@ namespace WPFImageWindows
             return true;
         }
 
-        void VideoCaptureDevice_OnFailStartCapture(string strError)
+        private bool m_bShowMessageBoxes = true;
+
+        public bool ShowMessageBoxes
+        {
+            get { return m_bShowMessageBoxes; }
+            set { m_bShowMessageBoxes = value; }
+        }
+
+        void VideoCaptureDevice_OnFailStartCapture(string strError, object objDevice)
         {
             System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(
               (Action<string>)((prop) =>
               {
                   CameraActive = false;
-                  System.Windows.MessageBox.Show(strError, "Capture failed", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                  if (ShowMessageBoxes == true)
+                    System.Windows.MessageBox.Show(strError, "Capture failed", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
               }
                )
              , strError);
@@ -265,7 +274,7 @@ namespace WPFImageWindows
         object CurrentFrameLock = new object();
         MediaSample CurrentFrame = null;
 
-        void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat)
+        void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat, object objSource)
         {
             m_nNumberFramesCaptures++;
 
@@ -289,7 +298,7 @@ namespace WPFImageWindows
 
 
             if (OnNewFrame != null)
-                OnNewFrame(pFrame, videoformat);
+                OnNewFrame(pFrame, videoformat, this);
 
         }
 
@@ -538,15 +547,5 @@ namespace WPFImageWindows
     }
 
 
-    public interface ICameraController
-    {
-        void PanLeft();
-        void PanRight();
-        void TiltUp();
-        void TiltDown();
-        void SetFocus(int nFocus);
-        void SetExposure(int nExposure);
-
-    }
-
+   
 }

@@ -1122,18 +1122,18 @@ void MFVideoCaptureDevice::OurCaptureThread()
 
 		if (hr == MF_E_HW_MFT_FAILED_START_STREAMING)
 		{
-			OnFailStartCapture("Capture failed: Failed to start streaming");
+			OnFailStartCapture("Capture failed: Failed to start streaming", this);
 			break;
 		}
 
 		if (hr == MF_E_INVALIDREQUEST)
         {
-			OnFailStartCapture(String::Format("Capture failed, Invalid Request: {0}", hr));
+			OnFailStartCapture(String::Format("Capture failed, Invalid Request: {0}", hr), this);
             break;
         }
 		if (FAILED(hr))
         {
-			OnFailStartCapture(String::Format("Capture failed: {0}", hr));
+			OnFailStartCapture(String::Format("Capture failed: {0}", hr), this);
             break;
         }
 
@@ -1219,7 +1219,7 @@ void MFVideoCaptureDevice::OurCaptureThread()
 				pBuffer->Unlock();
 
 
-				OnNewFrame(arrayBytesRet, ActiveVideoFormat);
+				OnNewFrame(arrayBytesRet, ActiveVideoFormat, this);
 
 				m_dtLastFrameSent = DateTime::Now;
 			}
@@ -1412,18 +1412,18 @@ void MFVideoFile::OurCaptureThread()
 
 		if (hr == MF_E_HW_MFT_FAILED_START_STREAMING)
 		{
-			OnFailStartCapture("Capture failed: Failed to start streaming");
+			OnFailStartCapture("Capture failed: Failed to start streaming", this);
 			break;
 		}
 
 		if (hr == MF_E_INVALIDREQUEST)
         {
-			OnFailStartCapture(String::Format("Capture failed, Invalid Request: {0}", hr));
+			OnFailStartCapture(String::Format("Capture failed, Invalid Request: {0}", hr), this);
             break;
         }
 		if (FAILED(hr))
         {
-			OnFailStartCapture(String::Format("Capture failed: {0}", hr));
+			OnFailStartCapture(String::Format("Capture failed: {0}", hr), this);
             break;
         }
 
@@ -1509,7 +1509,7 @@ void MFVideoFile::OurCaptureThread()
 				pBuffer->Unlock();
 
 
-				OnNewFrame(arrayBytesRet, ActiveVideoFormat);
+				OnNewFrame(arrayBytesRet, ActiveVideoFormat, this);
 
 				m_dtLastFrameSent = DateTime::Now;
 			}

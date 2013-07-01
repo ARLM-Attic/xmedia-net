@@ -168,7 +168,7 @@ namespace WPFImageWindows
 
      
 
-        void m_objCamera_NewRawFrame(byte[] bRawData, VideoCaptureRate format)
+        void m_objCamera_NewRawFrame(byte[] bRawData, VideoCaptureRate format, object objSource)
         {
             if (m_bDisplay == false)
                 return;

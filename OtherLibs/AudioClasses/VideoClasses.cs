@@ -105,6 +105,14 @@ namespace AudioClasses
             }
         }
 
+        private bool m_bActive = false;
+        [DataMember]
+        public bool Active
+        {
+            get { return m_bActive; }
+            set { m_bActive = value; }
+        }
+
         //private int m_nEncodingBitRate = 5000000;
         private int m_nEncodingBitRate = 2000000;
         [DataMember]
@@ -172,7 +180,7 @@ namespace AudioClasses
     /// <summary>
     /// Our main WCF interface for controlling network cameras
     /// </summary>
-    public delegate void DelegateRawFrame(byte[] bRawData, VideoCaptureRate format);
+    public delegate void DelegateRawFrame(byte[] bRawData, VideoCaptureRate format, object objSource);
 
     public interface ICameraControl
     {
@@ -204,6 +212,65 @@ namespace AudioClasses
 
     }
 
+    public class ImageRectangle
+    {
+        public ImageRectangle()
+        {
+        }
+        public ImageRectangle(int nX, int nY, int nWidth, int nHeight)
+        {
+            X = nX;
+            Y = nY;
+            Width = nWidth;
+            Height = nHeight;
+        }
+
+        private int m_nX = 0;
+
+        public int X
+        {
+            get { return m_nX; }
+            set { m_nX = value; }
+        }
+        private int m_nY = 0;
+
+        public int Y
+        {
+            get { return m_nY; }
+            set { m_nY = value; }
+        }
+        private int m_nWidth = 0;
+
+        public int Width
+        {
+            get { return m_nWidth; }
+            set { m_nWidth = value; }
+        }
+        private int m_nHeight = 0;
+
+        public int Height
+        {
+            get { return m_nHeight; }
+            set { m_nHeight = value; }
+        }
+    }
+    /// <summary>
+    ///  Video recognition occurred.  Can't use existing rectangle classes since they're dependent on window classes and may not work in mono
+    /// </summary>
+    /// <param name="strRecognitionName"></param>
+    /// <param name="objBounds"></param>
+    /// <param name="bRawData"></param>
+    /// <param name="format"></param>
+    /// <param name="objDevice"></param>
+    public delegate void DelegateImageRecognition(string strRecognitionName,  ImageRectangle objBounds, byte[] bRawData, VideoCaptureRate format, object objDevice);
+    /// <summary>
+    /// Used by device that support some type of recognition event
+    /// </summary>
+    public interface IImageRecognitionDevice
+    {
+        event DelegateImageRecognition OnRecogntion;
+    }
+
     public interface IVideoSink
     {
         string Name { get; set; }
@@ -214,7 +281,19 @@ namespace AudioClasses
     {
         byte[] CompressFrame(byte[] bUncompressedFrame);
         byte[] DecompressFrame(byte[] bCompressedFrame);
+        byte[] DecompressFrameWithDimensions(byte[] bCompressedFrame, out int nWidth, out int nHeight, out int nBytesPerPixel);
         
     }
-   
+
+    public interface ICameraController
+    {
+        void PanLeft();
+        void PanRight();
+        void TiltUp();
+        void TiltDown();
+        void SetFocus(int nFocus);
+        void SetExposure(int nExposure);
+
+    }
+
 }

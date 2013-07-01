@@ -52,7 +52,7 @@ namespace RTP
             byte [] bFrame = VideoCodec.DecodeToBytes(packet);
             if ( (bFrame != null) && (OnNewFrame != null) && (VideoFormat != null) )
             {
-                OnNewFrame(bFrame, VideoFormat);
+                OnNewFrame(bFrame, VideoFormat, this);
             }
         }
 

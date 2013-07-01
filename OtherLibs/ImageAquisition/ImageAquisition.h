@@ -34,9 +34,9 @@ namespace ImageAquisition
 			{
 				delNewFrame -= del;
 			} 
-			void raise(array<unsigned char> ^data, AudioClasses::VideoCaptureRate ^videoformat)
+			void raise(array<unsigned char> ^data, AudioClasses::VideoCaptureRate ^videoformat, System::Object ^objDevice)
 			{
-				delNewFrame(data, videoformat);
+				delNewFrame(data, videoformat, objDevice);
 			}
 		}
 
@@ -50,7 +50,7 @@ namespace ImageAquisition
 			return nullptr; /// Only a push filter
 		}
 
-		delegate void DelegateError(String ^strError);
+		delegate void DelegateError(String ^strError, System::Object ^objDevice);
 		event DelegateError ^OnFailStartCapture;
 
 		property System::Collections::Generic::List<VideoCaptureRate  ^> ^VideoFormats
@@ -140,9 +140,9 @@ namespace ImageAquisition
 			{
 				delNewFrame -= del;
 			} 
-			void raise(array<unsigned char> ^data, AudioClasses::VideoCaptureRate ^videoformat)
+			void raise(array<unsigned char> ^data, AudioClasses::VideoCaptureRate ^videoformat, System::Object ^objDevice)
 			{
-				delNewFrame(data, videoformat);
+				delNewFrame(data, videoformat, objDevice);
 			}
 		}
 
@@ -156,7 +156,7 @@ namespace ImageAquisition
 			return nullptr; /// Only a push filter
 		}
 
-		delegate void DelegateError(String ^strError);
+		delegate void DelegateError(String ^strError, System::Object ^objDevice);
 		event DelegateError ^OnFailStartCapture;
 
 		property System::Collections::Generic::List<VideoCaptureRate  ^> ^VideoFormats
