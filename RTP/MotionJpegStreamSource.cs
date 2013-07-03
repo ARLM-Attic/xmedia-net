@@ -114,6 +114,9 @@ namespace RTP
 
     }
 
+    /// <summary>
+    ///  An HTTP connection to a mjpeg camera.  We use OurHttpConnection instead of Webclient so it will work on more platforms, but WebClient can be adding the USEWEBCLIENT preprocessor
+    /// </summary>
     public class MotionJpegStreamSource 
     {
 
@@ -126,7 +129,11 @@ namespace RTP
 
         public IVideoCompressor JpegCompressor = null;
 
+#if USEWEBCLIENT
         System.Net.WebClient WebClient = null;
+#else
+        RTP.MultiPartHTTPConnection WebClient = null;
+#endif
         MultipartStreamParser parser = new MultipartStreamParser();
 
         private string m_strUserName = "camera";
@@ -157,12 +164,28 @@ namespace RTP
             /// Try to connect
             /// 
             URL = strURL;
+
+            Uri uri = new Uri(URL);
+#if USEWEBCLIENT
             WebThread = new Thread(new ThreadStart(ReadThread));
             WebThread.IsBackground = true;
             WebThread.Name = "MJPEG receive thread";
+#else
+
+            WebClient = new RTP.MultiPartHTTPConnection();
+            WebClient.UserName = UserName;
+            WebClient.Password = Password;
+            WebClient.Uri = uri;
+            WebClient.OnNewHTTPFragment += new MultiPartHTTPConnection.DelegateNewHTTPFragment(WebClient_OnNewHTTPFragment);
+            WebClient.Start();
+#endif
+
             m_bExit = false;
             Running = true;
+
+#if USEWEBCLIENT
             WebThread.Start();
+#endif
 
         }
 
@@ -175,8 +198,12 @@ namespace RTP
                 {
                     try
                     {
+#if USEWEBCLIENT
                         WebClient.CancelAsync();
                         WebClient.Dispose();
+#else
+                        WebClient.Stop();
+#endif
                     }
                     catch (Exception)
                     {
@@ -189,7 +216,9 @@ namespace RTP
             }
         }
 
+#if USEWEBCLIENT
         Thread WebThread = null;
+#endif
         bool m_bExit = false;
 
         xmedianet.socketserver.ByteBuffer ReceiveBuffer = new xmedianet.socketserver.ByteBuffer();
@@ -209,9 +238,17 @@ namespace RTP
             }
         }
 
+        void WebClient_OnNewHTTPFragment(byte[] bJPEG)
+        {
+            NewJpeg(bJPEG);
+        }
+
+#if USEWEBCLIENT
         void ReadThread()
         {
             Uri uri = new Uri(URL);
+            
+            
             WebClient = new WebClient();
             WebClient.Credentials = new NetworkCredential(UserName, Password);
             try
@@ -242,13 +279,13 @@ namespace RTP
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
             }
             Running = false;
             NewJpeg(null);
         }
-
+#endif
 
         int m_nWaitingForContentLength = 0;
 
@@ -260,6 +297,20 @@ namespace RTP
                 OnNewRawData(null, 0, 0, 4);
                 return;
             }
+
+            if (!((bData[0] == 0xff) && (bData[1] == 0xd8)))
+            {
+                xmedianet.socketserver.ByteBuffer tempbuffer = new xmedianet.socketserver.ByteBuffer();
+                tempbuffer.AppendData(bData);
+                int nAt = tempbuffer.FindBytes(new byte[] { 0xff, 0xd8 });
+                tempbuffer.GetNSamples(nAt);
+                bData = tempbuffer.GetAllSamples();
+            }
+            else
+            {
+                System.Threading.Thread.Sleep(0);
+            }
+
 
             int nWidth = 0;
             int nHeight = 0;

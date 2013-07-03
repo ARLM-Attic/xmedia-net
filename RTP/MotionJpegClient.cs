@@ -9,16 +9,26 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using AudioClasses;
 
+using System;
+using System.Net;
+using System.IO;
+
 namespace RTP
 {
-    [DataContract]
-    public class MotionJpegClientInformation
+    public enum NetworkCameraType
     {
-        public MotionJpegClientInformation()
+        MotionJpegHttp,
+        RTSP,
+    }
+
+    [DataContract]
+    public class NetworkCameraClientInformation
+    {
+        public NetworkCameraClientInformation()
         {
         }
 
-        public MotionJpegClientInformation(string strCameraName, string strCameraURLPath, string strHost, int nPort, string strUser, string strPassword)
+        public NetworkCameraClientInformation(string strCameraName, string strCameraURLPath, string strHost, int nPort, string strUser, string strPassword)
         {
             this.CameraName = strCameraName;
             CameraURLPath = strCameraURLPath;
@@ -34,6 +44,14 @@ namespace RTP
             {
                 return string.Format("http://{0}:{1}/{2}", Computer, Port, CameraURLPath);
             }
+        }
+
+        private NetworkCameraType m_eNetworkCameraType = NetworkCameraType.MotionJpegHttp;
+        [DataMember]
+        public NetworkCameraType NetworkCameraType
+        {
+            get { return m_eNetworkCameraType; }
+            set { m_eNetworkCameraType = value; }
         }
 
         private string m_strComputer = "";
@@ -83,13 +101,126 @@ namespace RTP
             set { m_strCameraName = value; }
         }
 
-        public static MotionJpegClientInformation[] Load(string strFileName)
+        private string m_strPanLeft = "ptz.cgi?move=left&camera=1";
+        [DataMember]
+        public string PanLeft
         {
-            DataContractSerializer serializer = new DataContractSerializer(typeof(MotionJpegClientInformation[]));
+            get 
+            {
+                if (m_strPanLeft == null)
+                    m_strPanLeft = "ptz.cgi?move=left&camera=1";
+                return m_strPanLeft; 
+            }
+            set 
+            {
+                m_strPanLeft = value; 
+            }
+        }
+
+        private string m_strPanRight = "ptz.cgi?move=right&camera=1";
+        [DataMember]
+        public string PanRight
+        {
+            get 
+            {
+                if (m_strPanRight == null)
+                    m_strPanRight = "ptz.cgi?move=right&camera=1";
+
+                return m_strPanRight; 
+            }
+            set 
+            {
+                m_strPanRight = value; 
+            }
+        }
+
+        private string m_strPanUp = "ptz.cgi?move=up&camera=1";
+        [DataMember]
+        public string PanUp
+        {
+            get 
+            {
+                if (m_strPanUp == null)
+                    m_strPanUp = "ptz.cgi?move=up&camera=1";
+                return m_strPanUp; 
+            }
+            set 
+            {
+                m_strPanUp = value; 
+            }
+        }
+
+        private string m_strPanDown = "ptz.cgi?move=down&camera=1";
+        [DataMember]
+        public string PanDown
+        {
+            get 
+            {
+                if (m_strPanDown == null)
+                    m_strPanDown = "ptz.cgi?move=down&camera=1";
+                return m_strPanDown; 
+            }
+            set 
+            {
+                m_strPanDown = value; 
+            }
+        }
+
+        private string m_strFocus = "ptz.cgi?focus=##VALUE##&camera=1";
+        [DataMember]
+        public string Focus
+        {
+            get 
+            {
+                if (m_strFocus == null)
+                    m_strFocus = "ptz.cgi?focus=##VALUE##&camera=1";
+                return m_strFocus; 
+            }
+            set 
+            {
+                m_strFocus = value; 
+            }
+        }
+
+        private string m_strStartRecord = "action.cgi?record=true&camera=1";
+        [DataMember]
+        public string StartRecord
+        {
+            get 
+            {
+                if (m_strStartRecord == null)
+                    m_strStartRecord = "action.cgi?record=true&camera=1";
+                return m_strStartRecord; 
+            }
+            set 
+            {
+                m_strStartRecord = value; 
+            }
+        }
+
+        private string m_strStopRecord = "action.cgi?record=false&camera=1";
+        [DataMember]
+        public string StopRecord
+        {
+            get 
+            {
+                if (m_strStopRecord == null)
+                    m_strStopRecord = "action.cgi?record=false&camera=1";
+                return m_strStopRecord; 
+            }
+            set 
+            {
+                m_strStopRecord = value;
+            }
+        }
+
+        public static NetworkCameraClientInformation[] Load(string strFileName)
+        {
+            DataContractSerializer serializer = new DataContractSerializer(typeof(NetworkCameraClientInformation[]));
             try
             {
                 System.IO.FileStream stream = new System.IO.FileStream(strFileName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-                MotionJpegClientInformation[] cameras = (MotionJpegClientInformation[])serializer.ReadObject(stream);
+                NetworkCameraClientInformation[] cameras = (NetworkCameraClientInformation[])serializer.ReadObject(stream);
 
                 stream.Close();
                 return cameras;
@@ -101,9 +232,9 @@ namespace RTP
   
         }
 
-        public static void Save(string strFileName, MotionJpegClientInformation[] cameras)
+        public static void Save(string strFileName, NetworkCameraClientInformation[] cameras)
         {
-            DataContractSerializer serializer = new DataContractSerializer(typeof(MotionJpegClientInformation[]));
+            DataContractSerializer serializer = new DataContractSerializer(typeof(NetworkCameraClientInformation[]));
             System.IO.FileStream stream = new System.IO.FileStream(strFileName, System.IO.FileMode.Create, System.IO.FileAccess.Write);
             serializer.WriteObject(stream, cameras);
             stream.Close();
@@ -112,7 +243,7 @@ namespace RTP
     }
 
 
-    public class MotionJpegClient : IVideoSource, ICameraControl, INotifyPropertyChanged
+    public class MotionJpegClient : IVideoSource, ICameraControl, INotifyPropertyChanged, IVideoRecorder
     {
         public MotionJpegClient(IVideoCompressor jpegcompressor)
         {
@@ -121,7 +252,7 @@ namespace RTP
             source.OnDisconnected += new EventHandler(source_OnDisconnected);
         }
 
-        public MotionJpegClient(IVideoCompressor jpegcompressor, MotionJpegClientInformation info)
+        public MotionJpegClient(IVideoCompressor jpegcompressor, NetworkCameraClientInformation info)
         {
             source = new MotionJpegStreamSource(jpegcompressor);
             source.OnNewRawData += new MotionJpegStreamSource.DelegateNewData(source_OnNewRawData);
@@ -129,9 +260,9 @@ namespace RTP
             this.m_strName = info.CameraName;
         }
 
-        private MotionJpegClientInformation m_objNetworkCameraInformation = new MotionJpegClientInformation();
+        private NetworkCameraClientInformation m_objNetworkCameraInformation = new NetworkCameraClientInformation();
 
-        public MotionJpegClientInformation NetworkCameraInformation
+        public NetworkCameraClientInformation NetworkCameraInformation
         {
             get { return m_objNetworkCameraInformation; }
             set { m_objNetworkCameraInformation = value; }
@@ -184,6 +315,7 @@ namespace RTP
                     else
                     {
                         source.Stop();
+                        FirePropertyChanged("CameraActive");
                     }
                 }
             }
@@ -263,12 +395,14 @@ namespace RTP
 
         public void PanLeft()
         {
-            
+            string strURL = string.Format("http://{0}:{1}/{2}", NetworkCameraInformation.Computer, NetworkCameraInformation.Port, NetworkCameraInformation.PanLeft);
+            SendWebRequest(strURL);
         }
 
         public void PanRight()
         {
-            
+            string strURL = string.Format("http://{0}:{1}/{2}", NetworkCameraInformation.Computer, NetworkCameraInformation.Port, NetworkCameraInformation.PanRight);
+            SendWebRequest(strURL);
         }
 
         public void PanRelative(int Units)
@@ -278,12 +412,15 @@ namespace RTP
 
         public void TiltUp()
         {
+            string strURL = string.Format("http://{0}:{1}/{2}", NetworkCameraInformation.Computer, NetworkCameraInformation.Port, NetworkCameraInformation.PanUp);
+            SendWebRequest(strURL);
             
         }
 
         public void TiltDown()
         {
-            
+            string strURL = string.Format("http://{0}:{1}/{2}", NetworkCameraInformation.Computer, NetworkCameraInformation.Port, NetworkCameraInformation.PanDown);
+            SendWebRequest(strURL);
         }
 
         public void TiltRelative(int Units)
@@ -300,5 +437,71 @@ namespace RTP
         {
             
         }
+
+        public bool StartRecording()
+        {
+            if (m_bRecording == false)
+            {
+                /// Send out web request to start record
+                /// 
+                string strURL = string.Format("http://{0}:{1}/{2}", NetworkCameraInformation.Computer, NetworkCameraInformation.Port, NetworkCameraInformation.StartRecord);
+                SendWebRequest(strURL);
+
+                m_bRecording = true;
+                FirePropertyChanged("Recording");
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public string StopRecording()
+        {
+            if (m_bRecording == true)
+            {
+                string strURL = string.Format("http://{0}:{1}/{2}", NetworkCameraInformation.Computer, NetworkCameraInformation.Port, NetworkCameraInformation.StopRecord);
+                SendWebRequest(strURL);
+
+                m_bRecording = false;
+                FirePropertyChanged("Recording");
+
+                return "";
+            }
+
+            return "";
+        }
+
+        bool m_bRecording = false;
+        public bool Recording
+        {
+            get
+            {
+                return m_bRecording;   
+            }
+            set
+            {
+                if (value == true)
+                    StartRecording();
+                else
+                    StopRecording();
+                
+            }
+        }
+
+        protected void SendWebRequest(string strURL)
+        {
+            WebClient WebClient = new WebClient();
+            WebClient.Credentials = new NetworkCredential(this.NetworkCameraInformation.UserName, this.NetworkCameraInformation.Password);
+            try
+            {
+                WebClient.DownloadData(strURL);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+
     }
 }

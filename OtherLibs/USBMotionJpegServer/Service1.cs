@@ -41,6 +41,21 @@ namespace USBMotionJpegServer
             Server = new RTP.MotionJpegHttpServer();
             Server.Port = Properties.Settings.Default.Port;
 
+            if (string.Compare(RTP.AuthenticationMethod.Windows.ToString(), Properties.Settings.Default.AuthenticationMethod, true) == 0)
+            {
+                Server.AuthenticationMethod = RTP.AuthenticationMethod.Windows;
+            }
+            if (string.Compare(RTP.AuthenticationMethod.Internal.ToString(), Properties.Settings.Default.AuthenticationMethod, true) == 0)
+            {
+                Server.AuthenticationMethod = RTP.AuthenticationMethod.None;
+                Server.UserName = Properties.Settings.Default.InternalAuthenticationMethodUserName;
+                Server.Password = Properties.Settings.Default.InternalAuthenticationMethodPassword;
+            }
+            else if (string.Compare(RTP.AuthenticationMethod.None.ToString(), Properties.Settings.Default.AuthenticationMethod, true) == 0)
+            {
+                Server.AuthenticationMethod = RTP.AuthenticationMethod.Windows;
+            }
+
 
             MFVideoCaptureDevice [] Devices = MFVideoCaptureDevice.GetCaptureDevices();
 
@@ -63,6 +78,8 @@ namespace USBMotionJpegServer
                     continue;
                 }
 
+                if (System.IO.Directory.Exists(Properties.Settings.Default.RecordingDirectory) == false)
+                    System.IO.Directory.CreateDirectory(Properties.Settings.Default.RecordingDirectory);
                 /// Find this device
                 /// 
                 bool bFound = false;
@@ -71,6 +88,8 @@ namespace USBMotionJpegServer
                     if (dev.UniqueName == cam.UniqueName)
                     {
                         VideoCaptureSource devwithcontrol = new VideoCaptureSource(dev);
+                        devwithcontrol.RecordingDirectory = Properties.Settings.Default.RecordingDirectory;
+                        devwithcontrol.MaxRecordingFrames = Properties.Settings.Default.MaxRecordedFrames;
                         devwithcontrol.ShowMessageBoxes = false; /// no message boxes in a service, don't want a hang
                         ActiveDevices.Add(devwithcontrol);
                         devwithcontrol.ActiveVideoCaptureRate = ActiveRate;

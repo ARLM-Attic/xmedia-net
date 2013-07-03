@@ -23,7 +23,7 @@ namespace CameraViewer
             InitializeComponent();
         }
 
-        public RTP.MotionJpegClientInformation CameraInformation = new RTP.MotionJpegClientInformation();
+        public RTP.NetworkCameraClientInformation CameraInformation = new RTP.NetworkCameraClientInformation();
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.DataContext = CameraInformation;

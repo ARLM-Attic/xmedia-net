@@ -13,6 +13,9 @@ using System.Net.Sockets;
 using AudioClasses;
 using xmedianet.socketserver;
 
+//DESCRIBE rtsp://192.168.1.140:554/4 RTSP/1.0//CSeq: 1//Accept: application/sdp//User-Agent: Grandstream Client//RTSP/1.0 200 OK//Cseq: 1 //Server: GrandStream Rtsp Server V200R001 320*240*5*256//Content-Type: application/sdp//Content-length: 201//Content-Base: rtsp://192.168.1.140/4///v=0//o=StreamingServer 3331435948 1116907222000 IN IP4 192.168.1.140//s=h264.mp4//c=IN IP4 0.0.0.0//t=0 0//a=control:*//m=video 0 RTP/AVP 26//a=control:trackID=0//a=rtpmap:26 JPEG/90000//a=ptime:20//SETUP rtsp://192.168.1.140:554/4/trackID=0 RTSP/1.0//CSeq: 2//Transport: RTP/AVP/TCP;unicast;interleaved=0-1//User-Agent: Grandstream Client//RTSP/1.0 200 OK//CSeq: 2//Server: GrandStream Rtsp Server V200R001//Session: 88601174;timeout=120//Transport: RTP/AVP/TCP;unicast;interleaved=0-1//PLAY rtsp://192.168.1.140:554/4 RTSP/1.0//CSeq: 3//Session: 88601174//Rang: npt=0.000-//User-Agent: Grandstream Client//RTSP/1.0 200 OK//CSeq: 3//Server: GrandStream Rtsp Server V200R001//Session: 88601174;timeout=120//$.......-._4...G....A.(..T................... (B+(%%(Q:=0B`Ued_U][jx..jq.s[].........g.............(#(N
+
+
 namespace RTP
 {
     public delegate void DelegateSTUNMessage(STUNMessage smsg, IPEndPoint epfrom);

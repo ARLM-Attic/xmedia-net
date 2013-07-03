@@ -285,6 +285,13 @@ namespace AudioClasses
         
     }
 
+    public interface IVideoRecorder
+    {
+        bool StartRecording();
+        string StopRecording();
+        bool Recording { get; set; }
+    }
+
     public interface ICameraController
     {
         void PanLeft();

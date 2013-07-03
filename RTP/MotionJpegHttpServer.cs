@@ -43,10 +43,10 @@ namespace RTP
         }
 
 
-        public ObservableCollection<HTTPConnection> MJPGConnections = new ObservableCollection<HTTPConnection>();
+        public ObservableCollection<HTTPServerConnection> MJPGConnections = new ObservableCollection<HTTPServerConnection>();
         object m_LockMJPEGConnections = new object();
 
-        public void AddConnection(HTTPConnection connection)
+        public void AddConnection(HTTPServerConnection connection)
         {
             lock (m_LockMJPEGConnections)
             {
@@ -55,7 +55,7 @@ namespace RTP
             }
         }
 
-        public void RemoveConnection(HTTPConnection connection)
+        public void RemoveConnection(HTTPServerConnection connection)
         {
             lock (m_LockMJPEGConnections)
             {
@@ -90,7 +90,7 @@ namespace RTP
                 return;
 
 
-            HTTPConnection[] ActiveConnections = null;
+            HTTPServerConnection[] ActiveConnections = null;
             lock (m_LockMJPEGConnections)
             {
                 ActiveConnections = this.MJPGConnections.ToArray();
@@ -98,7 +98,7 @@ namespace RTP
 
             if (bJpeg != null)
             {
-                foreach (HTTPConnection con in ActiveConnections)
+                foreach (HTTPServerConnection con in ActiveConnections)
                 {
                     con.FrameQueue.Enqueue(bJpeg);
                 }
@@ -106,6 +106,13 @@ namespace RTP
 
         }
 
+    }
+
+    public enum AuthenticationMethod
+    {
+        Windows,
+        Internal,
+        None
     }
 
     /// <summary>
@@ -172,12 +179,32 @@ namespace RTP
             get { return m_strPrefix; }
         }
 
-        private bool m_bRequireAuthentication = true;
 
-        public bool RequireAuthentication
+        private AuthenticationMethod m_eAuthenticationMethod = AuthenticationMethod.Windows;
+        public AuthenticationMethod AuthenticationMethod
         {
-            get { return m_bRequireAuthentication; }
-            set { m_bRequireAuthentication = value; }
+            get { return m_eAuthenticationMethod; }
+            set { m_eAuthenticationMethod = value; }
+        }
+
+        private string m_strUserName = "User";
+        /// <summary>
+        ///  User Name if the AuthenticationMethod is set to internal
+        /// </summary>
+        public string UserName
+        {
+            get { return m_strUserName; }
+            set { m_strUserName = value; }
+        }
+
+        private string m_strPassword = ";lkjsdf;lakjfew,mn";
+        /// <summary>
+        /// Password if the AuthenticationMethod is set to internal
+        /// </summary>
+        public string Password
+        {
+            get { return m_strPassword; }
+            set { m_strPassword = value; }
         }
 
         private int m_nMaxConnections = 10;
@@ -202,10 +229,10 @@ namespace RTP
             set { m_bAllowAudio = value; }
         }
 
-        public ObservableCollection<HTTPConnection> MJPGConnections = new ObservableCollection<HTTPConnection>();
+        public ObservableCollection<HTTPServerConnection> MJPGConnections = new ObservableCollection<HTTPServerConnection>();
         object m_LockMJPEGConnections = new object();
 
-        //public ObservableCollectionEx<HTTPConnection> AudioConnections = new ObservableCollectionEx<HTTPConnection>();
+        //public ObservableCollectionEx<DotNetHTTPConnection> AudioConnections = new ObservableCollectionEx<DotNetHTTPConnection>();
         //object m_LockAudioConnections = new object();
 
         //[DllImport("user32.dll", SetLastError = false)]
@@ -261,8 +288,8 @@ namespace RTP
 
         //        //MediaSample sample = soundgen.PullSample(tsAxis, null); 
         //        MediaSample sample = Microphone.PullSample(tsAxis, null);
-                
-        //        HTTPConnection[] ActiveConnections = null;
+
+        //        DotNetHTTPConnection[] ActiveConnections = null;
         //        lock (m_LockAudioConnections)
         //        {
         //            ActiveConnections = this.AudioConnections.ToArray();
@@ -271,8 +298,8 @@ namespace RTP
         //        if (sample != null)
         //        {
         //            byte [] bG711 = WaveFileLibrary.WaveWriter.ConvertShortPCMToULAW(sample.GetShortData());
-        //            List<HTTPConnection> RemoveList = new List<HTTPConnection>();
-        //            foreach (HTTPConnection con in ActiveConnections)
+        //            List<DotNetHTTPConnection> RemoveList = new List<HTTPConnection>();
+        //            foreach (DotNetHTTPConnection con in ActiveConnections)
         //            {
         //                try
         //                {
@@ -288,7 +315,7 @@ namespace RTP
         //            {
         //                lock (m_LockAudioConnections)
         //                {
-        //                    foreach (HTTPConnection con in RemoveList)
+        //                    foreach (DotNetHTTPConnection con in RemoveList)
         //                    {
         //                        if (AudioConnections.Contains(con) == true)
         //                            AudioConnections.Remove(con);
@@ -306,7 +333,7 @@ namespace RTP
         //}
 
 
-        internal void RemoveVideoClient(HTTPConnection con)
+        internal void RemoveVideoClient(HTTPServerConnection con)
         {
             lock (m_LockMJPEGConnections)
             {
@@ -346,7 +373,7 @@ namespace RTP
         {
             m_strBoundary = Guid.NewGuid().ToString();
 
-            if (RequireAuthentication == true)
+            if (AuthenticationMethod == AuthenticationMethod.Windows)
                 Listener.AuthenticationSchemes = AuthenticationSchemes.Basic; // AuthenticationSchemes.Digest | AuthenticationSchemes.IntegratedWindowsAuthentication;
             else
                 Listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
@@ -377,8 +404,10 @@ namespace RTP
                     
                     IntPtr token = IntPtr.Zero;
                     bool bAuthenticated = false;
-                    if (RequireAuthentication == true)
+                    if (AuthenticationMethod == AuthenticationMethod.Windows)
                         bAuthenticated = LogonUser(iden.Name, "", iden.Password, LOGON32_LOGON_NETWORK, LOGON32_PROVIDER_DEFAULT, ref token);
+                    else if (AuthenticationMethod == AuthenticationMethod.Internal)
+                        bAuthenticated = ((string.Compare(iden.Name, this.UserName, false) == 0) && (string.Compare(iden.Password, this.Password, false) == 0));
                     else
                         bAuthenticated = true;
                     
@@ -495,7 +524,7 @@ namespace RTP
 
                         //    lock (m_LockAudioConnections)
                         //    {
-                        //        AudioConnections.Add(new HTTPConnection(cont, ConnectionType.G711Audio));
+                        //        AudioConnections.Add(new DotNetHTTPConnection(cont, ConnectionType.G711Audio));
                         //    }
                         //}
                         else if (cont.Request.RawUrl.IndexOf("ptz.cgi") >= 0) /// pan tilt zoom - described in axis VAPIX HTTP API document
@@ -567,6 +596,64 @@ namespace RTP
                                 //if (fZoom == -1500) fZoom = 1;
                                 Controller.SetFocus(Convert.ToInt32(strFocus));
                             }
+                            if (cont.Request.QueryString["record"] != null)  //zoom 1.... 9999
+                            {
+                                string strRecord  = cont.Request.QueryString["record"];
+
+                                
+                                //double fZoom = Convert.ToDouble(cont.Request.QueryString["zoom"]);
+                                //if (fZoom == 1500) fZoom = 2;
+                                //if (fZoom == -1500) fZoom = 1;
+                                
+                            }
+                            cont.Response.StatusCode = 200;
+                            cont.Response.StatusDescription = "OK";
+                            cont.Response.Close();
+
+                        }
+                        else if (cont.Request.RawUrl.IndexOf("action.cgi") >= 0) /// pan tilt zoom - described in axis VAPIX HTTP API document
+                        {
+                            int nCamera = 1;
+                            if (cont.Request.QueryString["camera"] != null)
+                                nCamera = Convert.ToInt32(cont.Request.QueryString["camera"]);
+
+
+
+                            /// Find the specified camera - 1 based, not 0 based
+                            /// 
+                            VideoSourceWithSubscribers source = GetVideoSource(nCamera);
+                            if (source == null)
+                            {
+                                cont.Response.StatusCode = 587;
+                                cont.Response.StatusDescription = "Camera not found";
+                                cont.Response.Close();
+                                continue;
+                            }
+
+                            IVideoRecorder Controller = null;
+                            if (source.Source is IVideoRecorder)
+                                Controller = source.Source as IVideoRecorder;
+                            else
+                            {
+                                cont.Response.StatusCode = 200;
+                                cont.Response.StatusDescription = "OK";
+                                cont.Response.Close();
+                                continue;
+                            }
+
+
+                            if (cont.Request.QueryString["record"] != null)  //zoom 1.... 9999
+                            {
+                                bool bRecord = Convert.ToBoolean(cont.Request.QueryString["record"]);
+
+                                if (bRecord == true)
+                                    Controller.StartRecording();
+                                else
+                                    Controller.StopRecording();
+
+                                
+
+                            }
                             cont.Response.StatusCode = 200;
                             cont.Response.StatusDescription = "OK";
                             cont.Response.Close();
@@ -597,13 +684,13 @@ namespace RTP
         public void CloseAllVideoConnections()
         {
 
-            HTTPConnection[] connections = null;
+            HTTPServerConnection[] connections = null;
             lock (m_LockMJPEGConnections)
             {
                 connections = MJPGConnections.ToArray();
             }
 
-            foreach (HTTPConnection con in connections)
+            foreach (HTTPServerConnection con in connections)
             {
                 con.Stop();
                
@@ -624,13 +711,13 @@ namespace RTP
         //public void CloseAllAudioConnections()
         //{
 
-        //    HTTPConnection[] connections = null;
+        //    DotNetHTTPConnection[] connections = null;
         //    lock (m_LockAudioConnections)
         //    {
         //        connections = this.AudioConnections.ToArray();
         //    }
 
-        //    foreach (HTTPConnection con in connections)
+        //    foreach (DotNetHTTPConnection con in connections)
         //    {
         //        con.Stop();
         //    }
@@ -639,7 +726,7 @@ namespace RTP
         //    AudioConnections.Clear();
         //}
 
-        public void CloseConnection(HTTPConnection connection)
+        public void CloseConnection(HTTPServerConnection connection)
         {
             lock (m_LockMJPEGConnections)
             {

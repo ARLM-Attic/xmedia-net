@@ -40,5 +40,68 @@ namespace USBMotionJpegServer.Properties {
                 return ((string)(this["USBCameraConfigFile"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Windows")]
+        public string AuthenticationMethod {
+            get {
+                return ((string)(this["AuthenticationMethod"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("junkuserman")]
+        public string InternalAuthenticationMethodUserName {
+            get {
+                return ((string)(this["InternalAuthenticationMethodUserName"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("junkpasswordgal")]
+        public string InternalAuthenticationMethodPassword {
+            get {
+                return ((string)(this["InternalAuthenticationMethodPassword"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Secure {
+            get {
+                return ((bool)(this["Secure"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Certificate {
+            get {
+                return ((string)(this["Certificate"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20000")]
+        public int MaxRecordedFrames {
+            get {
+                return ((int)(this["MaxRecordedFrames"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("c:\\Videos")]
+        public string RecordingDirectory {
+            get {
+                return ((string)(this["RecordingDirectory"]));
+            }
+        }
     }
 }

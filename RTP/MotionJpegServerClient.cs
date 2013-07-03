@@ -17,9 +17,9 @@ namespace RTP
         G711Audio,
     }
 
-    public class HTTPConnection : System.ComponentModel.INotifyPropertyChanged
+    public class HTTPServerConnection : System.ComponentModel.INotifyPropertyChanged
     {
-        public HTTPConnection(HttpListenerContext context, ConnectionType type)
+        public HTTPServerConnection(HttpListenerContext context, ConnectionType type)
         {
             HttpListenerContext = context;
             ConnectionType = type;
@@ -116,7 +116,7 @@ namespace RTP
     }
 
 
-    public class MotionJpegServerClient : HTTPConnection
+    public class MotionJpegServerClient : HTTPServerConnection
     {
         public MotionJpegServerClient(MotionJpegHttpServer server, VideoSourceWithSubscribers source, HttpListenerContext context, ConnectionType type)
             : base(context, type)

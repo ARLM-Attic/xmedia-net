@@ -42,7 +42,7 @@ namespace CameraViewer
 
         void Load()
         {
-            string strPath = string.Format("{0}\\CameraViewer", Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData));
+            string strPath = string.Format("{0}\\CameraViewer", Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments));
             if (Directory.Exists(strPath) == false)
                 Directory.CreateDirectory(strPath);
             string strFileName = string.Format("{0}\\cameraconfig.xml", strPath);
@@ -53,10 +53,10 @@ namespace CameraViewer
             }
             else
             {
-                MotionJpegClientInformation[] cams = MotionJpegClientInformation.Load(strFileName);
+                NetworkCameraClientInformation[] cams = NetworkCameraClientInformation.Load(strFileName);
                 if (cams != null)
                 {
-                    foreach (MotionJpegClientInformation nextcam in cams)
+                    foreach (NetworkCameraClientInformation nextcam in cams)
                     {
                         Cameras.Add(new MotionJpegClient(JpegCompressor, nextcam));
                     }
@@ -66,16 +66,16 @@ namespace CameraViewer
         }
         void Save()
         {
-             string strPath = string.Format("{0}\\CameraViewer", Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData));
+            string strPath = string.Format("{0}\\CameraViewer", Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments));
             if (Directory.Exists(strPath) == false)
                 Directory.CreateDirectory(strPath);
             string strFileName = string.Format("{0}\\cameraconfig.xml", strPath);
 
-            List<MotionJpegClientInformation> camerainfo = new List<MotionJpegClientInformation>();
+            List<NetworkCameraClientInformation> camerainfo = new List<NetworkCameraClientInformation>();
             foreach (MotionJpegClient client in Cameras)
                 camerainfo.Add(client.NetworkCameraInformation);
 
-            MotionJpegClientInformation.Save(strFileName, camerainfo.ToArray());
+            NetworkCameraClientInformation.Save(strFileName, camerainfo.ToArray());
         }
 
         private void ButtonAddCamera_Click(object sender, RoutedEventArgs e)
@@ -209,15 +209,15 @@ namespace CameraViewer
 
         private void VideoControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            this.FullVideo.Visibility = System.Windows.Visibility.Visible;
-            this.FullVideo.DataContext = ((FrameworkElement)sender).DataContext;
+            this.GridFullVideo.Visibility = System.Windows.Visibility.Visible;
+            this.GridFullVideo.DataContext = ((FrameworkElement)sender).DataContext;
             this.ButtonBack.Visibility = System.Windows.Visibility.Visible;
         }
 
         private void ButtonBack_Click(object sender, RoutedEventArgs e)
         {
-            this.FullVideo.Visibility = System.Windows.Visibility.Collapsed;
-            this.FullVideo.DataContext = null;
+            this.GridFullVideo.Visibility = System.Windows.Visibility.Collapsed;
+            this.GridFullVideo.DataContext = null;
             this.ButtonBack.Visibility = System.Windows.Visibility.Hidden;
 
         }
@@ -241,5 +241,125 @@ namespace CameraViewer
             }
 
         }
+
+        private void ButtonPanLeft_Click(object sender, RoutedEventArgs e)
+        {
+            MotionJpegClient client = ((FrameworkElement)sender).DataContext as MotionJpegClient;
+            if (client == null)
+                return;
+            client.PanLeft();
+        }
+
+
+        private void ButtonPanRight_Click(object sender, RoutedEventArgs e)
+        {
+            MotionJpegClient client = ((FrameworkElement)sender).DataContext as MotionJpegClient;
+            if (client == null)
+                return;
+            client.PanRight();
+        }
+
+     
+
+     
+
+        private void ButtonActivateCamera_Click(object sender, RoutedEventArgs e)
+        {
+            MotionJpegClient client = ((FrameworkElement)sender).DataContext as MotionJpegClient;
+            if (client == null)
+                return;
+            client.CameraActive = true;
+        }
+
+        private void ButtonStopCamera_Click(object sender, RoutedEventArgs e)
+        {
+            MotionJpegClient client = ((FrameworkElement)sender).DataContext as MotionJpegClient;
+            if (client == null)
+                return;
+            client.CameraActive = false;
+        }
+
+        private void ButtonPanUp_Click(object sender, RoutedEventArgs e)
+        {
+            MotionJpegClient client = ((FrameworkElement)sender).DataContext as MotionJpegClient;
+            if (client == null)
+                return;
+            client.TiltUp();
+
+        }
+
+        private void ButtonPanDown_Click(object sender, RoutedEventArgs e)
+        {
+            MotionJpegClient client = ((FrameworkElement)sender).DataContext as MotionJpegClient;
+            if (client == null)
+                return;
+            client.TiltDown();
+
+        }
     }
+
+    // Converter that negates a boolean value
+    [ValueConversion(typeof(bool), typeof(System.Windows.Visibility))]
+    public class NotVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool bValue = (bool)value;
+            if (bValue == true)
+                return System.Windows.Visibility.Collapsed;
+            else
+                return System.Windows.Visibility.Visible;
+
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            System.Windows.Visibility vValue = (System.Windows.Visibility)value;
+            if (vValue == System.Windows.Visibility.Collapsed)
+                return true;
+            else
+                return false;
+        }
+        private static object ConvertValue(object value)
+        {
+            if (!(value is bool))
+            {
+                throw new NotSupportedException("Only bool is supported.");
+            }
+            return !(bool)value;
+        }
+    }
+
+    // Converter that negates a boolean value
+    [ValueConversion(typeof(bool), typeof(System.Windows.Visibility))]
+    public class VisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool bValue = (bool)value;
+            if (bValue == true)
+                return System.Windows.Visibility.Visible;
+            else
+                return System.Windows.Visibility.Collapsed;
+
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            System.Windows.Visibility vValue = (System.Windows.Visibility)value;
+            if (vValue == System.Windows.Visibility.Collapsed)
+                return false;
+            else
+                return true;
+        }
+        private static object ConvertValue(object value)
+        {
+            if (!(value is bool))
+            {
+                throw new NotSupportedException("Only bool is supported.");
+            }
+            return !(bool)value;
+        }
+
+    } 
+    
+
 }
