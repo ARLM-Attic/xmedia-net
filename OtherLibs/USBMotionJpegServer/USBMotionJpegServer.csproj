@@ -91,6 +91,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MotionDetection\MotionDetection.vcxproj">
+      <Project>{bb0cc7aa-dccc-45c2-b656-64e7c08e8716}</Project>
+      <Name>MotionDetection</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\RTP\rtp.csproj">
       <Project>{69a1badf-4974-4d35-a3ec-75b77b0a003b}</Project>
       <Name>rtp</Name>
@@ -111,6 +115,64 @@
       <Project>{b914ee15-6a3c-4baa-ab12-932d1325c86d}</Project>
       <Name>WPFImageWindows</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\OpenCVDLLs\opencv_calib3d245.dll">
+      <Link>opencv_calib3d245.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_calib3d245d.dll">
+      <Link>opencv_calib3d245d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_core245.dll">
+      <Link>opencv_core245.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_core245d.dll">
+      <Link>opencv_core245d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_features2d245.dll">
+      <Link>opencv_features2d245.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_features2d245d.dll">
+      <Link>opencv_features2d245d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_flann245.dll">
+      <Link>opencv_flann245.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_flann245d.dll">
+      <Link>opencv_flann245d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_highgui245.dll">
+      <Link>opencv_highgui245.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_highgui245d.dll">
+      <Link>opencv_highgui245d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_imgproc245.dll">
+      <Link>opencv_imgproc245.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_imgproc245d.dll">
+      <Link>opencv_imgproc245d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_objdetect245.dll">
+      <Link>opencv_objdetect245.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\OpenCVDLLs\opencv_objdetect245d.dll">
+      <Link>opencv_objdetect245d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

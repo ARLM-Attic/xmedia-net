@@ -24,10 +24,12 @@ namespace WPFImageWindows
     {
         public VideoCaptureSource(ImageAquisition.MFVideoCaptureDevice dev)
         {
-            RecordingDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyVideos);
             VideoCaptureDevice = dev;
             Name = VideoCaptureDevice.DisplayName;
             MonikerString = VideoCaptureDevice.UniqueName;
+
+
+            RecorderWithMotion = new MutlitFormatMotionRecorder(dev);
 
             foreach (VideoCaptureRate format in VideoCaptureDevice.VideoFormats)
             {
@@ -36,6 +38,7 @@ namespace WPFImageWindows
 
         }
 
+        public MutlitFormatMotionRecorder RecorderWithMotion = null;
 
         static Random Rand = new Random();
         ImageAquisition.MFVideoCaptureDevice m_objVideoCaptureDevice = null;
@@ -82,6 +85,8 @@ namespace WPFImageWindows
         }
 
         private VideoCaptureRate m_objActiveVideoCaptureRate = null;
+
+     
 
         /// <summary>
         /// The capture rate we will capture at if a start is issued - can only be changed when the capture is inactive
@@ -275,114 +280,11 @@ namespace WPFImageWindows
         object CurrentFrameLock = new object();
         MediaSample CurrentFrame = null;
 
-        ImageAquisition.MFVideoEncoder Recorder = null;
-        AudioClasses.VideoCaptureRate rate = null;
-
-        private string m_strLastRecordedFileName = "";
-        public string LastRecordedFileName
-        {
-            get { return m_strLastRecordedFileName; }
-            set { m_strLastRecordedFileName = value; }
-        }
-
-        private int m_nMaxRecordingFrames = -1;
-        /// <summary>
-        /// The maximum number of frames to record in each video session before stopping the recording
-        /// </summary>
-        public int MaxRecordingFrames
-        {
-            get { return m_nMaxRecordingFrames; }
-            set { m_nMaxRecordingFrames = value; }
-        }
-
-        bool m_bRecording = false;
-        public bool Recording
-        {
-            get { return m_bRecording; }
-            set 
-            { 
-                if (value == true)
-                    StartRecording();
-                else
-                    StopRecording();
-            }
-        }
-        
-        int m_nRecordedFrames = 0;
-
-        public bool StartRecording()
-        {
-            StopRecording();
-            m_nRecordedFrames = 0;
-            m_bRecording = true;
-            return true;
-        }
-
-        public string StopRecording()
-        {
-            if (Recorder != null)
-            {
-                m_bRecording = false;
-                Recorder.Stop();
-                Recorder = null;
-                return LastRecordedFileName;
-            }
-            return "";
-        }
-        private string m_strRecordingDirectory = "";
-
-        public string RecordingDirectory
-        {
-            get { return m_strRecordingDirectory; }
-            set { m_strRecordingDirectory = value; }
-        }
-
-        void AddRecordFrame(byte[] bRGBData, int nWidth, int nHeight)
-        {
-            if (bRGBData == null)
-                return;
-            if (nWidth <= 0)
-                return;
-            if (nHeight <= 0)
-                return;
-            if (Recording == false)
-                return;
-
-            m_nRecordedFrames++;
-            if ((this.MaxRecordingFrames > 0) && (m_nRecordedFrames >= this.MaxRecordingFrames))
-            {
-                StopRecording();
-                return;
-            }
-
-            if (Recorder == null)
-            {
-                ImageAquisition.MFVideoEncoder tempRecorder = new ImageAquisition.MFVideoEncoder();
-                LastRecordedFileName = string.Format("{0}/{1}.mp4", RecordingDirectory, Guid.NewGuid().ToString());
-                rate = new VideoCaptureRate(nWidth, nHeight, 30, 3000000);
-                rate.CompressedFormat = AudioClasses.VideoDataFormat.MP4;
-                tempRecorder.Start(LastRecordedFileName, rate, DateTime.Now, false);
-                Recorder = tempRecorder;
-            }
-
-            if (Recorder != null)
-            {
-                if ((nWidth == rate.Width) && (nHeight == rate.Height))
-                {
-                    //byte[] bRGB32Data = ImageUtils.Utils.Convert24BitImageTo32BitImage(bRGBData, nWidth, nHeight);
-                    Recorder.AddVideoFrame(bRGBData, DateTime.Now);
-                }
-                else
-                    m_bRecording = false;
-            }
-        }
-
         void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat, object objSource)
         {
-            if (Recording == true)
-                AddRecordFrame(pFrame, videoformat.Width, videoformat.Height);
 
             m_nNumberFramesCaptures++;
+
 
             lock (CurrentFrameLock)
             {
@@ -406,6 +308,7 @@ namespace WPFImageWindows
             if (OnNewFrame != null)
                 OnNewFrame(pFrame, videoformat, this);
 
+           
         }
 
 
@@ -650,6 +553,29 @@ namespace WPFImageWindows
         }
       
         #endregion
+
+        public bool StartRecording()
+        {
+            return RecorderWithMotion.StartRecording();
+        }
+
+        public string StopRecording()
+        {
+            return RecorderWithMotion.StopRecording();
+        }
+
+        public bool Recording
+        {
+            get
+            {
+                return RecorderWithMotion.Recording;
+            }
+            set
+            {
+                RecorderWithMotion.Recording = value;
+                FirePropertyChanged("Recording");
+            }
+        }
     }
 
 

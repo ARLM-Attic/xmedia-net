@@ -271,6 +271,13 @@ namespace AudioClasses
         event DelegateImageRecognition OnRecogntion;
     }
 
+    public interface IMotionDetector
+    {
+        bool Detect(byte [] bPixelData, int nWidth, int nHeight);
+        double Threshold { get; set; }
+        double LastMeasuredValue { get; }
+    }
+
     public interface IVideoSink
     {
         string Name { get; set; }

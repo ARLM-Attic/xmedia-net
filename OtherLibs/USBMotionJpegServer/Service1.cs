@@ -37,6 +37,9 @@ namespace USBMotionJpegServer
                 CameraConfig.CreateDefault(strConfig);
                 System.Environment.Exit(-2);
             }
+            // Save it back out incase we have any new variables
+            CameraConfig.SaveCameras(strConfig, Cameras);
+
 
             Server = new RTP.MotionJpegHttpServer();
             Server.Port = Properties.Settings.Default.Port;
@@ -88,8 +91,16 @@ namespace USBMotionJpegServer
                     if (dev.UniqueName == cam.UniqueName)
                     {
                         VideoCaptureSource devwithcontrol = new VideoCaptureSource(dev);
-                        devwithcontrol.RecordingDirectory = Properties.Settings.Default.RecordingDirectory;
-                        devwithcontrol.MaxRecordingFrames = Properties.Settings.Default.MaxRecordedFrames;
+                        if (cam.RecordMotion == true)
+                        {
+                            devwithcontrol.RecorderWithMotion.MotionDetector = new MotionDetection.ContourAreaMotionDetector();
+                            devwithcontrol.RecorderWithMotion.MotionDetector.Threshold = cam.MotionLevel;
+                            devwithcontrol.RecorderWithMotion.IsRecordingMotion = cam.RecordMotion;
+                        }
+
+
+                        devwithcontrol.RecorderWithMotion.RecordingDirectory = Properties.Settings.Default.RecordingDirectory;
+                        devwithcontrol.RecorderWithMotion.MaxRecordingFrames = Properties.Settings.Default.MaxRecordedFrames;
                         devwithcontrol.ShowMessageBoxes = false; /// no message boxes in a service, don't want a hang
                         ActiveDevices.Add(devwithcontrol);
                         devwithcontrol.ActiveVideoCaptureRate = ActiveRate;

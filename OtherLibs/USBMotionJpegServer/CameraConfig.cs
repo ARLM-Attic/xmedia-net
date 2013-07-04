@@ -28,6 +28,22 @@ namespace USBMotionJpegServer
             VideoCaptureRates = rates;
         }
 
+        private bool m_bRecordMotion = true;
+        [DataMember]
+        public bool RecordMotion
+        {
+            get { return m_bRecordMotion; }
+            set { m_bRecordMotion = value; }
+        }
+
+        private double m_fMotionLevel = 30.0f;
+        [DataMember]
+        public double MotionLevel
+        {
+            get { return m_fMotionLevel; }
+            set { m_fMotionLevel = value; }
+        }
+
         private string m_strUniqueName = "";
         [DataMember]
         public string UniqueName

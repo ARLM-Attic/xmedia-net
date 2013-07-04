@@ -144,7 +144,7 @@
     </ProjectReference>
     <ProjectReference Include="..\OtherLibs\ImageAquisition\ImageAquisition.vcxproj">
       <Project>{6D3414FC-4336-426A-BED4-814AB331FDF0}</Project>
-      <Name>ImageAquisition</Name>
+      <Name>ImageAquisition %28Visual Studio 2010%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\OtherLibs\WPFImageControls\WPFImageWindows\WPFImageWindows.csproj">
       <Project>{B914EE15-6A3C-4BAA-AB12-932D1325C86D}</Project>

@@ -57,6 +57,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CameraViewer", "Examples\Ca
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotionDetection", "MotionDetection\MotionDetection.vcxproj", "{BB0CC7AA-DCCC-45C2-B656-64E7C08E8716}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenCVDLLs", "OpenCVDLLs", "{37C466BE-1091-475C-B2C7-B5127469AB94}"
+	ProjectSection(SolutionItems) = preProject
+		OtherLibs\OpenCVDLLs\opencv_calib3d245.dll = OtherLibs\OpenCVDLLs\opencv_calib3d245.dll
+		OtherLibs\OpenCVDLLs\opencv_calib3d245d.dll = OtherLibs\OpenCVDLLs\opencv_calib3d245d.dll
+		OtherLibs\OpenCVDLLs\opencv_core245.dll = OtherLibs\OpenCVDLLs\opencv_core245.dll
+		OtherLibs\OpenCVDLLs\opencv_core245d.dll = OtherLibs\OpenCVDLLs\opencv_core245d.dll
+		OtherLibs\OpenCVDLLs\opencv_features2d245.dll = OtherLibs\OpenCVDLLs\opencv_features2d245.dll
+		OtherLibs\OpenCVDLLs\opencv_features2d245d.dll = OtherLibs\OpenCVDLLs\opencv_features2d245d.dll
+		OtherLibs\OpenCVDLLs\opencv_flann245.dll = OtherLibs\OpenCVDLLs\opencv_flann245.dll
+		OtherLibs\OpenCVDLLs\opencv_flann245d.dll = OtherLibs\OpenCVDLLs\opencv_flann245d.dll
+		OtherLibs\OpenCVDLLs\opencv_highgui245.dll = OtherLibs\OpenCVDLLs\opencv_highgui245.dll
+		OtherLibs\OpenCVDLLs\opencv_highgui245d.dll = OtherLibs\OpenCVDLLs\opencv_highgui245d.dll
+		OtherLibs\OpenCVDLLs\opencv_imgproc245.dll = OtherLibs\OpenCVDLLs\opencv_imgproc245.dll
+		OtherLibs\OpenCVDLLs\opencv_imgproc245d.dll = OtherLibs\OpenCVDLLs\opencv_imgproc245d.dll
+		OtherLibs\OpenCVDLLs\opencv_objdetect245.dll = OtherLibs\OpenCVDLLs\opencv_objdetect245.dll
+		OtherLibs\OpenCVDLLs\opencv_objdetect245d.dll = OtherLibs\OpenCVDLLs\opencv_objdetect245d.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 26
@@ -1025,5 +1043,6 @@ Global
 		{D6B49DD9-1145-4F43-A48F-CB47C2CA15C4} = {10512982-5268-4102-A137-C334F3ABF856}
 		{B7400CF1-E6FC-4768-A0BC-F2DDE6B4FCDC} = {10512982-5268-4102-A137-C334F3ABF856}
 		{BB0CC7AA-DCCC-45C2-B656-64E7C08E8716} = {10512982-5268-4102-A137-C334F3ABF856}
+		{37C466BE-1091-475C-B2C7-B5127469AB94} = {10512982-5268-4102-A137-C334F3ABF856}
 	EndGlobalSection
 EndGlobal

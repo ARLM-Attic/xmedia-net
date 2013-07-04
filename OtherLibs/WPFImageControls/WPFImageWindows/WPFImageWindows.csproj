@@ -184,6 +184,7 @@
     </Compile>
     <Compile Include="DirectShowStuff.cs" />
     <Compile Include="InterFrameCompressor.cs" />
+    <Compile Include="MotionRecorder.cs" />
     <Compile Include="OverlayWindow.xaml.cs">
       <DependentUpon>OverlayWindow.xaml</DependentUpon>
     </Compile>
@@ -246,17 +247,21 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\SocketServer\socketserver.csproj">
+      <Project>{77f78e2f-a04f-4823-a2a9-3f1f27d0f8b8}</Project>
+      <Name>socketserver</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\AudioClasses\AudioClasses.csproj">
       <Project>{CB219B28-DC51-4E22-BC61-80B97D8A39C0}</Project>
       <Name>AudioClasses</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ImageAquisition\ImageAquisition.vcxproj">
       <Project>{6d3414fc-4336-426a-bed4-814ab331fdf0}</Project>
-      <Name>ImageAquisition</Name>
+      <Name>ImageAquisition %28Visual Studio 2010%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ImageUtils\ImageUtils.vcxproj">
       <Project>{53796a00-c33a-40ff-b28d-f977eb8a9103}</Project>
-      <Name>ImageUtils</Name>
+      <Name>ImageUtils %28Visual Studio 2010%29</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

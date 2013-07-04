@@ -8,13 +8,45 @@
 
 
 
-MotionDetector::MotionDetector(void)
+MotionDetection::ContourAreaMotionDetector::ContourAreaMotionDetector(void)
 {
+	ptrCurrentFrame = System::IntPtr(0);
+	ptrGrayFrame = System::IntPtr(0);
+	ptrAverageFrame = System::IntPtr(0);
+	ptrAbsDiffFrame = System::IntPtr(0);
+	ptrPreviousFrame = System::IntPtr(0);
+	m_fSurfaceArea = 0.0f;
+	m_ptrCurrentCountours = System::IntPtr(0);
+	m_fThreshold = 8.0f;
+	m_fLastMeasuredValue = 0.0f;
+	m_nTriggerTime = 0.0f;
 }
 
 
-MotionDetector::~MotionDetector(void)
+MotionDetection::ContourAreaMotionDetector::~ContourAreaMotionDetector(void)
 {
+	IplImage *curimage = (IplImage *) ptrCurrentFrame.ToPointer();
+	if (curimage != NULL)
+		cvReleaseImage( &curimage );  
+	IplImage *imageAbsDiffFrame = (IplImage *) ptrAbsDiffFrame.ToPointer();
+	if (imageAbsDiffFrame != NULL)
+		cvReleaseImage( &imageAbsDiffFrame );  
+	IplImage *imageGrayFrame = (IplImage *) ptrGrayFrame.ToPointer();
+	if (imageGrayFrame != NULL)
+		cvReleaseImage( &imageGrayFrame );  
+	IplImage *imageAverageFrame = (IplImage *) ptrAverageFrame.ToPointer();
+	if (imageAverageFrame != NULL)
+		cvReleaseImage( &imageAverageFrame );  
+	IplImage *imagePreviousFrame = (IplImage *) ptrPreviousFrame.ToPointer();
+	if (imagePreviousFrame != NULL)
+		cvReleaseImage( &imagePreviousFrame );  
+
+	
+	ptrCurrentFrame = System::IntPtr(0);
+	ptrGrayFrame = System::IntPtr(0);
+	ptrAverageFrame = System::IntPtr(0);
+	ptrAbsDiffFrame = System::IntPtr(0);
+	ptrPreviousFrame = System::IntPtr(0);
 }
 
 
@@ -45,72 +77,94 @@ IplImage* GetThresholdedImageHSV( IplImage* img )
 }  
 
 
-void MotionDetector::Detect(array<unsigned char> ^bPixelData, int nWidth, int nHeight)
+bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^bPixelData, int nWidth, int nHeight)
 {
-	CvSize size;
-	size.width = nWidth;
-	size.height = nHeight;
-	IplImage *image = cvCreateImage(size, 8, 3);
-	//cvCvtColor( img, imgHSV, CV_BGR2HSV );  
+	if (bPixelData == nullptr)
+		return false;
+	if ( (nWidth == 0) || (nHeight == 0) )
+		return false;
 
-	cvFree(image);
+	bool bRet = false;
+
+	IplImage *curimage = (IplImage *) ptrCurrentFrame.ToPointer();
+	CvSize size = cvSize(nWidth, nHeight);
+	
+	if (curimage == NULL)
+	{
+		/// Create an image of or data
+		curimage = cvCreateImage(size, IPL_DEPTH_8U, 4);
+		ptrCurrentFrame = System::IntPtr(curimage);
+	}
+
+	uchar *pData = (uchar *) curimage->imageData;
+
+
+	/// Copy our array to the image
+	pin_ptr<unsigned char> ppPixelData = &bPixelData[0];
+    unsigned char* pPixelData = (unsigned char *) ppPixelData;
+	memcpy(pData, pPixelData, bPixelData->Length);
+
+	/// Blur the image
+	cvSmooth(curimage, curimage);
+
+	IplImage *imageAbsDiffFrame = (IplImage *) ptrAbsDiffFrame.ToPointer();
+	IplImage *imageGrayFrame = (IplImage *) ptrGrayFrame.ToPointer();
+	IplImage *imageAverageFrame = (IplImage *) ptrAverageFrame.ToPointer();
+	IplImage *imagePreviousFrame = (IplImage *) ptrPreviousFrame.ToPointer();
+	if (imageAbsDiffFrame == nullptr)
+	{
+
+		m_fSurfaceArea = nWidth * nHeight;
+ 
+		imageGrayFrame = cvCreateImage(size, IPL_DEPTH_8U, 1);
+		ptrGrayFrame = System::IntPtr(imageGrayFrame);
+
+		imageAverageFrame = cvCreateImage(size, IPL_DEPTH_32F, 4);
+		ptrAverageFrame = System::IntPtr(imageAverageFrame);
+
+		imageAbsDiffFrame = cvCloneImage(curimage);
+		ptrAbsDiffFrame = System::IntPtr(imageAbsDiffFrame);
+
+		imagePreviousFrame = cvCloneImage(curimage);
+		ptrPreviousFrame = System::IntPtr(imagePreviousFrame);
+
+		cvConvert(curimage, imageAverageFrame);
+		ptrAverageFrame = System::IntPtr(imageAverageFrame);
+	}
+	else
+	{
+		cvRunningAvg(curimage, imageAverageFrame, 0.05);
+	}
+	cvConvert(imageAverageFrame, imagePreviousFrame);
+	cvAbsDiff(curimage, imagePreviousFrame, imageAbsDiffFrame);
+
+	cvCvtColor(imageAbsDiffFrame, imageGrayFrame, CV_RGB2GRAY);
+	cvThreshold(imageGrayFrame, imageGrayFrame, 50, 255, CV_THRESH_BINARY);
+
+	cvDilate(imageGrayFrame, imageGrayFrame, NULL, 15);
+	cvErode(imageGrayFrame, imageGrayFrame, NULL, 10);
+
+	CvMemStorage *storage = cvCreateMemStorage(0);
+	CvSeq *countours = NULL;
+	cvFindContours(imageGrayFrame, storage, &countours, 88, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+	m_ptrCurrentCountours = System::IntPtr(countours); // save countours
+
+	m_fCurrentSurfaceArea = 0.0f;
+	while (countours != NULL)
+	{
+		m_fCurrentSurfaceArea += cvContourArea(countours);
+		countours = countours->h_next;
+	}
+
+	m_fLastMeasuredValue = (m_fCurrentSurfaceArea*100)/m_fSurfaceArea;
+    m_fCurrentSurfaceArea = 0;
+        
+    if (m_fLastMeasuredValue > m_fThreshold)
+       bRet = true;
+    else
+       bRet = false;
+
+
+	return bRet;
 }
-http://www.bukisa.com/articles/263221_connected-components-using-opencv
-http://opencv.willowgarage.com/documentation/c/imgproc_feature_detection.html
-IplImage* src;
-    if( argc == 2 && (src=cvLoadImage(argv[1], 0))!= 0)
-    {
-        IplImage* dst = cvCreateImage( cvGetSize(src), 8, 1 );
-        IplImage* color_dst = cvCreateImage( cvGetSize(src), 8, 3 );
-        CvMemStorage* storage = cvCreateMemStorage(0);
-        CvSeq* lines = 0;
-        int i;
-        cvCanny( src, dst, 50, 200, 3 );
-        cvCvtColor( dst, color_dst, CV_GRAY2BGR );
-#if 1
-        lines = cvHoughLines2( dst,
-                               storage,
-                               CV_HOUGH_STANDARD,
-                               1,
-                               CV_PI/180,
-                               100,
-                               0,
-                               0 );
-
-        for( i = 0; i < MIN(lines->total,100); i++ )
-        {
-            float* line = (float*)cvGetSeqElem(lines,i);
-            float rho = line[0];
-            float theta = line[1];
-            CvPoint pt1, pt2;
-            double a = cos(theta), b = sin(theta);
-            double x0 = a*rho, y0 = b*rho;
-            pt1.x = cvRound(x0 + 1000*(-b));
-            pt1.y = cvRound(y0 + 1000*(a));
-            pt2.x = cvRound(x0 - 1000*(-b));
-            pt2.y = cvRound(y0 - 1000*(a));
-            cvLine( color_dst, pt1, pt2, CV_RGB(255,0,0), 3, 8 );
-        }
-#else
-        lines = cvHoughLines2( dst,
-                               storage,
-                               CV_HOUGH_PROBABILISTIC,
-                               1,
-                               CV_PI/180,
-                               80,
-                               30,
-                               10 );
-        for( i = 0; i < lines->total; i++ )
-        {
-            CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
-            cvLine( color_dst, line[0], line[1], CV_RGB(255,0,0), 3, 8 );
-        }
-#endif
-        cvNamedWindow( "Source", 1 );
-        cvShowImage( "Source", src );
-
-        cvNamedWindow( "Hough", 1 );
-        cvShowImage( "Hough", color_dst );
-
-        cvWaitKey(0);
-    }

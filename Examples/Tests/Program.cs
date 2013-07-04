@@ -12,8 +12,8 @@ namespace Tests
         [STAThread]
         static void Main(string[] args)
         {
-            //TestCamera();
-            TestSerialization();
+            TestCamera();
+            //TestSerialization();
         }
 
         
