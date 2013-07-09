@@ -26,6 +26,11 @@ namespace USBMotionJpegServer
         RTP.MotionJpegHttpServer Server = null;
         CameraConfig[] Cameras = null;
         List<VideoCaptureSource> ActiveDevices = new List<VideoCaptureSource>();
+        public void StartInteractive()
+        {
+            OnStart(null);
+        }
+
         protected override void OnStart(string[] args)
         {
             string strDirectory = System.IO.Path.GetDirectoryName(System.Environment.GetCommandLineArgs()[0]);
@@ -83,6 +88,11 @@ namespace USBMotionJpegServer
 
                 if (System.IO.Directory.Exists(Properties.Settings.Default.RecordingDirectory) == false)
                     System.IO.Directory.CreateDirectory(Properties.Settings.Default.RecordingDirectory);
+
+                string strMaskDir = string.Format(@"{0}\Masks", strDirectory);
+                if (System.IO.Directory.Exists(strMaskDir) == false)
+                    System.IO.Directory.CreateDirectory(strMaskDir);
+
                 /// Find this device
                 /// 
                 bool bFound = false;
@@ -93,9 +103,23 @@ namespace USBMotionJpegServer
                         VideoCaptureSource devwithcontrol = new VideoCaptureSource(dev);
                         if (cam.RecordMotion == true)
                         {
-                            devwithcontrol.RecorderWithMotion.MotionDetector = new MotionDetection.ContourAreaMotionDetector();
+                            MotionDetection.ContourAreaMotionDetector detector = new MotionDetection.ContourAreaMotionDetector();
+                            if ((cam.MaskFileName != null) && (cam.MaskFileName.Length > 0))
+                            {
+                                string strMaskName = string.Format(@"{0}\Masks\{1}", strDirectory, cam.MaskFileName);
+                                if (System.IO.File.Exists(strMaskName) == true)
+                                    detector.FileNameMotionMask = strMaskName;
+                                else
+                                    System.Diagnostics.EventLog.WriteEntry("USBMotionJpegServer", string.Format("Could not find mask file '{0}' for camera '{1}'", strMaskName, cam.UniqueName), EventLogEntryType.Error);
+                            }
+                            if (cam.MaxMotionDetectionFramesPerSecond > 0)
+                                devwithcontrol.RecorderWithMotion.MaxMotionDetectionFramesPerSecond = cam.MaxMotionDetectionFramesPerSecond;
+
+                            devwithcontrol.RecorderWithMotion.MotionDetector = detector;
+                            devwithcontrol.RecorderWithMotion.ShowMotionImages = Properties.Settings.Default.SendMotionFrames;
                             devwithcontrol.RecorderWithMotion.MotionDetector.Threshold = cam.MotionLevel;
                             devwithcontrol.RecorderWithMotion.IsRecordingMotion = cam.RecordMotion;
+
                         }
 
 

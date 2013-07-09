@@ -209,6 +209,8 @@ namespace RTP
                     Stop();
                     return;
                 }
+                bJpegMutlipartcontent = null;
+                bLatestImage = null;
             }
         }
 

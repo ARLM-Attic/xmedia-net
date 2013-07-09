@@ -83,8 +83,8 @@ namespace RTP
 
 
             byte [] bJpeg = JpegCompressor.CompressFrame(bRawData);
-
             LastImage = bJpeg;
+            bRawData = null;
 
             if (MJPGConnections.Count <= 0)
                 return;
@@ -102,7 +102,9 @@ namespace RTP
                 {
                     con.FrameQueue.Enqueue(bJpeg);
                 }
+                bJpeg = null;
             }
+
 
         }
 

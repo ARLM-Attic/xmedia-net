@@ -273,7 +273,7 @@ namespace AudioClasses
 
     public interface IMotionDetector
     {
-        bool Detect(byte [] bPixelData, int nWidth, int nHeight);
+        bool Detect(ref byte [] bPixelData, int nWidth, int nHeight, bool bRetMotion);
         double Threshold { get; set; }
         double LastMeasuredValue { get; }
     }

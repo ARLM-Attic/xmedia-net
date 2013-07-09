@@ -60,6 +60,22 @@ namespace USBMotionJpegServer
             set { m_strName = value; }
         }
 
+        private string m_strMaskFileName = null;
+        [DataMember]
+        public string MaskFileName
+        {
+            get { return m_strMaskFileName; }
+            set { m_strMaskFileName = value; }
+        }
+
+        private int m_nMaxMotionDetectionFramesPerSecond = 5;
+        [DataMember(EmitDefaultValue=true)]
+        public int MaxMotionDetectionFramesPerSecond
+        {
+            get { return m_nMaxMotionDetectionFramesPerSecond; }
+            set { m_nMaxMotionDetectionFramesPerSecond = value; }
+        }
+
         private VideoCaptureRate [] m_objVideoCaptureRates = new VideoCaptureRate[]{};
         [DataMember]
         public VideoCaptureRate [] VideoCaptureRates

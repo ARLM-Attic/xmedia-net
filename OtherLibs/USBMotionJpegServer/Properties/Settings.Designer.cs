@@ -103,5 +103,14 @@ namespace USBMotionJpegServer.Properties {
                 return ((string)(this["RecordingDirectory"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SendMotionFrames {
+            get {
+                return ((bool)(this["SendMotionFrames"]));
+            }
+        }
     }
 }

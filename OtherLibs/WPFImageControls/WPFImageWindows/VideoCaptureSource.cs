@@ -29,7 +29,7 @@ namespace WPFImageWindows
             MonikerString = VideoCaptureDevice.UniqueName;
 
 
-            RecorderWithMotion = new MutlitFormatMotionRecorder(dev);
+            RecorderWithMotion = new MutlitFormatMotionRecorder(dev, false);
 
             foreach (VideoCaptureRate format in VideoCaptureDevice.VideoFormats)
             {
@@ -282,12 +282,19 @@ namespace WPFImageWindows
 
         void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat, object objSource)
         {
+            pFrame = RecorderWithMotion.SetNewFrame(pFrame, videoformat, objSource);
 
             m_nNumberFramesCaptures++;
 
 
             lock (CurrentFrameLock)
             {
+                if (CurrentFrame != null)
+                {
+                    CurrentFrame.Data = null;
+                    CurrentFrame = null;
+                }
+                    
                 CurrentFrame = new MediaSample(pFrame, videoformat);
             }
 

@@ -112,12 +112,13 @@ namespace WPFImageWindows
     [DataContract]
     public class MutlitFormatMotionRecorder : System.ComponentModel.INotifyPropertyChanged, IVideoRecorder
     {
-        public MutlitFormatMotionRecorder(IVideoSource camera)
+        public MutlitFormatMotionRecorder(IVideoSource camera, bool bHookEvents)
         {
             RecordingDirectory = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyVideos);
 
             Camera = camera;
-            Camera.OnNewFrame += Camera_OnNewFrame;
+            if (bHookEvents == true)
+                Camera.OnNewFrame += Camera_OnNewFrame;
 
             ThreadEncoding = new System.Threading.Thread(new System.Threading.ThreadStart(EncodingThread));
             ThreadEncoding.IsBackground = true;
@@ -291,7 +292,7 @@ namespace WPFImageWindows
 
                         if (Recorder != null)
                         {
-                            if ((frame.Width == rate.Width) && (frame.Height == rate.Height))
+                            if ((frame.Width == rate.Width) && (frame.Height == rate.Height) && (frame.FrameBytes != null))
                             {
                                 //byte[] bRGB32Data = ImageUtils.Utils.Convert24BitImageTo32BitImage(bRGBData, nWidth, nHeight);
                                 m_nRecordedFrames++;
@@ -406,18 +407,45 @@ namespace WPFImageWindows
             set { m_objMotionDetector = value; }
         }
 
+        private int m_nMaxMotionDetectionFramesPerSecond = 5;
+        public int MaxMotionDetectionFramesPerSecond
+        {
+            get { return m_nMaxMotionDetectionFramesPerSecond; }
+            set { m_nMaxMotionDetectionFramesPerSecond = value; }
+        }
 
-        private bool m_bCurrentlyRecording = false;
-        void Camera_OnNewFrame(byte[] bRawData, VideoCaptureRate format, object objSource)
+        private bool m_bShowMotionImages = false;
+        public bool ShowMotionImages
+        {
+            get { return m_bShowMotionImages; }
+            set { m_bShowMotionImages = value; }
+        }
+
+        DateTime m_dtLastFrameProcessed = DateTime.MinValue;
+
+   
+
+        public byte [] SetNewFrame(byte[] bRawData, VideoCaptureRate format, object objSource)
         {
             if (EncodingQueue.Count > MaxEncodingQueueSize)
-                return; /// Not enough memory or CPU to handle this request
+                return bRawData; /// Not enough memory or CPU to handle this request
+
 
 
             bool bMotionDetected = false;
             if ((IsRecordingMotion == true) && (MotionDetector != null))
             {
-                bMotionDetected = MotionDetector.Detect(bRawData, format.Width, format.Height);
+                TimeSpan tsElapsed = DateTime.Now - m_dtLastFrameProcessed;
+                double fS = tsElapsed.TotalSeconds;
+                if (fS > 0)
+                {
+                    double fFramesPerSecond = 1 / fS;
+                    if (fFramesPerSecond < MaxMotionDetectionFramesPerSecond)
+                    {
+                        bMotionDetected = MotionDetector.Detect(ref bRawData, format.Width, format.Height, ShowMotionImages);
+                        m_dtLastFrameProcessed = DateTime.Now;
+                    }
+                }
             }
 
             /// 
@@ -441,7 +469,7 @@ namespace WPFImageWindows
                         frame.FrameType = FrameType.FirstFrame;
 
                     EncodingQueue.Enqueue(frame);
-                    
+
                     m_bCurrentlyRecording = true;
                 }
                 else
@@ -474,7 +502,7 @@ namespace WPFImageWindows
                         }
                         else
                             frame.FrameType = FrameType.FirstFrame;
-                
+
 
                         m_bCurrentMotion = true;
                     }
@@ -527,10 +555,16 @@ namespace WPFImageWindows
                     prvframe.Dispose();
                 }
 
-                
+
             }
+            return bRawData;
 
+        }
 
+        private bool m_bCurrentlyRecording = false;
+        protected void Camera_OnNewFrame(byte[] bRawData, VideoCaptureRate format, object objSource)
+        {
+            SetNewFrame(bRawData, format, objSource);
         }
 
 

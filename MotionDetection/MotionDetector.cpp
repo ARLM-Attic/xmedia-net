@@ -15,11 +15,13 @@ MotionDetection::ContourAreaMotionDetector::ContourAreaMotionDetector(void)
 	ptrAverageFrame = System::IntPtr(0);
 	ptrAbsDiffFrame = System::IntPtr(0);
 	ptrPreviousFrame = System::IntPtr(0);
+	ptrMask = System::IntPtr(0);
 	m_fSurfaceArea = 0.0f;
 	m_ptrCurrentCountours = System::IntPtr(0);
 	m_fThreshold = 8.0f;
 	m_fLastMeasuredValue = 0.0f;
 	m_nTriggerTime = 0.0f;
+	m_strFileNameMotionMask = nullptr;
 }
 
 
@@ -40,6 +42,13 @@ MotionDetection::ContourAreaMotionDetector::~ContourAreaMotionDetector(void)
 	IplImage *imagePreviousFrame = (IplImage *) ptrPreviousFrame.ToPointer();
 	if (imagePreviousFrame != NULL)
 		cvReleaseImage( &imagePreviousFrame );  
+	IplImage *imageTemp = (IplImage *) ptrTemp.ToPointer();
+	if (imageTemp != NULL)
+		cvReleaseImage( &imageTemp );  
+	IplImage *imageMask = (IplImage *) ptrMask.ToPointer();
+	if (imageMask != NULL)
+		cvReleaseImage( &imageMask );  
+
 
 	
 	ptrCurrentFrame = System::IntPtr(0);
@@ -47,6 +56,7 @@ MotionDetection::ContourAreaMotionDetector::~ContourAreaMotionDetector(void)
 	ptrAverageFrame = System::IntPtr(0);
 	ptrAbsDiffFrame = System::IntPtr(0);
 	ptrPreviousFrame = System::IntPtr(0);
+	ptrTemp = System::IntPtr(0);
 }
 
 
@@ -76,8 +86,25 @@ IplImage* GetThresholdedImageHSV( IplImage* img )
     return imgThresh;  
 }  
 
+/// Mask the image...  Source must be a 4 channel 8-bit image, Mask must be a 1 channel 8 bit image
+void MaskImage(IplImage *imgSource, IplImage *imgMask)
+{
+	//unsigned char *pSrcA = (unsigned char *) imgSource->imageData;
+	unsigned int *pSrcA = (unsigned int *) imgSource->imageData;
+	unsigned char *pMask = (unsigned char *) imgMask->imageData;
+	for (int y=0; y<imgSource->height; y++)
+	{
+		for (int x=0; x<imgSource->width; x++)
+		{
+ 		    if ((*pMask) == 0)
+				*pSrcA = 0;
+			pSrcA++;
+			pMask++;
+		}
+	}
+}
 
-bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^bPixelData, int nWidth, int nHeight)
+bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%bPixelData, int nWidth, int nHeight, bool bRetMotion)
 {
 	if (bPixelData == nullptr)
 		return false;
@@ -111,8 +138,33 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^bP
 	IplImage *imageGrayFrame = (IplImage *) ptrGrayFrame.ToPointer();
 	IplImage *imageAverageFrame = (IplImage *) ptrAverageFrame.ToPointer();
 	IplImage *imagePreviousFrame = (IplImage *) ptrPreviousFrame.ToPointer();
+	IplImage *imageTemp = (IplImage *) ptrTemp.ToPointer();
+	IplImage *imageMask = (IplImage *) ptrMask.ToPointer();
+
 	if (imageAbsDiffFrame == nullptr)
 	{
+		/// Load our white/black mask of regions of interest
+		if ((m_strFileNameMotionMask != nullptr) && (m_strFileNameMotionMask->Length > 0) )
+		{
+			System::IntPtr ptrstring = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(m_strFileNameMotionMask);
+			const char *pFileName = (const char *)ptrstring.ToPointer();
+			IplImage *imageMaskTemp = cvLoadImage(pFileName, CV_LOAD_IMAGE_COLOR);
+			System::Runtime::InteropServices::Marshal::FreeHGlobal(ptrstring);
+
+			if (imageMaskTemp != NULL)
+			{
+				imageMask = cvCreateImage(size, IPL_DEPTH_8U, 1);
+				cvCvtColor(imageMaskTemp, imageMask, CV_RGB2GRAY);
+				ptrMask = System::IntPtr(imageMask);
+				cvReleaseImage( &imageMaskTemp );  
+			}
+		}
+
+		if (imageMask != NULL)
+			MaskImage(curimage, imageMask);
+
+		imageTemp = cvCreateImage(size, IPL_DEPTH_32F, 4);
+		ptrTemp = System::IntPtr(imageTemp);
 
 		m_fSurfaceArea = nWidth * nHeight;
  
@@ -133,16 +185,59 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^bP
 	}
 	else
 	{
-		cvRunningAvg(curimage, imageAverageFrame, 0.05);
+		if (imageMask != NULL)
+			MaskImage(curimage, imageMask);
+
+		cvRunningAvg(curimage, imageAverageFrame, 0.05, NULL);
 	}
 	cvConvert(imageAverageFrame, imagePreviousFrame);
 	cvAbsDiff(curimage, imagePreviousFrame, imageAbsDiffFrame);
+
 
 	cvCvtColor(imageAbsDiffFrame, imageGrayFrame, CV_RGB2GRAY);
 	cvThreshold(imageGrayFrame, imageGrayFrame, 50, 255, CV_THRESH_BINARY);
 
 	cvDilate(imageGrayFrame, imageGrayFrame, NULL, 15);
 	cvErode(imageGrayFrame, imageGrayFrame, NULL, 10);
+
+	/*if (bRetMotion == true)
+	{
+		cvCvtColor(imageGrayFrame, imageAbsDiffFrame, CV_GRAY2RGB);
+		memcpy(pPixelData, imageAbsDiffFrame->imageData, bPixelData->Length);
+	}*/
+	
+
+	if (bRetMotion == true)
+	{
+		cvCvtColor(imageGrayFrame, imageAbsDiffFrame, CV_GRAY2RGB);
+		
+		//imageTemp = cvCloneImage(imageAbsDiffFrame);
+		//cvAddWeighted(curimage, 0.5, imageAbsDiffFrame, 0.2, 0.0, imageTemp);
+
+		//memcpy(pPixelData, imageTemp->imageData, bPixelData->Length);
+
+		unsigned char *pSrcA = (unsigned char *) pPixelData;
+		unsigned char *pSrcB = (unsigned char *) imageAbsDiffFrame->imageData;
+		for (int y=0; y<nHeight; y++)
+		{
+			for (int x=0; x<nWidth; x++)
+			{
+				//unsigned char nRedValueSource = *pSrcA;
+				unsigned char nRedValueDiffFrame = *pSrcB;
+				if (nRedValueDiffFrame > 0)
+				{
+					*(pSrcA + 2) |= 0x40;
+					*(pSrcA + 1) &= 0x3F;
+					*(pSrcA + 0) &= 0x3F;
+				}
+
+
+				pSrcA += 4;
+				pSrcB += 4;
+			}
+		}
+
+	}
 
 	CvMemStorage *storage = cvCreateMemStorage(0);
 	CvSeq *countours = NULL;
@@ -164,6 +259,8 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^bP
        bRet = true;
     else
        bRet = false;
+
+	cvReleaseMemStorage(&storage);
 
 
 	return bRet;
