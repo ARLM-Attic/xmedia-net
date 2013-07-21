@@ -196,6 +196,7 @@ namespace AudioClasses
 
         void TurnOffLED();
 
+        void SetExposure(int nExposure);
     }
 
     public interface IVideoSource
@@ -276,6 +277,7 @@ namespace AudioClasses
         bool Detect(ref byte [] bPixelData, int nWidth, int nHeight, bool bRetMotion);
         double Threshold { get; set; }
         double LastMeasuredValue { get; }
+        string StatusString { get; }
     }
 
     public interface IVideoSink
@@ -307,6 +309,7 @@ namespace AudioClasses
         void TiltDown();
         void SetFocus(int nFocus);
         void SetExposure(int nExposure);
+        void Zoom(int nFactor);
 
     }
 

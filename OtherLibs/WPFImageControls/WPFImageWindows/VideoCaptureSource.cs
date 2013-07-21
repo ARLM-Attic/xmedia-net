@@ -280,11 +280,26 @@ namespace WPFImageWindows
         object CurrentFrameLock = new object();
         MediaSample CurrentFrame = null;
 
+        public string StatusString
+        {
+            get
+            {
+                if ((RecorderWithMotion != null) && (RecorderWithMotion.MotionDetector != null))
+                    return RecorderWithMotion.MotionDetector.StatusString;
+                return "";
+            }
+            internal set
+            {
+                FirePropertyChanged("StatusString");
+            }
+        }
+
         void VideoCaptureDevice_OnNewFrame(byte[] pFrame, VideoCaptureRate videoformat, object objSource)
         {
-            pFrame = RecorderWithMotion.SetNewFrame(pFrame, videoformat, objSource);
 
             m_nNumberFramesCaptures++;
+
+            bool bIgnoreFrame = (ActualFramesProcessedPerSecond > DesiredFramesPerSecond); // User wants to analyze less than what the camera is providing
 
 
             lock (CurrentFrameLock)
@@ -298,10 +313,14 @@ namespace WPFImageWindows
                 CurrentFrame = new MediaSample(pFrame, videoformat);
             }
 
-            if (ActualFramesProcessedPerSecond > DesiredFramesPerSecond) // User wants to analyze less than what the camera is providing
+            if (bIgnoreFrame == true)
                 return;
 
             m_nNumberFramesProcessed++;
+
+
+            pFrame = RecorderWithMotion.SetNewFrame(pFrame, videoformat, objSource);
+            Dispatcher.CurrentDispatcher.Invoke(new Action(() => { StatusString = ""; }));
 
 
             if (m_bNeedReturnPicture == true)

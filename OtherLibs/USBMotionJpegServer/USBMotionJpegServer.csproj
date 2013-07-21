@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="bin\Debug\USBMotionJpegServer.exe.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -109,10 +110,6 @@
     <ProjectReference Include="..\ImageAquisition\ImageAquisition.vcxproj">
       <Project>{6d3414fc-4336-426a-bed4-814ab331fdf0}</Project>
       <Name>ImageAquisition %28Visual Studio 2010%29</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ImageUtils\ImageUtils.vcxproj">
-      <Project>{53796a00-c33a-40ff-b28d-f977eb8a9103}</Project>
-      <Name>ImageUtils %28Visual Studio 2010%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\WPFImageControls\WPFImageWindows\WPFImageWindows.csproj">
       <Project>{b914ee15-6a3c-4baa-ab12-932d1325c86d}</Project>

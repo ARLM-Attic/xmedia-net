@@ -2,13 +2,19 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Loaded="Window_Loaded"
-        Title="Edit Camera" Height="300" Width="300">
+        Title="Edit Camera" SizeToContent="Height" Width="300">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="30*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -36,7 +42,27 @@
         <Label Grid.Row="5" Grid.Column="0" Margin="5">Password</Label>
         <PasswordBox x:Name="PasswordBox1" Grid.Row="5" Grid.Column="1" Margin="5" />
 
-        <Button Grid.ColumnSpan="2" Grid.Row="6" Width="100" Click="Button_Click">Save</Button>
+        <Label Grid.Row="6" Grid.Column="0" Margin="5">Pan Left</Label>
+        <TextBox Grid.Row="6" Grid.Column="1" Margin="5" Text="{Binding PanLeft}" />
+
+        <Label Grid.Row="7" Grid.Column="0" Margin="5">Pan Right</Label>
+        <TextBox Grid.Row="7" Grid.Column="1" Margin="5" Text="{Binding PanRight}" />
+
+        <Label Grid.Row="8" Grid.Column="0" Margin="5">Pan Up</Label>
+        <TextBox Grid.Row="8" Grid.Column="1" Margin="5" Text="{Binding PanUp}" />
+
+
+        <Label Grid.Row="9" Grid.Column="0" Margin="5">Pan Down</Label>
+        <TextBox Grid.Row="9" Grid.Column="1" Margin="5" Text="{Binding PanDown}" />
+
+        <Label Grid.Row="10" Grid.Column="0" Margin="5">Focus</Label>
+        <TextBox Grid.Row="10" Grid.Column="1" Margin="5" Text="{Binding Focus}" />
+
+        <Label Grid.Row="11" Grid.Column="0" Margin="5">Start Record</Label>
+        <TextBox Grid.Row="11" Grid.Column="1" Margin="5" Text="{Binding StartRecord}" />
+
+        
+        <Button Grid.ColumnSpan="2" Grid.Row="12" Width="100" Click="Button_Click">Save</Button>
         
     </Grid>
 </Window>

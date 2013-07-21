@@ -425,7 +425,12 @@ namespace RTP
 
         public void TiltRelative(int Units)
         {
-            
+        }
+
+        public void SetExposure(int nExposure)
+        {
+            //string strURL = string.Format("http://{0}:{1}/{2}", NetworkCameraInformation.Computer, NetworkCameraInformation.Port, NetworkCameraInformation.SetExposer);
+            //SendWebRequest(strURL);
         }
 
         public void Zoom(int Factor)

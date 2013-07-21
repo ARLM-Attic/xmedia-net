@@ -9,6 +9,12 @@
         <local:VisibilityConverter  x:Key="boolconvert" />
         <local:NotVisibilityConverter  x:Key="notboolconvert" />
     </Window.Resources>
+    
+    <Window.CommandBindings>
+        <CommandBinding x:Name="CommandBack"  Command="BrowseBack" Executed="CommandBack_Executed" PreviewCanExecute="CommandBack_PreviewCanExecute"/>
+        <CommandBinding x:Name="CommandOpen"  Command="Open"  Executed="CommandOpen_Executed"/>
+        <CommandBinding x:Name="CommandSave"  Command="Save"  Executed="CommandSave_Executed"/>
+    </Window.CommandBindings>
   
     <Grid x:Name="MainGrid" SizeChanged="MainGrid_SizeChanged">
         <Grid.RowDefinitions>
@@ -20,7 +26,7 @@
             <Button x:Name="ButtonAddCamera" Click="ButtonAddCamera_Click">
                 <Image Width="30" Height="30" Margin="5" Source="Images/add.png" />
             </Button>
-            <Button x:Name="ButtonBack" Click="ButtonBack_Click" Visibility="Hidden">
+            <Button x:Name="ButtonBack" Click="ButtonBack_Click" Visibility="Hidden" Command="">
                 <Image Width="30" Height="30" Margin="5" Source="Images/player - skipbackwards.png"/>
             </Button>
         </StackPanel>
@@ -92,6 +98,7 @@
                             </Button>
                         </Grid>
 
+                        <Label HorizontalAlignment="Stretch" VerticalAlignment="Top" Content="{Binding StatusString}" />
 
                     </Grid>
                 </DataTemplate>

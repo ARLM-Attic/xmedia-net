@@ -28,10 +28,10 @@ namespace WPFImageWindows
 
         public FrameToBeEncoded(byte []bytes, int nWidth, int nHeight)
         {
-            FrameBytes = bytes;
+            FrameBytes = new byte[bytes.Length];
+            Array.Copy(bytes, FrameBytes, bytes.Length);
             Width = nWidth;
             Height = nHeight;
-            TimeStamp = DateTime.Now;
         }
 
 
@@ -73,7 +73,7 @@ namespace WPFImageWindows
         //    get { return m_bmpFrame; }
         //    set { m_bmpFrame = value; }
         //}
-        private DateTime m_dtTimeStamp;
+        private DateTime m_dtTimeStamp = DateTime.Now;
 
         public DateTime TimeStamp
         {
@@ -252,18 +252,6 @@ namespace WPFImageWindows
                     lock (objRecordingLock)
                     {
 
-                       
-                        //if (frame.FrameType == FrameType.FirstFrame)
-                        //{
-                        //    m_nRecordedFrames = 0;
-                        //    if (Recorder != null)
-                        //    {
-                        //        Recorder.Stop();
-                        //        Recorder = null;
-                        //    }
-
-                        //}
-
                         if ((this.MaxRecordingFrames > 0) && (m_nRecordedFrames >= this.MaxRecordingFrames))
                         {
                             if (Recorder != null)
@@ -284,9 +272,10 @@ namespace WPFImageWindows
                             strName = strName.Replace("?", "");
 
                             LastRecordedFileName = string.Format("{0}/{1}-{2}.mp4", RecordingDirectory, strName, Guid.NewGuid().ToString());
-                            rate = new VideoCaptureRate(frame.Width, frame.Height, 30, 3000000);
+                            rate = new VideoCaptureRate(frame.Width, frame.Height, CurrentFrameRate, 3000000);
                             rate.CompressedFormat = AudioClasses.VideoDataFormat.MP4;
-                            tempRecorder.Start(LastRecordedFileName, rate, DateTime.Now, false);
+                            tempRecorder.Start(LastRecordedFileName, rate, frame.TimeStamp, false);
+                            System.Diagnostics.Debug.WriteLine(string.Format("Starting recording {0}, start time {1}.{2}", LastRecordedFileName, frame.TimeStamp, frame.TimeStamp.Millisecond));
                             Recorder = tempRecorder;
                         }
 
@@ -294,9 +283,11 @@ namespace WPFImageWindows
                         {
                             if ((frame.Width == rate.Width) && (frame.Height == rate.Height) && (frame.FrameBytes != null))
                             {
+
                                 //byte[] bRGB32Data = ImageUtils.Utils.Convert24BitImageTo32BitImage(bRGBData, nWidth, nHeight);
                                 m_nRecordedFrames++;
-                                Recorder.AddVideoFrame(frame.FrameBytes, DateTime.Now);
+                                System.Diagnostics.Debug.WriteLine(string.Format("Adding Frame{0}, time {1}.{2}", m_nRecordedFrames, frame.TimeStamp, frame.TimeStamp.Millisecond));
+                                Recorder.AddVideoFrame(frame.FrameBytes, frame.TimeStamp);
                             }
                             else
                             {
@@ -325,6 +316,22 @@ namespace WPFImageWindows
 
         }
 
+        DateTime m_dtFirstFrameReceived = DateTime.MinValue;
+        int m_nTotalFrames = 0;
+
+        public int CurrentFrameRate
+        {
+            get 
+            {
+                if ((m_dtFirstFrameReceived == DateTime.MinValue) || (m_nTotalFrames == 0))
+                    return 30;
+                TimeSpan tsTotal = DateTime.Now - m_dtFirstFrameReceived;
+                double fFramesPerSec = m_nTotalFrames / tsTotal.TotalSeconds;
+                return (int)fFramesPerSec;
+            }
+            
+        }
+
 
         public int EncodingQueueCount
         {
@@ -337,7 +344,7 @@ namespace WPFImageWindows
         /// The number of frames before motion detection occurred to store to the file
         /// </summary>
         /// 
-        private int m_nPreviousFrames = 60;
+        private int m_nPreviousFrames = 10;
         [DataMember]
         public int PreviousFrames
         {
@@ -345,7 +352,7 @@ namespace WPFImageWindows
             set { m_nPreviousFrames = value; }
         }
 
-        private int m_nSubsequentFrames = 60;
+        private int m_nSubsequentFrames = 20;
 
         /// <summary>
         /// The number of frames after motion detection occurred to store to the file
@@ -389,7 +396,7 @@ namespace WPFImageWindows
         /// <summary>
         /// The maximum number of frames that the encoder will queue before dropping frames
         /// </summary>
-        private int m_nMaxEncodingQueueSize = 20;
+        private int m_nMaxEncodingQueueSize = 60+20;
 
         [DataMember]
         public int MaxEncodingQueueSize
@@ -407,13 +414,6 @@ namespace WPFImageWindows
             set { m_objMotionDetector = value; }
         }
 
-        private int m_nMaxMotionDetectionFramesPerSecond = 5;
-        public int MaxMotionDetectionFramesPerSecond
-        {
-            get { return m_nMaxMotionDetectionFramesPerSecond; }
-            set { m_nMaxMotionDetectionFramesPerSecond = value; }
-        }
-
         private bool m_bShowMotionImages = false;
         public bool ShowMotionImages
         {
@@ -423,10 +423,15 @@ namespace WPFImageWindows
 
         DateTime m_dtLastFrameProcessed = DateTime.MinValue;
 
-   
+
 
         public byte [] SetNewFrame(byte[] bRawData, VideoCaptureRate format, object objSource)
         {
+            if (m_dtFirstFrameReceived == DateTime.MinValue)
+                m_dtFirstFrameReceived = DateTime.Now;
+
+            m_nTotalFrames++;
+
             if (EncodingQueue.Count > MaxEncodingQueueSize)
                 return bRawData; /// Not enough memory or CPU to handle this request
 
@@ -435,17 +440,8 @@ namespace WPFImageWindows
             bool bMotionDetected = false;
             if ((IsRecordingMotion == true) && (MotionDetector != null))
             {
-                TimeSpan tsElapsed = DateTime.Now - m_dtLastFrameProcessed;
-                double fS = tsElapsed.TotalSeconds;
-                if (fS > 0)
-                {
-                    double fFramesPerSecond = 1 / fS;
-                    if (fFramesPerSecond < MaxMotionDetectionFramesPerSecond)
-                    {
-                        bMotionDetected = MotionDetector.Detect(ref bRawData, format.Width, format.Height, ShowMotionImages);
-                        m_dtLastFrameProcessed = DateTime.Now;
-                    }
-                }
+                bMotionDetected = MotionDetector.Detect(ref bRawData, format.Width, format.Height, ShowMotionImages);
+                m_dtLastFrameProcessed = DateTime.Now;
             }
 
             /// 
@@ -488,7 +484,7 @@ namespace WPFImageWindows
             {
                 if (bMotionDetected == true) /// We have motion.  We always record an addtion SubsequentFrames after any motion
                 {
-                    System.Diagnostics.Debug.WriteLine("Got a frame with motion");
+                    System.Diagnostics.Debug.WriteLine(string.Format("Got a frame with motion, Time {0}.{1}", frame.TimeStamp, frame.TimeStamp.Millisecond));
                     m_nFramesLeftToRecord = SubsequentFrames;
                     if (m_bCurrentMotion == false)
                     {

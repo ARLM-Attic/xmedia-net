@@ -64,6 +64,7 @@ namespace USBMotionJpegServer
                 Server.AuthenticationMethod = RTP.AuthenticationMethod.Windows;
             }
 
+            Server.MaxConnections = Properties.Settings.Default.MaxHTTPConnections;
 
             MFVideoCaptureDevice [] Devices = MFVideoCaptureDevice.GetCaptureDevices();
 
@@ -100,9 +101,11 @@ namespace USBMotionJpegServer
                 {
                     if (dev.UniqueName == cam.UniqueName)
                     {
+                        dev.DisplayName = cam.Name;
                         VideoCaptureSource devwithcontrol = new VideoCaptureSource(dev);
                         if (cam.RecordMotion == true)
                         {
+
                             MotionDetection.ContourAreaMotionDetector detector = new MotionDetection.ContourAreaMotionDetector();
                             if ((cam.MaskFileName != null) && (cam.MaskFileName.Length > 0))
                             {
@@ -112,11 +115,15 @@ namespace USBMotionJpegServer
                                 else
                                     System.Diagnostics.EventLog.WriteEntry("USBMotionJpegServer", string.Format("Could not find mask file '{0}' for camera '{1}'", strMaskName, cam.UniqueName), EventLogEntryType.Error);
                             }
-                            if (cam.MaxMotionDetectionFramesPerSecond > 0)
-                                devwithcontrol.RecorderWithMotion.MaxMotionDetectionFramesPerSecond = cam.MaxMotionDetectionFramesPerSecond;
+                            
+                            if (cam.MaxFrameRateServed > 0)
+                                devwithcontrol.DesiredFramesPerSecond = cam.MaxFrameRateServed;
+
+                            detector.ShowText = cam.ShowText;
+                            detector.ContourAreaThreshold = cam.MinimumBlobSizeTriggerMotion;
 
                             devwithcontrol.RecorderWithMotion.MotionDetector = detector;
-                            devwithcontrol.RecorderWithMotion.ShowMotionImages = Properties.Settings.Default.SendMotionFrames;
+                            devwithcontrol.RecorderWithMotion.ShowMotionImages = cam.SendMotionFrames;
                             devwithcontrol.RecorderWithMotion.MotionDetector.Threshold = cam.MotionLevel;
                             devwithcontrol.RecorderWithMotion.IsRecordingMotion = cam.RecordMotion;
 

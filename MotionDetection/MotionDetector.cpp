@@ -21,7 +21,11 @@ MotionDetection::ContourAreaMotionDetector::ContourAreaMotionDetector(void)
 	m_fThreshold = 8.0f;
 	m_fLastMeasuredValue = 0.0f;
 	m_nTriggerTime = 0.0f;
+	m_fContourAreaThreshold = 0.0f;
+	m_fLastMaxContourAreaDetected = 0.0f;
 	m_strFileNameMotionMask = nullptr;
+	m_bShowText = true;
+	cvUseOptimized(1);
 }
 
 
@@ -87,8 +91,9 @@ IplImage* GetThresholdedImageHSV( IplImage* img )
 }  
 
 /// Mask the image...  Source must be a 4 channel 8-bit image, Mask must be a 1 channel 8 bit image
-void MaskImage(IplImage *imgSource, IplImage *imgMask)
+int MaskImage(IplImage *imgSource, IplImage *imgMask)
 {
+	int nWhitePixels = 0;
 	//unsigned char *pSrcA = (unsigned char *) imgSource->imageData;
 	unsigned int *pSrcA = (unsigned int *) imgSource->imageData;
 	unsigned char *pMask = (unsigned char *) imgMask->imageData;
@@ -98,10 +103,13 @@ void MaskImage(IplImage *imgSource, IplImage *imgMask)
 		{
  		    if ((*pMask) == 0)
 				*pSrcA = 0;
+			else
+				nWhitePixels ++;
 			pSrcA++;
 			pMask++;
 		}
 	}
+	return nWhitePixels;
 }
 
 bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%bPixelData, int nWidth, int nHeight, bool bRetMotion)
@@ -143,6 +151,9 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 
 	if (imageAbsDiffFrame == nullptr)
 	{
+
+		m_fSurfaceArea = nWidth * nHeight;
+
 		/// Load our white/black mask of regions of interest
 		if ((m_strFileNameMotionMask != nullptr) && (m_strFileNameMotionMask->Length > 0) )
 		{
@@ -153,20 +164,36 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 
 			if (imageMaskTemp != NULL)
 			{
-				imageMask = cvCreateImage(size, IPL_DEPTH_8U, 1);
-				cvCvtColor(imageMaskTemp, imageMask, CV_RGB2GRAY);
-				ptrMask = System::IntPtr(imageMask);
+				if ((imageMaskTemp->width == nWidth) && (imageMaskTemp->height == nHeight) )
+				{
+
+					imageMask = cvCreateImage(size, IPL_DEPTH_8U, 1);
+					cvCvtColor(imageMaskTemp, imageMask, CV_RGB2GRAY);
+					ptrMask = System::IntPtr(imageMask);
+				}
+				else
+				{
+					Console::WriteLine(String::Format("Mask for motion detector has a different width and height than the camera format, will attempt to scale" ));
+					IplImage *imageResized = cvCreateImage(cvSize(nWidth, nHeight), imageMaskTemp->depth, imageMaskTemp->nChannels);
+					cvResize(imageMaskTemp, imageResized, CV_INTER_LINEAR);
+					imageMask = cvCreateImage(size, IPL_DEPTH_8U, 1);
+					cvCvtColor(imageResized, imageMask, CV_RGB2GRAY);
+					ptrMask = System::IntPtr(imageMask);
+					cvReleaseImage( &imageResized );  
+				}
 				cvReleaseImage( &imageMaskTemp );  
 			}
 		}
 
 		if (imageMask != NULL)
-			MaskImage(curimage, imageMask);
+		{
+			// Mask our image, and get the surface area of the unmasked area so our percentage area calculation only considers the mask
+			m_fSurfaceArea = MaskImage(curimage, imageMask);
+		}
 
 		imageTemp = cvCreateImage(size, IPL_DEPTH_32F, 4);
 		ptrTemp = System::IntPtr(imageTemp);
 
-		m_fSurfaceArea = nWidth * nHeight;
  
 		imageGrayFrame = cvCreateImage(size, IPL_DEPTH_8U, 1);
 		ptrGrayFrame = System::IntPtr(imageGrayFrame);
@@ -188,7 +215,7 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 		if (imageMask != NULL)
 			MaskImage(curimage, imageMask);
 
-		cvRunningAvg(curimage, imageAverageFrame, 0.05, NULL);
+		cvRunningAvg(curimage, imageAverageFrame, 0.05, imageMask);
 	}
 	cvConvert(imageAverageFrame, imagePreviousFrame);
 	cvAbsDiff(curimage, imagePreviousFrame, imageAbsDiffFrame);
@@ -197,8 +224,8 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 	cvCvtColor(imageAbsDiffFrame, imageGrayFrame, CV_RGB2GRAY);
 	cvThreshold(imageGrayFrame, imageGrayFrame, 50, 255, CV_THRESH_BINARY);
 
-	cvDilate(imageGrayFrame, imageGrayFrame, NULL, 15);
-	cvErode(imageGrayFrame, imageGrayFrame, NULL, 10);
+	cvDilate(imageGrayFrame, imageGrayFrame, NULL, 5);
+	cvErode(imageGrayFrame, imageGrayFrame, NULL, 2);
 
 	/*if (bRetMotion == true)
 	{
@@ -207,38 +234,6 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 	}*/
 	
 
-	if (bRetMotion == true)
-	{
-		cvCvtColor(imageGrayFrame, imageAbsDiffFrame, CV_GRAY2RGB);
-		
-		//imageTemp = cvCloneImage(imageAbsDiffFrame);
-		//cvAddWeighted(curimage, 0.5, imageAbsDiffFrame, 0.2, 0.0, imageTemp);
-
-		//memcpy(pPixelData, imageTemp->imageData, bPixelData->Length);
-
-		unsigned char *pSrcA = (unsigned char *) pPixelData;
-		unsigned char *pSrcB = (unsigned char *) imageAbsDiffFrame->imageData;
-		for (int y=0; y<nHeight; y++)
-		{
-			for (int x=0; x<nWidth; x++)
-			{
-				//unsigned char nRedValueSource = *pSrcA;
-				unsigned char nRedValueDiffFrame = *pSrcB;
-				if (nRedValueDiffFrame > 0)
-				{
-					*(pSrcA + 2) |= 0x40;
-					*(pSrcA + 1) &= 0x3F;
-					*(pSrcA + 0) &= 0x3F;
-				}
-
-
-				pSrcA += 4;
-				pSrcB += 4;
-			}
-		}
-
-	}
-
 	CvMemStorage *storage = cvCreateMemStorage(0);
 	CvSeq *countours = NULL;
 	cvFindContours(imageGrayFrame, storage, &countours, 88, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
@@ -246,21 +241,113 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 	m_ptrCurrentCountours = System::IntPtr(countours); // save countours
 
 	m_fCurrentSurfaceArea = 0.0f;
+	double fMaxContourArea = 0.0f;
+
 	while (countours != NULL)
 	{
-		m_fCurrentSurfaceArea += cvContourArea(countours);
+		double fArea = cvContourArea(countours);
+		if (fArea > fMaxContourArea)
+			fMaxContourArea = fArea;
+
+		/// See what largest are object is, only trigger on objects above a certain size
+		if (fArea > m_fContourAreaThreshold)
+		{
+			m_fCurrentSurfaceArea += fArea;
+		}
 		countours = countours->h_next;
+
 	}
 
+	m_fLastMaxContourAreaDetected = (fMaxContourArea*100)/m_fSurfaceArea;
 	m_fLastMeasuredValue = (m_fCurrentSurfaceArea*100)/m_fSurfaceArea;
-    m_fCurrentSurfaceArea = 0;
         
-    if (m_fLastMeasuredValue > m_fThreshold)
+    if ((m_fThreshold > 0) && (m_fLastMeasuredValue > m_fThreshold))
        bRet = true;
+	else if ((ContourAreaThreshold > 0) && (m_fLastMaxContourAreaDetected >= ContourAreaThreshold) )
+	   bRet = true;
     else
        bRet = false;
 
 	cvReleaseMemStorage(&storage);
+
+
+	if (bRetMotion == true)
+	{
+		cvCvtColor(imageGrayFrame, imageAbsDiffFrame, CV_GRAY2RGB);
+		
+		memcpy(pData, pPixelData, bPixelData->Length);
+	
+		//imageTemp = cvCloneImage(imageAbsDiffFrame);
+		//cvAddWeighted(curimage, 0.5, imageAbsDiffFrame, 0.2, 0.0, imageTemp);
+
+		//memcpy(pPixelData, imageTemp->imageData, bPixelData->Length);
+
+		unsigned char *pSrcA = (unsigned char *) pData; //pPixelData;
+		unsigned char *pSrcB = (unsigned char *) imageAbsDiffFrame->imageData;
+		
+		if (bRet == true)
+		{
+			for (int y=0; y<nHeight; y++)
+			{
+				for (int x=0; x<nWidth; x++)
+				{
+					//unsigned char nRedValueSource = *pSrcA;
+					unsigned char nRedValueDiffFrame = *pSrcB;
+					if (nRedValueDiffFrame > 0)
+					{
+						*(pSrcA + 2) |= 0x20;
+						*(pSrcA + 1) &= 0x7F;
+						*(pSrcA + 0) &= 0x7F;
+					}
+
+
+					pSrcA += 4;
+					pSrcB += 4;
+				}
+			}
+		}
+		else
+		{
+			for (int y=0; y<nHeight; y++)
+			{
+				for (int x=0; x<nWidth; x++)
+				{
+					//unsigned char nRedValueSource = *pSrcA;
+					unsigned char nRedValueDiffFrame = *pSrcB;
+					if (nRedValueDiffFrame > 0)
+					{
+						*(pSrcA + 2) &= 0x7F;
+						*(pSrcA + 1) &= 0x7F;
+						*(pSrcA + 0) |= 0x20;
+					}
+
+
+					pSrcA += 4;
+					pSrcB += 4;
+				}
+			}
+
+		}
+
+		if (m_bShowText == true)
+		{
+			System::IntPtr ptrstring = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(StatusString);
+			const char *pText = (const char *)ptrstring.ToPointer();
+
+			CvFont font;
+			cvInitFont(&font, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0);
+
+			//cvRectangle(curimage, cvPoint(0,0), cvPoint(nWidth, 10), CV_RGB(0,0,0), CV_FILLED);
+			cvPutText(curimage, pText, cvPoint(10, 10),  &font, CV_RGB(255,255,255));
+
+			
+
+			System::Runtime::InteropServices::Marshal::FreeHGlobal(ptrstring);
+
+		}
+		
+		memcpy(pPixelData, pData, bPixelData->Length);
+	}
 
 
 	return bRet;

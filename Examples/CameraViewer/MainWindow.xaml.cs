@@ -35,17 +35,18 @@ namespace CameraViewer
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Load();
-            this.CameraList.ItemsSource = Cameras;
-            this.CameraList.DataContext = this;
-        }
-
-        void Load()
-        {
             string strPath = string.Format("{0}\\CameraViewer", Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments));
             if (Directory.Exists(strPath) == false)
                 Directory.CreateDirectory(strPath);
             string strFileName = string.Format("{0}\\cameraconfig.xml", strPath);
+            Load(strFileName);
+            this.CameraList.ItemsSource = Cameras;
+            this.CameraList.DataContext = this;
+        }
+
+        string FileNameLoaded = null;
+        void Load(string strFileName)
+        {
             if (File.Exists(strFileName) == false)
             {
                 MessageBox.Show("No camera config file found, creating default");
@@ -56,6 +57,8 @@ namespace CameraViewer
                 NetworkCameraClientInformation[] cams = NetworkCameraClientInformation.Load(strFileName);
                 if (cams != null)
                 {
+                    Cameras.Clear();
+                    FileNameLoaded = strFileName;
                     foreach (NetworkCameraClientInformation nextcam in cams)
                     {
                         Cameras.Add(new MotionJpegClient(JpegCompressor, nextcam));
@@ -64,18 +67,27 @@ namespace CameraViewer
             }
 
         }
-        void Save()
+        void Save(string strFileName)
         {
-            string strPath = string.Format("{0}\\CameraViewer", Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments));
-            if (Directory.Exists(strPath) == false)
-                Directory.CreateDirectory(strPath);
-            string strFileName = string.Format("{0}\\cameraconfig.xml", strPath);
 
             List<NetworkCameraClientInformation> camerainfo = new List<NetworkCameraClientInformation>();
             foreach (MotionJpegClient client in Cameras)
                 camerainfo.Add(client.NetworkCameraInformation);
 
             NetworkCameraClientInformation.Save(strFileName, camerainfo.ToArray());
+            FileNameLoaded = strFileName;
+        }
+
+        void Save()
+        {
+            if (FileNameLoaded == null)
+            {
+                string strPath = string.Format("{0}\\CameraViewer", Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments));
+                if (Directory.Exists(strPath) == false)
+                    Directory.CreateDirectory(strPath);
+                FileNameLoaded = string.Format("{0}\\cameraconfig.xml", strPath);
+            }
+            Save(FileNameLoaded);
         }
 
         private void ButtonAddCamera_Click(object sender, RoutedEventArgs e)
@@ -295,6 +307,44 @@ namespace CameraViewer
                 return;
             client.TiltDown();
 
+        }
+
+        private void CommandBack_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            this.GridFullVideo.Visibility = System.Windows.Visibility.Collapsed;
+            this.GridFullVideo.DataContext = null;
+            this.ButtonBack.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void CommandOpen_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            dlg.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
+            if (dlg.ShowDialog() == true)
+            {
+                Load(dlg.FileName);
+            }
+
+        }
+
+        private void CommandBack_PreviewCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+
+            if (this.GridFullVideo.DataContext != null)
+                e.CanExecute = true;
+            else
+                e.CanExecute = false;
+
+        }
+
+        private void CommandSave_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
+            if (dlg.ShowDialog() == true)
+            {
+                Save(dlg.FileName);
+            }
         }
     }
 

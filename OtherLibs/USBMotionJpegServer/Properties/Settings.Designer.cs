@@ -112,5 +112,14 @@ namespace USBMotionJpegServer.Properties {
                 return ((bool)(this["SendMotionFrames"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public int MaxHTTPConnections {
+            get {
+                return ((int)(this["MaxHTTPConnections"]));
+            }
+        }
     }
 }

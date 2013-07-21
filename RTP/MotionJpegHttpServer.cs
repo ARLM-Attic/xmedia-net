@@ -81,8 +81,15 @@ namespace RTP
                 return;
 
 
-
-            byte [] bJpeg = JpegCompressor.CompressFrame(bRawData);
+            byte[] bJpeg = null;
+            try
+            {
+                bJpeg = JpegCompressor.CompressFrame(bRawData);
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
             LastImage = bJpeg;
             bRawData = null;
 
@@ -577,6 +584,18 @@ namespace RTP
                                 if (strMove == "down")
                                     Controller.TiltDown();
                             }
+                            if (cont.Request.QueryString["exposure"] != null)  //pan=-180 to 180
+                            {
+                                string strExposure = cont.Request.QueryString["exposure"];
+
+                                try
+                                {
+                                    Controller.SetExposure(Convert.ToInt32(strExposure));
+                                }
+                                catch (Exception ex)
+                                {
+                                }
+                            }
                             if (cont.Request.QueryString["tilt"] != null)  //tilt=-180 to 180
                             {
                               //  double fTilt = Convert.ToDouble(cont.Request.QueryString["tilt"]);
@@ -584,25 +603,52 @@ namespace RTP
                             }
                             if (cont.Request.QueryString["zoom"] != null)  //zoom 1.... 9999
                             {
-                                //double fZoom = Convert.ToDouble(cont.Request.QueryString["zoom"]);
-                                //if (fZoom == 1500) fZoom = 2;
-                                //if (fZoom == -1500) fZoom = 1;
-                                //Controller.Zoom((int)fZoom);
+                                try
+                                {
+                                    double fZoom = Convert.ToDouble(cont.Request.QueryString["zoom"]);
+                                    if (fZoom == 1500) fZoom = 2;
+                                    if (fZoom == -1500) fZoom = 1;
+                                    Controller.Zoom((int)fZoom);
+                                }
+                                catch (Exception ex)
+                                {
+                                }
+
                             }
                             if (cont.Request.QueryString["focus"] != null)  //zoom 1.... 9999
                             {
                                 string strFocus = cont.Request.QueryString["focus"];
 
-                                //double fZoom = Convert.ToDouble(cont.Request.QueryString["zoom"]);
-                                //if (fZoom == 1500) fZoom = 2;
-                                //if (fZoom == -1500) fZoom = 1;
-                                Controller.SetFocus(Convert.ToInt32(strFocus));
+                                try
+                                {
+                                    Controller.SetFocus(Convert.ToInt32(strFocus));
+                                }
+                                catch (Exception ex)
+                                {
+                                }
                             }
                             if (cont.Request.QueryString["record"] != null)  //zoom 1.... 9999
                             {
                                 string strRecord  = cont.Request.QueryString["record"];
 
-                                
+
+                                try
+                                {
+
+                                    bool bRecord = Convert.ToBoolean(strRecord);
+                                    IVideoRecorder RecordController = null;
+                                    if (source.Source is IVideoRecorder)
+                                    {
+                                        RecordController = source.Source as IVideoRecorder;
+                                        if (bRecord == true)
+                                            RecordController.StartRecording();
+                                        else
+                                            RecordController.StopRecording();
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                }
                                 //double fZoom = Convert.ToDouble(cont.Request.QueryString["zoom"]);
                                 //if (fZoom == 1500) fZoom = 2;
                                 //if (fZoom == -1500) fZoom = 1;
@@ -646,13 +692,18 @@ namespace RTP
 
                             if (cont.Request.QueryString["record"] != null)  //zoom 1.... 9999
                             {
-                                bool bRecord = Convert.ToBoolean(cont.Request.QueryString["record"]);
+                                try
+                                {
+                                    bool bRecord = Convert.ToBoolean(cont.Request.QueryString["record"]);
 
-                                if (bRecord == true)
-                                    Controller.StartRecording();
-                                else
-                                    Controller.StopRecording();
-
+                                    if (bRecord == true)
+                                        Controller.StartRecording();
+                                    else
+                                        Controller.StopRecording();
+                                }
+                                catch (Exception ex)
+                                {
+                                }
                                 
 
                             }

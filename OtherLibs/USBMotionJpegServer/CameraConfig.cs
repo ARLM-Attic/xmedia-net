@@ -28,6 +28,14 @@ namespace USBMotionJpegServer
             VideoCaptureRates = rates;
         }
 
+        private bool m_bSendMotionFrames = true;
+        [DataMember]
+        public bool SendMotionFrames
+        {
+            get { return m_bSendMotionFrames; }
+            set { m_bSendMotionFrames = value; }
+        }
+
         private bool m_bRecordMotion = true;
         [DataMember]
         public bool RecordMotion
@@ -42,6 +50,22 @@ namespace USBMotionJpegServer
         {
             get { return m_fMotionLevel; }
             set { m_fMotionLevel = value; }
+        }
+
+        private double m_fMinimumBlobSizeTriggerMotion = 0.0f;
+        [DataMember]
+        public double MinimumBlobSizeTriggerMotion
+        {
+            get { return m_fMinimumBlobSizeTriggerMotion; }
+            set { m_fMinimumBlobSizeTriggerMotion = value; }
+        }
+
+        private bool m_bShowText = false;
+        [DataMember]
+        public bool ShowText
+        {
+            get { return m_bShowText; }
+            set { m_bShowText = value; }
         }
 
         private string m_strUniqueName = "";
@@ -66,14 +90,6 @@ namespace USBMotionJpegServer
         {
             get { return m_strMaskFileName; }
             set { m_strMaskFileName = value; }
-        }
-
-        private int m_nMaxMotionDetectionFramesPerSecond = 5;
-        [DataMember(EmitDefaultValue=true)]
-        public int MaxMotionDetectionFramesPerSecond
-        {
-            get { return m_nMaxMotionDetectionFramesPerSecond; }
-            set { m_nMaxMotionDetectionFramesPerSecond = value; }
         }
 
         private VideoCaptureRate [] m_objVideoCaptureRates = new VideoCaptureRate[]{};

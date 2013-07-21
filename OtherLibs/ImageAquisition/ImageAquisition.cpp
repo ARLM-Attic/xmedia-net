@@ -1578,13 +1578,16 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 	HRESULT hr;
 	
 	IMFAttributes *pAttribute;
-	hr = MFCreateAttributes(&pAttribute, 1);
+	hr = MFCreateAttributes(&pAttribute, 3);
 	if (videoformat->CompressedFormat == VideoDataFormat::MP4)
 	   hr = pAttribute->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_MPEG4);
 	else if ((videoformat->CompressedFormat == VideoDataFormat::WMV9) || (videoformat->CompressedFormat == VideoDataFormat::WMVSCREEN) || (videoformat->CompressedFormat == VideoDataFormat::VC1) )
 	   hr = pAttribute->SetGUID(MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_ASF);
 
 	hr = pAttribute->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, TRUE);
+
+	hr = pAttribute->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, TRUE); /// Set to true so we can flood this with frames at the beginning
+	
 
 
 	IMFSinkWriter   *pSinkWriter = NULL;
@@ -1647,6 +1650,10 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 		hr = MFSetAttributeRatio(pMediaTypeIn, MF_MT_PIXEL_ASPECT_RATIO, 1, 1);   
 		hr = pMediaTypeIn->SetUINT32(MF_MT_DEFAULT_STRIDE, videoformat->Width*4);   
 		hr = pSinkWriter->SetInputMediaType(streamIndexVideo, pMediaTypeIn, NULL);   
+		
+		
+
+
 	}
 
 
@@ -1704,6 +1711,7 @@ bool MFVideoEncoder::Start(String ^strFileName, VideoCaptureRate ^videoformat, D
 	}
 
 
+	m_nFramesRecorded = 0;
 
     // Tell the sink writer to start accepting data.
     if (SUCCEEDED(hr))
@@ -1819,6 +1827,9 @@ void MFVideoEncoder::AddVideoFrame(array<unsigned char> ^RGBData, System::DateTi
     hr = pSample->SetSampleTime(rtStart);
     hr = pSample->SetSampleDuration(rtDuration);
 
+	if (m_nFramesRecorded%10 == 0)
+		hr = pSample->SetUINT32(MFSampleExtension_CleanPoint, 1);   
+
     // Send the sample to the Sink Writer.
     hr = pSinkWriter->WriteSample(StreamIndexVideo, pSample);
 
@@ -1868,6 +1879,7 @@ void MFVideoEncoder::AddAudioFrame(array<unsigned char> ^PCMData48KHz16Bit, Date
     // Create a media sample and add the buffer to the sample.
     hr = MFCreateSample(&pSample);
     hr = pSample->AddBuffer(pBuffer);
+
 
     // Set the time stamp and the duration.
     hr = pSample->SetSampleTime(rtStart);

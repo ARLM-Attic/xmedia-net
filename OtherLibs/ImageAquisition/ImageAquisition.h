@@ -266,6 +266,7 @@ namespace ImageAquisition
 		int StreamIndexAudio;
 		VideoCaptureRate ^VideoFormat;
 		DateTime StartTime;
+		int m_nFramesRecorded;
 
 	};
 

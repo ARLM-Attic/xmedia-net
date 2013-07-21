@@ -37,6 +37,48 @@ public ref class ContourAreaMotionDetector : public AudioClasses::IMotionDetecto
 			}
 		}
 
+		property String ^StatusString
+		{
+			virtual String ^ get()
+			{
+				return String::Format("{0}, Motion: {1}, MaxBlob: {2}", DateTime::Now,  Math::Round(LastMeasuredValue, 2), Math::Round(LastMaxContourAreaDetected, 2));
+			}
+		}
+
+		 
+		///The minimum area for a contour for it to be considered motion - smaller ones are ignored
+		property double ContourAreaThreshold
+		{
+			double get()
+			{
+				return m_fContourAreaThreshold;
+			}
+			void set(double value)
+			{
+				m_fContourAreaThreshold = value;
+			}
+		}
+
+		property double LastMaxContourAreaDetected
+		{
+			double get()
+			{
+				return m_fLastMaxContourAreaDetected;
+			}
+		}
+
+		property bool ShowText
+		{
+			 bool get()
+			{
+				return m_bShowText;
+			}
+			 void set(bool value)
+			 {
+				 m_bShowText = value;
+			 }
+		}
+
 		/// An file of an image the same size as the current capture where white areas are where motion should be detected and black areas should be ignored
 		property System::String ^ FileNameMotionMask
 		{
@@ -65,6 +107,9 @@ public ref class ContourAreaMotionDetector : public AudioClasses::IMotionDetecto
 		double m_fLastMeasuredValue;
 		double m_nTriggerTime;
 
+		double m_fContourAreaThreshold;
+		double m_fLastMaxContourAreaDetected;
+		bool m_bShowText;
 		System::String ^m_strFileNameMotionMask;
 	};
 
