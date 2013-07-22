@@ -67,6 +67,18 @@ public ref class ContourAreaMotionDetector : public AudioClasses::IMotionDetecto
 			}
 		}
 
+		property int MaxAnalyzedFramesPerSecond
+		{
+			int get()
+			{
+				return m_nMaxAnalyzedFramesPerSecond;
+			}
+			void set(int value)
+			{
+				m_nMaxAnalyzedFramesPerSecond = value;
+			}
+		}
+
 		property bool ShowText
 		{
 			 bool get()
@@ -78,6 +90,19 @@ public ref class ContourAreaMotionDetector : public AudioClasses::IMotionDetecto
 				 m_bShowText = value;
 			 }
 		}
+
+		property bool Active
+		{
+			 bool get()
+			{
+				return m_bActive;
+			}
+			 void set(bool value)
+			 {
+				 m_bActive = value;
+			 }
+		}
+
 
 		/// An file of an image the same size as the current capture where white areas are where motion should be detected and black areas should be ignored
 		property System::String ^ FileNameMotionMask
@@ -111,6 +136,11 @@ public ref class ContourAreaMotionDetector : public AudioClasses::IMotionDetecto
 		double m_fLastMaxContourAreaDetected;
 		bool m_bShowText;
 		System::String ^m_strFileNameMotionMask;
+
+		int m_nMaxAnalyzedFramesPerSecond;
+		System::DateTime m_dtLastFrameProcessed;
+
+		bool m_bActive;
 	};
 
 }

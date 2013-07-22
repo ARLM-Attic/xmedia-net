@@ -116,14 +116,23 @@ namespace USBMotionJpegServer
                                     System.Diagnostics.EventLog.WriteEntry("USBMotionJpegServer", string.Format("Could not find mask file '{0}' for camera '{1}'", strMaskName, cam.UniqueName), EventLogEntryType.Error);
                             }
                             
+
                             if (cam.MaxFrameRateServed > 0)
                                 devwithcontrol.DesiredFramesPerSecond = cam.MaxFrameRateServed;
+                            if (cam.MaxFramesAnalyzed > 0)
+                                detector.MaxAnalyzedFramesPerSecond = cam.MaxFramesAnalyzed;
+
+                            detector.Active = cam.DoMotionAnalysis;
 
                             detector.ShowText = cam.ShowText;
                             detector.ContourAreaThreshold = cam.MinimumBlobSizeTriggerMotion;
 
+                            devwithcontrol.RecorderWithMotion.PreviousFrames = cam.PreRecordFrames;
+                            devwithcontrol.RecorderWithMotion.SubsequentFrames = cam.PostRecordFrames;
+                            devwithcontrol.RecorderWithMotion.MaxEncodingQueueSize = cam.MaxEncodingQueueSize;
                             devwithcontrol.RecorderWithMotion.MotionDetector = detector;
-                            devwithcontrol.RecorderWithMotion.ShowMotionImages = cam.SendMotionFrames;
+                            devwithcontrol.RecorderWithMotion.ShowMotionImages = cam.ShowMotionImages;
+                            
                             devwithcontrol.RecorderWithMotion.MotionDetector.Threshold = cam.MotionLevel;
                             devwithcontrol.RecorderWithMotion.IsRecordingMotion = cam.RecordMotion;
 

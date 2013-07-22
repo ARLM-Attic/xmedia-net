@@ -26,6 +26,9 @@ MotionDetection::ContourAreaMotionDetector::ContourAreaMotionDetector(void)
 	m_strFileNameMotionMask = nullptr;
 	m_bShowText = true;
 	cvUseOptimized(1);
+	m_dtLastFrameProcessed = DateTime(System::DateTime::MinValue);
+	m_nMaxAnalyzedFramesPerSecond = 0;
+	m_bActive = true;
 }
 
 
@@ -133,6 +136,21 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 
 	uchar *pData = (uchar *) curimage->imageData;
 
+	/// See if we should do motion detection on this frame, may throttle for performance reasons
+	bool bShouldAnalyze = m_bActive;
+	if ( (MaxAnalyzedFramesPerSecond > 0) && (bShouldAnalyze == true) )
+	{
+		System::TimeSpan tsElapsed = DateTime::Now - m_dtLastFrameProcessed;
+		double fMs = tsElapsed.TotalSeconds;
+		if (fMs > 0)
+		{
+			double fFPS = 1/fMs;
+			if (fFPS >MaxAnalyzedFramesPerSecond)
+				bShouldAnalyze = false;
+		}
+		else
+			bShouldAnalyze = false;
+	}
 
 	/// Copy our array to the image
 	pin_ptr<unsigned char> ppPixelData = &bPixelData[0];
@@ -140,7 +158,8 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 	memcpy(pData, pPixelData, bPixelData->Length);
 
 	/// Blur the image
-	cvSmooth(curimage, curimage);
+	if (bShouldAnalyze == true)
+		cvSmooth(curimage, curimage);
 
 	IplImage *imageAbsDiffFrame = (IplImage *) ptrAbsDiffFrame.ToPointer();
 	IplImage *imageGrayFrame = (IplImage *) ptrGrayFrame.ToPointer();
@@ -210,68 +229,73 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 		cvConvert(curimage, imageAverageFrame);
 		ptrAverageFrame = System::IntPtr(imageAverageFrame);
 	}
-	else
+	else if (bShouldAnalyze == true)
 	{
 		if (imageMask != NULL)
 			MaskImage(curimage, imageMask);
 
 		cvRunningAvg(curimage, imageAverageFrame, 0.05, imageMask);
 	}
-	cvConvert(imageAverageFrame, imagePreviousFrame);
-	cvAbsDiff(curimage, imagePreviousFrame, imageAbsDiffFrame);
 
-
-	cvCvtColor(imageAbsDiffFrame, imageGrayFrame, CV_RGB2GRAY);
-	cvThreshold(imageGrayFrame, imageGrayFrame, 50, 255, CV_THRESH_BINARY);
-
-	cvDilate(imageGrayFrame, imageGrayFrame, NULL, 5);
-	cvErode(imageGrayFrame, imageGrayFrame, NULL, 2);
-
-	/*if (bRetMotion == true)
+	if (bShouldAnalyze == true)
 	{
-		cvCvtColor(imageGrayFrame, imageAbsDiffFrame, CV_GRAY2RGB);
-		memcpy(pPixelData, imageAbsDiffFrame->imageData, bPixelData->Length);
-	}*/
+		cvConvert(imageAverageFrame, imagePreviousFrame);
+		cvAbsDiff(curimage, imagePreviousFrame, imageAbsDiffFrame);
+
+
+		cvCvtColor(imageAbsDiffFrame, imageGrayFrame, CV_RGB2GRAY);
+		cvThreshold(imageGrayFrame, imageGrayFrame, 50, 255, CV_THRESH_BINARY);
+
+		cvDilate(imageGrayFrame, imageGrayFrame, NULL, 5);
+		cvErode(imageGrayFrame, imageGrayFrame, NULL, 2);
+
+		/*if (bRetMotion == true)
+		{
+			cvCvtColor(imageGrayFrame, imageAbsDiffFrame, CV_GRAY2RGB);
+			memcpy(pPixelData, imageAbsDiffFrame->imageData, bPixelData->Length);
+		}*/
 	
 
-	CvMemStorage *storage = cvCreateMemStorage(0);
-	CvSeq *countours = NULL;
-	cvFindContours(imageGrayFrame, storage, &countours, 88, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+		CvMemStorage *storage = cvCreateMemStorage(0);
+		CvSeq *countours = NULL;
+		cvFindContours(imageGrayFrame, storage, &countours, 88, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-	m_ptrCurrentCountours = System::IntPtr(countours); // save countours
+		m_ptrCurrentCountours = System::IntPtr(countours); // save countours
 
-	m_fCurrentSurfaceArea = 0.0f;
-	double fMaxContourArea = 0.0f;
+		m_fCurrentSurfaceArea = 0.0f;
+		double fMaxContourArea = 0.0f;
 
-	while (countours != NULL)
-	{
-		double fArea = cvContourArea(countours);
-		if (fArea > fMaxContourArea)
-			fMaxContourArea = fArea;
-
-		/// See what largest are object is, only trigger on objects above a certain size
-		if (fArea > m_fContourAreaThreshold)
+		while (countours != NULL)
 		{
-			m_fCurrentSurfaceArea += fArea;
-		}
-		countours = countours->h_next;
+			double fArea = cvContourArea(countours);
+			if (fArea > fMaxContourArea)
+				fMaxContourArea = fArea;
 
+			/// See what largest are object is, only trigger on objects above a certain size
+			if (fArea > m_fContourAreaThreshold)
+			{
+				m_fCurrentSurfaceArea += fArea;
+			}
+			countours = countours->h_next;
+
+		}
+
+		m_fLastMaxContourAreaDetected = (fMaxContourArea*100)/m_fSurfaceArea;
+		m_fLastMeasuredValue = (m_fCurrentSurfaceArea*100)/m_fSurfaceArea;
+        
+		if ((m_fThreshold > 0) && (m_fLastMeasuredValue > m_fThreshold))
+			bRet = true;
+		else if ((ContourAreaThreshold > 0) && (m_fLastMaxContourAreaDetected >= ContourAreaThreshold) )
+			bRet = true;
+		else
+			bRet = false;
+
+		cvReleaseMemStorage(&storage);
+
+		m_dtLastFrameProcessed = DateTime::Now;
 	}
 
-	m_fLastMaxContourAreaDetected = (fMaxContourArea*100)/m_fSurfaceArea;
-	m_fLastMeasuredValue = (m_fCurrentSurfaceArea*100)/m_fSurfaceArea;
-        
-    if ((m_fThreshold > 0) && (m_fLastMeasuredValue > m_fThreshold))
-       bRet = true;
-	else if ((ContourAreaThreshold > 0) && (m_fLastMaxContourAreaDetected >= ContourAreaThreshold) )
-	   bRet = true;
-    else
-       bRet = false;
-
-	cvReleaseMemStorage(&storage);
-
-
-	if (bRetMotion == true)
+	if ((bRetMotion == true) && (bShouldAnalyze == true) )
 	{
 		cvCvtColor(imageGrayFrame, imageAbsDiffFrame, CV_GRAY2RGB);
 		
@@ -329,25 +353,23 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 
 		}
 
-		if (m_bShowText == true)
-		{
-			System::IntPtr ptrstring = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(StatusString);
-			const char *pText = (const char *)ptrstring.ToPointer();
-
-			CvFont font;
-			cvInitFont(&font, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0);
-
-			//cvRectangle(curimage, cvPoint(0,0), cvPoint(nWidth, 10), CV_RGB(0,0,0), CV_FILLED);
-			cvPutText(curimage, pText, cvPoint(10, 10),  &font, CV_RGB(255,255,255));
-
-			
-
-			System::Runtime::InteropServices::Marshal::FreeHGlobal(ptrstring);
-
-		}
-		
-		memcpy(pPixelData, pData, bPixelData->Length);
 	}
+
+	if (m_bShowText == true)
+	{
+		System::IntPtr ptrstring = System::Runtime::InteropServices::Marshal::StringToCoTaskMemAnsi(StatusString);
+		const char *pText = (const char *)ptrstring.ToPointer();
+
+		CvFont font;
+		cvInitFont(&font, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0);
+
+		//cvRectangle(curimage, cvPoint(0,0), cvPoint(nWidth, 10), CV_RGB(0,0,0), CV_FILLED);
+		cvPutText(curimage, pText, cvPoint(10, 10),  &font, CV_RGB(255,255,255));
+
+		System::Runtime::InteropServices::Marshal::FreeHGlobal(ptrstring);
+
+	}
+	memcpy(pPixelData, pData, bPixelData->Length);
 
 
 	return bRet;

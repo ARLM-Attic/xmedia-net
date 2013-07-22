@@ -421,7 +421,7 @@ namespace WPFImageWindows
             set { m_bShowMotionImages = value; }
         }
 
-        DateTime m_dtLastFrameProcessed = DateTime.MinValue;
+        
 
 
 
@@ -441,7 +441,7 @@ namespace WPFImageWindows
             if ((IsRecordingMotion == true) && (MotionDetector != null))
             {
                 bMotionDetected = MotionDetector.Detect(ref bRawData, format.Width, format.Height, ShowMotionImages);
-                m_dtLastFrameProcessed = DateTime.Now;
+                
             }
 
             /// 

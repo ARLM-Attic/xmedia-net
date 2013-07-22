@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AudioClasses;
 using System.Runtime.Serialization;
 using ImageAquisition;
+using System.Xml;
 
 namespace USBMotionJpegServer
 {
@@ -28,12 +29,37 @@ namespace USBMotionJpegServer
             VideoCaptureRates = rates;
         }
 
-        private bool m_bSendMotionFrames = true;
-        [DataMember]
-        public bool SendMotionFrames
+        [OnDeserializing]
+        void OnDeserializing(StreamingContext context)
         {
-            get { return m_bSendMotionFrames; }
-            set { m_bSendMotionFrames = value; }
+            this.DoMotionAnalysis = true;
+            this.ShowMotionImages = true;
+            this.RecordMotion = true;
+            this.PreRecordFrames = 30;
+            this.PostRecordFrames = 30;
+            this.MaxEncodingQueueSize = 90;
+            this.MotionLevel = 15.0f;
+            this.MinimumBlobSizeTriggerMotion = 5.0f;
+            this.ShowText = true;
+            this.MaskFileName = "";
+            this.MaxFrameRateServed = 0;
+            this.MaxFramesAnalyzed = 0;
+        }
+
+        private bool m_bDoMotionAnalysis = true;
+        [DataMember]
+        public bool DoMotionAnalysis
+        {
+            get { return m_bDoMotionAnalysis; }
+            set { m_bDoMotionAnalysis = value; }
+        }
+
+        private bool m_bShowMotionImages = true;
+        [DataMember]
+        public bool ShowMotionImages
+        {
+            get { return m_bShowMotionImages; }
+            set { m_bShowMotionImages = value; }
         }
 
         private bool m_bRecordMotion = true;
@@ -42,6 +68,30 @@ namespace USBMotionJpegServer
         {
             get { return m_bRecordMotion; }
             set { m_bRecordMotion = value; }
+        }
+
+        private int m_nPreRecordFrames = 30;
+        [DataMember]
+        public int PreRecordFrames
+        {
+            get { return m_nPreRecordFrames; }
+            set { m_nPreRecordFrames = value; }
+        }
+        
+        private int m_nPostRecordFrames = 30;
+        [DataMember]
+        public int PostRecordFrames
+        {
+            get { return m_nPostRecordFrames; }
+            set { m_nPostRecordFrames = value; }
+        }
+
+        private int m_nMaxEncodingQueueSize = 90;
+        [DataMember]
+        public int MaxEncodingQueueSize
+        {
+            get { return m_nMaxEncodingQueueSize; }
+            set { m_nMaxEncodingQueueSize = value; }
         }
 
         private double m_fMotionLevel = 30.0f;
@@ -84,7 +134,7 @@ namespace USBMotionJpegServer
             set { m_strName = value; }
         }
 
-        private string m_strMaskFileName = null;
+        private string m_strMaskFileName = "";
         [DataMember]
         public string MaskFileName
         {
@@ -100,12 +150,20 @@ namespace USBMotionJpegServer
             set { m_objVideoCaptureRates = value; }
         }
 
-        private int m_nMaxFrameRateServed = -1;
+        private int m_nMaxFrameRateServed = 0;
         [DataMember]
         public int MaxFrameRateServed
         {
             get { return m_nMaxFrameRateServed; }
             set { m_nMaxFrameRateServed = value; }
+        }
+
+        private int m_nMaxFramesAnalyzed = 0;
+        [DataMember]
+        public int MaxFramesAnalyzed
+        {
+            get { return m_nMaxFramesAnalyzed; }
+            set { m_nMaxFramesAnalyzed = value; }
         }
 
         public static void CreateDefault(string strFileName)
@@ -133,9 +191,22 @@ namespace USBMotionJpegServer
         public static void SaveCameras(string strFileName, CameraConfig [] cameras)
         {
             DataContractSerializer serializer = new DataContractSerializer(typeof(CameraConfig[]));
-            System.IO.FileStream stream = new System.IO.FileStream(strFileName, System.IO.FileMode.Create, System.IO.FileAccess.Write);
-            serializer.WriteObject(stream, cameras);
-            stream.Close();
+            //System.IO.FileStream stream = new System.IO.FileStream(strFileName, System.IO.FileMode.Create, System.IO.FileAccess.Write);
+            //serializer.WriteObject(stream, cameras);
+
+            var settings = new XmlWriterSettings()
+            {
+                Indent = true,
+                IndentChars = "\t"
+            };
+
+            using (var writer = XmlWriter.Create(strFileName, settings))
+            {
+                serializer.WriteObject(writer, cameras);
+            }
+
+
+            //stream.Close();
         }
 
 
