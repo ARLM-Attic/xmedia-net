@@ -252,6 +252,9 @@ namespace System.Net.XMPP
     }
 
 
+
+   
+
     [XmlRoot(ElementName = "query", Namespace="http://jabber.org/protocol/disco#info")]
     public class ServiceDiscoveryInfoQuery
     {

@@ -119,8 +119,8 @@ namespace System.Net.XMPP
 
         Dictionary<string, T> ItemIdToObject = new Dictionary<string, T>();
 #if WINDOWS_PHONE
-        private ObservableCollection<T> m_listItems = new ObservableCollection<T>();
-        public ObservableCollection<T> Items
+        private ObservableCollectionEx<T> m_listItems = new ObservableCollectionEx<T>();
+        public ObservableCollectionEx<T> Items
         {
             get { return m_listItems; }
             set { m_listItems = value; }

@@ -92,6 +92,9 @@
     <Reference Include="System.Xml.Serialization" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\XMPPLibrary\Logic\AlertMessage.cs">
+      <Link>Forms\AlertMessage.cs</Link>
+    </Compile>
     <Compile Include="Conversation.cs" />
     <Compile Include="FileTransfer.cs" />
     <Compile Include="Forms\DataForm.cs" />

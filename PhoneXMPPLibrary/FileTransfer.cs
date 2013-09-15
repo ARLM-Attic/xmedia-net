@@ -41,7 +41,19 @@ namespace System.Net.XMPP
         {
             BytesTotal = bData.Length;
             FileName = strFileName;
-            Bytes = bData;
+            //Bytes = bData;
+            DataStream = new MemoryStream(bData);
+            RemoteJID = remotejid;
+            this.FileTransferDirection = System.Net.XMPP.FileTransferDirection.Send;
+            this.FileTransferState = System.Net.XMPP.FileTransferState.WaitingOnUserAccept;
+        }
+
+        public FileTransfer(Stream openstream, string strFileName, JID remotejid)
+        {
+            BytesTotal = (int) openstream.Length;
+            FileName = strFileName;
+            //Bytes = bData;
+            DataStream = openstream;
             RemoteJID = remotejid;
             this.FileTransferDirection = System.Net.XMPP.FileTransferDirection.Send;
             this.FileTransferState = System.Net.XMPP.FileTransferState.WaitingOnUserAccept;
@@ -163,7 +175,19 @@ namespace System.Net.XMPP
         public void Close()
         {
             ByteStreamLogic = null;
-            Bytes = null;
+            if (DataStream != null)
+            {
+                try
+                {
+                    DataStream.Close();
+                    DataStream.Dispose();
+                }
+                catch (Exception)
+                {
+                }
+                DataStream = null;
+            }
+            //Bytes = null;
         }
 
         public static string GetFileNameFromFullString(string strFullFileName)
@@ -198,11 +222,18 @@ namespace System.Net.XMPP
         }
 
 
-        private byte[] m_bBytes = null;
-        public byte[] Bytes
+        //private byte[] m_bBytes = null;
+        //public byte[] Bytes
+        //{
+        //    get { return m_bBytes; }
+        //    set { m_bBytes = value; }
+        //}
+
+        private Stream m_objDataStream = null;
+        public Stream DataStream
         {
-            get { return m_bBytes; }
-            set { m_bBytes = value; }
+            get { return m_objDataStream; }
+            set { m_objDataStream = value; }
         }
 
         private JID m_objRemoteJID = "";
@@ -427,12 +458,21 @@ namespace System.Net.XMPP
         public string SendFile(string strFullFileName, JID jidto)
         {
             string strFileName = FileTransfer.GetFileNameFromFullString(strFullFileName);
-            System.IO.FileStream stream = new FileStream(strFullFileName, FileMode.Open, FileAccess.Read);
-            byte [] bData = new byte[stream.Length];
-            stream.Read(bData, 0, bData.Length);
-            stream.Close();
+            FileStream DataStream = new FileStream(strFullFileName, FileMode.Open, FileAccess.Read);
 
-            FileTransfer trans = new FileTransfer(bData, strFileName, jidto) { FileTransferDirection = FileTransferDirection.Send };
+            FileTransfer trans = new FileTransfer(DataStream, strFileName, jidto) { FileTransferDirection = FileTransferDirection.Send };
+            lock (m_objFileTransferLock)
+            {
+                FileTransfers.Add(trans);
+            }
+
+            XMPPClient.StreamInitiationAndTransferLogic.RequestStartFileTransfer(trans);
+            return trans.sid;
+        }
+
+        public string SendFile(string strFileName, Stream openstream, JID jidto)
+        {
+            FileTransfer trans = new FileTransfer(openstream, strFileName, jidto) { FileTransferDirection = FileTransferDirection.Send };
             lock (m_objFileTransferLock)
             {
                 FileTransfers.Add(trans);

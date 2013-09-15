@@ -12,10 +12,71 @@ using System.Reflection;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using System.Runtime.Serialization;
+using System.ComponentModel;
+using System.Collections.Specialized;
 
 namespace System.Net.XMPP
 {
 #if WINDOWS_PHONE
+    [CollectionDataContract()]
+    public class ObservableCollectionEx<T> : ObservableCollection<T>
+    {
+        protected override void ClearItems()
+        {
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(delegate()
+            {
+                base.ClearItems();
+            });
+        }
+
+        protected override void InsertItem(int index, T item)
+        {
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(delegate()
+            {
+                base.InsertItem(index, item);
+            });
+        }
+
+
+        public void AddNoNotify(T item)
+        {
+           base.InsertItem(this.Count, item);
+        }
+
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(delegate()
+            {
+                base.OnCollectionChanged(e);
+            });
+        }
+
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(delegate()
+            {
+                base.OnPropertyChanged(e);
+            });
+        }
+
+        protected override void RemoveItem(int index)
+        {
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(delegate()
+            {
+                base.RemoveItem(index);
+            });
+        }
+
+        protected override void SetItem(int index, T item)
+        {
+            System.Windows.Deployment.Current.Dispatcher.BeginInvoke(delegate()
+            {
+                base.SetItem(index, item);
+            });
+        }
+
+  
+    }
 #else
    [CollectionDataContract()]
    public class ObservableCollectionEx<T> : ObservableCollection<T>

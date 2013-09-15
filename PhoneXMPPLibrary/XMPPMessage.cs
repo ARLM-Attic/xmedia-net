@@ -653,6 +653,9 @@ namespace System.Net.XMPP
     [XmlRoot(ElementName = "message")]
     public class ChatMessage : Message
     {
+        public ChatMessage()
+        {
+        }
 
         public ChatMessage(string strXML)
             : base(strXML)
@@ -757,6 +760,8 @@ namespace System.Net.XMPP
             set { m_strJID = value; }
         }
 
+        [XmlElement(ElementName = "resource")]
+        public string Resource = null;
      
     }
 

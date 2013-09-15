@@ -17,7 +17,12 @@ namespace System.Net.XMPP
             XMPPClient = client;
         }
 
-        protected XMPPClient XMPPClient = null;
+        protected XMPPClient m_objXMPPClient = null;
+        public XMPPClient XMPPClient
+        {
+            get { return m_objXMPPClient; }
+            set { m_objXMPPClient = value; }
+        }
 
         public virtual void Start()
         {

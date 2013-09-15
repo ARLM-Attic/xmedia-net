@@ -102,6 +102,8 @@ namespace System.Net.XMPP
                                  {
                                      Name = mech.Value,
                                  };
+
+                AuthMethodsSupported = AuthMethod.NotSpecified;
                 foreach (Mechanism mech in Mechanisms)
                 {
                     if (mech.Name == "DIGEST-MD5")
@@ -112,7 +114,7 @@ namespace System.Net.XMPP
                     //    AuthMethodsSupported |= AuthMethod.googletoken;
                 }
 
-                if (AuthMethodsSupported == AuthMethod.NotSpecified)
+                if ( (AuthMethodsSupported == AuthMethod.NotSpecified) && (XMPPClient.XMPPState < XMPPState.Authenticated) )
                     throw new Exception("No acceptable authentication method was supplied");
 
                 var tls = xmlElem.Descendants("{urn:ietf:params:xml:ns:xmpp-tls}starttls");
@@ -257,7 +259,11 @@ namespace System.Net.XMPP
                 AuthMethodUsed = AuthMethod.MD5;
                 XMPPClient.SendRawXML(MD5Auth);
             }
+#if DEBUG
+            else if ((AuthMethodsSupported & AuthMethod.Plain) == AuthMethod.Plain)  /// Allow unsecure plain during debug
+#else
             else if ( ((AuthMethodsSupported & AuthMethod.Plain) == AuthMethod.Plain) && (XMPPClient.UseTLS == true))
+#endif
             {
                 AuthMethodUsed = AuthMethod.Plain;
 

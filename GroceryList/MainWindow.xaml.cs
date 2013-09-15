@@ -113,6 +113,8 @@ namespace GroceryList
                 config.NotifyRetract = true;
                 config.PublishModel = "open";
                 config.PersistItems = true;
+                config.ChildNodes = null;
+                config.Collection = null;
                 config.ItemExpire = "86400";
                 config.Title = "My grocery list";
                 PubSubOperation.CreateNode(XMPPClient, NodeName, null, config);

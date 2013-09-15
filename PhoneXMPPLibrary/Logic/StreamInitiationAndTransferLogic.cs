@@ -636,7 +636,7 @@ namespace System.Net.XMPP
         int nActions = 0;
         IQ InitialIQ = null;
         IQ LastFileDataIQSent = null;
-        ByteBuffer FileBuffer = new ByteBuffer();
+        //ByteBuffer FileBuffer = new ByteBuffer();
         const int nBlockSize = 4096*4;
         int nSequence = 0;
 
@@ -671,11 +671,16 @@ namespace System.Net.XMPP
             if (LastFileDataIQSent == null)
             {
                 FileTransfer.BytesRemaining = FileTransfer.BytesTotal;
-                FileBuffer.AppendData(FileTransfer.Bytes);
+                //FileBuffer.AppendData(FileTransfer.Bytes);
                 nSequence = 0;
             }
+            else
+            {
+                FileTransfer.BytesRemaining = (int) (FileTransfer.DataStream.Length - FileTransfer.DataStream.Position);
+            }
 
-            if (FileBuffer.Size <= 0)
+
+            if (FileTransfer.DataStream.Position >= FileTransfer.DataStream.Length)
             {
                 IQ CloseIQ = new IQ();
                 CloseIQ.From = XMPPClient.JID;
@@ -694,9 +699,11 @@ namespace System.Net.XMPP
                 return;
             }
 
-            int nChunkSize = (FileBuffer.Size > nBlockSize) ? nBlockSize : FileBuffer.Size;
+            int nChunkSize = (FileTransfer.BytesRemaining > nBlockSize) ? nBlockSize : FileTransfer.BytesRemaining;
             FileTransfer.BytesRemaining -= nChunkSize;
-            byte[] bNext = FileBuffer.GetNSamples(nChunkSize);
+            byte [] bNext = new byte[nChunkSize];
+            int nLength = FileTransfer.DataStream.Read(bNext, 0, bNext.Length);
+            //byte[] bNext = FileBuffer.GetNSamples(nChunkSize);
 
             LastFileDataIQSent = new IQ();
             LastFileDataIQSent.From = XMPPClient.JID;
@@ -773,7 +780,8 @@ namespace System.Net.XMPP
 
                         this.FileTransfer.FileTransferState = FileTransferState.Transferring;
 
-                        FileBuffer.GetAllSamples();
+                        string strTemp = Path.GetTempFileName();
+                        FileTransfer.DataStream = new FileStream(strTemp, FileMode.Create, FileAccess.Write|FileAccess.Read, FileShare.Read);
 
                         /// SEnd ack to open
                         /// 
@@ -798,8 +806,7 @@ namespace System.Net.XMPP
                         byte[] bData = Convert.FromBase64String(elem.Value);
 
                         FileTransfer.BytesRemaining -= bData.Length;
-
-                        FileBuffer.AppendData(bData);
+                        FileTransfer.DataStream.Write(bData, 0, bData.Length);
 
                         /// SEnd ack
                         /// 
@@ -815,7 +822,8 @@ namespace System.Net.XMPP
 
                         if (FileTransfer.BytesRemaining <= 0)
                         {
-                            FileTransfer.Bytes = FileBuffer.GetAllSamples();
+                            //FileTransfer.Bytes = FileBuffer.GetAllSamples();
+                            FileTransfer.DataStream.Seek(0, SeekOrigin.Begin);
                             FileTransfer.FileTransferState = FileTransferState.Done;
                             
                             IsCompleted = true;
@@ -961,12 +969,13 @@ namespace System.Net.XMPP
 
                 if (FileTransferManager.UseLocalSOCKS5Server == true)
                 {
-                    if ((FileTransferManager.SOCKS5ByteServerPublicIP != null) && (FileTransferManager.SOCKS5ByteServerPublicIP.Length > 0))
+                    if ((FileTransferManager.SOCKS5ByteServerPublicIP != null) && (FileTransferManager.SOCKS5ByteServerPublicIP.Length > 0) && (FileTransferManager.SOCKS5ByteServerPort > 0))
                     {
                         FileTransferManager.StartSocks5ByteServer();
-                        hosts.Add(new StreamHost() { Host = FileTransferManager.SOCKS5ByteServerPublicIP, Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+                        if (FileTransferManager.SOCKS5ByteServerPort > 0) /// bind may have failed
+                            hosts.Add(new StreamHost() { Host = FileTransferManager.SOCKS5ByteServerPublicIP, Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
                     }
-                    else
+                    else if (FileTransferManager.SOCKS5ByteServerPort > 0)
                     {
                         IPAddress[] addresses = ConnectMgr.FindAddresses();
                         /// Find out which addresses are public, and if they are advertise them.  (If they're private we can stun and use them in Jingle streams sessions, but not here)
@@ -982,7 +991,9 @@ namespace System.Net.XMPP
                                 FileTransferManager.StartSocks5ByteServer();
 
                                 /// Need a port to listen on for this address... needs socks5 server listening
-                                hosts.Add(new StreamHost() { Host = address.ToString(), Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+                                if (FileTransferManager.SOCKS5ByteServerPort > 0) /// bind may have failed
+                                    hosts.Add(new StreamHost() { Host = address.ToString(), Port = FileTransferManager.SOCKS5ByteServerPort.ToString(), Jid = XMPPClient.JID });
+                                break;
                             }
                         }
                     }
@@ -1102,7 +1113,7 @@ namespace System.Net.XMPP
             return false;
         }
 
-
+        public static int SendBufferSize = 16384;
         
         public void SendFileThread(object obj)
         {
@@ -1133,6 +1144,8 @@ namespace System.Net.XMPP
                 if (ConnectSuccesful == true)
                 {
 
+                    client.socket.NoDelay = true;
+                    client.socket.SendBufferSize = SendBufferSize * 4;
                     /// Now we must activate the proxy so we can send
                     /// 
                     EventActivate.Reset();
@@ -1155,20 +1168,19 @@ namespace System.Net.XMPP
                     }
 
 
-                    FileTransfer.BytesRemaining = FileTransfer.Bytes.Length;
+                    FileTransfer.BytesRemaining = (int)FileTransfer.DataStream.Length;
                     FileTransfer.FileTransferState = FileTransferState.Transferring;
 
                     /// Now send all our data
                     /// 
-                    ByteBuffer buffer = new ByteBuffer();
-                    buffer.AppendData(FileTransfer.Bytes);
+                    byte[] bSend = new byte[SendBufferSize];
 
-
-                    while (buffer.Size > 0)
+                    while (FileTransfer.BytesRemaining > 0)
                     {
-                        int nSize = (buffer.Size > 16384) ? 16384 : buffer.Size;
+                        int nSize = (FileTransfer.BytesRemaining > SendBufferSize) ? SendBufferSize : FileTransfer.BytesRemaining;
+                        nSize = FileTransfer.DataStream.Read(bSend, 0, nSize);
                         Sockets.SocketAsyncEventArgs asyncsend = new Sockets.SocketAsyncEventArgs();
-                        asyncsend.SetBuffer(buffer.GetNSamples(nSize), 0, nSize);
+                        asyncsend.SetBuffer(bSend, 0, nSize);
                         asyncsend.Completed += new EventHandler<Sockets.SocketAsyncEventArgs>(asyncsend_Completed);
 
 
@@ -1232,23 +1244,20 @@ namespace System.Net.XMPP
                     }
 
 
-                    FileTransfer.BytesRemaining = FileTransfer.Bytes.Length;
+                    FileTransfer.BytesRemaining = (int) FileTransfer.DataStream.Length;
                     FileTransfer.FileTransferState = FileTransferState.Transferring;
 
                     /// Now send all our data
                     /// 
-                    ByteBuffer buffer = new ByteBuffer();
-                    buffer.AppendData(FileTransfer.Bytes);
-
-
-                    while (buffer.Size > 0)
+                    byte[] bSend = new byte[SendBufferSize];
+                    while (FileTransfer.BytesRemaining > 0)
                     {
-                        int nSize = (buffer.Size > 16384) ? 16384 : buffer.Size;
-                        byte[] bSend = buffer.GetNSamples(nSize);
+                        int nSize = (FileTransfer.BytesRemaining > SendBufferSize) ? SendBufferSize : FileTransfer.BytesRemaining;
+                        nSize = FileTransfer.DataStream.Read(bSend, 0, nSize);
 
                         try
                         {
-                            RemoteSession.Send(bSend);
+                            RemoteSession.Send(bSend, nSize);
                         }
                         catch (Exception ex)
                         {
@@ -1284,10 +1293,10 @@ namespace System.Net.XMPP
         void  asyncsend_Completed(object sender, Sockets.SocketAsyncEventArgs e)
         {
             int nTransferred = e.BytesTransferred;
-            if (nTransferred == e.Buffer.Length)
-                bSendSuccess = true;
-            else
-                bSendSuccess = false;
+            //if (nTransferred == e.Buffer.Length)
+            bSendSuccess = true;
+            //else
+              //  bSendSuccess = false;
  	        SendCompletedEvent.Set();
         }
 
@@ -1327,8 +1336,10 @@ namespace System.Net.XMPP
                 if (ConnectSuccesful == true)
                 {
                     FileTransfer.FileTransferState = FileTransferState.Transferring;
+                    string strTemp = Path.GetTempFileName();
+                    FileTransfer.DataStream = new FileStream(strTemp, FileMode.Create, FileAccess.Write | FileAccess.Read, FileShare.Read);
+
                     client.OnReceiveMessage += new SocketClient.SocketReceiveHandler(client_OnReceiveMessage);
-                    DownloadFileBuffer.GetAllSamples();
 
                     /// connected and negotiated socks5, tell the far end to start sending data
                     /// 
@@ -1367,16 +1378,17 @@ namespace System.Net.XMPP
             XMPPClient.FileTransferManager.FinishActiveFileTransfer(FileTransfer);
         }
 
-        ByteBuffer DownloadFileBuffer = new ByteBuffer();
+        //ByteBuffer DownloadFileBuffer = new ByteBuffer();
         System.Threading.ManualResetEvent EventGotAllData = new Threading.ManualResetEvent(false);
         void client_OnReceiveMessage(SocketClient client, byte[] bData, int nLength)
         {
             FileTransfer.BytesRemaining -= nLength;
-            DownloadFileBuffer.AppendData(bData);
+            //DownloadFileBuffer.AppendData(bData);
+            FileTransfer.DataStream.Write(bData, 0, nLength);
 
-            if (DownloadFileBuffer.Size >= FileTransfer.BytesTotal)
+            if (FileTransfer.BytesRemaining <= 0)
             {
-                FileTransfer.Bytes = DownloadFileBuffer.GetAllSamples();
+                FileTransfer.DataStream.Seek(0, SeekOrigin.Begin);
                 EventGotAllData.Set();
                 FileTransfer.FileTransferState = FileTransferState.Done;
                 IsCompleted = true;

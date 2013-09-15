@@ -73,6 +73,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -198,7 +199,25 @@
     <Compile Include="..\PhoneXMPPLibrary\XMPPXMLNode.cs">
       <Link>XMPPXMLNode.cs</Link>
     </Compile>
+    <Compile Include="Logic\AlertMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\MainStreamLogic.cs" />
+    <Compile Include="Server\AuthenticationMechanismLogic.cs" />
+    <Compile Include="Server\PingLogic.cs" />
+    <Compile Include="Server\ServerPresenceLogic.cs" />
+    <Compile Include="Server\ServerRosterLogic.cs" />
+    <Compile Include="Server\XMPPUserInstance.cs" />
+    <Compile Include="Server\ServerServiceDiscoveryLogic.cs" />
+    <Compile Include="Server\StreamClasses.cs" />
+    <Compile Include="Server\XMPPClientConnection.cs" />
+    <Compile Include="Server\XMPPDomain.cs" />
+    <Compile Include="Server\XMPPPubSubNode.cs" />
+    <Compile Include="Server\XMPPServer.cs" />
+    <Compile Include="Server\XMPPServerConfig.cs" />
+    <Compile Include="Server\XMPPServerLogic.cs" />
+    <Compile Include="Server\XMPPServerStream.cs" />
+    <Compile Include="Server\XMPPUser.cs" />
+    <Compile Include="Server\XMPPUserInstanceList.cs" />
     <Compile Include="Windows\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>

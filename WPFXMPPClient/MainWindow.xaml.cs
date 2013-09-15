@@ -763,7 +763,7 @@ namespace WPFXMPPClient
             /// 
             /// save this file to our directory
             /// 
-            if ( (trans != null) && (trans.Bytes != null) && (trans.Bytes.Length > 0) )
+            if ( (trans != null) && (trans.DataStream != null) && (trans.DataStream.Length > 0) )
             {
                 //string strDir = string.Format("{0}\\XMPPFiles\\", System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal));
                 string strDir = Option.Options.FileTransferDirectory;
@@ -773,7 +773,12 @@ namespace WPFXMPPClient
                 if (File.Exists(strFullFileName) == false)
                 {
                     FileStream stream = new FileStream(strFullFileName, FileMode.Create, FileAccess.Write);
-                    stream.Write(trans.Bytes, 0, trans.Bytes.Length);
+                    byte[] bStreamCopy = new byte[128000];
+                    while (trans.DataStream.Position < trans.DataStream.Length)
+                    {
+                        int nRead = trans.DataStream.Read(bStreamCopy, 0, bStreamCopy.Length);
+                        stream.Write(bStreamCopy, 0, nRead);
+                    }
                     stream.Close();
                     trans.FileName = strFullFileName;
                 } 

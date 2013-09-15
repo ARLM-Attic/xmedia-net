@@ -30,6 +30,7 @@ using System.Net.XMPP.Jingle;
 using AudioClasses;
 using System.Threading;
 using Microsoft.Xna.Framework.Audio;
+using System.IO;
 
 namespace XMPPClient
 {
@@ -435,13 +436,15 @@ namespace XMPPClient
 
         }
 
-        byte [] bStream = null;
+        //byte [] bStream = null;
+        Stream SendStream = null;
         void photoChooserTask_Completed(object sender, PhotoResult e)
         {
             if (e.TaskResult == TaskResult.OK)
             {
-                bStream = new byte[e.ChosenPhoto.Length];
-                e.ChosenPhoto.Read(bStream, 0, bStream.Length);
+                SendStream = e.ChosenPhoto;
+                //bStream = new byte[e.ChosenPhoto.Length];
+                //e.ChosenPhoto.Read(bStream, 0, bStream.Length);
 
                 this.InFileTransferMode = true;
             }
@@ -484,7 +487,7 @@ namespace XMPPClient
         delegate void DelegateSafeStartSendFile(string strName, string strJID);
         void SafeStartSendFile(string strName, string strJID)
         {
-            this.FileTransferSID = App.XMPPClient.FileTransferManager.SendFile(strName, bStream, strJID);
+            this.FileTransferSID = App.XMPPClient.FileTransferManager.SendFile(strName, SendStream, strJID);
         }
 
         void navigateCompleted(object sender, EventArgs e)

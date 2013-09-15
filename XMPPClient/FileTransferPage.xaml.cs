@@ -84,7 +84,7 @@ namespace XMPPClient
             if (trans != null)
             {
                 var library = new MediaLibrary();
-                library.SavePicture(trans.FileName, trans.Bytes);
+                library.SavePicture(trans.FileName, trans.DataStream);
                 MessageBox.Show("File saved to 'Saved Pictures'", "File Saved", MessageBoxButton.OK);
             }
         }

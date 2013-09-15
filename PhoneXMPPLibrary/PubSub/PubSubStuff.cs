@@ -390,7 +390,7 @@ namespace System.Net.XMPP
                 return null;
             }
 
-            IQ IQResponse = connection.SendRecieveIQ(pubsub, 10000);
+            IQ IQResponse = connection.SendRecieveIQ(pubsub, 20000);
 
             if ( (IQResponse == null) || (IQResponse.Type == IQType.error.ToString()) )
             {

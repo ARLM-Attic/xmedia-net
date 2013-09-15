@@ -190,6 +190,36 @@ namespace USBMotionJpegServer
 
         public static void SaveCameras(string strFileName, CameraConfig [] cameras)
         {
+            /// See if there are any new cameras first
+            /// 
+            List<CameraConfig> allcameras = new List<CameraConfig>(cameras);
+            MFVideoCaptureDevice[] Devices = MFVideoCaptureDevice.GetCaptureDevices();
+            foreach (MFVideoCaptureDevice dev in Devices)
+            {
+                bool bFound = false;
+                foreach (CameraConfig camera in cameras)
+                {
+                    if (dev.UniqueName == camera.UniqueName)
+                    {
+                        bFound = true;
+                        break;
+                    }
+                }
+
+                if (bFound == false)
+                {
+                    List<VideoCaptureRate> rates = new List<VideoCaptureRate>();
+                    foreach (VideoCaptureRate rate in dev.VideoFormats)
+                    {
+                        if ((rate.CompressedFormat == VideoDataFormat.MJPEG) || (rate.CompressedFormat == VideoDataFormat.RGB24) || (rate.CompressedFormat == VideoDataFormat.RGB32))
+                            rates.Add(rate);
+                    }
+                    CameraConfig config = new CameraConfig(dev.UniqueName, rates.ToArray());
+                    config.Name = dev.Name;
+                    allcameras.Add(config);
+                }
+            }
+
             DataContractSerializer serializer = new DataContractSerializer(typeof(CameraConfig[]));
             //System.IO.FileStream stream = new System.IO.FileStream(strFileName, System.IO.FileMode.Create, System.IO.FileAccess.Write);
             //serializer.WriteObject(stream, cameras);
@@ -202,7 +232,7 @@ namespace USBMotionJpegServer
 
             using (var writer = XmlWriter.Create(strFileName, settings))
             {
-                serializer.WriteObject(writer, cameras);
+                serializer.WriteObject(writer, allcameras.ToArray());
             }
 
 
