@@ -81,6 +81,19 @@ namespace RTP
                 return;
 
 
+            /// Make a small frame too
+            /// 
+            int nSmallWidth = 240;
+            int nSmallHeight = 160;
+            if (format.Width > 240)
+            {
+                nSmallHeight = (int) ((format.Height*240.0f)/format.Width);
+            }
+
+            if ((nSmallHeight % 2) != 0)
+                nSmallHeight -= 1;
+
+
             byte[] bJpeg = null;
             try
             {
@@ -90,11 +103,23 @@ namespace RTP
             {
                 return;
             }
+
+            byte [] bSmallRawData = bRawData;
+            byte[] bJpegSmall = null;
+
+
             LastImage = bJpeg;
-            bRawData = null;
 
             if (MJPGConnections.Count <= 0)
+            {
+                bRawData = null;
                 return;
+            }
+
+
+
+            bool bHaveCompressedSmallFrame = false;
+
 
 
             HTTPServerConnection[] ActiveConnections = null;
@@ -107,11 +132,32 @@ namespace RTP
             {
                 foreach (HTTPServerConnection con in ActiveConnections)
                 {
-                    con.FrameQueue.Enqueue(bJpeg);
+                    bool bSmallImage = false;
+                    if (con is MotionJpegServerClient)
+                        bSmallImage = ((MotionJpegServerClient)con).PreviewSmallImage;
+
+                    if (bSmallImage == true)
+                    {
+                        if (bHaveCompressedSmallFrame == false)
+                        {
+                            if (nSmallWidth < format.Width)
+                            {
+                                bSmallRawData = JpegCompressor.ResizeFrame(bRawData, format.Width, format.Height, nSmallWidth, nSmallHeight);
+                                if (bSmallRawData != null)
+                                    bJpegSmall = JpegCompressor.CompressFrameWithDimensions(bSmallRawData, nSmallWidth, nSmallHeight);
+                            }
+                            bHaveCompressedSmallFrame = true;
+                        }
+                        if (bJpegSmall != null)
+                            con.FrameQueue.Enqueue(bJpegSmall);
+                    }
+                    else
+                        con.FrameQueue.Enqueue(bJpeg);
                 }
                 bJpeg = null;
             }
 
+            bRawData = null;
 
         }
 
@@ -462,6 +508,10 @@ namespace RTP
                             if (cont.Request.QueryString["fps"] != null)
                                 nMaxFPS = Convert.ToDouble(cont.Request.QueryString["fps"]);
 
+                            bool bSmall = false;
+                            if (cont.Request.QueryString["small"] != null)
+                                bSmall = Convert.ToBoolean(cont.Request.QueryString["small"]);
+
                             /// Find the specified camera - 1 based, not 0 based
                             /// 
                             VideoSourceWithSubscribers source = GetVideoSource(nCamera);
@@ -477,6 +527,7 @@ namespace RTP
                             lock (m_LockMJPEGConnections)
                             {
                                 client = new MotionJpegServerClient(this, source, cont, ConnectionType.MotionJpeg);
+                                client.PreviewSmallImage = bSmall;
                                 client.MaxFramesPerSecond = nMaxFPS;
                                 cont.Response.ContentType = string.Format("multipart/x-mixed-replace;boundary={0}", client.Boundary);
                         

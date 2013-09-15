@@ -17,6 +17,13 @@ using System.Xml.Serialization;
 using System.Runtime.Serialization;
 using System.Collections.ObjectModel;
 
+using System.Net.Security;
+using System.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Authentication;
+
+
 #if !MONO
 using System.Windows.Threading;
 #endif
@@ -144,6 +151,16 @@ namespace System.Net.XMPP.Server
                         OnPresenceStatusChanged(this);
                 }
             }
+        }
+
+        private bool m_bHasRequestRoster = false;
+        /// <summary>
+        ///  Set to true if this client has requested a roster
+        /// </summary>
+        public bool HasRequestRoster
+        {
+            get { return m_bHasRequestRoster; }
+            set { m_bHasRequestRoster = value; }
         }
 
         public bool Authenticate(string strUser, string strPassword)
@@ -296,6 +313,13 @@ namespace System.Net.XMPP.Server
             }
         }
 
+        public void StartTLS(X509Certificate2 certificate)
+        {
+            if (certificate == null)
+                throw new Exception("Certificate is null, Cannot start TLS server");
+            XMPPConnection.StartTLSAsServer(certificate);
+        }
+
         /// <summary>
         /// Adds a logic handler to our list so it will receive IQ and message events
         /// </summary>
@@ -395,11 +419,6 @@ namespace System.Net.XMPP.Server
         }
 
 
-        private XMPPMessageFactory m_objXMPPMessageFactory = new XMPPMessageFactory();
-        public XMPPMessageFactory XMPPMessageFactory
-        {
-            get { return m_objXMPPMessageFactory; }
-        }
 
         internal virtual void NewStream(string strTo, string strFrom, string strId, string strVersion, string strLanguage)
         {
@@ -462,15 +481,15 @@ namespace System.Net.XMPP.Server
                XMPPMessageBase msg = null;
                if (elem.Name == "iq")
                {
-                   msg = XMPPMessageFactory.BuildIQ(elem, stanza.XML);
+                   msg = this.Server.XMPPMessageFactory.BuildIQ(elem, stanza.XML);
                }
                else if (elem.Name == "message")
                {
-                   msg = XMPPMessageFactory.BuildMessage(elem, stanza.XML);
+                   msg = this.Server.XMPPMessageFactory.BuildMessage(elem, stanza.XML);
                }
                else if (elem.Name == "presence")
                {
-                   msg = XMPPMessageFactory.BuildPresence(elem, stanza.XML);
+                   msg = this.Server.XMPPMessageFactory.BuildPresence(elem, stanza.XML);
                    //msg = new PresenceMessage(stanza.XML);
                }
                    /// TODO.. log IQ, MESSAGE or PRESENCE event, maybe have an event handler
@@ -565,7 +584,8 @@ namespace System.Net.XMPP.Server
         protected virtual bool OnPresence(PresenceMessage pres)
         {
             ///Set our presence
-            PresenceStatus = pres.PresenceStatus;
+            if ((pres.Type == null) || (pres.Type.Length <= 0))
+               PresenceStatus = pres.PresenceStatus;
 
             // See if any other services want to handle our presence change 
             bool bHandled = false;

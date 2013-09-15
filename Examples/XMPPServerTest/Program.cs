@@ -10,12 +10,15 @@ namespace XMPPServerTest
 {
     class Program
     {
+        // SSL may fail if not running as an admin... give your user account permissions to the certificate to prevent this
+        // C:\Program Files (x86)\Windows Resource Kits\winhttpcertcfg -g -c LOCAL_MACHINE\My -s MyCertificate -a TESTUSER
         static void Main(string[] args)
         {
 
             XMPPServerConfig config =new XMPPServerConfig();
-            config.AllowTLS = false; /// turn off for debugging
+            config.AllowTLS = true; 
             config.DomainName = "tenfingers.com";
+            config.Certificate = "localhost";
 
             XMPPServer Server = new XMPPServer(config, new ConsoleLogger());
 

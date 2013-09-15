@@ -159,12 +159,13 @@ namespace RTP
             }
         }
 
-        private int m_nMaxWidth = -1;
-        public int MaxWidth
+        private bool m_bPreviewSmallImage = false;
+        public bool PreviewSmallImage
         {
-            get { return m_nMaxWidth; }
-            set { m_nMaxWidth = value; }
+            get { return m_bPreviewSmallImage; }
+            set { m_bPreviewSmallImage = value; }
         }
+       
 
         private double m_nMaxFramesPerSecond = 1;
         public double MaxFramesPerSecond

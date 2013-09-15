@@ -53,6 +53,17 @@ namespace System.Net.XMPP.Server
             set { m_listRoster = value; }
         }
 
+        public rosteritem FindRosterItem(JID barejid)
+        {
+            foreach (rosteritem item in Roster)
+            {
+                if (item.JID == barejid)
+                    return item;
+            }
+
+            return null;
+        }
+
         public bool AuthenticateUser(string strPassword)
         {
             if (Password == strPassword)
@@ -184,6 +195,14 @@ namespace System.Net.XMPP.Server
             XMPPUser user = FindUser(fulljid.User);
             if (user != null)
                 return user.UserInstances.FindUserInstance(fulljid.Resource);
+            return null;
+        }
+
+        public XMPPUserInstance FindBestUserInstance(JID fulljid)
+        {
+            XMPPUser user = FindUser(fulljid.User);
+            if (user != null)
+                return user.UserInstances.FindHighestPriorityUserInstance(fulljid.Resource);
             return null;
         }
 

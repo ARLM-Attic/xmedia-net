@@ -48,8 +48,7 @@ namespace System.Net.XMPP.Server
 
             /// Add parsing of Bind and Session IQ's
             /// 
-            if (UserInstance != null)
-                UserInstance.XMPPMessageFactory.AddMessageBuilder(this);
+            XMPPServer.XMPPMessageFactory.AddMessageBuilder(this);
         }
 
         public List<AuthenticationMechanismLogic> AuthenticationMethods = new List<AuthenticationMechanismLogic>();
@@ -117,6 +116,7 @@ namespace System.Net.XMPP.Server
 
                     /// TODO.. Tell server to start TLS
                     UserInstance.SendRawXML("<proceed xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>");
+                    UserInstance.StartTLS(XMPPServer.ServerCertificate);
                     sf.starttls = null;
                 }
                 else if (xmlElem.Name == "{urn:ietf:params:xml:ns:xmpp-sasl}auth")

@@ -81,9 +81,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MotionDetector.h" />
+    <ClInclude Include="OpenCVVideoSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MotionDetector.cpp" />
+    <ClCompile Include="OpenCVVideoSource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OtherLibs\AudioClasses\AudioClasses.csproj">

@@ -83,11 +83,14 @@ namespace System.Net.XMPP.Server
             else
             {
                 this.IsCompleted = true;
-                UserInstance.SendRawXML("<failure xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>\r\n");
+                UserInstance.SendRawXML("<failure xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><not-authorized /></failure>\r\n");
             }
 
             return true;
                
         }
     }
+
+
+
 }

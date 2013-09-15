@@ -18,9 +18,15 @@
     <ClInclude Include="MotionDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OpenCVVideoSource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MotionDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCVVideoSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -124,6 +124,20 @@ namespace xmedianet.socketserver
             return true;
         }
 
+        public bool StartTLSAsServer(System.Security.Cryptography.X509Certificates.X509Certificate2 serverCertificate)
+        {
+            if (Connected == false)
+                return false;
+
+
+            SslStream = new SslStream(NetworkStream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), new LocalCertificateSelectionCallback(LocalCertificateCallback), EncryptionPolicy.RequireEncryption);
+            SslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, false);
+            SslStream.ReadTimeout = 5000;
+            SslStream.WriteTimeout = 5000;
+
+            return true;
+        }
+
         public static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)
@@ -134,6 +148,11 @@ namespace xmedianet.socketserver
             return true;
             // Do not allow this client to communicate with unauthenticated servers.
             //return false;
+        }
+        public static X509Certificate LocalCertificateCallback(object sender,  string strSomething, X509CertificateCollection col,  X509Certificate cert, string [] saArray)
+        {
+
+            return col[0];
         }
 
 

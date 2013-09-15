@@ -48,9 +48,18 @@ namespace WPFImageWindows
 
         #region IVideoCompressor Members
 
+        
         public byte[] CompressFrame(byte[] bUncompressedFrame)
         {
+            return CompressFrameWithDimensions(bUncompressedFrame, Width, Height);
+        }
+
+        public byte[] CompressFrameWithDimensions(byte[] bUncompressedFrame, int nWidth, int nHeight)
+        {
             BitmapEncoder objImageEncoder = null;
+            int nBytesPerPixel = PixelFormat.BitsPerPixel / 8;
+            int nRowLengthBytes = nWidth * nBytesPerPixel;
+
             if (VideoDataFormat.CompressedFormat == AudioClasses.VideoDataFormat.MPNG)
                 objImageEncoder = new PngBitmapEncoder();
             else
@@ -61,7 +70,7 @@ namespace WPFImageWindows
             byte[] bCompressedStream = null;
             try
             {
-                BitmapSource source = BitmapFrame.Create(Width, Height, 96.0f, 96.0f, PixelFormat, null, bUncompressedFrame, RowLengthBytes);
+                BitmapSource source = BitmapFrame.Create(nWidth, nHeight, 96.0f, 96.0f, PixelFormat, null, bUncompressedFrame, nRowLengthBytes);
                 BitmapFrame frame = BitmapFrame.Create(source);
                 frame.Freeze();
                 objImageEncoder.Frames.Add(frame);
@@ -94,7 +103,7 @@ namespace WPFImageWindows
             }
             catch (Exception ex)
             {
-                string strError = string.Format("Error encoding jpeg/png of width {0}, height {1}, rowlength {2}, bytes in {3}, error {4}", Width, Height, RowLengthBytes, bUncompressedFrame.Length, ex.Message);
+                string strError = string.Format("Error encoding jpeg/png of width {0}, height {1}, rowlength {2}, bytes in {3}, error {4}", nWidth, nHeight, RowLengthBytes, bUncompressedFrame.Length, ex.Message);
                 System.Diagnostics.EventLog.WriteEntry("xmedianet", strError, System.Diagnostics.EventLogEntryType.Error);
                 throw new Exception(strError, ex);
             }
@@ -153,6 +162,36 @@ namespace WPFImageWindows
                 //return new ImageWithPosition((int)frame.PixelWidth, (int)frame.PixelHeight, bRGBData);
             }
             return null;
+        }
+
+        public byte[] ResizeFrame(byte[] bUncompressedFrame, int nWidth, int nHeight, int nNewWidth, int nNewHeight)
+        {
+            try
+            {
+                int nBytesPerPixel = PixelFormat.BitsPerPixel/8;
+                int nRowLengthBytes = nWidth * nBytesPerPixel;
+                BitmapSource source = BitmapFrame.Create(nWidth, nHeight, 96.0f, 96.0f, PixelFormat, null, bUncompressedFrame, nRowLengthBytes);
+
+                BitmapSource transbmp = new TransformedBitmap();
+                ((TransformedBitmap)transbmp).BeginInit();
+                ((TransformedBitmap)transbmp).Source = source;
+                double fXScale = (double)nNewWidth / (double)nWidth;
+                double fYScale = (double)nNewHeight / (double)nHeight;
+                ((TransformedBitmap)transbmp).Transform = new ScaleTransform(fXScale, fYScale);
+                ((TransformedBitmap)transbmp).EndInit();
+
+
+                byte[] DestPixels = new byte[nBytesPerPixel * nNewWidth * nNewHeight];
+                transbmp.CopyPixels(DestPixels, nBytesPerPixel * nNewWidth, 0);
+
+                return DestPixels;
+
+            }
+            catch (Exception ex)
+            {
+                string strError = string.Format("Error resizing jpeg/png of width {0}, height {1}, rowlength {2}, bytes in {3}, error {4}", nWidth, nHeight, RowLengthBytes, bUncompressedFrame.Length, ex.Message);
+                throw new Exception(strError, ex);
+            }
         }
 
         #endregion

@@ -22,6 +22,11 @@ namespace USBMotionJpegServer
                 while (true)
                 {
                     string strLine = Console.ReadLine();
+                    if (strLine == null)
+                    {
+                        System.Threading.Thread.Sleep(1000);
+                        continue;
+                    }
                     if (string.Compare(strLine.Trim(), "Exit", true) == 0)
                         break;
                 }

@@ -5,6 +5,11 @@ using System.Text;
 
 using System.Net;
 using System.Net.Sockets;
+using System.Net.Security;
+using System.Security;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Authentication;
 
 using xmedianet.socketserver;
 
@@ -34,8 +39,33 @@ namespace System.Net.XMPP.Server
             Domain.AddServiceLogic(new ServerServiceDiscoveryLogic(this, null));
             Domain.AddServiceLogic(new ServerRosterLogic(this, null));
             Domain.AddServiceLogic(new ServerPingLogic(this, null));
-
+            Domain.AddServiceLogic(new ServerRegisterLogic(this, null));
+            Domain.AddServiceLogic(new ServerPresenceLogic(this, null)); /// Also added to each instance to monitor changes in presence status in addition to domain logic
             Domain.AddServiceLogic(new DomainPubSubLogic(this));
+
+            /// Load our certificate if we have one
+            if ((XMPPServerConfig.Certificate != null) && (XMPPServerConfig.Certificate.Length > 0))
+            {
+                X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+                store.Open(OpenFlags.ReadOnly);
+                ServerCertificate = store.Certificates.Find(X509FindType.FindBySubjectName, XMPPServerConfig.Certificate, false)[0];
+
+                //byte[] bPublicKey = ServerCertificate.GetPublicKey();
+                //RSAParameters rsaparams = Kishore.X509.Parser.X509PublicKeyParser.GetRSAPublicKeyParameters(bPublicKey);
+            }
+        }
+
+        private XMPPMessageFactory m_objXMPPMessageFactory = new XMPPMessageFactory();
+        public XMPPMessageFactory XMPPMessageFactory
+        {
+            get { return m_objXMPPMessageFactory; }
+        }
+
+        private X509Certificate2 m_objServerCertificate = null;
+        public X509Certificate2 ServerCertificate
+        {
+            get { return m_objServerCertificate; }
+            protected set { m_objServerCertificate = value; }
         }
 
         public List<AuthenticationMechanismLogic> AuthenticationMethods = new List<AuthenticationMechanismLogic>();

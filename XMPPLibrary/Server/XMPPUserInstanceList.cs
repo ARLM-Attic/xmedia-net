@@ -41,6 +41,9 @@ namespace System.Net.XMPP.Server
             {
                 foreach (XMPPUserInstance ins in m_dicUserInstances.Values)
                 {
+                    if (ins.PresenceStatus.PresenceType == PresenceType.unavailable)
+                        continue;
+
                     if (Bestest == null)
                         Bestest = ins;
                     else if (Bestest.Priority < ins.Priority)

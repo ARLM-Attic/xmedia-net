@@ -289,8 +289,10 @@ namespace AudioClasses
     public interface IVideoCompressor
     {
         byte[] CompressFrame(byte[] bUncompressedFrame);
+        byte[] CompressFrameWithDimensions(byte[] bUncompressedFrame, int nWidth, int nHeight);
         byte[] DecompressFrame(byte[] bCompressedFrame);
         byte[] DecompressFrameWithDimensions(byte[] bCompressedFrame, out int nWidth, out int nHeight, out int nBytesPerPixel);
+        byte[] ResizeFrame(byte[] bUncompressedFrame, int nWidth, int nHeight, int nNewWidth, int nNewHeight);
         
     }
 
