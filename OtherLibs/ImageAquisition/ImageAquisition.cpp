@@ -726,7 +726,7 @@ void MFVideoCaptureDevice::Load()
 						if (bHas == false)
 						   VideoFormats->Add(format);
 					}
-					else if ( (type->subtype == MFVideoFormat_YUY2) || (type->subtype == MFVideoFormat_RGB24) || (type->subtype == MFVideoFormat_RGB32))
+					else if ( (type->subtype == MFVideoFormat_YUY2) || (type->subtype == MFVideoFormat_RGB24) || (type->subtype == MFVideoFormat_RGB32) || (type->subtype == MFVideoFormat_NV12))
 					{
 						format->CompressedFormat = VideoDataFormat::RGB32;
 						bool bHas = false;
@@ -976,7 +976,7 @@ void MFVideoCaptureDevice::OurCaptureThread()
 
 						break;
 					}
-					else if (  ((type->subtype == MFVideoFormat_YUY2) || (type->subtype == MFVideoFormat_RGB24) || (type->subtype == MFVideoFormat_RGB32))  && (ActiveVideoFormat->CompressedFormat == VideoDataFormat::RGB32) )
+					else if (  ( (type->subtype == MFVideoFormat_NV12) || (type->subtype == MFVideoFormat_YUY2) || (type->subtype == MFVideoFormat_RGB24) || (type->subtype == MFVideoFormat_RGB32))  && (ActiveVideoFormat->CompressedFormat == VideoDataFormat::RGB32) )
 					{
 						GUID majorType, subtype;
 						LogMediaType(pNativeType);

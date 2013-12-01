@@ -604,6 +604,13 @@ void NarrowBandMic::ReadMicEchoCancellationFunction()
 	CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_FEATR_AGC, pvAGC));
 	PropVariantClear(&pvAGC);
 
+	PROPVARIANT pvMicGain;
+	PropVariantInit(&pvMicGain);
+	pvMicGain.vt = VT_BOOL;
+	pvMicGain.boolVal = VARIANT_FALSE;
+	CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_MIC_GAIN_BOUNDER, pvMicGain));
+	PropVariantClear(&pvMicGain);
+
 	///// Added... Noise supression, default is true
 	//PROPVARIANT pvNoise;
 	//PropVariantInit(&pvNoise);
