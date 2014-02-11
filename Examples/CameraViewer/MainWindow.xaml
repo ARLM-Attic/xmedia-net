@@ -3,40 +3,67 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:video="clr-namespace:WPFImageWindows;assembly=WPFImageWindows"
         xmlns:local="clr-namespace:CameraViewer"
-        Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
-  
+        Title="Motion JPEG Video Viewer" Height="545" Width="804" Loaded="Window_Loaded">
+
     <Window.Resources>
         <local:VisibilityConverter  x:Key="boolconvert" />
         <local:NotVisibilityConverter  x:Key="notboolconvert" />
     </Window.Resources>
-    
+
     <Window.CommandBindings>
         <CommandBinding x:Name="CommandBack"  Command="BrowseBack" Executed="CommandBack_Executed" PreviewCanExecute="CommandBack_PreviewCanExecute"/>
         <CommandBinding x:Name="CommandOpen"  Command="Open"  Executed="CommandOpen_Executed"/>
         <CommandBinding x:Name="CommandSave"  Command="Save"  Executed="CommandSave_Executed"/>
     </Window.CommandBindings>
-  
+
     <Grid x:Name="MainGrid" SizeChanged="MainGrid_SizeChanged">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="319*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="180*" />
         </Grid.RowDefinitions>
 
-        <StackPanel x:Name="StackPanelToolBar" HorizontalAlignment="Left" Orientation="Horizontal">
+        <StackPanel x:Name="StackPanelToolBar" HorizontalAlignment="Left" Orientation="Horizontal" Grid.ColumnSpan="2">
             <Button x:Name="ButtonAddCamera" Click="ButtonAddCamera_Click">
                 <Image Width="30" Height="30" Margin="5" Source="Images/add.png" />
+            </Button>
+            <Button x:Name="ButtonOpen" Command="Open">
+                <Image Width="30" Height="30" Margin="5" Source="Images/open.png" />
+            </Button>
+            <Button x:Name="ButtonSave" Command="Save">
+                <Image Width="30" Height="30" Margin="5" Source="Images/save.png" />
             </Button>
             <Button x:Name="ButtonBack" Click="ButtonBack_Click" Visibility="Hidden" Command="">
                 <Image Width="30" Height="30" Margin="5" Source="Images/player - skipbackwards.png"/>
             </Button>
         </StackPanel>
+
+
+        <ListView Grid.Row="1" x:Name="CameraQuickList" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid x:Name="GridHost">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox Background="{x:Null}" Foreground="Black"  Height="50" Content="{Binding Name}" IsChecked="{Binding Visible}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+        </ListView>
         
-        <ListBox Grid.Row="1" x:Name="CameraList" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <GridSplitter  Grid.Column="0" Grid.Row="1" Grid.RowSpan="1" HorizontalAlignment="Right" ResizeDirection="Columns" Width="5" />
+
+        <ListBox Grid.Row="1" x:Name="CameraList" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid x:Name="GridHost" Width="{Binding Path=ItemWidth}" Height="{Binding Path=ItemHeight}">
-                        <video:VideoControl ShowOnlyCleanFrame="True"  HorizontalAlignment="Stretch" OnOpenVideo="VideoControl_OnOpenVideo" MouseDoubleClick="VideoControl_MouseDoubleClick"  VerticalAlignment="Stretch"/>
-                        <Border x:Name="border" Height="36" Background="#00FFFFFF" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5">
+                    <Grid x:Name="GridHost" Width="{Binding Path=ItemWidth}" Height="{Binding Path=ItemHeight}"  Visibility="{Binding Path=Visible, Converter={StaticResource boolconvert}}" >
+                        <video:VideoControl ShowOnlyCleanFrame="True"  HorizontalAlignment="Stretch" OnOpenVideo="VideoControl_OnOpenVideo" 
+                                            MouseDoubleClick="VideoControl_MouseDoubleClick"  VerticalAlignment="Stretch" />
+                        <Border x:Name="border" Height="50" Background="#00FFFFFF" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5">
                             <Border.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform/>
@@ -47,23 +74,23 @@
                             </Border.RenderTransform>
                         </Border>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom"  HorizontalAlignment="Center" >
-                            <Label Background="{x:Null}" Foreground="White"  Height="30" Content="{Binding Name}" />
+                            <Label Background="{x:Null}" Foreground="White"  Height="50" Content="{Binding Name}" />
                             <ToggleButton Style="{StaticResource ToggleButtonSurface}"  IsChecked="{Binding CameraActive}"
-                                    Width="30" Height="30" Margin="5" ToolTip="Activate the camera" x:Name="ButtonActivateCamera" >
+                                    Width="24" Height="48" Margin="5" ToolTip="Activate the camera" x:Name="ButtonActivateCamera" >
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Image Width="20" Height="20" Source="Images/play.png" Visibility="{Binding Path=CameraActive, Converter={StaticResource notboolconvert}}" />
-                                    <Image Width="20" Height="20" Source="Images/Stop.png" Visibility="{Binding Path=CameraActive, Converter={StaticResource boolconvert}}"/>
+                                    <Image Width="24" Height="24" Source="Images/play.png" Visibility="{Binding Path=CameraActive, Converter={StaticResource notboolconvert}}" />
+                                    <Image Width="24" Height="24" Source="Images/Stop.png" Visibility="{Binding Path=CameraActive, Converter={StaticResource boolconvert}}"/>
                                 </StackPanel>
                             </ToggleButton>
                             <Button Style="{StaticResource ButtonSurface}" x:Name="ButtonEditCamera" Width="30" Margin="5" Height="30" ToolTip="Edit this camera" Click="ButtonEditCamera_Click">
-                                <Image Width="20" Height="20" Source="Images/add.png" />
+                                <Image Width="24" Height="24" Source="Images/add.png" />
                             </Button>
 
                             <ToggleButton Style="{StaticResource ToggleButtonSurface}"  IsChecked="{Binding Recording}"
-                                    Width="30" Height="30" Margin="5" ToolTip="Record Video" >
+                                    Width="24" Height="48" Margin="5" ToolTip="Record Video" >
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <Image Width="20" Height="20" Source="Images/mic-live.png" Visibility="{Binding Path=Recording, Converter={StaticResource notboolconvert}}" />
-                                    <Image Width="20" Height="20" Source="Images/mic-muted.png" Visibility="{Binding Path=Recording, Converter={StaticResource boolconvert}}"/>
+                                    <Image Width="24" Height="24" Source="Images/mic-live.png" Visibility="{Binding Path=Recording, Converter={StaticResource notboolconvert}}" />
+                                    <Image Width="24" Height="24" Source="Images/mic-muted.png" Visibility="{Binding Path=Recording, Converter={StaticResource boolconvert}}"/>
                                 </StackPanel>
                             </ToggleButton>
                             <!--<Button Style="{StaticResource ButtonSurface}" x:Name="ButtonRecord" Margin="5" Width="30" Height="30" ToolTip="Record Video" Click="ButtonRecord_Click">
@@ -73,29 +100,38 @@
 
                         <Grid HorizontalAlignment="Left" VerticalAlignment="Center">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="20" />
-                                <RowDefinition Height="20" />
-                                <RowDefinition Height="20" />
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="5" />
+                                <RowDefinition Height="30" />
+                                <RowDefinition Height="5" />
+                                <RowDefinition Height="30" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="5" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="5" />
+                                <ColumnDefinition Width="30" />
                             </Grid.ColumnDefinitions>
-                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="1" Grid.Column="0" x:Name="ButtonPanLeft" ToolTip="Pan Left" Click="ButtonPanLeft_Click">
-                                <Image Width="20" Height="20" Source="Images/player - skipbackwards.png" />
+                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="2" Grid.Column="0" x:Name="ButtonPanLeft" ToolTip="Pan Left" Click="ButtonPanLeft_Click">
+                                <Image Width="24" Height="24" Source="Images/player - skipbackwards.png" />
                             </Button>
 
-                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="1" Grid.Column="2" x:Name="ButtonPanRight" ToolTip="Pan Right" Click="ButtonPanRight_Click">
-                                <Image Width="20" Height="20" Source="Images/player - skipforward.png" />
+                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="2" Grid.Column="4" x:Name="ButtonPanRight" ToolTip="Pan Right" Click="ButtonPanRight_Click">
+                                <Image Width="24" Height="24" Source="Images/player - skipforward.png" />
                             </Button>
-                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="0" Grid.Column="1" x:Name="ButtonPanUp" ToolTip="Pan Up" Click="ButtonPanUp_Click">
-                                <Image Width="20" Height="20" Source="Images/up.png" />
+                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="0" Grid.Column="2" x:Name="ButtonPanUp" ToolTip="Pan Up" Click="ButtonPanUp_Click">
+                                <Image Width="24" Height="24" Source="Images/up.png" />
                             </Button>
 
-                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="2" Grid.Column="1" x:Name="ButtonPanDown" ToolTip="Pan Down" Click="ButtonPanDown_Click">
-                                <Image Width="20" Height="20" Source="Images/down.png" />
+                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="4" Grid.Column="2" x:Name="ButtonPanDown" ToolTip="Pan Down" Click="ButtonPanDown_Click">
+                                <Image Width="24" Height="24" Source="Images/down.png" />
                             </Button>
+
+                            <Button Style="{StaticResource ButtonSurface}" Grid.Row="2" Grid.Column="2" x:Name="ButtonBig" ToolTip="Make BIG" Click="ButtonBig_Click">
+                                <Image Width="24" Height="24" Source="Images/add.png" />
+                            </Button>
+
                         </Grid>
 
                         <Label HorizontalAlignment="Stretch" VerticalAlignment="Top" Content="{Binding StatusString}" />
@@ -112,7 +148,7 @@
             </ListBox.ItemsPanel>
         </ListBox>
 
-        <Grid Visibility="Collapsed"  x:Name="GridFullVideo" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid Visibility="Collapsed"  x:Name="GridFullVideo" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1">
             <video:VideoControl x:Name="FullVideo"  ShowOnlyCleanFrame="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 
             <ToggleButton Style="{StaticResource ToggleButtonSurface}"  IsChecked="{Binding Recording}"

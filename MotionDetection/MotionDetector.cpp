@@ -29,6 +29,7 @@ MotionDetection::ContourAreaMotionDetector::ContourAreaMotionDetector(void)
 	m_dtLastFrameProcessed = DateTime(System::DateTime::MinValue);
 	m_nMaxAnalyzedFramesPerSecond = 0;
 	m_bActive = true;
+	m_bMotionActive = false;
 }
 
 
@@ -371,6 +372,13 @@ bool MotionDetection::ContourAreaMotionDetector::Detect(array<unsigned char> ^%b
 	}
 	memcpy(pPixelData, pData, bPixelData->Length);
 
+	if ((bRet == true) && (m_bMotionActive == false) )
+	{
+		m_bMotionActive = true;
+		FireMotion();
+	}
+	else if ( (bRet == false) && (bShouldAnalyze == true) )
+		m_bMotionActive = false;
 
 	return bRet;
 }

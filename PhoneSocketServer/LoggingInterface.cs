@@ -37,4 +37,60 @@ namespace xmedianet.socketserver
       void ClearLog();
    }
 
+   public class ConsoleLogClient : ILogInterface
+   {
+       public ConsoleLogClient()
+       {
+       }
+
+       public void ClearLog()
+       {
+
+       }
+
+       public void LogError(string strGuid, MessageImportance importance, string strMessage, params object[] msgparams)
+       {
+           Console.WriteLine(strMessage, msgparams);
+       }
+
+       public void LogError(string strCateogry, string strGuid, MessageImportance importance, string strMessage, params object[] msgparams)
+       {
+           Console.WriteLine(strMessage, msgparams);
+       }
+
+       public void LogMessage(string strGuid, MessageImportance importance, string strMessage, params object[] msgparams)
+       {
+           Console.WriteLine(strMessage, msgparams);
+       }
+
+       public void LogMessage(string strcategory, string strGuid, MessageImportance importance, string strMessage, params object[] msgparams)
+       {
+           Console.WriteLine(strMessage, msgparams);
+       }
+
+
+       public void LogWarning(string strGuid, MessageImportance importance, string strMessage, params object[] msgparams)
+       {
+           Console.WriteLine(strMessage, msgparams);
+       }
+
+       public void LogWarning(string strCateogry, string strGuid, MessageImportance importance, string strMessage, params object[] msgparams)
+       {
+           Console.WriteLine(strMessage, msgparams);
+       }
+
+       public MessageImportance MinimumImportance
+       {
+           get
+           {
+               return MessageImportance.Lowest;
+           }
+           set
+           {
+           }
+       }
+   }
+
+
+
 }

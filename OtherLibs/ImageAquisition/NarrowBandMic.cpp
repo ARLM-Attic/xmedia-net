@@ -592,7 +592,7 @@ void NarrowBandMic::ReadMicEchoCancellationFunction()
  	PROPVARIANT pvAES;
    PropVariantInit(&pvAES);
    pvAES.vt = VT_I4;
-   pvAES.lVal = 0; /// 0, 1, or 2... default is 0
+   pvAES.lVal = 2; /// 0, 1, or 2... default is 0
    CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_FEATR_AES, pvAES));
    PropVariantClear(&pvAES);
 
@@ -607,7 +607,7 @@ void NarrowBandMic::ReadMicEchoCancellationFunction()
 	PROPVARIANT pvMicGain;
 	PropVariantInit(&pvMicGain);
 	pvMicGain.vt = VT_BOOL;
-	pvMicGain.boolVal = VARIANT_FALSE;
+	pvMicGain.boolVal = m_bAGC?VARIANT_TRUE:VARIANT_FALSE;
 	CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_MIC_GAIN_BOUNDER, pvMicGain));
 	PropVariantClear(&pvMicGain);
 
@@ -622,7 +622,7 @@ void NarrowBandMic::ReadMicEchoCancellationFunction()
 	PROPVARIANT pvEchoLength;
 	PropVariantInit(&pvEchoLength);
     pvEchoLength.vt = VT_I4;
-    pvEchoLength.lVal = 512;  //128, 256, 512, 1024
+    pvEchoLength.lVal = 1024;  //128, 256, 512, 1024
     CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_FEATR_ECHO_LENGTH, pvEchoLength));
     PropVariantClear(&pvEchoLength);
 
@@ -822,6 +822,14 @@ void NarrowBandMic::ReadMicNoEchoFunction()
 	pvAGC.boolVal = m_bAGC?VARIANT_TRUE:VARIANT_FALSE;
 	CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_FEATR_AGC, pvAGC));
 	PropVariantClear(&pvAGC);
+
+	PROPVARIANT pvMicGain;
+	PropVariantInit(&pvMicGain);
+	pvMicGain.vt = VT_BOOL;
+	pvMicGain.boolVal = m_bAGC?VARIANT_TRUE:VARIANT_FALSE;
+	CHECKHR(pPS->SetValue(MFPKEY_WMAAECMA_MIC_GAIN_BOUNDER, pvMicGain));
+	PropVariantClear(&pvMicGain);
+
 
     DWORD cOutputBufLen = 0;
     BYTE *pbOutputBuffer = NULL;

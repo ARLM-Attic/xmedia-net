@@ -441,4 +441,35 @@ namespace SensorLibrary
 
     }
 
+    public delegate void DelegateSensorEvent(object obj, SensorEvent eventinfo);
+
+    public class SensorPropertyAttribute : Attribute
+    {
+        public SensorPropertyAttribute()
+            : base()
+        {
+        }
+
+    }
+
+    public class SensorActionAttribute : Attribute
+    {
+        public SensorActionAttribute()
+            : base()
+        {
+
+        }
+
+    }
+
+    public class SensorEventAttribute : Attribute
+    {
+        public SensorEventAttribute()
+            : base()
+        {
+
+        }
+
+    }
+
 }

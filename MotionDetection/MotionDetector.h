@@ -117,7 +117,19 @@ public ref class ContourAreaMotionDetector : public AudioClasses::IMotionDetecto
 			}
 		}
 
+		virtual event EventHandler ^OnMotionDetected;
+
+
 	protected:
+
+		void FireMotion() 
+		{
+			OnMotionDetected(this, gcnew EventArgs());
+	    }
+
+		bool m_bMotionActive;
+
+
 		System::IntPtr ptrCurrentFrame;
 		System::IntPtr ptrGrayFrame;
 		System::IntPtr ptrAverageFrame;

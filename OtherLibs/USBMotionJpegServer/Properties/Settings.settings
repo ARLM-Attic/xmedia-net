@@ -35,5 +35,20 @@
     <Setting Name="MaxHTTPConnections" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">20</Value>
     </Setting>
+    <Setting Name="XMPPServer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="XMPPDomain" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="XMPPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="XMPPPassword" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UseXMPPEvents" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

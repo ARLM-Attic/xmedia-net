@@ -21,7 +21,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         
         <Label Grid.Row="0" Grid.Column="0" Margin="5">Name</Label>
@@ -61,8 +61,11 @@
         <Label Grid.Row="11" Grid.Column="0" Margin="5">Start Record</Label>
         <TextBox Grid.Row="11" Grid.Column="1" Margin="5" Text="{Binding StartRecord}" />
 
-        
-        <Button Grid.ColumnSpan="2" Grid.Row="12" Width="100" Click="Button_Click">Save</Button>
-        
+
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.ColumnSpan="2" Grid.Row="12">
+            <Button Margin="5" Width="100" Click="Button_Click">Save</Button>
+            <Button Margin="5" Width="100" x:Name="ButtonDeleteCamera" Click="ButtonDeleteCamera_Click">Delete</Button>
+        </StackPanel>
+
     </Grid>
 </Window>

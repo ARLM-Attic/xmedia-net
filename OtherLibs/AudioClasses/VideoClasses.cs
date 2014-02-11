@@ -278,6 +278,7 @@ namespace AudioClasses
         double Threshold { get; set; }
         double LastMeasuredValue { get; }
         string StatusString { get; }
+        event EventHandler OnMotionDetected;
     }
 
     public interface IVideoSink

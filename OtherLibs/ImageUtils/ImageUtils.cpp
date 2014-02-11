@@ -6,6 +6,9 @@
 
 #include "stdafx.h"
 #include <Windows.h>
+#include <D3D9.h>
+#include <D3dx9tex.h>
+
 
 #include "ImageUtils.h"
 
@@ -724,5 +727,101 @@ done:
 }
 
 
+array<unsigned char> ^ ImageUtils::Utils::DirectXScreenCap()
+{
+   HWND hwndDesktop = GetDesktopWindow();
+    RECT rcClient;
+	GetWindowRect(hwndDesktop, &rcClient);
+
+	IDirect3D9 *Device9 =NULL;
+	IDirect3DDevice9 *Device = NULL;
+	if (!(Device9 = Direct3DCreate9(D3D9b_SDK_VERSION)))
+    {
+        return nullptr;
+    }
+	D3DDISPLAYMODE d3ddisplaymode;
+	D3DPRESENT_PARAMETERS PresentParams;
+	memset(&PresentParams, 0, sizeof(D3DPRESENT_PARAMETERS));
+
+	PresentParams.Windowed = TRUE;
+	PresentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+
+	HRESULT hr = Device9->CreateDevice(D3DADAPTER_DEFAULT,  
+		D3DDEVTYPE_HAL,
+		hwndDesktop, 
+		D3DCREATE_SOFTWARE_VERTEXPROCESSING, 
+		&PresentParams,
+		&Device);
+
+
+    if (hr != S_OK)
+    {
+		IDirect3D9_Release(Device9);
+		return nullptr;
+    }
+
+
+   IDirect3DSurface9* pRenderTarget=NULL;
+   IDirect3DSurface9* pDestTarget=NULL;
+   // sanity checks.
+   if (Device == NULL)
+      return nullptr;
+
+   // get the render target surface.
+   hr = Device->GetRenderTarget(0, &pRenderTarget);
+   // get the current adapter display mode.
+   hr = Device9->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddisplaymode);
+
+   int nWidth = rcClient.right-rcClient.left;
+   int nHeight = rcClient.bottom-rcClient.top;
+   // create a destination surface.
+   hr = Device->CreateOffscreenPlainSurface(nWidth,
+	   nHeight,
+                         D3DFMT_A8R8G8B8,
+                         D3DPOOL_SYSTEMMEM,
+                         &pDestTarget,
+                         NULL);
+
+   //Device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pDestTarget ) ;
+
+   Device->GetFrontBufferData(0, pDestTarget ) ;
+
+   //copy the render target to the destination surface.
+   hr = Device->GetRenderTargetData(pRenderTarget, pDestTarget);
+
+   array<unsigned char> ^RetArray = gcnew array<unsigned char>(4*nWidth*nHeight);
+
+   D3DLOCKED_RECT lr;          
+   pDestTarget->LockRect( &lr, &rcClient, D3DLOCK_READONLY ); 
+   //lr.Pitch
+   unsigned char *buf = (unsigned char*) lr.pBits; 
+	pin_ptr<unsigned char> ppArray = &RetArray[0];
+	unsigned char *pArray = (unsigned char *) ppArray;
+
+	memcpy(pArray, buf, lr.Pitch*nHeight);
+	//int nScanLineBytes = lr.Pitch;
+	//for (int y=0; y<nHeight; y++)
+	//{
+	//	memcpy(pArray+y*nScanLineBytes, buf + y*nScanLineBytes, nScanLineBytes);
+	//}
+
+   pDestTarget->UnlockRect();    
+
+   ////save its contents to a bitmap file.
+   //hr = D3DXSaveSurfaceToFile(L"c:/temp/file.bmp",
+   //                           D3DXIFF_BMP,
+   //                           pDestTarget,
+   //                           NULL,
+   //                           NULL);
+
+   // clean up.
+   pRenderTarget->Release();
+   pDestTarget->Release();
+
+   Device->Release();
+   IDirect3D9_Release(Device9);
+
+   return RetArray;
+}
 
 #endif

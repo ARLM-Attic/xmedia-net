@@ -108,5 +108,7 @@ namespace ImageUtils
 
 		static ImageWithPosition ^GetWindowBytes(System::IntPtr ptrWnd);
 		static ImageWithPosition^ GetDesktopWindowBytes(int nX, int nY, int nW, int nH);
+
+		static array<unsigned char> ^DirectXScreenCap();
 	};
 }

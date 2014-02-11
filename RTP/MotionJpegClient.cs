@@ -508,5 +508,13 @@ namespace RTP
         }
 
 
+        private bool m_bVisible = true;
+
+        public bool Visible
+        {
+            get { return m_bVisible; }
+            set { if (m_bVisible != value) { m_bVisible = value; FirePropertyChanged("Visible"); } }
+        }
+
     }
 }

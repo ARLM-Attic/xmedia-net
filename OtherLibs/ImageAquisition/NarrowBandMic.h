@@ -38,6 +38,7 @@ namespace ImageAquisition
 			m_dConfidence = 0.0f;
 			m_bUseKinectArray = true;
 			m_bAGC = false;
+			m_bAEC = true;
 			m_bNoiseSupression = true;
 
 			Window = hWindow;
@@ -119,6 +120,18 @@ namespace ImageAquisition
 			void set(bool bValue)
 			{
 				m_bAGC = bValue;
+			}
+		};
+
+		property bool AEC
+		{
+			bool get()
+			{
+				return m_bAEC;
+			}
+			void set(bool bValue)
+			{
+				m_bAEC = bValue;
 			}
 		};
 
@@ -216,6 +229,7 @@ namespace ImageAquisition
 		bool m_bUseKinectArray;
 		bool m_bMute;
 		bool m_bAGC;
+		bool m_bAEC;
 		bool m_bNoiseSupression;
 	
 		AudioDevice ^m_objAudioDevice;

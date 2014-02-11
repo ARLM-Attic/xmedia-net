@@ -148,6 +148,14 @@ namespace USBMotionJpegServer
                         devwithcontrol.StartCapture();
                         InterFrameCompressor JpegCompressor = new InterFrameCompressor(ActiveRate) { QualityLevel = 90 };
                         Server.AddVideoSource(devwithcontrol, JpegCompressor);
+
+                        if (Properties.Settings.Default.UseXMPPEvents == true)
+                        {
+                            XMPPCameraClient xmppclient = new XMPPCameraClient(devwithcontrol, cam.Name);
+                            xmppclient.Connect(Properties.Settings.Default.XMPPDomain, Properties.Settings.Default.XMPPServer, Properties.Settings.Default.XMPPUser, Properties.Settings.Default.XMPPPassword);
+                        }
+
+
                         bFound = true;
                         break;
                     }
@@ -160,6 +168,8 @@ namespace USBMotionJpegServer
 
             Server.Start();
         }
+
+        List<XMPPCameraClient> XMPPClients = new List<XMPPCameraClient>();
 
         void dev_OnFailStartCapture(string strError, object objDevice)
         {

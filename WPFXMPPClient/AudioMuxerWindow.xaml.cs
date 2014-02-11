@@ -907,7 +907,8 @@ namespace WPFXMPPClient
 
                     Speaker = new DirectShowFilters.SpeakerFilter(speakdevice.Guid, 30, AudioFormat.SixteenBySixteenThousandMono, helper.Handle);
                     Microphone = new ImageAquisition.NarrowBandMic(micdevice, speakdevice.Guid, helper.Handle);
-                    Microphone.AGC = UseAEC;
+                    Microphone.AGC = UseAGC;
+                    Microphone.AEC = UseAEC;
                     Microphone.UseKinectArray = false;
                     Speaker.Start();
                     if (UseAEC == true)
@@ -922,12 +923,18 @@ namespace WPFXMPPClient
             }
         }
 
-        private bool m_bUseAEC = true;
-
+        private bool m_bUseAEC = Properties.Settings.Default.AEC;
         public bool UseAEC
         {
             get { return m_bUseAEC; }
-            set { m_bUseAEC = value; }
+            set { m_bUseAEC = value; Properties.Settings.Default.AEC = value; Properties.Settings.Default.Save(); }
+        }
+
+        private bool m_bUseAGC = Properties.Settings.Default.AGC;
+        public bool UseAGC
+        {
+            get { return m_bUseAGC; }
+            set { m_bUseAGC = value; Properties.Settings.Default.AGC = value; Properties.Settings.Default.Save(); }
         }
 
         private void ComboBoxSpeakerDevices_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1028,6 +1035,16 @@ namespace WPFXMPPClient
             ImageAquisition.MFVideoCaptureDevice dev = ComboBoxVideoSources.SelectedItem as ImageAquisition.MFVideoCaptureDevice;
             if (dev != null)
                 ComboBoxResolution.ItemsSource = dev.VideoFormats;
+        }
+
+        private void CheckBoxUseAGC_Checked(object sender, RoutedEventArgs e)
+        {
+            ResetMicAndSpeakers();
+        }
+
+        private void CheckBoxUseAGC_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ResetMicAndSpeakers();
         }
     }
 

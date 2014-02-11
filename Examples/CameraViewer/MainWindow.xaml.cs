@@ -41,6 +41,7 @@ namespace CameraViewer
             string strFileName = string.Format("{0}\\cameraconfig.xml", strPath);
             Load(strFileName);
             this.CameraList.ItemsSource = Cameras;
+            this.CameraQuickList.ItemsSource = Cameras;
             this.CameraList.DataContext = this;
         }
 
@@ -93,6 +94,7 @@ namespace CameraViewer
         private void ButtonAddCamera_Click(object sender, RoutedEventArgs e)
         {
             EditCameraWindow cameradlg = new EditCameraWindow();
+            cameradlg.ShowDelete = false;
             if (cameradlg.ShowDialog() == true)
             {
                 Cameras.Add(new MotionJpegClient(JpegCompressor, cameradlg.CameraInformation));
@@ -100,69 +102,47 @@ namespace CameraViewer
             }
         }
 
+        private bool m_bVerticalLayout = true;
+
+        public bool VerticalLayout
+        {
+            get { return m_bVerticalLayout; }
+            set { m_bVerticalLayout = value; }
+        }
+
         private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            double nNewEffectiveWidth = e.NewSize.Width-80;
-            double nNewEffectiveHeight = e.NewSize.Height - 60;
+            if (VerticalLayout == false)
+                return;
+
+            double nNewEffectiveWidth = MainGrid.ColumnDefinitions[1].ActualWidth-60; // e.NewSize.Width - 80;
+            double nNewEffectiveHeight = MainGrid.RowDefinitions[1].ActualHeight-60; // e.NewSize.Height - 60;
             if (nNewEffectiveWidth <= 0)
                 nNewEffectiveWidth = 1;
             if (nNewEffectiveHeight <= 0)
                 nNewEffectiveHeight = 1;
+
+
             double fWidthToHeightRatio = ((double)nNewEffectiveWidth) / ((double)nNewEffectiveHeight);
 
+            if (fWidthToHeightRatio > 3)
+                SetHorizontal(nNewEffectiveWidth, nNewEffectiveHeight);
+            else if (fWidthToHeightRatio < .6)
+                SetVertical(nNewEffectiveWidth, nNewEffectiveHeight);
+            else
+                SetFill(nNewEffectiveWidth, nNewEffectiveHeight);
 
-            int nItemsPerRow = 1;
+        }
 
-            double fProjectedItemWidth = nNewEffectiveWidth / nItemsPerRow;
+        void SetVertical(double nNewEffectiveWidth, double nNewEffectiveHeight)
+        {
+            var scrollViewer = GetDescendantByType(CameraList, typeof(ScrollViewer)) as ScrollViewer;
+            scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+            double fProjectedItemWidth = nNewEffectiveWidth;
             double fProjectedItemHeight = fProjectedItemWidth * 9 / 16;
-          
-            {
 
-                int nRows = (int) Math.Ceiling((double) Cameras.Count / (double)nItemsPerRow);
-                double fTotalRowHeight = nRows * fProjectedItemHeight;
-                
-                double fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
-                
-                while ((fVerticalSpaceLeft < 0) && (nRows > 1) && (fProjectedItemWidth > 320)) // Not fitting everything on the screen
-                {
-
-                    nItemsPerRow++;
-                    fProjectedItemWidth = nNewEffectiveWidth / nItemsPerRow;
-                    fProjectedItemHeight = fProjectedItemWidth * 9 / 16;
-
-                    nRows = (int)Math.Ceiling((double)Cameras.Count / (double)nItemsPerRow);
-                    fTotalRowHeight = nRows * fProjectedItemHeight;
-                    fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
-                }
-
-                if (fProjectedItemWidth < 320)
-                {
-                    fProjectedItemWidth = 320;
-                    fProjectedItemHeight = fProjectedItemWidth * 9 / 16;
-                }
-
-                /// Now maximize the space
-                /// 
-                double fHorizontalSpaceLeft = nNewEffectiveWidth - nItemsPerRow * fProjectedItemWidth;
-                fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
-                
-                while ((fVerticalSpaceLeft > 0) && (fHorizontalSpaceLeft > 0)) 
-                {
-
-                    double fNewWidth = fProjectedItemWidth + 10;
-                    double fNewHeight = fNewWidth * 9 / 16;
-                    fHorizontalSpaceLeft = nNewEffectiveWidth - nItemsPerRow * fProjectedItemWidth;
-                    fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
-
-                    if ((fVerticalSpaceLeft <= 0) || (fHorizontalSpaceLeft <= 0))
-                        break;
-
-                    fProjectedItemWidth = fNewWidth;
-                    fProjectedItemHeight = fNewHeight;
-                }                
-            }
-
-            
 
             ItemWidth = fProjectedItemWidth;
             ItemHeight = fProjectedItemHeight;
@@ -173,6 +153,131 @@ namespace CameraViewer
                 cam.ItemHeight = ItemHeight;
             }
         }
+
+        void SetHorizontal(double nNewEffectiveWidth, double nNewEffectiveHeight)
+        {
+            var scrollViewer = GetDescendantByType(CameraList, typeof(ScrollViewer)) as ScrollViewer;
+            scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+            scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+
+            double fProjectedItemHeight = nNewEffectiveHeight;
+            double fProjectedItemWidth = fProjectedItemHeight * 16 / 9;
+
+            ItemWidth = fProjectedItemWidth;
+            ItemHeight = fProjectedItemHeight;
+
+            foreach (MotionJpegClient cam in Cameras)
+            {
+                cam.ItemWidth = ItemWidth;
+                cam.ItemHeight = ItemHeight;
+            }
+        }
+
+        
+        private void SetFill(double nNewEffectiveWidth, double nNewEffectiveHeight)
+        {
+            var scrollViewer = GetDescendantByType(CameraList, typeof(ScrollViewer)) as ScrollViewer;
+            scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+            double fWidthToHeightRatio = ((double)nNewEffectiveWidth) / ((double)nNewEffectiveHeight);
+
+
+            int nItemsPerRow = 1;
+
+            double fProjectedItemWidth = nNewEffectiveWidth / nItemsPerRow;
+            double fProjectedItemHeight = fProjectedItemWidth * 9 / 16;
+
+            int nCount = 0;
+            foreach (var cam in Cameras)
+            {
+                if (cam.Visible == true)
+                    nCount++;
+            }
+
+
+            int nRows = (int)Math.Ceiling((double)nCount / (double)nItemsPerRow);
+            double fTotalRowHeight = nRows * fProjectedItemHeight;
+
+            double fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
+
+            while ((fVerticalSpaceLeft < 0) && (nRows > 1) && (fProjectedItemWidth > 320)) // Not fitting everything on the screen
+            {
+
+                nItemsPerRow++;
+                fProjectedItemWidth = nNewEffectiveWidth / nItemsPerRow;
+                fProjectedItemHeight = fProjectedItemWidth * 9 / 16;
+
+                nRows = (int)Math.Ceiling((double)nCount / (double)nItemsPerRow);
+                fTotalRowHeight = nRows * fProjectedItemHeight;
+                fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
+            }
+
+            if (fProjectedItemWidth < 320)
+            {
+                fProjectedItemWidth = 320;
+                fProjectedItemHeight = fProjectedItemWidth * 9 / 16;
+            }
+
+            /// Now maximize the space
+            /// 
+            double fHorizontalSpaceLeft = nNewEffectiveWidth - nItemsPerRow * fProjectedItemWidth;
+            fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
+
+            while ((fVerticalSpaceLeft > 0) && (fHorizontalSpaceLeft > 0))
+            {
+
+                double fNewWidth = fProjectedItemWidth + 10;
+                double fNewHeight = fNewWidth * 9 / 16;
+                fHorizontalSpaceLeft = nNewEffectiveWidth - nItemsPerRow * fProjectedItemWidth;
+                fVerticalSpaceLeft = nNewEffectiveHeight - fTotalRowHeight;
+
+                if ((fVerticalSpaceLeft <= 0) || (fHorizontalSpaceLeft <= 0))
+                    break;
+
+                fProjectedItemWidth = fNewWidth;
+                fProjectedItemHeight = fNewHeight;
+            }
+
+
+
+            ItemWidth = fProjectedItemWidth;
+            ItemHeight = fProjectedItemHeight;
+
+            foreach (MotionJpegClient cam in Cameras)
+            {
+                cam.ItemWidth = ItemWidth;
+                cam.ItemHeight = ItemHeight;
+            }
+        }
+
+        public static Visual GetDescendantByType(Visual element, Type type)
+        {
+            if (element == null)
+            {
+                return null;
+            }
+            if (element.GetType() == type)
+            {
+                return element;
+            }
+            Visual foundElement = null;
+            if (element is FrameworkElement)
+            {
+                (element as FrameworkElement).ApplyTemplate();
+            }
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+            {
+                Visual visual = VisualTreeHelper.GetChild(element, i) as Visual;
+                foundElement = GetDescendantByType(visual, type);
+                if (foundElement != null)
+                {
+                    break;
+                }
+            }
+            return foundElement;
+        }
+
 
         private double m_nItemWidth = 320;
 
@@ -241,15 +346,27 @@ namespace CameraViewer
                 return;
 
             EditCameraWindow cameradlg = new EditCameraWindow();
+            cameradlg.ShowDelete = true;
             cameradlg.CameraInformation = client.NetworkCameraInformation;
             if (cameradlg.ShowDialog() == true)
             {
-                if (client.CameraActive == true)
+                if (cameradlg.CameraResult == CameraResult.Saved)
                 {
-                    client.CameraActive = false;
-                    client.CameraActive = true;
+
+                    if (client.CameraActive == true)
+                    {
+                        client.CameraActive = false;
+                        client.CameraActive = true;
+                    }
+                    Save();
                 }
-                Save();
+                else if (cameradlg.CameraResult == CameraResult.Delete)
+                {
+                    if (client.CameraActive == true)
+                        client.CameraActive = false;
+                    Cameras.Remove(client);
+                    Save();
+                }
             }
 
         }
@@ -345,6 +462,18 @@ namespace CameraViewer
             {
                 Save(dlg.FileName);
             }
+        }
+
+        private void ButtonBig_Click(object sender, RoutedEventArgs e)
+        {
+            this.GridFullVideo.Visibility = System.Windows.Visibility.Visible;
+            this.GridFullVideo.DataContext = ((FrameworkElement)sender).DataContext;
+            this.ButtonBack.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void ButtonOpen_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 

@@ -663,7 +663,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="84" />
                     <ColumnDefinition Width="107*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="150" />
             </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="34" />
@@ -682,11 +682,12 @@
 
             <!--<Rectangle x:Name="RectangleConnect" Fill="{Binding ConnectedStateBrush}" Width="30" Height="30" Grid.Column="2" Margin="5,6" Grid.RowSpan="2" />-->
 
-            <ToolBarTray ToolBarTray.IsLocked="True" x:Name="ToolBarOptions" Grid.RowSpan="2" Background="{x:Null}" Grid.Column="2" Style="{DynamicResource ToolBarTrayStyle1}">
+            <ToolBarTray ToolBarTray.IsLocked="True" HorizontalAlignment="Right"
+                         x:Name="ToolBarOptions" Grid.RowSpan="2" Background="{x:Null}" Grid.Column="2" Style="{DynamicResource ToolBarTrayStyle1}">
                 <ToolBar Band="1" BandIndex="1" Background="{x:Null}" Style="{DynamicResource ToolBarStyle1}">
 
-                    <Button Style="{DynamicResource ButtonSurface}" ToolTip="Connect to Server" x:Name="HyperlinkConnect" Click="HyperlinkConnect_Click" Padding="0" HorizontalAlignment="Center"  VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                        <Border Width="32" Height="32">
+                    <Button Style="{DynamicResource ButtonSurface}" Margin="5" ToolTip="Connect to Server" x:Name="HyperlinkConnect" Click="HyperlinkConnect_Click" Padding="0" HorizontalAlignment="Center"  VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                        <Border Width="32" Height="32" >
                             <Border.Style>
                                 <Style>
                                     <Style.Triggers>
@@ -717,19 +718,19 @@
                     </Button>
 
                     <Button Style="{DynamicResource ButtonSurface}" ToolBar.OverflowMode="Always" ToolTip="Add a Buddy" x:Name="ButtonAddBuddy" IsEnabled="False" Click="ButtonAddBuddy_Click" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                        <Image Source="Images/add.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image Source="Images/add.png" Width="30" Height="30" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Button>
 
                     <Button Style="{DynamicResource ButtonSurface}" ToolBar.OverflowMode="Always" ToolTip="View Downloads" x:Name="ButtonTransfers" IsEnabled="True" Click="ButtonTransfers_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                        <Image Source="Images/file.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image Source="Images/file.png" Width="30" Height="30" Margin="5"  HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Button>
                     <Button Style="{DynamicResource ButtonSurface}" ToolBar.OverflowMode="Always" ToolTip="View Media Sessions" x:Name="ButtonMediaSessions" IsEnabled="True" Click="ButtonMediaSessions_Click"  Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                        <Image Source="Images/volume.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image Source="Images/volume.png" Width="30" Height="30" Margin="5"  HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Button>
 
-                    <Button ToolBar.OverflowMode="Always" Width="40" Height="40" HorizontalAlignment="Stretch" RenderTransformOrigin=".5,.5" Click="ButtonOptions_Click"  
+                    <Button ToolBar.OverflowMode="Always" Width="40" Height="40" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin=".5,.5" Click="ButtonOptions_Click"  
                             Background="{DynamicResource ButtonBrush}"
-                            VerticalAlignment="Stretch"  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonOptions" ToolTip="Set General Options" >
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"  Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" x:Name="ButtonOptions" ToolTip="Set General Options" >
                         <Button.RenderTransform>
                             <TransformGroup>
                                 <ScaleTransform/>
@@ -743,14 +744,14 @@
 
                     <Button Style="{DynamicResource ButtonSurface}" ToolTip="Minimize" x:Name="ButtonMinimize" Click="ButtonMinimize_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" 
                                      HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom">
-                        <Rectangle Width="20" Height="5" Margin="0,0,0,10" Stretch="UniformToFill" Fill="#FF555555" Stroke="#FF555555" />
+                        <Rectangle Width="20" Height="5" Margin="5" Stretch="UniformToFill" Fill="#FF555555" Stroke="#FF555555" />
                     </Button>
 
                     <Button Style="{DynamicResource ButtonSurface}" ToolTip="Close" x:Name="ButtonClose" Click="ButtonClose_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-                        <Image Source="Images/calculator - multiply.png" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image Source="Images/calculator - multiply.png" Width="30" Height="30" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Button>
 
-                    <CheckBox ToolBar.OverflowMode="Always"  x:Name="CheckBoxSHowAll" IsChecked="{Binding ShowAll}" Content="Show All"/>
+                    <CheckBox ToolBar.OverflowMode="Always" Margin="5"  x:Name="CheckBoxSHowAll" IsChecked="{Binding ShowAll}" Content="Show All"/>
 
                 </ToolBar>
 

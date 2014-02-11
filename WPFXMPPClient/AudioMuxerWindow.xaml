@@ -133,7 +133,8 @@
                                 <ColumnDefinition Width="150" />
                                 <ColumnDefinition Width="40" />
                                 <ColumnDefinition Width="80" />
-                                <ColumnDefinition Width="60*" />
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="100*" />
                             </Grid.ColumnDefinitions>
                             
@@ -161,7 +162,8 @@
                                 <Label FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top" Content="Mic Volume"/>
                             </StackPanel>
                             <CheckBox Grid.Column="4"  IsChecked="{Binding UseAEC}" x:Name="CheckBoxUseAEC" Checked="CheckBoxUseAEC_Checked" Unchecked="CheckBoxUseAEC_Unchecked"  VerticalAlignment="Center" Content="AEC" ToolTip="Activate Acoustic Echo Cancellation" d:LayoutOverrides="Width"/>
-                            <CheckBox Grid.Column="5" Checked="CheckBoxCancelOutMusic_Checked" Unchecked="CheckBoxCancelOutMusic_Unchecked"  x:Name="CheckBoxCancelOutMusic" VerticalAlignment="Center" Content="Cancel Out Music" ToolTip="Prevents music from playing back to the speaker.  Only conference members can hear the music" d:LayoutOverrides="Width"/>
+                            <CheckBox Grid.Column="5"  IsChecked="{Binding UseAGC}" x:Name="CheckBoxUseAGC" Checked="CheckBoxUseAGC_Checked"  Unchecked="CheckBoxUseAGC_Unchecked"  VerticalAlignment="Center" Content="AGC" ToolTip="Activate Automatic Gain Control" d:LayoutOverrides="Width"/>
+                            <CheckBox Grid.Column="6" Checked="CheckBoxCancelOutMusic_Checked" Unchecked="CheckBoxCancelOutMusic_Unchecked"  x:Name="CheckBoxCancelOutMusic" VerticalAlignment="Center" Content="Cancel Out Music" ToolTip="Prevents music from playing back to the speaker.  Only conference members can hear the music" d:LayoutOverrides="Width"/>
                         </Grid>
 
                     </Grid>
