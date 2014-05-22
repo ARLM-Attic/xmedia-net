@@ -130,7 +130,11 @@ namespace xmedianet.socketserver
                 return false;
 
 
+#if !MONO
             SslStream = new SslStream(NetworkStream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), new LocalCertificateSelectionCallback(LocalCertificateCallback), EncryptionPolicy.RequireEncryption);
+#else
+            SslStream = new SslStream(NetworkStream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), new LocalCertificateSelectionCallback(LocalCertificateCallback));
+#endif
             SslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, false);
             SslStream.ReadTimeout = 5000;
             SslStream.WriteTimeout = 5000;
@@ -387,6 +391,13 @@ namespace xmedianet.socketserver
                 else
                 {
                     hostadd = ConnectMgr.Resolve(ipaddr);
+                    if (hostadd == null)
+                    {
+                        if (m_Logger != null)
+                            m_Logger.LogError(ToString(), MessageImportance.Highest, "Unable to resolve host {0}", ipaddr);
+                        return false;
+
+                    }
                     EPhost = new IPEndPoint(hostadd, nport);
                 }
             }
@@ -657,6 +668,14 @@ namespace xmedianet.socketserver
             }
         }
 
+        /// <summary>
+        ///  Socket and connection was closed in the async receive handler, and no OnDisconnect method was called
+        /// </summary>
+        /// <param name="strReason"></param>
+        public virtual void OnDisconnected(string strReason)
+        {
+        }
+
         public object SyncRoot = new object();
         bool UserInitiatedDisconnect = false;
         public virtual bool Disconnect()
@@ -845,6 +864,7 @@ namespace xmedianet.socketserver
                     m_Logger.LogError(ToString(), MessageImportance.Highest, e.ToString());
                 FireDisconnectHandler(new System.EventArgs());
                 //OnDisconnect(e.ToString());  // don't call this here, socket is already closed
+                OnDisconnected(e.ToString());
 
                 /// Check in our buffer, prevent pinning
                 if (m_BufferPool != null)
@@ -858,6 +878,7 @@ namespace xmedianet.socketserver
                     m_Logger.LogError(ToString(), MessageImportance.Highest, e2.ToString());
                 FireDisconnectHandler(new System.EventArgs());
                 //OnDisconnect(e.ToString());  // don't call this here, socket is already closed
+                OnDisconnected(e2.ToString());
 
                 /// Check in our buffer, prevent pinning
                 if (m_BufferPool != null)
