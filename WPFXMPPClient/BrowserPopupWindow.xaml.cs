@@ -1035,7 +1035,7 @@ namespace WPFXMPPClient
             this.Visibility = System.Windows.Visibility.Hidden;
         }
 
-        private void ButtonLoad_Click(object sender, RoutedEventArgs e)
+        public void ButtonLoad_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1061,11 +1061,14 @@ namespace WPFXMPPClient
             // WebBrowserMap.Navigate(strURL);
             //})
             //);
+            this.Show();
         }
 
         private void WebBrowserMain_LoadCompleted(object sender, System.Windows.Navigation.NavigationEventArgs e)
         {
             loadCompleted = true;
+           // MessageBox.Show("WebBrowserMain_LoadCompleted Invoked");
+           // ButtonLoad_Click(null, null);
         }
 
         bool loadCompleted = false;
@@ -1729,7 +1732,7 @@ namespace WPFXMPPClient
                         // the file is reached.
                         while ((line = sr.ReadLine()) != null)
                         {
-                            Console.WriteLine(line);
+                           // Console.WriteLine(line);
                             sb.AppendLine(line);
                         }
                     }
@@ -1894,6 +1897,16 @@ namespace WPFXMPPClient
             // 1. Verify - Is it accurate/current?
 
             // 2. Do I need to rebuild it? 
+        }
+
+        private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            ButtonLoad_Click(sender, e);
+        }
+
+        private void ButtonMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = System.Windows.WindowState.Minimized;
         }
     }
         #endregion

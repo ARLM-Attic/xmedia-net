@@ -469,6 +469,12 @@ namespace WPFXMPPClient
 
             foreach (RosterItem item in XMPPClient.RosterItems)
             {
+                // Build map window and place in dictionary of map windows. 
+                // Hope this isn't a memory hog; would prefer loading when user's map icon is clicked on.
+                // Having trouble loading the window now though.
+
+              
+
                 if (item.HasLoadedConversation == false)
                 {
                     item.HasLoadedConversation = true;
@@ -538,7 +544,20 @@ namespace WPFXMPPClient
         //    CollectionViewSource source = FindResource("SortedRosterItems") as CollectionViewSource;
           //  source.View.Refresh();
 
-            AddPresenceUpdateLine();
+           AddPresenceUpdateLine();
+           ///foreach (RosterItem item in XMPPClient.RosterItems)
+         for (int i = 0; i < XMPPClient.RosterItems.Count; i++)
+           {
+               RosterItem item = XMPPClient.RosterItems[i];
+                if (BuildMapBrowserWindowForRosterItem(item))
+                {
+
+                }
+                else
+                {
+
+                }
+            }
         }
 
         public void XMPPStateChanged(object obj, EventArgs arg)
@@ -1197,21 +1216,26 @@ namespace WPFXMPPClient
 
         private void ButtonViewMap_Click2(object sender, RoutedEventArgs e)
         {
-            // 2 options here. 
-            if (Option.Options.UseLegacyMapWindow == true)
-            {
-                if (Option.Options.SingleRosterItemMap == true)
-                    ButtonViewMap_Click(sender, e);
-                else
-                    ButtonViewMapConsolidated_Click(sender, e);
-            }
-            else
-            {
-                if (Option.Options.SingleRosterItemMap == true)
-                    ButtonViewMapBrowserWindow_Click(sender, e);
-                else
-                    ButtonViewMapBrowserWindowConsolidatedMap_Click(sender, e);
-            }
+            this.Dispatcher.Invoke(new Action(() =>
+                {
+
+                    // 2 options here. 
+                    if (Option.Options.UseLegacyMapWindow == true)
+                    {
+                        if (Option.Options.SingleRosterItemMap == true)
+                            ButtonViewMap_Click(sender, e);
+                        else
+                            ButtonViewMapConsolidated_Click(sender, e);
+                    }
+                    else
+                    {
+                        if (Option.Options.SingleRosterItemMap == true)
+                            ButtonViewMapBrowserWindow_Click(sender, e);
+                        else
+                            ButtonViewMapBrowserWindowConsolidatedMap_Click(sender, e);
+                    }
+                })
+            );
         }
 
         // This is the one map per user method
@@ -1224,22 +1248,30 @@ namespace WPFXMPPClient
             if (BrowserPopupWindows.ContainsKey(item.JID.BareJID) == true)
             {
                 BrowserPopupWindow exwin = BrowserPopupWindows[item.JID.BareJID];
-                //exwin.AddRosterItem(item);
+               /* if (exwin.Visibility == System.Windows.Visibility.Collapsed)
+                    exwin.Visibility = System.Windows.Visibility.Visible;
+                else */
+                {
+                    try
+                    {
+                        exwin.Show();
+                        exwin.Focus();
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error showing map window: " + ex.Message);
+                    }
+                }
+/*                exwin.AddRosterItem(item);
 
-                //exwin.AddRosterItemBody();
+                exwin.AddRosterItemBody();
 
                 //exwin.Title = "Buddy Map - " + item.JID.BareJID;
 
                 //exwin.Activate();
-                try
-                {
-
-                    exwin.Show();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error showing map window: " + ex.Message);
-                }
+              
+                */
 
                 IntPtr windowHandle = new System.Windows.Interop.WindowInteropHelper(exwin).Handle;
                 FlashWindow(windowHandle, true);
@@ -1258,7 +1290,9 @@ namespace WPFXMPPClient
             // AudioMuxerWindow.InitiateOrShowCallTo(inst.FullJID);
 
             BrowserPopupWindows.Add(item.JID.BareJID, mapWin);
-            mapWin.Show();
+          
+            mapWin.ButtonLoad_Click(null, null);
+
 
             //mapWin.AddRosterItemBody();
             //BrowserPopupWindow.XMPPClient = this.XMPPClient;
@@ -1268,6 +1302,32 @@ namespace WPFXMPPClient
             //    return;
 
             //ShowBrowserPopupWindow(item);
+        }
+
+        private bool BuildMapBrowserWindowForRosterItem(RosterItem item)
+        {
+            bool bRes = true;
+            BrowserPopupWindow mapWin = new BrowserPopupWindow();
+            mapWin.XMPPClient = this.XMPPClient;
+            mapWin.OurRosterItem = item;
+            mapWin.Closed += new EventHandler(browserWin_Closed);
+            mapWin.AddRosterItem(item);
+            mapWin.AddRosterItemBody();
+            mapWin.Title = "Buddy Map - " + item.JID.BareJID;
+            mapWin.SingleRosterItemMap = false;
+            // mapWin.Visibility = System.Windows.Visibility.Collapsed;
+            // mapWin.Show();
+
+            if (BrowserPopupWindows.ContainsKey(item.JID.BareJID) == false)
+            {
+                BrowserPopupWindows.Add(item.JID.BareJID, mapWin);
+            }
+            else
+            {
+                // replace/ overwrite?
+                BrowserPopupWindows[item.JID.BareJID] = mapWin;
+            }
+            return bRes;
         }
 
         // This is the one map per user method
@@ -1383,6 +1443,12 @@ namespace WPFXMPPClient
         void browserWin_Closed(object sender, EventArgs e)
         {
             ((BrowserPopupWindow)sender).Closed -= new EventHandler(browserWin_Closed);
+
+           /* BrowserPopupWindow win = sender as BrowserPopupWindow;
+            if (win != null)
+            {
+                win.Visibility = System.Windows.Visibility.Collapsed;
+            } */
             string strRemove = null;
             foreach (string strKey in BrowserPopupWindows.Keys)
             {

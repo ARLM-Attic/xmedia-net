@@ -187,13 +187,13 @@ Global
 		SccProjectTopLevelParentUniqueName27 = xmedianet.sln
 		SccProjectName27 = Examples/XMPPServerTest
 		SccLocalPath27 = Examples\\XMPPServerTest
-		SccProjectUniqueName28 = Examples\\Socks5Service\\Socks5Service.csproj
-		SccProjectTopLevelParentUniqueName28 = xmedianet.sln
-		SccProjectName28 = Examples/Socks5Service
-		SccLocalPath28 = Examples\\Socks5Service
-		SccProjectUniqueName29 = sip\\sip.csproj
-		SccProjectName29 = sip
-		SccLocalPath29 = sip
+		SccProjectUniqueName28 = sip\\sip.csproj
+		SccProjectName28 = sip
+		SccLocalPath28 = sip
+		SccProjectUniqueName29 = Examples\\Socks5Service\\Socks5Service.csproj
+		SccProjectTopLevelParentUniqueName29 = xmedianet.sln
+		SccProjectName29 = Examples/Socks5Service
+		SccLocalPath29 = Examples\\Socks5Service
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -438,6 +438,7 @@ Global
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release-Mono|x64.ActiveCfg = Release|Any CPU
 		{8629E306-E0C8-4523-AFF6-F88C6E8E8EDA}.Release-Mono|x86.ActiveCfg = Release|Any CPU
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug|Any CPU.Build.0 = Debug|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug|ARM.ActiveCfg = Debug|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{F5A189B1-3E50-4E6F-996B-673CFA59EB3C}.Debug|Mixed Platforms.Build.0 = Debug|x86
@@ -569,7 +570,6 @@ Global
 		{3B0EB829-A618-47D7-A38A-E94545FF2FC1}.Release-Mono|x86.ActiveCfg = Release-Mono|x86
 		{3B0EB829-A618-47D7-A38A-E94545FF2FC1}.Release-Mono|x86.Build.0 = Release-Mono|x86
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Debug|Any CPU.Build.0 = Debug|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Debug|ARM.ActiveCfg = Debug|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -604,7 +604,6 @@ Global
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Release-Mono|x64.ActiveCfg = Release-Mono|Win32
 		{53796A00-C33A-40FF-B28D-F977EB8A9103}.Release-Mono|x86.ActiveCfg = Release-Mono|Win32
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Debug|Any CPU.Build.0 = Debug|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Debug|ARM.ActiveCfg = Debug|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{B914EE15-6A3C-4BAA-AB12-932D1325C86D}.Debug|Mixed Platforms.Build.0 = Debug|x86
@@ -675,7 +674,6 @@ Global
 		{CB219B28-DC51-4E22-BC61-80B97D8A39C0}.Release-Mono|x64.Build.0 = Release|x64
 		{CB219B28-DC51-4E22-BC61-80B97D8A39C0}.Release-Mono|x86.ActiveCfg = Release|x64
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug|Any CPU.Build.0 = Debug|Win32
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug|ARM.ActiveCfg = Debug|Win32
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{6D3414FC-4336-426A-BED4-814AB331FDF0}.Debug|Mixed Platforms.Build.0 = Debug|Win32

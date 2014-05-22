@@ -67,12 +67,21 @@
                     <ColumnDefinition Width="357*" />
                     <ColumnDefinition Width="40" />
                     <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="40" />
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="TextBoxTitle" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" Text="Buddy Map"></TextBlock>
+                <TextBlock x:Name="TextBoxTitle" Grid.ColumnSpan="5" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" Text="Buddy Map"></TextBlock>
                 <!--<s:SurfaceButton ToolTip="Save" IsEnabled="{Binding bDirty}" Grid.Column="1" x:Name="ButtonSave" Click="ButtonSave_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/check.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </s:SurfaceButton>-->
-                <Button Style="{DynamicResource ButtonSurface}" ToolTip="Close" Grid.Column="2" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                <Button Style="{DynamicResource ButtonSurface}" Visibility="Visible" ToolTip="Refresh" Grid.Column="2" x:Name="ButtonRefresh" Click="ButtonRefresh_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
+                    <Image Source="Images/refresh.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
+                </Button>
+                <Button Grid.Column="3" Style="{DynamicResource ButtonSurface}" ToolTip="Minimize" x:Name="ButtonMinimize" Click="ButtonMinimize_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Bottom" 
+                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom">
+                    <Rectangle Width="20" Height="5" Margin="0,0,0,10" Stretch="UniformToFill" Fill="#FF555555" Stroke="#FF555555" />
+                </Button>
+                <Button Style="{DynamicResource ButtonSurface}" ToolTip="Close" Grid.Column="5" x:Name="ButtonClose" Click="ButtonClose_Click"  Height="40"  Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" >
                     <Image Source="Images/calculator - multiply.png" Width="30" Height="20" VerticalAlignment="Center" Margin="0" />
                 </Button>
             </Grid>

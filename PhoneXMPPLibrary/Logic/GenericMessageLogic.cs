@@ -41,7 +41,8 @@ namespace System.Net.XMPP
             msg.Body = txtmsg.Message;
 
             if (txtmsg.Thread == null || txtmsg.Thread.Length < 1)
-                txtmsg = ExtractThread(txtmsg);
+                //txtmsg = ExtractThread(txtmsg);
+                ExtractThread(txtmsg);
              
             msg.Thread = txtmsg.Thread;
             
@@ -80,7 +81,7 @@ namespace System.Net.XMPP
                         if (chatmsg.Delivered.HasValue == true)
                             txtmsg.Received = chatmsg.Delivered.Value; /// May have been a server stored message
                         txtmsg.Message = chatmsg.Body;
-                        txtmsg = ExtractThread(txtmsg);
+                        txtmsg = ExtractThread(txtmsg, true);
                         txtmsg.Sent = false;
                         item.AddRecvTextMessage(txtmsg);
                         item.HasNewMessages = true;
@@ -102,8 +103,16 @@ namespace System.Net.XMPP
 
         public TextMessage ExtractThread(TextMessage txtmsg)
         {
+            return ExtractThread(txtmsg, false);
+        }
+
+        public TextMessage ExtractThread(TextMessage txtmsg, bool bUpdateMessageText)
+        {
+            System.Diagnostics.Debug.WriteLine("Original message: " + txtmsg.Message);
+
             System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(strThreadPattern);
             System.Text.RegularExpressions.MatchCollection matchCollection = regex.Matches(txtmsg.Message);
+
             if (matchCollection.Count > 0)
             {
                 foreach (System.Text.RegularExpressions.Match match in matchCollection)
@@ -112,11 +121,17 @@ namespace System.Net.XMPP
                     {
                         txtmsg.Thread = match.Groups["threadName"].Value;
                         txtmsg.Thread.Trim();
+                        System.Diagnostics.Debug.WriteLine("Thread: " + txtmsg.Thread);
+
                     }
                     if (match.Groups["messageText"] != null)
                     {
-                        txtmsg.Message = match.Groups["messageText"].Value;
-                        txtmsg.Message = txtmsg.Message.Trim();
+                        if (bUpdateMessageText)
+                        {
+                            txtmsg.Message = match.Groups["messageText"].Value;
+                            txtmsg.Message = txtmsg.Message.Trim();
+                            System.Diagnostics.Debug.WriteLine("Message: " + txtmsg.Message);
+                        }
                     }
 
                 }
@@ -125,6 +140,7 @@ namespace System.Net.XMPP
         }
 
         public static string strThreadPattern =
-     @"[\s]*\[(?<threadName>[^\]]*)\](?<messageText>.*)";
+   //  @"[\s]*\[(?<threadName>[^\]]*)\](?<messageText>.*)";
+       @"^[\s]*\[(?<threadName>[^\]]*)\](?<messageText>[^$]*)";
     }
 }

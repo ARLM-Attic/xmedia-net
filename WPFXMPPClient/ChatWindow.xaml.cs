@@ -237,11 +237,33 @@ namespace WPFXMPPClient
 
         const string HideMe = "[minimize]";
         const string ClearMe = "[clear]";
+
+      
         void DoSend()
         {
+            // 1. Check - am I still connected? 
+            /// We are finding that after awhile connection might have dropped, and it 
+            /// tries to send message while disconnected
+            /// 
+            if (this.XMPPClient.Connected == false)
+            {
+                // We are no longer connected so we cannot send this message until we reconnect. 
+                // Can we reconnect synchronously so we can come back to this spot if connect() succeeds?
+                this.XMPPClient.Connect();
+                System.Threading.Thread.Sleep(1000);
+
+                if (this.XMPPClient.Connected == false)
+                {
+                    MessageBox.Show("Cannot send message, you are not connected. Please reconnect and try again");
+                }
+
+            }
+            /// 
             /// Send to our selected item
             /// 
             string strText = this.TextBoxChatToSend.Text;
+            // How do we know which instance the messge should go to, selecteditems count is 0, but i know i had selected something.
+
             if (this.ListBoxInstances.SelectedItems.Count > 0)
             {
                 foreach (RosterItemPresenceInstance instance in this.ListBoxInstances.SelectedItems)
@@ -475,11 +497,17 @@ namespace WPFXMPPClient
 
             foreach (Window win in Application.Current.Windows)
             {
-                if (win is AudioMuxerWindow)
+                if (win is MainWindow)
                 {
-                    ((AudioMuxerWindow)win).InitiateOrShowCallTo(item.FullJID);
+                    ((MainWindow)win).StartAudioCall(item.FullJID);
                     break;
                 }
+
+                //if (win is AudioMuxerWindow)
+                //{
+                //    ((AudioMuxerWindow)win).InitiateOrShowCallTo(item.FullJID);
+                //    break;
+                //}
             }
         }
 

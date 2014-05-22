@@ -742,7 +742,7 @@
                         <Rectangle Width="28" Height="28" Stretch="UniformToFill" Fill="{DynamicResource tools}" />
                     </Button>
 
-                    <Button Style="{DynamicResource ButtonSurface}" ToolTip="Minimize" x:Name="ButtonMinimize" Click="ButtonMinimize_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Center" 
+                    <Button Style="{DynamicResource ButtonSurface}" ToolTip="Minimize" x:Name="ButtonMinimize" Click="ButtonMinimize_Click"  HorizontalAlignment="Center" Padding="0" VerticalAlignment="Bottom" 
                                      HorizontalContentAlignment="Center" VerticalContentAlignment="Bottom">
                         <Rectangle Width="20" Height="5" Margin="5" Stretch="UniformToFill" Fill="#FF555555" Stroke="#FF555555" />
                     </Button>

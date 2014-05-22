@@ -661,7 +661,7 @@ namespace LocationClasses
                 };
 
                 string strLocalAvatarPath = SaveImageToFile(item);
-                System.Diagnostics.Debug.WriteLine("Saved image for " + item.JID.ToString() + " to file " + strLocalAvatarPath);
+                //System.Diagnostics.Debug.WriteLine("Saved image for " + item.JID.ToString() + " to file " + strLocalAvatarPath);
 
                 if (strLocalAvatarPath != null && strLocalAvatarPath != "")
                 {

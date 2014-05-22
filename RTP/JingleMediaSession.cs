@@ -633,13 +633,25 @@ namespace RTP
                 }
                 catch (Exception ex)
                 {
+                  
+                  //  MessageBox.Show("Error - STUN server DNS was invalid:" + ex.Message);
+                    return;
                     /// STUN server DNS was invalid, guess we get not public ip
                 }
             }
 
+            if (this.AudioRTPStream.LocalEndpoint == null)
+                this.AudioRTPStream.LocalEndpoint = LocalEndpoint;
+
+            if (this.AudioRTPStream.LocalEndpoint == null)
+            {
+                //MessageBox.Show("Cannot start audio. RTP Stream's local endpoint is null");
+                return;
+            }
+
             /// Windows phone can't always give us an address, so we have to rely on the stun address alone
             if (this.AudioRTPStream.LocalEndpoint.Address.Address != 0)
-            {
+         {
 #if WINDOWS_PHONE
 //                if (PublicIPEndpoint != null)
 //                    this.AudioRTPStream.LocalEndpoint.Port = PublicIPEndpoint.Port; /// Windows phone won't let us bind to a port, so we have to figure out what it is here if we can
@@ -668,6 +680,7 @@ namespace RTP
 
             if (UseGoogleTalkProtocol == false)
             {
+              
                 /// RTCP candidate
                 Candidate rtcpcand = new Candidate() { ipaddress = this.AudioRTPStream.LocalEndpoint.Address.ToString(), port = this.AudioRTPStream.LocalEndpoint.Port+1, type = "host", component=2 };
                 rtcpcand.IPEndPoint = new IPEndPoint(this.AudioRTPStream.LocalEndpoint.Address, this.AudioRTPStream.LocalEndpoint.Port + 1);
