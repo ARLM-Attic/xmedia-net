@@ -8,6 +8,7 @@ using System.Net;
 using System.Collections.Generic;
 using xmedianet.socketserver;
 
+
 namespace System.Net.XMPP
 {
     public class XMPPConnection : xmedianet.socketserver.SocketClient
@@ -17,20 +18,25 @@ namespace System.Net.XMPP
             XMPPClient = client;
         }
 
-        public XMPPConnection(XMPPClient client, ILogInterface loginterface)
+        public XMPPConnection(XMPPClient client, xmedianet.socketserver.ILogInterface loginterface)
             : base(loginterface, "")
         {
             XMPPClient = client;
         }
 
         XMPPClient XMPPClient = null;
-        public void Connect()
+        public bool Connect()
         {
             XMPPClient.XMPPState = XMPPState.Connecting;
             if (XMPPClient.XMPPAccount.UseSOCKSProxy == true)
                 this.SetSOCKSProxy(XMPPClient.XMPPAccount.SOCKSVersion, XMPPClient.XMPPAccount.ProxyName, XMPPClient.XMPPAccount.ProxyPort, "User");
 
-            ConnectAsync(XMPPClient.Server, XMPPClient.Port);
+            bool bStarted = ConnectAsync(XMPPClient.Server, XMPPClient.Port);
+            if (bStarted == false)
+            {
+                XMPPClient.XMPPState = XMPPState.Unknown;
+            }
+            return bStarted;
         }
 
         public new bool Connected
@@ -90,6 +96,9 @@ namespace System.Net.XMPP
             {
                 
                 this.Client.NoDelay = true;
+#if !WINDOWS_PHONE
+                this.Client.SetSocketOption(Sockets.SocketOptionLevel.Socket, Sockets.SocketOptionName.KeepAlive, true);
+#endif
                 XMPPClient.XMPPState = XMPPState.Connected;
                 XMPPClient.FireConnectAttemptFinished(true);
                 System.Diagnostics.Debug.WriteLine(string.Format("Successful TCP connection"));
@@ -136,6 +145,15 @@ namespace System.Net.XMPP
             System.Diagnostics.Debug.WriteLine(string.Format("TCP disconnected: {0}", strReason));
             XMPPClient.FireDisconnectedFromServer();
             base.OnDisconnect(strReason);
+        }
+
+        public override void OnDisconnected(string strReason)
+        {
+            XMPPClient.XMPPState = XMPPState.Unknown;
+            m_bStartedTLS = false;
+            System.Diagnostics.Debug.WriteLine(string.Format("TCP disconnected: {0}", strReason));
+            XMPPClient.FireDisconnectedFromServer();
+            base.OnDisconnected(strReason);
         }
 
         public override int Send(byte[] bData, int nLength, bool bTransform)

@@ -239,6 +239,7 @@ namespace System.Net.XMPP
             set {}
         }
 
+#if !MONO
         public System.Windows.Visibility HandledVisible
         {
             get
@@ -256,6 +257,9 @@ namespace System.Net.XMPP
             }
             set { }
         }
+
+#endif
+
 
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged = null;
         void FirePropertyChanged(string strProperty)

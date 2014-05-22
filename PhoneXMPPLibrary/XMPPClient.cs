@@ -642,7 +642,15 @@ namespace System.Net.XMPP
 
             XMPPConnection = new XMPPConnection(this, log);
             XMPPConnection.OnStanzaReceived += new System.Net.XMPP.XMPPConnection.DelegateStanza(XMPPConnection_OnStanzaReceived);
-            XMPPConnection.Connect();
+            if (XMPPConnection.Connect() == false)
+            {
+                if ((AutoReconnect == true) && (XMPPAccount.HaveSuccessfullyConnectedAndAuthenticated == true))
+                {
+                    /// TODO.. add a network availability method so different mobile platforms can try to connect immediately instead of waiting for a timer
+                    StartAutoReconnectTimer();
+                }
+
+            }
         }
 
         public System.Threading.ManualResetEvent ConnectHandle = new System.Threading.ManualResetEvent(false);
