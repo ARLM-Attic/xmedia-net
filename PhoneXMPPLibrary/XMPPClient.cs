@@ -298,9 +298,8 @@ namespace System.Net.XMPP
 
         protected virtual void StateChanged()
         {
-            // Fire state changed event
-            if (OnStateChanged != null)
-                OnStateChanged(this, new EventArgs());
+            if (XMPPState != System.Net.XMPP.XMPPState.Ready)
+                ConnectHandle.Reset();
 
             if (XMPPState == System.Net.XMPP.XMPPState.CanBind)
             {
@@ -312,8 +311,6 @@ namespace System.Net.XMPP
             {
                 if (ShouldDoSession == true)
                 {
-                    XMPPState = XMPP.XMPPState.Sessioning;
-                    GenericIQLogic.StartSession();
                 }
                 else
                 {
@@ -328,7 +325,6 @@ namespace System.Net.XMPP
                     }
 
 
-                    XMPPState = System.Net.XMPP.XMPPState.Ready;
                 }
             }
             else if (XMPPState == System.Net.XMPP.XMPPState.Session)
@@ -343,8 +339,6 @@ namespace System.Net.XMPP
                     ServiceDiscoveryLogic.QueryServiceItems();
                 }
 
-
-                XMPPState = System.Net.XMPP.XMPPState.Ready;
             }
             else if (XMPPState == System.Net.XMPP.XMPPState.Unknown)  // We be logged out
             {
@@ -376,12 +370,34 @@ namespace System.Net.XMPP
                 Ready = false;
             }
 
-            if (XMPPState == System.Net.XMPP.XMPPState.Ready)
-                ConnectHandle.Set();
-            else
-                ConnectHandle.Reset();
+
+            // Fire state changed event
+            if (OnStateChanged != null)
+                OnStateChanged(this, new EventArgs());
+
 
             FirePropertyChanged("XMPPState");
+
+
+
+
+            /// Post process.  Handle any additinoal state changes that need to occur
+            if (XMPPState == System.Net.XMPP.XMPPState.Bound)
+            {
+                if (ShouldDoSession == true)
+                {
+                    XMPPState = XMPP.XMPPState.Sessioning;
+                    GenericIQLogic.StartSession();
+                }
+                else
+                    XMPPState = XMPP.XMPPState.Ready;
+            }
+            else if (XMPPState == System.Net.XMPP.XMPPState.Session)
+            {
+                XMPPState = System.Net.XMPP.XMPPState.Ready;
+            }
+
+
         }
 
        

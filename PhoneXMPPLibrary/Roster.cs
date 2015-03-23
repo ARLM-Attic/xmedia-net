@@ -541,6 +541,24 @@ namespace System.Net.XMPP
                 }
             }
             return null;
+        
+        }
+
+        public RosterItemPresenceInstance [] AllInstances
+        {
+            get
+            {
+                List<RosterItemPresenceInstance> instances = new List<RosterItemPresenceInstance>();
+                lock (m_lockClientInstances)
+                {
+                    foreach (RosterItemPresenceInstance instance in m_listClientInstances)
+                    {
+                        instances.Add(instance);
+                    }
+                }
+
+                return instances.ToArray();
+            }
         }
 
 
@@ -548,14 +566,14 @@ namespace System.Net.XMPP
 
 #if WINDOWS_PHONE
         private ObservableCollection<RosterItemPresenceInstance> m_listClientInstances = new ObservableCollection<RosterItemPresenceInstance>();
-        public ObservableCollection<RosterItemPresenceInstance> ClientInstances
+        internal ObservableCollection<RosterItemPresenceInstance> ClientInstances
         {
             get { return m_listClientInstances; }
             set { m_listClientInstances = value; }
         }
 #elif MONO
         private ObservableCollection<RosterItemPresenceInstance> m_listClientInstances = new ObservableCollection<RosterItemPresenceInstance>();
-        public ObservableCollection<RosterItemPresenceInstance> ClientInstances
+        internal ObservableCollection<RosterItemPresenceInstance> ClientInstances
         {
             get { return m_listClientInstances; }
             set { m_listClientInstances = value; }
