@@ -201,7 +201,19 @@ namespace RTP
                 byte[] bJpegMutlipartcontent = BuildJpegMutlipartSection(bLatestImage);
                 try
                 {
-                    HttpListenerContext.Response.OutputStream.Write(bJpegMutlipartcontent, 0, bJpegMutlipartcontent.Length);
+                    int nAt = 0;
+                    
+                    while (true) /// Got semaphore timeout, try sending this is smaller pieces
+                    {
+                       int nSendSize = ((bJpegMutlipartcontent.Length-nAt) > 16384)?16384:(bJpegMutlipartcontent.Length-nAt);
+
+                       HttpListenerContext.Response.OutputStream.Write(bJpegMutlipartcontent, nAt, nSendSize);
+
+                        nAt += nSendSize;
+                        if (nAt >= bJpegMutlipartcontent.Length)
+                            break;
+                    }
+
                     m_nNumberFramsSent++;
                     m_dtLastFrameSent = DateTime.Now;
                 }
