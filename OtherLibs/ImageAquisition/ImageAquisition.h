@@ -262,6 +262,7 @@ namespace ImageAquisition
 	protected:
 
 		IntPtr SinkWriter;
+		IntPtr Buffer;
 		int StreamIndexVideo;
 		int StreamIndexAudio;
 		VideoCaptureRate ^VideoFormat;
