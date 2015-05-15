@@ -1546,6 +1546,8 @@ MFVideoEncoder::MFVideoEncoder()
 {
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 	hr = MFStartup(MF_VERSION);
+    Buffer = System::IntPtr::Zero;
+
 }
 
 MFVideoEncoder::~MFVideoEncoder()
@@ -1557,7 +1559,13 @@ MFVideoEncoder::~MFVideoEncoder()
 		pSinkWriter = NULL;
 		SinkWriter = IntPtr::Zero;
 	}
-
+	if (Buffer != IntPtr::Zero)
+	{
+		IMFMediaBuffer *pBuffer = (IMFMediaBuffer *) Buffer.ToPointer();
+		pBuffer->Release();
+		pBuffer = NULL;
+		Buffer = IntPtr::Zero;
+	}
 }
 
 
@@ -1763,9 +1771,10 @@ void MFVideoEncoder::AddVideoFrame(array<unsigned char> ^RGBData, System::DateTi
 {
 	IMFSinkWriter   *pSinkWriter = (IMFSinkWriter   *) SinkWriter.ToPointer();
 
-	IMFSample *pSample = NULL;
-    IMFMediaBuffer *pBuffer = NULL;
+	
 
+	IMFSample *pSample = NULL;
+    
     const LONG cbWidth = 4 * VideoFormat->Width;
     const DWORD cbBuffer = cbWidth * VideoFormat->Height;
 	if (RGBData->Length != cbBuffer)
@@ -1779,10 +1788,19 @@ void MFVideoEncoder::AddVideoFrame(array<unsigned char> ^RGBData, System::DateTi
 
     BYTE *pData = NULL;
 
-    // Create a new memory buffer.
-    HRESULT hr = MFCreateMemoryBuffer(cbBuffer, &pBuffer);
-    if (FAILED(hr))
-		throw gcnew Exception(String::Format("Could not create memory buffer: {0}", hr));
+	IMFMediaBuffer *pBuffer = (IMFMediaBuffer *) Buffer.ToPointer();
+
+	HRESULT hr;
+
+	if (Buffer == System::IntPtr::Zero)
+	{
+		// Create a new memory buffer.
+		hr = MFCreateMemoryBuffer(cbBuffer, &pBuffer);
+		if (FAILED(hr))
+			throw gcnew Exception(String::Format("Could not create memory buffer: {0}", hr));
+
+		Buffer = System::IntPtr(pBuffer);
+	}
 
     // Lock the buffer and copy the video frame to the buffer.
     hr = pBuffer->Lock(&pData, NULL, NULL);
@@ -1835,11 +1853,15 @@ void MFVideoEncoder::AddVideoFrame(array<unsigned char> ^RGBData, System::DateTi
 
 	System::Diagnostics::Debug::WriteLine("WriteSample returned {0}", hr);
 
+	//pSample->RemoveAllBuffers();
+
+
 	pSample->Release();
 	pSample= NULL;
 
-	pBuffer->Release();
-	pBuffer = NULL;
+	
+	//pBuffer->Release();
+	//pBuffer = NULL;
 	
 }
 
